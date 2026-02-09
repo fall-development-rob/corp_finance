@@ -3,7 +3,7 @@ use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-use crate::{CorpFinanceError, CorpFinanceResult, types::*};
+use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 
 // ---------------------------------------------------------------------------
 // Input / Output types
@@ -150,10 +150,7 @@ pub fn calculate_debt_capacity(
         ));
     }
 
-    let (binding_name, binding_max) = candidates
-        .iter()
-        .min_by_key(|(_, v)| *v)
-        .unwrap();
+    let (binding_name, binding_max) = candidates.iter().min_by_key(|(_, v)| *v).unwrap();
 
     let max_incremental = (*binding_max - existing).max(Decimal::ZERO);
 

@@ -114,35 +114,46 @@ pub fn run_credit_metrics(args: CreditArgs) -> Result<Value, Box<dyn std::error:
         serde_json::from_value(data)?
     } else {
         CreditMetricsInput {
-            revenue: args.revenue
+            revenue: args
+                .revenue
                 .ok_or("--revenue is required (or provide --input)")?,
-            ebitda: args.ebitda
+            ebitda: args
+                .ebitda
                 .ok_or("--ebitda is required (or provide --input)")?,
-            ebit: args.ebit
-                .ok_or("--ebit is required (or provide --input)")?,
-            interest_expense: args.interest_expense
+            ebit: args.ebit.ok_or("--ebit is required (or provide --input)")?,
+            interest_expense: args
+                .interest_expense
                 .ok_or("--interest-expense is required (or provide --input)")?,
-            depreciation_amortisation: args.depreciation_amortisation
+            depreciation_amortisation: args
+                .depreciation_amortisation
                 .ok_or("--depreciation-amortisation is required (or provide --input)")?,
-            total_debt: args.total_debt
+            total_debt: args
+                .total_debt
                 .ok_or("--total-debt is required (or provide --input)")?,
-            cash: args.cash
-                .ok_or("--cash is required (or provide --input)")?,
-            total_assets: args.total_assets
+            cash: args.cash.ok_or("--cash is required (or provide --input)")?,
+            total_assets: args
+                .total_assets
                 .ok_or("--total-assets is required (or provide --input)")?,
-            current_assets: args.current_assets
+            current_assets: args
+                .current_assets
                 .ok_or("--current-assets is required (or provide --input)")?,
-            current_liabilities: args.current_liabilities
+            current_liabilities: args
+                .current_liabilities
                 .ok_or("--current-liabilities is required (or provide --input)")?,
-            total_equity: args.total_equity
+            total_equity: args
+                .total_equity
                 .ok_or("--total-equity is required (or provide --input)")?,
-            retained_earnings: args.retained_earnings
+            retained_earnings: args
+                .retained_earnings
                 .ok_or("--retained-earnings is required (or provide --input)")?,
-            working_capital: args.working_capital
+            working_capital: args
+                .working_capital
                 .ok_or("--working-capital is required (or provide --input)")?,
-            operating_cash_flow: args.operating_cash_flow
+            operating_cash_flow: args
+                .operating_cash_flow
                 .ok_or("--operating-cash-flow is required (or provide --input)")?,
-            capex: args.capex
+            capex: args
+                .capex
                 .ok_or("--capex is required (or provide --input)")?,
             funds_from_operations: args.funds_from_operations,
             lease_payments: args.lease_payments,
@@ -167,7 +178,8 @@ pub fn run_debt_capacity(args: DebtCapacityArgs) -> Result<Value, Box<dyn std::e
     Err(format!(
         "Debt capacity model not yet available. Input received: {}",
         serde_json::to_string_pretty(&input_data)?
-    ).into())
+    )
+    .into())
 }
 
 pub fn run_covenant_test(args: CovenantArgs) -> Result<Value, Box<dyn std::error::Error>> {
@@ -182,5 +194,6 @@ pub fn run_covenant_test(args: CovenantArgs) -> Result<Value, Box<dyn std::error
     Err(format!(
         "Covenant testing not yet available. Input received: {}",
         serde_json::to_string_pretty(&input_data)?
-    ).into())
+    )
+    .into())
 }

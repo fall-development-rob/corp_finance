@@ -157,9 +157,7 @@ where
             match eval_fn(*v1, *v2) {
                 Ok(val) => row.push(val),
                 Err(e) => {
-                    warnings.push(format!(
-                        "Evaluation failed at ({v1}, {v2}): {e}"
-                    ));
+                    warnings.push(format!("Evaluation failed at ({v1}, {v2}): {e}"));
                     row.push(Decimal::ZERO);
                 }
             }

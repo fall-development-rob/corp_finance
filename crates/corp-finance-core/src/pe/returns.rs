@@ -238,10 +238,26 @@ mod tests {
         let input = ReturnsInput {
             cash_flows: vec![],
             dated_cash_flows: Some(vec![
-                CashFlow { date: d0, amount: dec!(-1000), label: None },
-                CashFlow { date: d1, amount: dec!(400), label: None },
-                CashFlow { date: d2, amount: dec!(400), label: None },
-                CashFlow { date: d3, amount: dec!(400), label: None },
+                CashFlow {
+                    date: d0,
+                    amount: dec!(-1000),
+                    label: None,
+                },
+                CashFlow {
+                    date: d1,
+                    amount: dec!(400),
+                    label: None,
+                },
+                CashFlow {
+                    date: d2,
+                    amount: dec!(400),
+                    label: None,
+                },
+                CashFlow {
+                    date: d3,
+                    amount: dec!(400),
+                    label: None,
+                },
             ]),
             entry_equity: dec!(1000),
             exit_equity: dec!(400),

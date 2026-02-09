@@ -3,8 +3,8 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use corp_finance_core::valuation::wacc::{self, WaccInput};
 use corp_finance_core::credit::metrics::{self, CreditMetricsInput};
+use corp_finance_core::valuation::wacc::{self, WaccInput};
 
 use crate::input;
 
@@ -59,7 +59,8 @@ fn parse_sens_var(spec: &str) -> Result<SensVar, Box<dyn std::error::Error>> {
         return Err(format!(
             "Sensitivity variable must be name:min:max:step, got '{}'",
             spec
-        ).into());
+        )
+        .into());
     }
     Ok(SensVar {
         name: parts[0].to_string(),
@@ -101,7 +102,9 @@ pub fn run_sensitivity(args: SensitivityArgs) -> Result<Value, Box<dyn std::erro
 
     match args.model.to_lowercase().as_str() {
         "wacc" => {
-            let run = |v1: Decimal, v2: Option<Decimal>| -> Result<SensitivityRow, Box<dyn std::error::Error>> {
+            let run = |v1: Decimal,
+                       v2: Option<Decimal>|
+             -> Result<SensitivityRow, Box<dyn std::error::Error>> {
                 let mut json = base_json.clone();
                 set_json_field(&mut json, &var1.name, v1);
                 if let (Some(ref v2_var), Some(v2_val)) = (&var2, v2) {
@@ -130,7 +133,9 @@ pub fn run_sensitivity(args: SensitivityArgs) -> Result<Value, Box<dyn std::erro
             }
         }
         "credit" => {
-            let run = |v1: Decimal, v2: Option<Decimal>| -> Result<SensitivityRow, Box<dyn std::error::Error>> {
+            let run = |v1: Decimal,
+                       v2: Option<Decimal>|
+             -> Result<SensitivityRow, Box<dyn std::error::Error>> {
                 let mut json = base_json.clone();
                 set_json_field(&mut json, &var1.name, v1);
                 if let (Some(ref v2_var), Some(v2_val)) = (&var2, v2) {
@@ -159,10 +164,9 @@ pub fn run_sensitivity(args: SensitivityArgs) -> Result<Value, Box<dyn std::erro
             }
         }
         other => {
-            return Err(format!(
-                "Unknown model '{}'. Available models: wacc, credit",
-                other
-            ).into());
+            return Err(
+                format!("Unknown model '{}'. Available models: wacc, credit", other).into(),
+            );
         }
     }
 

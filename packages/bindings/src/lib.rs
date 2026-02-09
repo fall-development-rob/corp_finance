@@ -14,8 +14,8 @@ fn to_napi_error(e: impl std::fmt::Display) -> napi::Error {
 pub fn calculate_wacc(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::valuation::wacc::WaccInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::valuation::wacc::calculate_wacc(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::valuation::wacc::calculate_wacc(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -23,8 +23,7 @@ pub fn calculate_wacc(input_json: String) -> NapiResult<String> {
 pub fn build_dcf(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::valuation::dcf::DcfInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::valuation::dcf::calculate_dcf(&input)
-        .map_err(to_napi_error)?;
+    let output = corp_finance_core::valuation::dcf::calculate_dcf(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -32,8 +31,8 @@ pub fn build_dcf(input_json: String) -> NapiResult<String> {
 pub fn comps_analysis(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::valuation::comps::CompsInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::valuation::comps::calculate_comps(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::valuation::comps::calculate_comps(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -63,8 +62,8 @@ pub fn debt_capacity(input_json: String) -> NapiResult<String> {
 pub fn covenant_compliance(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::credit::covenants::CovenantTestInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::credit::covenants::test_covenants(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::credit::covenants::test_covenants(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -76,8 +75,8 @@ pub fn covenant_compliance(input_json: String) -> NapiResult<String> {
 pub fn calculate_returns(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::pe::returns::ReturnsInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::pe::returns::calculate_returns(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::pe::returns::calculate_returns(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -85,8 +84,8 @@ pub fn calculate_returns(input_json: String) -> NapiResult<String> {
 pub fn build_debt_schedule(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::pe::debt_schedule::DebtTrancheInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::pe::debt_schedule::build_debt_schedule(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::pe::debt_schedule::build_debt_schedule(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -94,8 +93,8 @@ pub fn build_debt_schedule(input_json: String) -> NapiResult<String> {
 pub fn sources_and_uses(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::pe::sources_uses::SourcesUsesInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::pe::sources_uses::build_sources_uses(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::pe::sources_uses::build_sources_uses(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
@@ -125,8 +124,8 @@ pub fn risk_metrics(input_json: String) -> NapiResult<String> {
 pub fn kelly_sizing(input_json: String) -> NapiResult<String> {
     let input: corp_finance_core::portfolio::sizing::KellyInput =
         serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::portfolio::sizing::calculate_kelly(&input)
-        .map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::portfolio::sizing::calculate_kelly(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 

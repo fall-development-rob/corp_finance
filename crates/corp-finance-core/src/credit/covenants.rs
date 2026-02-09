@@ -2,8 +2,8 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-use crate::{CorpFinanceError, CorpFinanceResult, types::*};
 use super::metrics::CreditMetricsOutput;
+use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 
 // ---------------------------------------------------------------------------
 // Input / Output types
@@ -174,7 +174,7 @@ fn extract_metric(actuals: &CreditMetricsOutput, metric: &CovenantMetric) -> Opt
         CovenantMetric::Dscr => Some(actuals.dscr),
         CovenantMetric::DebtToEquity => Some(actuals.debt_to_equity),
         CovenantMetric::MinCash => Some(actuals.cash_to_debt), // proxy: cash/debt ratio
-        CovenantMetric::MaxCapex => Some(actuals.fcf), // proxy: FCF as capex indicator
+        CovenantMetric::MaxCapex => Some(actuals.fcf),         // proxy: FCF as capex indicator
         CovenantMetric::Custom(_) => None, // Custom metrics require external resolution
     }
 }
@@ -185,8 +185,8 @@ fn extract_metric(actuals: &CreditMetricsOutput, metric: &CovenantMetric) -> Opt
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::metrics::CreditRating;
+    use super::*;
     use rust_decimal_macros::dec;
 
     /// Build a sample CreditMetricsOutput for testing.

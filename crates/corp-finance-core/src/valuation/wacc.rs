@@ -67,9 +67,7 @@ pub struct WaccOutput {
 ///
 /// If `unlevered_beta` is provided, the levered beta is computed using the
 /// Hamada equation: Beta_L = Beta_U * (1 + (1 - t) * D/E).
-pub fn calculate_wacc(
-    input: &WaccInput,
-) -> CorpFinanceResult<ComputationOutput<WaccOutput>> {
+pub fn calculate_wacc(input: &WaccInput) -> CorpFinanceResult<ComputationOutput<WaccOutput>> {
     let start = Instant::now();
     let mut warnings: Vec<String> = Vec::new();
 
@@ -82,9 +80,7 @@ pub fn calculate_wacc(
     if (weight_sum - Decimal::ONE).abs() > weight_tolerance {
         return Err(CorpFinanceError::InvalidInput {
             field: "debt_weight + equity_weight".into(),
-            reason: format!(
-                "Capital structure weights must sum to 1.0, got {weight_sum}"
-            ),
+            reason: format!("Capital structure weights must sum to 1.0, got {weight_sum}"),
         });
     }
 
@@ -98,8 +94,7 @@ pub fn calculate_wacc(
     let after_tax_cost_of_debt = input.cost_of_debt * (Decimal::ONE - input.tax_rate);
 
     // --- WACC ---
-    let wacc = cost_of_equity * input.equity_weight
-        + after_tax_cost_of_debt * input.debt_weight;
+    let wacc = cost_of_equity * input.equity_weight + after_tax_cost_of_debt * input.debt_weight;
 
     // --- Reasonableness warnings ---
     if levered_beta > dec!(3.0) {
@@ -264,11 +259,7 @@ pub fn unlever_beta(
 /// Re-lever a beta using the Hamada equation.
 ///
 /// Beta_L = Beta_U * (1 + (1 - t) * D/E)
-pub fn relever_beta(
-    unlevered_beta: Decimal,
-    tax_rate: Rate,
-    debt_equity: Decimal,
-) -> Decimal {
+pub fn relever_beta(unlevered_beta: Decimal, tax_rate: Rate, debt_equity: Decimal) -> Decimal {
     unlevered_beta * (Decimal::ONE + (Decimal::ONE - tax_rate) * debt_equity)
 }
 
@@ -284,11 +275,11 @@ mod tests {
     /// Build a typical US-market WACC input (Damodaran-style).
     fn sample_input() -> WaccInput {
         WaccInput {
-            risk_free_rate: dec!(0.042),       // 10-year UST ~4.2%
-            equity_risk_premium: dec!(0.055),  // Damodaran ERP Jan 2024
+            risk_free_rate: dec!(0.042),      // 10-year UST ~4.2%
+            equity_risk_premium: dec!(0.055), // Damodaran ERP Jan 2024
             beta: dec!(1.10),
-            cost_of_debt: dec!(0.055),         // BBB spread
-            tax_rate: dec!(0.21),              // US federal
+            cost_of_debt: dec!(0.055), // BBB spread
+            tax_rate: dec!(0.21),      // US federal
             debt_weight: dec!(0.30),
             equity_weight: dec!(0.70),
             size_premium: None,
@@ -441,7 +432,10 @@ mod tests {
         input.equity_risk_premium = dec!(0.12);
 
         let result = calculate_wacc(&input).unwrap();
-        assert!(result.warnings.iter().any(|w| w.contains("Equity risk premium")));
+        assert!(result
+            .warnings
+            .iter()
+            .any(|w| w.contains("Equity risk premium")));
     }
 
     #[test]

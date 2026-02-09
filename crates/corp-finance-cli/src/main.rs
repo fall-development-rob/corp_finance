@@ -6,11 +6,11 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
-use commands::credit::{CreditArgs, DebtCapacityArgs, CovenantArgs};
+use commands::credit::{CovenantArgs, CreditArgs, DebtCapacityArgs};
 use commands::pe::ReturnsArgs;
-use commands::portfolio::{SharpeArgs, RiskArgs, KellyArgs};
+use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::scenarios::SensitivityArgs;
-use commands::valuation::{WaccArgs, DcfArgs, CompsArgs};
+use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 
 /// Institutional-grade corporate finance calculations
 #[derive(Parser)]

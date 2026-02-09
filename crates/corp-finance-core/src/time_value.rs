@@ -192,7 +192,12 @@ pub fn fv(rate: Rate, nper: u32, pmt: Money, present_value: Money) -> CorpFinanc
 }
 
 /// Payment (PMT)
-pub fn pmt(rate: Rate, nper: u32, present_value: Money, future_value: Money) -> CorpFinanceResult<Money> {
+pub fn pmt(
+    rate: Rate,
+    nper: u32,
+    present_value: Money,
+    future_value: Money,
+) -> CorpFinanceResult<Money> {
     if nper == 0 {
         return Err(CorpFinanceError::InvalidInput {
             field: "nper".into(),

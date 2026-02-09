@@ -111,18 +111,24 @@ pub fn run_wacc(args: WaccArgs) -> Result<Value, Box<dyn std::error::Error>> {
         serde_json::from_value(data)?
     } else {
         WaccInput {
-            risk_free_rate: args.risk_free_rate
+            risk_free_rate: args
+                .risk_free_rate
                 .ok_or("--risk-free-rate is required (or provide --input)")?,
-            equity_risk_premium: args.equity_risk_premium
+            equity_risk_premium: args
+                .equity_risk_premium
                 .ok_or("--equity-risk-premium is required (or provide --input)")?,
             beta: args.beta.unwrap_or(dec!(1.0)),
-            cost_of_debt: args.cost_of_debt
+            cost_of_debt: args
+                .cost_of_debt
                 .ok_or("--cost-of-debt is required (or provide --input)")?,
-            tax_rate: args.tax_rate
+            tax_rate: args
+                .tax_rate
                 .ok_or("--tax-rate is required (or provide --input)")?,
-            debt_weight: args.debt_weight
+            debt_weight: args
+                .debt_weight
                 .ok_or("--debt-weight is required (or provide --input)")?,
-            equity_weight: args.equity_weight
+            equity_weight: args
+                .equity_weight
                 .ok_or("--equity-weight is required (or provide --input)")?,
             size_premium: args.size_premium,
             country_risk_premium: args.country_risk,
@@ -157,7 +163,8 @@ pub fn run_dcf(args: DcfArgs) -> Result<Value, Box<dyn std::error::Error>> {
     Err(format!(
         "DCF model not yet available. Input received: {}",
         serde_json::to_string_pretty(&input_data)?
-    ).into())
+    )
+    .into())
 }
 
 pub fn run_comps(args: CompsArgs) -> Result<Value, Box<dyn std::error::Error>> {
@@ -173,5 +180,6 @@ pub fn run_comps(args: CompsArgs) -> Result<Value, Box<dyn std::error::Error>> {
     Err(format!(
         "Comps analysis not yet available. Input received: {}",
         serde_json::to_string_pretty(&input_data)?
-    ).into())
+    )
+    .into())
 }

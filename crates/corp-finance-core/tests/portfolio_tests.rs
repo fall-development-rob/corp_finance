@@ -39,7 +39,11 @@ fn test_npv_negative_result() {
     // High discount rate makes positive cash flows worth less
     let cfs = vec![dec!(-1000), dec!(100), dec!(100), dec!(100)];
     let result = time_value::npv(dec!(0.20), &cfs).unwrap();
-    assert!(result < Decimal::ZERO, "Expected negative NPV, got {}", result);
+    assert!(
+        result < Decimal::ZERO,
+        "Expected negative NPV, got {}",
+        result
+    );
 }
 
 #[test]
@@ -76,11 +80,7 @@ fn test_irr_break_even() {
     // -100, +100 => IRR = 0%
     let cfs = vec![dec!(-100), dec!(100)];
     let irr = time_value::irr(&cfs, dec!(0.05)).unwrap();
-    assert!(
-        irr.abs() < dec!(0.001),
-        "Expected IRR ~0%, got {}",
-        irr
-    );
+    assert!(irr.abs() < dec!(0.001), "Expected IRR ~0%, got {}", irr);
 }
 
 #[test]
@@ -113,11 +113,7 @@ fn test_xirr_annual_cashflows() {
     let d1 = NaiveDate::from_ymd_opt(2021, 1, 1).unwrap();
     let d2 = NaiveDate::from_ymd_opt(2022, 1, 1).unwrap();
 
-    let flows = vec![
-        (d0, dec!(-1000)),
-        (d1, dec!(500)),
-        (d2, dec!(600)),
-    ];
+    let flows = vec![(d0, dec!(-1000)), (d1, dec!(500)), (d2, dec!(600))];
     let xirr = time_value::xirr(&flows, dec!(0.10)).unwrap();
     assert!(
         xirr > dec!(0.03) && xirr < dec!(0.15),
@@ -224,7 +220,10 @@ fn test_kelly_criterion_negative_edge() {
     let q = Decimal::ONE - p;
     let b = dec!(1.0);
     let kelly = (b * p - q) / b;
-    assert!(kelly < Decimal::ZERO, "Negative edge should produce negative Kelly fraction");
+    assert!(
+        kelly < Decimal::ZERO,
+        "Negative edge should produce negative Kelly fraction"
+    );
 }
 
 #[test]
@@ -255,12 +254,14 @@ fn test_sharpe_ratio_basic() {
 
     // Variance (sample)
     let n_minus_1 = n - Decimal::ONE;
-    let variance: Decimal = returns.iter()
+    let variance: Decimal = returns
+        .iter()
         .map(|r| {
             let diff = *r - mean;
             diff * diff
         })
-        .sum::<Decimal>() / n_minus_1;
+        .sum::<Decimal>()
+        / n_minus_1;
 
     // For this simple test, we verify the components
     assert!(
@@ -272,10 +273,7 @@ fn test_sharpe_ratio_basic() {
         excess_mean > Decimal::ZERO,
         "Excess return should be positive"
     );
-    assert!(
-        variance > Decimal::ZERO,
-        "Variance should be positive"
-    );
+    assert!(variance > Decimal::ZERO, "Variance should be positive");
 }
 
 // ---------------------------------------------------------------------------

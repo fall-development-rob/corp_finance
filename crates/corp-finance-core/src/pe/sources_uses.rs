@@ -224,7 +224,12 @@ mod tests {
             management_rollover: None,
         };
         let result = build_sources_uses(&input).unwrap();
-        let names: Vec<&str> = result.result.sources.iter().map(|(n, _)| n.as_str()).collect();
+        let names: Vec<&str> = result
+            .result
+            .sources
+            .iter()
+            .map(|(n, _)| n.as_str())
+            .collect();
         assert_eq!(names, vec!["Sponsor Equity", "Revolver", "Term Loan A"]);
     }
 }

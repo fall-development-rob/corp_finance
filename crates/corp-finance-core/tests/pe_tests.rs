@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use corp_finance_core::pe::{returns, debt_schedule, sources_uses};
+use corp_finance_core::pe::{debt_schedule, returns, sources_uses};
 use corp_finance_core::types::CashFlow;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
@@ -89,9 +89,21 @@ fn test_xirr_with_dated_cashflows() {
     let input = returns::ReturnsInput {
         cash_flows: vec![],
         dated_cash_flows: Some(vec![
-            CashFlow { date: d0, amount: dec!(-1000), label: None },
-            CashFlow { date: d1, amount: dec!(200), label: None },
-            CashFlow { date: d2, amount: dec!(1200), label: None },
+            CashFlow {
+                date: d0,
+                amount: dec!(-1000),
+                label: None,
+            },
+            CashFlow {
+                date: d1,
+                amount: dec!(200),
+                label: None,
+            },
+            CashFlow {
+                date: d2,
+                amount: dec!(1200),
+                label: None,
+            },
         ]),
         entry_equity: dec!(1000),
         exit_equity: dec!(1200),
@@ -325,7 +337,11 @@ fn test_sources_uses_with_management_rollover() {
     let result = sources_uses::build_sources_uses(&input).unwrap();
     assert_eq!(result.result.total_sources, dec!(1000));
     assert!(result.result.balanced);
-    assert!(result.result.sources.iter().any(|(n, _)| n == "Management Rollover"));
+    assert!(result
+        .result
+        .sources
+        .iter()
+        .any(|(n, _)| n == "Management Rollover"));
 }
 
 #[test]

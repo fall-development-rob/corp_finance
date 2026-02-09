@@ -1,4 +1,4 @@
-use corp_finance_core::credit::{metrics, capacity};
+use corp_finance_core::credit::{capacity, metrics};
 use corp_finance_core::CorpFinanceError;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;

@@ -1,6 +1,6 @@
 pub mod error;
-pub mod types;
 pub mod time_value;
+pub mod types;
 
 #[cfg(feature = "valuation")]
 pub mod valuation;

@@ -1,7 +1,7 @@
-pub mod json;
-pub mod table;
 pub mod csv_out;
+pub mod json;
 pub mod minimal;
+pub mod table;
 
 use crate::OutputFormat;
 use serde_json::Value;

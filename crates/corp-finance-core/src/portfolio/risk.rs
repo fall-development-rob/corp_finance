@@ -114,8 +114,7 @@ pub fn calculate_risk_metrics(
         Decimal::ZERO
     } else {
         let m3: Decimal = input.returns.iter().map(|r| (r - mean).powd(dec!(3))).sum();
-        let adjustment =
-            n_dec / (Decimal::from((n - 1) as i64) * Decimal::from((n - 2) as i64));
+        let adjustment = n_dec / (Decimal::from((n - 1) as i64) * Decimal::from((n - 2) as i64));
         let sigma3 = std_dev * std_dev * std_dev;
         if sigma3.is_zero() {
             Decimal::ZERO

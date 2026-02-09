@@ -65,9 +65,7 @@ pub fn analyze_scenarios(
     if (total_prob - Decimal::ONE).abs() > prob_tolerance {
         return Err(CorpFinanceError::InvalidInput {
             field: "probabilities".into(),
-            reason: format!(
-                "Probabilities must sum to 1.0 (got {total_prob})"
-            ),
+            reason: format!("Probabilities must sum to 1.0 (got {total_prob})"),
         });
     }
 

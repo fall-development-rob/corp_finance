@@ -36,9 +36,11 @@ pub fn run_returns(args: ReturnsArgs) -> Result<Value, Box<dyn std::error::Error
     } else if let Some(data) = input::stdin::read_stdin()? {
         serde_json::from_value(data)?
     } else {
-        let entry = args.entry_equity
+        let entry = args
+            .entry_equity
             .ok_or("--entry-equity is required (or provide --input)")?;
-        let exit = args.exit_equity
+        let exit = args
+            .exit_equity
             .ok_or("--exit-equity is required (or provide --input)")?;
 
         let cash_flows = args.cash_flows.unwrap_or_default();

@@ -43,9 +43,7 @@ pub struct KellyOutput {
 ///
 /// Full Kelly: f* = p - (1-p)/b
 /// where p = win probability, b = win/loss ratio
-pub fn calculate_kelly(
-    input: &KellyInput,
-) -> CorpFinanceResult<ComputationOutput<KellyOutput>> {
+pub fn calculate_kelly(input: &KellyInput) -> CorpFinanceResult<ComputationOutput<KellyOutput>> {
     let start = Instant::now();
     let mut warnings: Vec<String> = Vec::new();
 

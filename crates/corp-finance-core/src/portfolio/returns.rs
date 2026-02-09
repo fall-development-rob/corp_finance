@@ -103,10 +103,7 @@ pub fn calculate_risk_adjusted_returns(
     };
 
     // Downside deviation (below target return per period)
-    let target_per_period = input
-        .target_return
-        .unwrap_or(input.risk_free_rate)
-        / periods;
+    let target_per_period = input.target_return.unwrap_or(input.risk_free_rate) / periods;
     let downside_dev = downside_deviation(&input.returns, target_per_period);
     let annualised_downside = downside_dev * sqrt_decimal(periods);
 

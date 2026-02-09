@@ -1,5 +1,5 @@
-use corp_finance_core::valuation::{wacc, dcf};
 use corp_finance_core::types::Currency;
+use corp_finance_core::valuation::{dcf, wacc};
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
@@ -218,9 +218,7 @@ fn test_unlever_relever_roundtrip() {
 fn sample_dcf_input() -> dcf::DcfInput {
     dcf::DcfInput {
         base_revenue: dec!(1_000_000),
-        revenue_growth_rates: vec![
-            dec!(0.10), dec!(0.08), dec!(0.07), dec!(0.06), dec!(0.05),
-        ],
+        revenue_growth_rates: vec![dec!(0.10), dec!(0.08), dec!(0.07), dec!(0.06), dec!(0.05)],
         ebitda_margin: dec!(0.25),
         ebit_margin: None,
         da_as_pct_revenue: Some(dec!(0.03)),
