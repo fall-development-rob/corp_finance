@@ -1,0 +1,13 @@
+{
+  "name": "corp-finance-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --workspace --all-features",
+    "build:release": "cargo build --workspace --all-features --release",
+    "test": "cargo test --workspace --all-features",
+    "lint": "cargo clippy --workspace --all-features -- -D warnings",
+    "fmt": "cargo fmt --workspace",
+    "fmt:check": "cargo fmt --workspace --check"
+  }
+}

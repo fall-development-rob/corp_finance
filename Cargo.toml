@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/corp-finance-core",
+    "crates/corp-finance-cli",
+    "packages/bindings",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Robert Fall <robert@rob-otix.ai>"]
+license = "MIT"

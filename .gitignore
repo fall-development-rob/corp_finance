@@ -1,0 +1,24 @@
+# Rust
+target/
+Cargo.lock
+
+# Node
+node_modules/
+dist/
+*.node
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Project-specific
+agentdb.db
+agentdb.db-shm
+agentdb.db-wal
+files-cfa.zip
+.swarm/
+.claude/
+.claude-flow/
