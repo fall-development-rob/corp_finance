@@ -1,0 +1,44 @@
+#!/bin/sh
+# Conventional Commits validation hook
+# Format: <type>[optional scope]: <description>
+# Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+
+commit_msg_file="$1"
+commit_msg=$(head -1 "$commit_msg_file")
+
+# Allow merge commits
+if echo "$commit_msg" | grep -qE '^Merge '; then
+    exit 0
+fi
+
+# Conventional commit pattern
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_/-]+\))?!?: .{1,}'
+
+if ! echo "$commit_msg" | grep -qE "$pattern"; then
+    echo ""
+    echo "ERROR: Commit message does not follow Conventional Commits format."
+    echo ""
+    echo "  Expected: <type>[optional scope]: <description>"
+    echo ""
+    echo "  Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+    echo ""
+    echo "  Examples:"
+    echo "    feat(valuation): add DCF model with 2-stage FCFF"
+    echo "    fix(credit): handle division by zero in coverage ratio"
+    echo "    test: add known-answer fixtures for WACC"
+    echo "    chore: update dependencies"
+    echo ""
+    echo "  Your message: $commit_msg"
+    echo ""
+    exit 1
+fi
+
+# Check subject length (first line <= 72 chars)
+subject_len=$(echo "$commit_msg" | wc -c)
+if [ "$subject_len" -gt 73 ]; then
+    echo ""
+    echo "ERROR: Commit subject line is too long ($subject_len chars, max 72)."
+    echo "  Your message: $commit_msg"
+    echo ""
+    exit 1
+fi
