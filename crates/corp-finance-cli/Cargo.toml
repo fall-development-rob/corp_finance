@@ -1,0 +1,24 @@
+[package]
+name = "corp-finance-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "CLI for institutional-grade corporate finance calculations"
+
+[[bin]]
+name = "cfa"
+path = "src/main.rs"
+
+[dependencies]
+corp-finance-core = { path = "../corp-finance-core", features = ["full"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+tabled = "0.16"
+csv = "1"
+colored = "2"
+rust_decimal = "1"
+rust_decimal_macros = "1"
+atty = "0.2"
