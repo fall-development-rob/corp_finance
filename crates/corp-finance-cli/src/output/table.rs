@@ -1,5 +1,5 @@
 use serde_json::Value;
-use tabled::{Table, builder::Builder};
+use tabled::{builder::Builder, Table};
 
 /// Format output as a table using the tabled crate.
 pub fn print_table(value: &Value) {
@@ -81,11 +81,7 @@ fn print_array_table(arr: &[Value]) {
             if let Value::Object(map) = item {
                 let row: Vec<String> = headers
                     .iter()
-                    .map(|h| {
-                        map.get(h.as_str())
-                            .map(|v| format_value(v))
-                            .unwrap_or_default()
-                    })
+                    .map(|h| map.get(h.as_str()).map(format_value).unwrap_or_default())
                     .collect();
                 builder.push_record(row);
             }
@@ -108,7 +104,7 @@ fn format_value(value: &Value) -> String {
         Value::Bool(b) => b.to_string(),
         Value::Null => "null".to_string(),
         Value::Array(arr) => {
-            let items: Vec<String> = arr.iter().map(|v| format_value(v)).collect();
+            let items: Vec<String> = arr.iter().map(format_value).collect();
             items.join(", ")
         }
         Value::Object(_) => serde_json::to_string(value).unwrap_or_default(),

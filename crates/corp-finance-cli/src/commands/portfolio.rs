@@ -107,7 +107,8 @@ fn annualisation_factor(frequency: &str) -> Result<Decimal, Box<dyn std::error::
         _ => Err(format!(
             "Unknown frequency '{}'. Use: daily, weekly, monthly, quarterly, annual",
             frequency
-        ).into()),
+        )
+        .into()),
     }
 }
 
@@ -169,7 +170,7 @@ fn get_returns(
                     } else if let Some(n) = v.as_f64() {
                         Ok(Decimal::try_from(n).unwrap_or_default())
                     } else {
-                        Err(rust_decimal::Error::from(rust_decimal::Error::Underflow))
+                        Err(rust_decimal::Error::Underflow)
                     }
                 })
                 .collect::<Result<Vec<_>, _>>()?;
@@ -181,7 +182,9 @@ fn get_returns(
                     .filter_map(|v| {
                         v.as_str()
                             .and_then(|s| s.parse::<Decimal>().ok())
-                            .or_else(|| v.as_f64().map(|n| Decimal::try_from(n).unwrap_or_default()))
+                            .or_else(|| {
+                                v.as_f64().map(|n| Decimal::try_from(n).unwrap_or_default())
+                            })
                     })
                     .collect();
                 Ok(returns)

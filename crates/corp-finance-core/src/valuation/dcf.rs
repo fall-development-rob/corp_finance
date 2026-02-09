@@ -135,9 +135,7 @@ pub struct DcfOutput {
 // ---------------------------------------------------------------------------
 
 /// Run a 2-stage FCFF DCF valuation.
-pub fn calculate_dcf(
-    input: &DcfInput,
-) -> CorpFinanceResult<ComputationOutput<DcfOutput>> {
+pub fn calculate_dcf(input: &DcfInput) -> CorpFinanceResult<ComputationOutput<DcfOutput>> {
     let start = Instant::now();
     let mut warnings: Vec<String> = Vec::new();
 
@@ -159,17 +157,11 @@ pub fn calculate_dcf(
     })?;
 
     // --- Terminal value ---
-    let (tv_gordon, tv_exit, tv_used) =
-        compute_terminal_values(input, last, wacc, &mut warnings)?;
+    let (tv_gordon, tv_exit, tv_used) = compute_terminal_values(input, last, wacc, &mut warnings)?;
 
     // --- Discount TV to present ---
-    let tv_discount_period = if mid_year {
-        Decimal::from(n_years)
-    } else {
-        Decimal::from(n_years)
-    };
-    let tv_discount_factor =
-        Decimal::ONE / (Decimal::ONE + wacc).powd(tv_discount_period);
+    let tv_discount_period = Decimal::from(n_years);
+    let tv_discount_factor = Decimal::ONE / (Decimal::ONE + wacc).powd(tv_discount_period);
     let pv_of_terminal = tv_used * tv_discount_factor;
 
     // --- Enterprise value ---
@@ -196,8 +188,7 @@ pub fn calculate_dcf(
     };
 
     // --- Equity bridge ---
-    let (equity_value, equity_value_per_share) =
-        compute_equity_bridge(input, enterprise_value)?;
+    let (equity_value, equity_value_per_share) = compute_equity_bridge(input, enterprise_value)?;
 
     let output = DcfOutput {
         projections,
@@ -316,7 +307,11 @@ fn validate_dcf_input(input: &DcfInput, wacc: Rate) -> CorpFinanceResult<()> {
 fn resolve_forecast_years(input: &DcfInput) -> u32 {
     input.forecast_years.unwrap_or_else(|| {
         let n = input.revenue_growth_rates.len() as u32;
-        if n > 0 { n } else { 10 }
+        if n > 0 {
+            n
+        } else {
+            10
+        }
     })
 }
 
@@ -337,14 +332,7 @@ fn build_projections(
         let ebitda = revenue * input.ebitda_margin;
 
         // EBIT: use explicit margin if provided, otherwise derive from EBITDA - D&A
-        let da = revenue * input.da_as_pct_revenue.unwrap_or_else(|| {
-            // If no D&A and no EBIT margin, assume D&A = 0
-            if input.ebit_margin.is_some() {
-                Decimal::ZERO
-            } else {
-                Decimal::ZERO
-            }
-        });
+        let da = revenue * input.da_as_pct_revenue.unwrap_or(Decimal::ZERO);
         let ebit = if let Some(ebit_margin) = input.ebit_margin {
             revenue * ebit_margin
         } else {
@@ -357,11 +345,7 @@ fn build_projections(
         let nwc_change = current_nwc - prev_nwc;
 
         // FCFF = NOPAT + D&A - CapEx - Delta NWC
-        let plus_da = if input.ebit_margin.is_some() {
-            da
-        } else {
-            da
-        };
+        let plus_da = da;
         let fcff = nopat + plus_da - capex - nwc_change;
 
         // Discount factor
@@ -370,8 +354,7 @@ fn build_projections(
         } else {
             Decimal::from(year_num)
         };
-        let discount_factor =
-            Decimal::ONE / (Decimal::ONE + wacc).powd(discount_period);
+        let discount_factor = Decimal::ONE / (Decimal::ONE + wacc).powd(discount_period);
         let pv_fcff = fcff * discount_factor;
 
         projections.push(DcfYearProjection {
@@ -498,8 +481,16 @@ mod tests {
         DcfInput {
             base_revenue: dec!(1000),
             revenue_growth_rates: vec![
-                dec!(0.10), dec!(0.09), dec!(0.08), dec!(0.07), dec!(0.06),
-                dec!(0.05), dec!(0.05), dec!(0.04), dec!(0.04), dec!(0.03),
+                dec!(0.10),
+                dec!(0.09),
+                dec!(0.08),
+                dec!(0.07),
+                dec!(0.06),
+                dec!(0.05),
+                dec!(0.05),
+                dec!(0.04),
+                dec!(0.04),
+                dec!(0.03),
             ],
             ebitda_margin: dec!(0.25),
             ebit_margin: None,

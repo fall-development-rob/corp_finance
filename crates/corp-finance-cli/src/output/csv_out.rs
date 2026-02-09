@@ -49,11 +49,7 @@ fn write_array_csv(wtr: &mut csv::Writer<io::StdoutLock<'_>>, arr: &[Value]) {
             if let Value::Object(map) = item {
                 let row: Vec<String> = headers
                     .iter()
-                    .map(|h| {
-                        map.get(*h)
-                            .map(|v| format_csv_value(v))
-                            .unwrap_or_default()
-                    })
+                    .map(|h| map.get(*h).map(format_csv_value).unwrap_or_default())
                     .collect();
                 let _ = wtr.write_record(&row);
             }

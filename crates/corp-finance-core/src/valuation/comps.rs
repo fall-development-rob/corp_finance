@@ -144,9 +144,7 @@ pub struct CompsOutput {
 // ---------------------------------------------------------------------------
 
 /// Run a trading comparables analysis.
-pub fn calculate_comps(
-    input: &CompsInput,
-) -> CorpFinanceResult<ComputationOutput<CompsOutput>> {
+pub fn calculate_comps(input: &CompsInput) -> CorpFinanceResult<ComputationOutput<CompsOutput>> {
     let start = Instant::now();
     let mut warnings: Vec<String> = Vec::new();
 
@@ -278,10 +276,7 @@ fn compute_multiples_for_type(
         match result {
             Some(v) => values.push((comp.name.clone(), v)),
             None => {
-                warnings.push(format!(
-                    "{}: insufficient data for {mult_type}",
-                    comp.name
-                ));
+                warnings.push(format!("{}: insufficient data for {mult_type}", comp.name));
             }
         }
     }
@@ -300,7 +295,7 @@ fn compute_statistics(
     let sum: Decimal = sorted_vals.iter().copied().sum();
     let mean = sum / Decimal::from(count as i64);
 
-    let median = if count % 2 == 0 {
+    let median = if count.is_multiple_of(2) {
         let mid = count / 2;
         (sorted_vals[mid - 1] + sorted_vals[mid]) / dec!(2)
     } else {
@@ -366,9 +361,10 @@ fn compute_implied_valuation(
                     });
                 }
                 _ => {
-                    warnings.push(format!(
+                    warnings.push(
                         "Target missing net_income or eps_growth_rate for PEG implied valuation"
-                    ));
+                            .to_string(),
+                    );
                     return None;
                 }
             }
@@ -576,7 +572,10 @@ mod tests {
 
         for stats in &out.multiple_statistics {
             assert!(
-                !stats.values.iter().any(|(name, _)| name == "CompD_excluded"),
+                !stats
+                    .values
+                    .iter()
+                    .any(|(name, _)| name == "CompD_excluded"),
                 "Excluded company should not appear in {}: {:?}",
                 stats.multiple_type,
                 stats.values

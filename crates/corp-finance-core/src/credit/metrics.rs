@@ -3,7 +3,7 @@ use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-use crate::{CorpFinanceError, CorpFinanceResult, types::*};
+use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 
 /// Maximum coverage cap when interest expense is zero or near-zero.
 const COVERAGE_CAP: Decimal = dec!(999);
@@ -162,14 +162,14 @@ pub fn calculate_credit_metrics(
     let debt_to_equity = safe_divide(input.total_debt, input.total_equity, "debt / equity")?;
     let debt_to_assets = safe_divide(input.total_debt, input.total_assets, "debt / assets")?;
 
-    let net_debt_to_ev = input.market_cap.map(|mc| {
+    let net_debt_to_ev = input.market_cap.and_then(|mc| {
         let ev = mc + net_debt;
         if ev.is_zero() {
             None
         } else {
             Some(net_debt / ev)
         }
-    }).flatten();
+    });
 
     // -- Coverage -------------------------------------------------------------
     let interest_coverage = if input.interest_expense.is_zero() {
@@ -187,14 +187,18 @@ pub fn calculate_credit_metrics(
 
     let fixed_charge_coverage = match input.lease_payments {
         Some(lease) => {
-            let total_charges = input.interest_expense + lease
-                + input.preferred_dividends.unwrap_or(Decimal::ZERO);
+            let total_charges =
+                input.interest_expense + lease + input.preferred_dividends.unwrap_or(Decimal::ZERO);
             if total_charges.is_zero() {
                 warnings.push("Total fixed charges are zero; fixed-charge coverage capped.".into());
                 Some(COVERAGE_CAP)
             } else {
                 let numerator = input.ebitda + lease; // EBITDAR proxy
-                Some(safe_divide(numerator, total_charges, "fixed charge coverage")?)
+                Some(safe_divide(
+                    numerator,
+                    total_charges,
+                    "fixed charge coverage",
+                )?)
             }
         }
         None => None,
@@ -204,11 +208,7 @@ pub fn calculate_credit_metrics(
     let dscr = if input.interest_expense.is_zero() {
         COVERAGE_CAP
     } else {
-        safe_divide(
-            input.ebitda - input.capex,
-            input.interest_expense,
-            "DSCR",
-        )?
+        safe_divide(input.ebitda - input.capex, input.interest_expense, "DSCR")?
     };
 
     // -- Cash-flow metrics ----------------------------------------------------
@@ -356,31 +356,45 @@ fn derive_synthetic_rating(
     // Primary grid: coverage x leverage
     let base_rating = match (coverage, leverage) {
         (c, l) if c > dec!(8.0) && l < dec!(1.0) => {
-            rationale.push(format!("Coverage {c}x > 8.0 and leverage {l}x < 1.0 => AAA zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 8.0 and leverage {l}x < 1.0 => AAA zone"
+            ));
             CreditRating::AAA
         }
         (c, l) if c > dec!(6.0) && l < dec!(2.0) => {
-            rationale.push(format!("Coverage {c}x > 6.0 and leverage {l}x < 2.0 => AA zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 6.0 and leverage {l}x < 2.0 => AA zone"
+            ));
             CreditRating::AA
         }
         (c, l) if c > dec!(5.0) && l < dec!(2.5) => {
-            rationale.push(format!("Coverage {c}x > 5.0 and leverage {l}x < 2.5 => A zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 5.0 and leverage {l}x < 2.5 => A zone"
+            ));
             CreditRating::A
         }
         (c, l) if c > dec!(4.0) && l < dec!(3.5) => {
-            rationale.push(format!("Coverage {c}x > 4.0 and leverage {l}x < 3.5 => BBB zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 4.0 and leverage {l}x < 3.5 => BBB zone"
+            ));
             CreditRating::BBB
         }
         (c, l) if c > dec!(3.0) && l < dec!(4.5) => {
-            rationale.push(format!("Coverage {c}x > 3.0 and leverage {l}x < 4.5 => BB zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 3.0 and leverage {l}x < 4.5 => BB zone"
+            ));
             CreditRating::BB
         }
         (c, l) if c > dec!(2.0) && l < dec!(5.5) => {
-            rationale.push(format!("Coverage {c}x > 2.0 and leverage {l}x < 5.5 => B zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 2.0 and leverage {l}x < 5.5 => B zone"
+            ));
             CreditRating::B
         }
         (c, l) if c > dec!(1.0) && l < dec!(7.0) => {
-            rationale.push(format!("Coverage {c}x > 1.0 and leverage {l}x < 7.0 => CCC zone"));
+            rationale.push(format!(
+                "Coverage {c}x > 1.0 and leverage {l}x < 7.0 => CCC zone"
+            ));
             CreditRating::CCC
         }
         (c, _) if c > dec!(0.5) => {

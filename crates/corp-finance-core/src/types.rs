@@ -15,9 +15,10 @@ pub type Multiple = Decimal;
 pub type Years = Decimal;
 
 /// Currency code
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Currency {
     GBP,
+    #[default]
     USD,
     EUR,
     CHF,
@@ -27,12 +28,6 @@ pub enum Currency {
     HKD,
     SGD,
     Other(String),
-}
-
-impl Default for Currency {
-    fn default() -> Self {
-        Currency::USD
-    }
 }
 
 /// A single cash flow at a point in time
