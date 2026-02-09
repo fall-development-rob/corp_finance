@@ -1,0 +1,34 @@
+[package]
+name = "corp-finance-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Institutional-grade corporate finance calculations with decimal precision"
+
+[features]
+default = ["valuation", "credit"]
+valuation = []
+credit = []
+pe = []
+ma = []
+portfolio = []
+fixed_income = []
+three_statement = []
+jurisdiction = []
+scenarios = ["dep:rand", "dep:statrs"]
+monte_carlo = ["scenarios"]
+full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "scenarios", "monte_carlo"]
+
+[dependencies]
+rust_decimal = { version = "1", features = ["serde-with-str", "maths"] }
+rust_decimal_macros = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = { version = "0.4", features = ["serde"] }
+rand = { version = "0.8", optional = true }
+statrs = { version = "0.17", optional = true }
+
+[dev-dependencies]
+pretty_assertions = "1"
