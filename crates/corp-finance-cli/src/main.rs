@@ -6,8 +6,10 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
-use commands::credit::{CovenantArgs, CreditArgs, DebtCapacityArgs};
-use commands::pe::ReturnsArgs;
+use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
+use commands::jurisdiction::FundFeesArgs;
+use commands::ma::MergerArgs;
+use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
@@ -55,6 +57,16 @@ enum Commands {
     Risk(RiskArgs),
     /// Kelly criterion position sizing
     Kelly(KellyArgs),
+    /// Build a full LBO model with multi-tranche debt
+    Lbo(LboArgs),
+    /// Calculate GP/LP distribution waterfall
+    Waterfall(WaterfallArgs),
+    /// Merger accretion/dilution analysis
+    Merger(MergerArgs),
+    /// Altman Z-Score bankruptcy prediction
+    AltmanZscore(AltmanArgs),
+    /// Fund fee modelling (management + performance fees)
+    FundFees(FundFeesArgs),
     /// Print version information
     Version,
 }
@@ -82,6 +94,11 @@ fn main() {
         Commands::Sharpe(args) => commands::portfolio::run_sharpe(args),
         Commands::Risk(args) => commands::portfolio::run_risk(args),
         Commands::Kelly(args) => commands::portfolio::run_kelly(args),
+        Commands::Lbo(args) => commands::pe::run_lbo(args),
+        Commands::Waterfall(args) => commands::pe::run_waterfall(args),
+        Commands::Merger(args) => commands::ma::run_merger(args),
+        Commands::AltmanZscore(args) => commands::credit::run_altman(args),
+        Commands::FundFees(args) => commands::jurisdiction::run_fund_fees(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

@@ -99,6 +99,66 @@ pub fn sources_and_uses(input_json: String) -> NapiResult<String> {
 }
 
 // ---------------------------------------------------------------------------
+// Private Equity — Phase 2
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn build_lbo(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::pe::lbo::LboInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::pe::lbo::build_lbo(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_waterfall(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::pe::waterfall::WaterfallInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::pe::waterfall::calculate_waterfall(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// M&A
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_merger(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::ma::merger_model::MergerInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::ma::merger_model::analyze_merger(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Credit — Phase 2
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn altman_zscore(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit::altman::AltmanInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit::altman::calculate_altman_zscore(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Jurisdiction / Fund
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_fund_fees(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::fund_fees::FundFeeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::jurisdiction::fund_fees::calculate_fund_fees(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
 // Portfolio
 // ---------------------------------------------------------------------------
 

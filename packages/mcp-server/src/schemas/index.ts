@@ -28,3 +28,13 @@ export {
 } from "./portfolio.js";
 
 export { SensitivitySchema, ScenarioSchema } from "./scenarios.js";
+
+export { MergerSchema } from "./ma.js";
+
+export { FundFeeSchema } from "./jurisdiction.js";
+
+export {
+  LboSchema,
+  WaterfallSchema,
+  AltmanSchema,
+} from "./pe.js";

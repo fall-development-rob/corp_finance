@@ -2,6 +2,7 @@ use clap::Args;
 use rust_decimal::Decimal;
 use serde_json::Value;
 
+use corp_finance_core::credit::altman::{self, AltmanInput};
 use corp_finance_core::credit::metrics::{self, CreditMetricsInput};
 
 use crate::input;
@@ -196,4 +197,24 @@ pub fn run_covenant_test(args: CovenantArgs) -> Result<Value, Box<dyn std::error
         serde_json::to_string_pretty(&input_data)?
     )
     .into())
+}
+
+/// Arguments for Altman Z-Score calculation
+#[derive(Args)]
+pub struct AltmanArgs {
+    /// Path to JSON input file
+    #[arg(long)]
+    pub input: Option<String>,
+}
+
+pub fn run_altman(args: AltmanArgs) -> Result<Value, Box<dyn std::error::Error>> {
+    let altman_input: AltmanInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
+    } else if let Some(data) = input::stdin::read_stdin()? {
+        serde_json::from_value(data)?
+    } else {
+        return Err("--input <file.json> or stdin required for Altman Z-Score".into());
+    };
+    let result = altman::calculate_altman_zscore(&altman_input)?;
+    Ok(serde_json::to_value(result)?)
 }

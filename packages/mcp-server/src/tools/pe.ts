@@ -3,11 +3,17 @@ import {
   returnsCalculator,
   debtSchedule,
   sourcesUses,
+  buildLbo,
+  calculateWaterfall,
+  altmanZscore,
 } from "corp-finance-bindings";
 import {
   ReturnsSchema,
   DebtScheduleSchema,
   SourcesUsesSchema,
+  LboSchema,
+  WaterfallSchema,
+  AltmanSchema,
 } from "../schemas/pe.js";
 import { wrapResponse } from "../formatters/response.js";
 
@@ -41,6 +47,39 @@ export function registerPETools(server: McpServer) {
     async (params) => {
       const validated = SourcesUsesSchema.parse(params);
       const result = sourcesUses(JSON.stringify(validated));
+      return wrapResponse(result);
+    }
+  );
+
+  server.tool(
+    "lbo_model",
+    "Build a full leveraged buyout model with multi-tranche debt, cash sweep, year-by-year projections, and exit returns (IRR, MOIC). Includes sources & uses, debt schedules, and credit metrics at entry/exit.",
+    LboSchema.shape,
+    async (params) => {
+      const validated = LboSchema.parse(params);
+      const result = buildLbo(JSON.stringify(validated));
+      return wrapResponse(result);
+    }
+  );
+
+  server.tool(
+    "waterfall_calculator",
+    "Calculate GP/LP distribution waterfall with return of capital, preferred return (hurdle), GP catch-up, and carried interest tiers. Supports European and American waterfall structures.",
+    WaterfallSchema.shape,
+    async (params) => {
+      const validated = WaterfallSchema.parse(params);
+      const result = calculateWaterfall(JSON.stringify(validated));
+      return wrapResponse(result);
+    }
+  );
+
+  server.tool(
+    "altman_zscore",
+    "Calculate Altman Z-Score for bankruptcy prediction. Supports original Z (public manufacturing), Z-prime (private), and Z-double-prime (non-manufacturing/emerging) variants. Returns score, zone classification, and component breakdown.",
+    AltmanSchema.shape,
+    async (params) => {
+      const validated = AltmanSchema.parse(params);
+      const result = altmanZscore(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );

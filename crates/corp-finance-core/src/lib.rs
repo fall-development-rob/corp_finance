@@ -14,6 +14,12 @@ pub mod pe;
 #[cfg(feature = "portfolio")]
 pub mod portfolio;
 
+#[cfg(feature = "ma")]
+pub mod ma;
+
+#[cfg(feature = "jurisdiction")]
+pub mod jurisdiction;
+
 #[cfg(feature = "scenarios")]
 pub mod scenarios;
 
