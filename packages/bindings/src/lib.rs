@@ -158,6 +158,94 @@ pub fn calculate_fund_fees(input_json: String) -> NapiResult<String> {
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
+#[napi]
+pub fn reconcile_accounting(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::reconciliation::ReconciliationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::jurisdiction::reconciliation::reconcile_accounting_standards(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_wht(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::withholding_tax::WhtInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::jurisdiction::withholding_tax::calculate_withholding_tax(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_portfolio_wht(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::withholding_tax::PortfolioWhtInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::jurisdiction::withholding_tax::calculate_portfolio_wht(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_nav(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::nav::NavInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::jurisdiction::nav::calculate_nav(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_gp_economics(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::gp_economics::GpEconomicsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::jurisdiction::gp_economics::calculate_gp_economics(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_investor_net_returns(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::investor_returns::InvestorNetReturnsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::jurisdiction::investor_returns::calculate_investor_net_returns(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn screen_ubti_eci(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::jurisdiction::ubti::UbtiScreeningInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::jurisdiction::ubti::screen_ubti_eci(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Trading
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_trading_day(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::trading::diary::TradingDayInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::trading::diary::analyze_trading_day(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_trading_performance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::trading::analytics::TradingAnalyticsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::trading::analytics::analyze_trading_performance(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
 // ---------------------------------------------------------------------------
 // Portfolio
 // ---------------------------------------------------------------------------

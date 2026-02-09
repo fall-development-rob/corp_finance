@@ -23,6 +23,9 @@ pub mod jurisdiction;
 #[cfg(feature = "scenarios")]
 pub mod scenarios;
 
+#[cfg(feature = "trading")]
+pub mod trading;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

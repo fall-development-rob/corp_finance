@@ -7,11 +7,15 @@ use colored::Colorize;
 use std::process;
 
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
-use commands::jurisdiction::FundFeesArgs;
+use commands::jurisdiction::{
+    FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
+    UbtiScreeningArgs, WhtArgs,
+};
 use commands::ma::MergerArgs;
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::scenarios::SensitivityArgs;
+use commands::trading::{TradingAnalyticsArgs, TradingDayArgs};
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 
 /// Institutional-grade corporate finance calculations
@@ -67,6 +71,22 @@ enum Commands {
     AltmanZscore(AltmanArgs),
     /// Fund fee modelling (management + performance fees)
     FundFees(FundFeesArgs),
+    /// GAAP/IFRS accounting reconciliation
+    GaapIfrs(GaapIfrsArgs),
+    /// Withholding tax calculator
+    Wht(WhtArgs),
+    /// NAV calculator with equalisation
+    Nav(NavArgs),
+    /// GP economics model
+    GpEconomics(GpEconomicsArgs),
+    /// Investor net returns calculator
+    InvestorNetReturns(InvestorNetReturnsArgs),
+    /// UBTI/ECI screening
+    UbtiScreening(UbtiScreeningArgs),
+    /// Analyze a single trading day
+    TradingDay(TradingDayArgs),
+    /// Multi-day trading performance analytics
+    TradingAnalytics(TradingAnalyticsArgs),
     /// Print version information
     Version,
 }
@@ -99,6 +119,16 @@ fn main() {
         Commands::Merger(args) => commands::ma::run_merger(args),
         Commands::AltmanZscore(args) => commands::credit::run_altman(args),
         Commands::FundFees(args) => commands::jurisdiction::run_fund_fees(args),
+        Commands::GaapIfrs(args) => commands::jurisdiction::run_gaap_ifrs(args),
+        Commands::Wht(args) => commands::jurisdiction::run_wht(args),
+        Commands::Nav(args) => commands::jurisdiction::run_nav(args),
+        Commands::GpEconomics(args) => commands::jurisdiction::run_gp_economics(args),
+        Commands::InvestorNetReturns(args) => {
+            commands::jurisdiction::run_investor_net_returns(args)
+        }
+        Commands::UbtiScreening(args) => commands::jurisdiction::run_ubti_screening(args),
+        Commands::TradingDay(args) => commands::trading::run_trading_day(args),
+        Commands::TradingAnalytics(args) => commands::trading::run_trading_analytics(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

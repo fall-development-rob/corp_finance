@@ -8,6 +8,7 @@ import { registerPortfolioTools } from "./tools/portfolio.js";
 import { registerScenarioTools } from "./tools/scenarios.js";
 import { registerMATools } from "./tools/ma.js";
 import { registerJurisdictionTools } from "./tools/jurisdiction.js";
+import { registerTradingTools } from "./tools/trading.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -21,6 +22,7 @@ registerPortfolioTools(server);
 registerScenarioTools(server);
 registerMATools(server);
 registerJurisdictionTools(server);
+registerTradingTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
