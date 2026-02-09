@@ -1,0 +1,117 @@
+{
+  "description": "Known-answer LBO / PE return test data for validation",
+  "source": "CFA Institute / Rosenbaum & Pearl Investment Banking textbook examples",
+  "cases": [
+    {
+      "name": "Simple 3-year LBO — 3x MOIC",
+      "input": {
+        "cash_flows": [-100, 0, 0, 300],
+        "entry_equity": 100,
+        "exit_equity": 300,
+        "holding_period_years": 3
+      },
+      "expected": {
+        "moic": 3.0,
+        "irr_approx": 0.44,
+        "irr_tolerance": 0.03
+      },
+      "notes": "Classic PE return: 3x MOIC in 3 years ≈ 44% IRR"
+    },
+    {
+      "name": "5-year LBO with dividend recaps",
+      "input": {
+        "cash_flows": [-500, 50, 75, 100, 75, 1200],
+        "entry_equity": 500,
+        "exit_equity": 1200,
+        "holding_period_years": 5
+      },
+      "expected": {
+        "moic": 3.0,
+        "irr_approx": 0.28,
+        "irr_tolerance": 0.03
+      },
+      "notes": "Total returned (50+75+100+75+1200=1500) / invested (500) = 3.0x"
+    },
+    {
+      "name": "Break-even deal",
+      "input": {
+        "cash_flows": [-200, 0, 0, 200],
+        "entry_equity": 200,
+        "exit_equity": 200,
+        "holding_period_years": 3
+      },
+      "expected": {
+        "moic": 1.0,
+        "irr_approx": 0.0,
+        "irr_tolerance": 0.01
+      },
+      "notes": "1x MOIC = 0% IRR (capital returned, no gain)"
+    },
+    {
+      "name": "Loss-making deal",
+      "input": {
+        "cash_flows": [-1000, 50, 50, 400],
+        "entry_equity": 1000,
+        "exit_equity": 400,
+        "holding_period_years": 3
+      },
+      "expected": {
+        "moic": 0.5,
+        "irr_approx": -0.30,
+        "irr_tolerance": 0.05
+      },
+      "notes": "Sub-1x MOIC indicates capital destruction"
+    },
+    {
+      "name": "Bullet repayment debt schedule",
+      "input": {
+        "tranche_name": "Senior Term Loan",
+        "amount": 5000000,
+        "interest_rate": 0.06,
+        "amortisation": "Bullet",
+        "maturity_years": 7
+      },
+      "expected": {
+        "total_interest_paid": 2100000,
+        "total_principal_paid": 5000000,
+        "final_closing_balance": 0,
+        "years_1_to_6_repayment": 0
+      },
+      "notes": "7-year bullet: interest-only until maturity"
+    },
+    {
+      "name": "Straight-line amortisation schedule",
+      "input": {
+        "tranche_name": "Term Loan A",
+        "amount": 1000000,
+        "interest_rate": 0.05,
+        "amortisation": "StraightLine(0.20)",
+        "maturity_years": 5
+      },
+      "expected": {
+        "year_1_repayment": 200000,
+        "total_principal_paid": 1000000,
+        "interest_decreasing": true
+      },
+      "notes": "20% annual amortisation of original principal"
+    },
+    {
+      "name": "Sources & Uses — Balanced",
+      "input": {
+        "enterprise_value": 10000000,
+        "equity_contribution": 4000000,
+        "debt_tranches": [
+          ["Senior Debt", 5000000],
+          ["Mezzanine", 1500000]
+        ],
+        "transaction_fees": 300000,
+        "financing_fees": 200000
+      },
+      "expected": {
+        "total_sources": 10500000,
+        "total_uses": 10500000,
+        "balanced": true
+      }
+    }
+  ]
+}

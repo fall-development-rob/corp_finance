@@ -1,0 +1,84 @@
+{
+  "description": "Damodaran reference WACC calculations for institutional validation",
+  "source": "Damodaran Online (pages.stern.nyu.edu/~adamodar/)",
+  "methodology": "CAPM build-up: Ke = Rf + Beta*ERP + Size + CRP + SRP; WACC = Ke*We + Kd*(1-t)*Wd",
+  "cases": [
+    {
+      "name": "Apple Jan 2024",
+      "input": {
+        "risk_free_rate": 0.0425,
+        "equity_risk_premium": 0.0472,
+        "beta": 1.24,
+        "cost_of_debt": 0.034,
+        "tax_rate": 0.1623,
+        "debt_weight": 0.0637,
+        "equity_weight": 0.9363
+      },
+      "expected_wacc_approx": 0.10,
+      "tolerance": 0.01,
+      "notes": "Low leverage tech; Ke dominates WACC"
+    },
+    {
+      "name": "US Industrial Composite",
+      "input": {
+        "risk_free_rate": 0.042,
+        "equity_risk_premium": 0.055,
+        "beta": 1.10,
+        "cost_of_debt": 0.055,
+        "tax_rate": 0.21,
+        "debt_weight": 0.30,
+        "equity_weight": 0.70
+      },
+      "expected_wacc_approx": 0.085,
+      "tolerance": 0.01,
+      "notes": "30% debt is common for investment-grade industrials"
+    },
+    {
+      "name": "Emerging Market Telecom",
+      "input": {
+        "risk_free_rate": 0.042,
+        "equity_risk_premium": 0.055,
+        "beta": 0.90,
+        "cost_of_debt": 0.08,
+        "tax_rate": 0.30,
+        "debt_weight": 0.40,
+        "equity_weight": 0.60,
+        "country_risk_premium": 0.035,
+        "size_premium": 0.02
+      },
+      "expected_wacc_approx": 0.11,
+      "tolerance": 0.015,
+      "notes": "Country risk premium and size premium push WACC higher"
+    },
+    {
+      "name": "Highly Levered Utility",
+      "input": {
+        "risk_free_rate": 0.042,
+        "equity_risk_premium": 0.055,
+        "beta": 0.65,
+        "cost_of_debt": 0.045,
+        "tax_rate": 0.21,
+        "debt_weight": 0.55,
+        "equity_weight": 0.45
+      },
+      "expected_wacc_approx": 0.055,
+      "tolerance": 0.01,
+      "notes": "Low beta + high debt weight + tax shield = low WACC"
+    },
+    {
+      "name": "High-Growth Tech (Pre-Profit)",
+      "input": {
+        "risk_free_rate": 0.042,
+        "equity_risk_premium": 0.055,
+        "beta": 1.80,
+        "cost_of_debt": 0.07,
+        "tax_rate": 0.05,
+        "debt_weight": 0.10,
+        "equity_weight": 0.90
+      },
+      "expected_wacc_approx": 0.147,
+      "tolerance": 0.015,
+      "notes": "High beta, minimal tax shield, almost all equity"
+    }
+  ]
+}

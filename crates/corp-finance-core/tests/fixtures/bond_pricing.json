@@ -1,0 +1,144 @@
+{
+  "description": "Known-answer bond pricing and time-value-of-money test data",
+  "source": "CFA Institute Level I/II curriculum, Fabozzi Fixed Income Analysis",
+  "cases": [
+    {
+      "name": "NPV at 10% — Textbook example",
+      "function": "npv",
+      "input": {
+        "rate": 0.10,
+        "cash_flows": [-1000, 300, 400, 500]
+      },
+      "expected": {
+        "npv_approx": 49.21,
+        "tolerance": 2.0
+      },
+      "notes": "NPV = -1000 + 300/1.1 + 400/1.21 + 500/1.331"
+    },
+    {
+      "name": "NPV at 0% — Sum of cash flows",
+      "function": "npv",
+      "input": {
+        "rate": 0.0,
+        "cash_flows": [-100, 50, 50, 50]
+      },
+      "expected": {
+        "npv_exact": 50.0
+      }
+    },
+    {
+      "name": "IRR — Even payments",
+      "function": "irr",
+      "input": {
+        "cash_flows": [-1000, 400, 400, 400],
+        "guess": 0.10
+      },
+      "expected": {
+        "irr_approx": 0.097,
+        "tolerance": 0.01
+      }
+    },
+    {
+      "name": "IRR — 100% return",
+      "function": "irr",
+      "input": {
+        "cash_flows": [-100, 200],
+        "guess": 0.50
+      },
+      "expected": {
+        "irr_approx": 1.0,
+        "tolerance": 0.01
+      }
+    },
+    {
+      "name": "PV of annuity — 8% for 10 years",
+      "function": "pv",
+      "input": {
+        "rate": 0.08,
+        "nper": 10,
+        "pmt": -100,
+        "fv": 0
+      },
+      "expected": {
+        "pv_approx": 671,
+        "tolerance": 2.0
+      },
+      "notes": "PV = 100 * [1 - 1/1.08^10] / 0.08"
+    },
+    {
+      "name": "FV of lump sum — 5% for 10 years",
+      "function": "fv",
+      "input": {
+        "rate": 0.05,
+        "nper": 10,
+        "pmt": 0,
+        "pv": -1000
+      },
+      "expected": {
+        "fv_approx": 1628.89,
+        "tolerance": 2.0
+      },
+      "notes": "FV = 1000 * 1.05^10"
+    },
+    {
+      "name": "PMT for loan — 10% for 5 years",
+      "function": "pmt",
+      "input": {
+        "rate": 0.10,
+        "nper": 5,
+        "pv": 1000,
+        "fv": 0
+      },
+      "expected": {
+        "pmt_approx": -263.80,
+        "tolerance": 1.0
+      },
+      "notes": "Annual payment to amortise a 1000 loan over 5 years at 10%"
+    },
+    {
+      "name": "Par bond PV",
+      "function": "pv",
+      "input": {
+        "rate": 0.05,
+        "nper": 10,
+        "pmt": -50,
+        "fv": -1000
+      },
+      "expected": {
+        "pv_approx": 1000,
+        "tolerance": 1.0
+      },
+      "notes": "A par bond: coupon rate = yield => PV = face value"
+    },
+    {
+      "name": "Premium bond PV",
+      "function": "pv",
+      "input": {
+        "rate": 0.04,
+        "nper": 10,
+        "pmt": -50,
+        "fv": -1000
+      },
+      "expected": {
+        "pv_approx": 1081,
+        "tolerance": 5.0
+      },
+      "notes": "Coupon > yield => premium (PV > face)"
+    },
+    {
+      "name": "Discount bond PV",
+      "function": "pv",
+      "input": {
+        "rate": 0.06,
+        "nper": 10,
+        "pmt": -50,
+        "fv": -1000
+      },
+      "expected": {
+        "pv_approx": 926,
+        "tolerance": 5.0
+      },
+      "notes": "Coupon < yield => discount (PV < face)"
+    }
+  ]
+}
