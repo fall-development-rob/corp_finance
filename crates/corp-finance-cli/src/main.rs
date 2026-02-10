@@ -15,9 +15,11 @@ use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
+use commands::fpa::{BreakevenArgs, RollingForecastArgs, VarianceArgs, WorkingCapitalArgs};
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
 };
+use commands::insurance::{CombinedRatioArgs, PremiumPricingArgs, ReservingArgs, ScrArgs};
 use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
@@ -26,6 +28,7 @@ use commands::ma::MergerArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
+use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
@@ -37,6 +40,7 @@ use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 use commands::venture::{
     ConvertibleNoteArgs, DilutionArgs, FundingRoundArgs, SafeArgs, VentureFundArgs,
 };
+use commands::wealth::{EstatePlanArgs, RetirementArgs, TlhArgs};
 
 /// Institutional-grade corporate finance calculations
 #[derive(Parser)]
@@ -191,6 +195,34 @@ enum Commands {
     Nsfr(NsfrArgs),
     /// Asset-Liability Management (ALM / IRRBB)
     Alm(AlmArgs),
+    /// Unitranche pricing (first-out / last-out split)
+    Unitranche(UnitrancheArgs),
+    /// Direct lending loan model (cash/PIK, delayed draw)
+    DirectLoan(DirectLoanArgs),
+    /// Loan syndication analysis
+    Syndication(SyndicationArgs),
+    /// Insurance loss reserve estimation (Chain-Ladder / Bornhuetter-Ferguson)
+    Reserving(ReservingArgs),
+    /// Insurance premium pricing (frequency x severity)
+    PremiumPricing(PremiumPricingArgs),
+    /// Insurance combined ratio analysis
+    CombinedRatio(CombinedRatioArgs),
+    /// Solvency II Standard Formula SCR
+    Scr(ScrArgs),
+    /// Budget-vs-actual variance analysis (price/volume/mix)
+    Variance(VarianceArgs),
+    /// Break-even and operating leverage analysis
+    Breakeven(BreakevenArgs),
+    /// Working capital analysis (DSO, DIO, DPO, CCC)
+    WorkingCapital(WorkingCapitalArgs),
+    /// Rolling financial forecast
+    RollingForecast(RollingForecastArgs),
+    /// Retirement planning projection
+    Retirement(RetirementArgs),
+    /// Tax-loss harvesting simulation
+    Tlh(TlhArgs),
+    /// Estate planning (gift tax, GST, trust analysis)
+    EstatePlan(EstatePlanArgs),
     /// Print version information
     Version,
 }
@@ -275,6 +307,20 @@ fn main() {
         Commands::Lcr(args) => commands::regulatory::run_lcr(args),
         Commands::Nsfr(args) => commands::regulatory::run_nsfr(args),
         Commands::Alm(args) => commands::regulatory::run_alm(args),
+        Commands::Unitranche(args) => commands::private_credit::run_unitranche(args),
+        Commands::DirectLoan(args) => commands::private_credit::run_direct_loan(args),
+        Commands::Syndication(args) => commands::private_credit::run_syndication(args),
+        Commands::Reserving(args) => commands::insurance::run_reserving(args),
+        Commands::PremiumPricing(args) => commands::insurance::run_premium_pricing(args),
+        Commands::CombinedRatio(args) => commands::insurance::run_combined_ratio(args),
+        Commands::Scr(args) => commands::insurance::run_scr(args),
+        Commands::Variance(args) => commands::fpa::run_variance(args),
+        Commands::Breakeven(args) => commands::fpa::run_breakeven(args),
+        Commands::WorkingCapital(args) => commands::fpa::run_working_capital(args),
+        Commands::RollingForecast(args) => commands::fpa::run_rolling_forecast(args),
+        Commands::Retirement(args) => commands::wealth::run_retirement(args),
+        Commands::Tlh(args) => commands::wealth::run_tlh(args),
+        Commands::EstatePlan(args) => commands::wealth::run_estate_plan(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

@@ -735,3 +735,145 @@ pub fn analyze_alm(input_json: String) -> NapiResult<String> {
     let output = corp_finance_core::regulatory::alm::analyze_alm(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Private Credit
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_unitranche(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_credit::unitranche::UnitrancheInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::private_credit::unitranche::price_unitranche(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn model_direct_loan(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_credit::direct_lending::DirectLoanInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::private_credit::direct_lending::model_direct_loan(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_syndication(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_credit::direct_lending::SyndicationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::private_credit::direct_lending::analyze_syndication(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Insurance
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn estimate_reserves(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::insurance::reserving::ReservingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::insurance::reserving::estimate_reserves(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn price_premium(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::insurance::pricing::PremiumPricingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::insurance::pricing::price_premium(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_combined_ratio(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::insurance::pricing::CombinedRatioInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::insurance::pricing::analyze_combined_ratio(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_scr(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::insurance::pricing::ScrInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::insurance::pricing::calculate_scr(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// FP&A (Financial Planning & Analysis)
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_variance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fpa::variance::VarianceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fpa::variance::analyze_variance(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_breakeven(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fpa::variance::BreakevenInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fpa::variance::analyze_breakeven(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_working_capital(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fpa::working_capital::WorkingCapitalInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fpa::working_capital::analyze_working_capital(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn build_rolling_forecast(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fpa::working_capital::RollingForecastInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fpa::working_capital::build_rolling_forecast(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Wealth Management
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn plan_retirement(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::wealth::retirement::RetirementInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::wealth::retirement::plan_retirement(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn simulate_tax_loss_harvesting(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::wealth::tax_estate::TlhInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::wealth::tax_estate::simulate_tax_loss_harvesting(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn plan_estate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::wealth::tax_estate::EstatePlanInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::wealth::tax_estate::plan_estate(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

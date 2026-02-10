@@ -59,6 +59,18 @@ pub mod esg;
 #[cfg(feature = "regulatory")]
 pub mod regulatory;
 
+#[cfg(feature = "insurance")]
+pub mod insurance;
+
+#[cfg(feature = "private_credit")]
+pub mod private_credit;
+
+#[cfg(feature = "fpa")]
+pub mod fpa;
+
+#[cfg(feature = "wealth")]
+pub mod wealth;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

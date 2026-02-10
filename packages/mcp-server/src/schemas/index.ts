@@ -115,3 +115,29 @@ export {
   NsfrSchema,
   AlmSchema,
 } from "./regulatory.js";
+
+export {
+  UnitrancheSchema,
+  DirectLoanSchema,
+  SyndicationSchema,
+} from "./private_credit.js";
+
+export {
+  ReservingSchema,
+  PremiumPricingSchema,
+  CombinedRatioSchema,
+  ScrSchema,
+} from "./insurance.js";
+
+export {
+  VarianceSchema,
+  BreakevenSchema,
+  WorkingCapitalSchema,
+  RollingForecastSchema,
+} from "./fpa.js";
+
+export {
+  RetirementSchema,
+  TlhSchema,
+  EstatePlanSchema,
+} from "./wealth.js";
