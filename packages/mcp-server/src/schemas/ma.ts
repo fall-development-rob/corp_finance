@@ -24,7 +24,7 @@ const ConsiderationTypeSchema = z.union([
 export const MergerSchema = z.object({
   // Acquirer
   acquirer_name: z.string().describe("Acquirer company name"),
-  acquirer_net_income: z.number().describe("Acquirer annual net income"),
+  acquirer_net_income: z.coerce.number().describe("Acquirer annual net income"),
   acquirer_shares_outstanding: z
     .number()
     .positive()
@@ -41,7 +41,7 @@ export const MergerSchema = z.object({
 
   // Target
   target_name: z.string().describe("Target company name"),
-  target_net_income: z.number().describe("Target annual net income"),
+  target_net_income: z.coerce.number().describe("Target annual net income"),
   target_shares_outstanding: z
     .number()
     .positive()

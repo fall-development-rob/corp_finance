@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const RiskAdjustedSchema = z.object({
   returns: z
-    .array(z.number())
+    .array(z.coerce.number())
     .min(2)
     .describe("Periodic returns as decimals (e.g. 0.02 = 2%)"),
   risk_free_rate: z
@@ -11,7 +11,7 @@ export const RiskAdjustedSchema = z.object({
     .max(0.2)
     .describe("Annualised risk-free rate"),
   benchmark_returns: z
-    .array(z.number())
+    .array(z.coerce.number())
     .optional()
     .describe("Benchmark returns for relative metrics (same frequency)"),
   frequency: z
@@ -25,7 +25,7 @@ export const RiskAdjustedSchema = z.object({
 
 export const RiskMetricsSchema = z.object({
   returns: z
-    .array(z.number())
+    .array(z.coerce.number())
     .min(3)
     .describe("Periodic returns as decimals (e.g. 0.02 = 2%)"),
   frequency: z

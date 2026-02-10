@@ -4,24 +4,24 @@ import { z } from "zod";
 // Rust struct: CreditMetricsInput in credit/metrics.rs
 // All fields match exactly as-is. No changes needed.
 export const CreditMetricsSchema = z.object({
-  revenue: z.number().positive().describe("Total revenue"),
-  ebitda: z.number().describe("EBITDA"),
-  ebit: z.number().describe("EBIT"),
-  interest_expense: z.number().min(0).describe("Total interest expense"),
+  revenue: z.coerce.number().positive().describe("Total revenue"),
+  ebitda: z.coerce.number().describe("EBITDA"),
+  ebit: z.coerce.number().describe("EBIT"),
+  interest_expense: z.coerce.number().min(0).describe("Total interest expense"),
   depreciation_amortisation: z
     .number()
     .min(0)
     .describe("Depreciation and amortisation"),
-  total_debt: z.number().min(0).describe("Total financial debt"),
-  cash: z.number().min(0).describe("Cash and cash equivalents"),
-  total_assets: z.number().positive().describe("Total assets"),
-  current_assets: z.number().min(0).describe("Total current assets"),
-  current_liabilities: z.number().min(0).describe("Total current liabilities"),
-  total_equity: z.number().describe("Total shareholders equity"),
-  retained_earnings: z.number().describe("Retained earnings"),
-  working_capital: z.number().describe("Net working capital"),
-  operating_cash_flow: z.number().describe("Cash flow from operations"),
-  capex: z.number().min(0).describe("Capital expenditure (positive number)"),
+  total_debt: z.coerce.number().min(0).describe("Total financial debt"),
+  cash: z.coerce.number().min(0).describe("Cash and cash equivalents"),
+  total_assets: z.coerce.number().positive().describe("Total assets"),
+  current_assets: z.coerce.number().min(0).describe("Total current assets"),
+  current_liabilities: z.coerce.number().min(0).describe("Total current liabilities"),
+  total_equity: z.coerce.number().describe("Total shareholders equity"),
+  retained_earnings: z.coerce.number().describe("Retained earnings"),
+  working_capital: z.coerce.number().describe("Net working capital"),
+  operating_cash_flow: z.coerce.number().describe("Cash flow from operations"),
+  capex: z.coerce.number().min(0).describe("Capital expenditure (positive number)"),
   funds_from_operations: z
     .number()
     .optional()
@@ -44,7 +44,7 @@ export const CreditMetricsSchema = z.object({
 // Rust struct: DebtCapacityInput in credit/capacity.rs
 // All fields match exactly as-is. No changes needed.
 export const DebtCapacitySchema = z.object({
-  ebitda: z.number().positive().describe("Current or projected EBITDA"),
+  ebitda: z.coerce.number().positive().describe("Current or projected EBITDA"),
   interest_rate: z
     .number()
     .min(0)
@@ -79,7 +79,7 @@ export const DebtCapacitySchema = z.object({
     .min(0)
     .optional()
     .describe("Annual debt amortisation payment"),
-  ffo: z.number().optional().describe("Funds from operations"),
+  ffo: z.coerce.number().optional().describe("Funds from operations"),
 });
 
 // --- CreditMetricsOutput ---
@@ -112,24 +112,24 @@ const CreditRatingSchema = z.enum([
 ]);
 
 const CreditMetricsOutputSchema = z.object({
-  net_debt: z.number(),
-  net_debt_to_ebitda: z.number(),
-  total_debt_to_ebitda: z.number(),
-  debt_to_equity: z.number(),
-  debt_to_assets: z.number(),
-  net_debt_to_ev: z.number().optional(),
-  interest_coverage: z.number(),
-  ebit_coverage: z.number(),
-  fixed_charge_coverage: z.number().optional(),
-  dscr: z.number(),
-  ffo_to_debt: z.number().optional(),
-  ocf_to_debt: z.number(),
-  fcf_to_debt: z.number(),
-  fcf: z.number(),
-  cash_conversion: z.number(),
-  current_ratio: z.number(),
-  quick_ratio: z.number(),
-  cash_to_debt: z.number(),
+  net_debt: z.coerce.number(),
+  net_debt_to_ebitda: z.coerce.number(),
+  total_debt_to_ebitda: z.coerce.number(),
+  debt_to_equity: z.coerce.number(),
+  debt_to_assets: z.coerce.number(),
+  net_debt_to_ev: z.coerce.number().optional(),
+  interest_coverage: z.coerce.number(),
+  ebit_coverage: z.coerce.number(),
+  fixed_charge_coverage: z.coerce.number().optional(),
+  dscr: z.coerce.number(),
+  ffo_to_debt: z.coerce.number().optional(),
+  ocf_to_debt: z.coerce.number(),
+  fcf_to_debt: z.coerce.number(),
+  fcf: z.coerce.number(),
+  cash_conversion: z.coerce.number(),
+  current_ratio: z.coerce.number(),
+  quick_ratio: z.coerce.number(),
+  cash_to_debt: z.coerce.number(),
   implied_rating: CreditRatingSchema,
   rating_rationale: z.array(z.string()),
 });
@@ -159,7 +159,7 @@ export const CovenantTestSchema = z.object({
       z.object({
         name: z.string().describe("Covenant name (e.g. Maximum Leverage)"),
         metric: CovenantMetricSchema.describe("Financial metric being tested"),
-        threshold: z.number().describe("Covenant threshold value"),
+        threshold: z.coerce.number().describe("Covenant threshold value"),
         direction: z
           .enum(["MaxOf", "MinOf"])
           .describe(

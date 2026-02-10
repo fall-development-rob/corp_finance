@@ -12,7 +12,7 @@ export const WaccSchema = z.object({
     .min(0)
     .max(0.15)
     .describe("Equity risk premium (e.g. 0.055 = 5.5%)"),
-  beta: z.number().min(0).max(5).describe("Levered equity beta"),
+  beta: z.coerce.number().min(0).max(5).describe("Levered equity beta"),
   cost_of_debt: z
     .number()
     .min(0)
@@ -56,25 +56,25 @@ export const WaccSchema = z.object({
 });
 
 const CompanyMetricsSchema = z.object({
-  enterprise_value: z.number().optional().describe("Enterprise value"),
-  market_cap: z.number().optional().describe("Market capitalisation"),
-  revenue: z.number().optional().describe("Total revenue / sales"),
-  ebitda: z.number().optional().describe("EBITDA"),
-  ebit: z.number().optional().describe("EBIT / operating income"),
-  net_income: z.number().optional().describe("Net income"),
-  book_value: z.number().optional().describe("Book value of equity"),
-  eps: z.number().optional().describe("Earnings per share"),
+  enterprise_value: z.coerce.number().optional().describe("Enterprise value"),
+  market_cap: z.coerce.number().optional().describe("Market capitalisation"),
+  revenue: z.coerce.number().optional().describe("Total revenue / sales"),
+  ebitda: z.coerce.number().optional().describe("EBITDA"),
+  ebit: z.coerce.number().optional().describe("EBIT / operating income"),
+  net_income: z.coerce.number().optional().describe("Net income"),
+  book_value: z.coerce.number().optional().describe("Book value of equity"),
+  eps: z.coerce.number().optional().describe("Earnings per share"),
   eps_growth_rate: z
     .number()
     .optional()
     .describe("Expected EPS growth rate (for PEG ratio)"),
-  share_price: z.number().optional().describe("Share price"),
+  share_price: z.coerce.number().optional().describe("Share price"),
 });
 
 export const DcfSchema = z.object({
-  base_revenue: z.number().positive().describe("Base year revenue"),
+  base_revenue: z.coerce.number().positive().describe("Base year revenue"),
   revenue_growth_rates: z
-    .array(z.number().min(-1).max(2))
+    .array(z.coerce.number().min(-1).max(2))
     .describe("Annual revenue growth rates for each forecast year"),
   ebitda_margin: z
     .number()

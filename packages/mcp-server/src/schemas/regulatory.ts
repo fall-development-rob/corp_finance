@@ -3,40 +3,40 @@ import { z } from "zod";
 export const RegulatoryCapitalSchema = z.object({
   institution_name: z.string().describe("Institution name"),
   capital: z.object({
-    cet1: z.number().min(0).describe("Common Equity Tier 1"),
-    additional_tier1: z.number().min(0).describe("Additional Tier 1 (CoCos, preferred)"),
-    tier2: z.number().min(0).describe("Tier 2 (subordinated debt, general provisions)"),
-    deductions: z.number().min(0).describe("Regulatory deductions"),
+    cet1: z.coerce.number().min(0).describe("Common Equity Tier 1"),
+    additional_tier1: z.coerce.number().min(0).describe("Additional Tier 1 (CoCos, preferred)"),
+    tier2: z.coerce.number().min(0).describe("Tier 2 (subordinated debt, general provisions)"),
+    deductions: z.coerce.number().min(0).describe("Regulatory deductions"),
   }).describe("Capital structure"),
   credit_exposures: z.array(z.object({
     name: z.string().describe("Exposure name"),
-    exposure_amount: z.number().min(0).describe("Exposure at default (EAD)"),
+    exposure_amount: z.coerce.number().min(0).describe("Exposure at default (EAD)"),
     asset_class: z.enum(["Sovereign", "Bank", "Corporate", "Retail", "Mortgage", "Equity", "Other"]).describe("Basel III asset class"),
-    risk_weight: z.number().min(0).max(1.5).optional().describe("Override risk weight"),
+    risk_weight: z.coerce.number().min(0).max(1.5).optional().describe("Override risk weight"),
     external_rating: z.string().optional().describe("External credit rating"),
-    collateral_value: z.number().min(0).optional().describe("Collateral value for CRM"),
+    collateral_value: z.coerce.number().min(0).optional().describe("Collateral value for CRM"),
     collateral_type: z.enum(["Cash", "GovernmentBond", "CorporateBond", "Equity", "RealEstate"]).optional().describe("Collateral type"),
   })).describe("Credit exposures for RWA calculation"),
-  market_risk_charge: z.number().min(0).optional().describe("Pre-calculated market risk RWA"),
+  market_risk_charge: z.coerce.number().min(0).optional().describe("Pre-calculated market risk RWA"),
   operational_risk: z.object({
     approach: z.enum(["BasicIndicator", "Standardised"]).describe("OpRisk approach"),
-    gross_income_3yr: z.array(z.number()).describe("Three years of gross income"),
+    gross_income_3yr: z.array(z.coerce.number()).describe("Three years of gross income"),
     business_lines: z.array(z.object({
       line: z.string().describe("Business line name"),
-      gross_income: z.number().describe("Gross income for this line"),
+      gross_income: z.coerce.number().describe("Gross income for this line"),
     })).optional().describe("Business-line breakdown (for Standardised)"),
   }).describe("Operational risk inputs"),
   buffers: z.object({
-    conservation_buffer: z.number().min(0).describe("Capital conservation buffer (e.g. 0.025)"),
-    countercyclical_buffer: z.number().min(0).describe("Countercyclical buffer"),
-    systemic_buffer: z.number().min(0).describe("G-SIB systemic buffer"),
+    conservation_buffer: z.coerce.number().min(0).describe("Capital conservation buffer (e.g. 0.025)"),
+    countercyclical_buffer: z.coerce.number().min(0).describe("Countercyclical buffer"),
+    systemic_buffer: z.coerce.number().min(0).describe("G-SIB systemic buffer"),
   }).optional().describe("Capital buffer requirements"),
 });
 
 const HqlaAssetSchema = z.object({
   name: z.string().describe("HQLA asset name"),
-  market_value: z.number().min(0).describe("Market value"),
-  haircut: z.number().min(0).max(1).optional().describe("Override haircut (0-1)"),
+  market_value: z.coerce.number().min(0).describe("Market value"),
+  haircut: z.coerce.number().min(0).max(1).optional().describe("Override haircut (0-1)"),
 });
 
 const OutflowCategoryEnum = z.enum([
@@ -73,13 +73,13 @@ export const LcrSchema = z.object({
   }).describe("HQLA portfolio"),
   cash_outflows: z.array(z.object({
     category: OutflowCategoryEnum.describe("Outflow category"),
-    amount: z.number().min(0).describe("Outflow amount"),
-    run_off_rate: z.number().min(0).max(1).optional().describe("Override run-off rate"),
+    amount: z.coerce.number().min(0).describe("Outflow amount"),
+    run_off_rate: z.coerce.number().min(0).max(1).optional().describe("Override run-off rate"),
   })).describe("Cash outflows"),
   cash_inflows: z.array(z.object({
     category: InflowCategoryEnum.describe("Inflow category"),
-    amount: z.number().min(0).describe("Inflow amount"),
-    inflow_rate: z.number().min(0).max(1).optional().describe("Override inflow rate"),
+    amount: z.coerce.number().min(0).describe("Inflow amount"),
+    inflow_rate: z.coerce.number().min(0).max(1).optional().describe("Override inflow rate"),
   })).describe("Cash inflows"),
 });
 
@@ -113,13 +113,13 @@ export const NsfrSchema = z.object({
   institution_name: z.string().describe("Institution name"),
   available_funding: z.array(z.object({
     category: AsfCategoryEnum.describe("ASF category"),
-    amount: z.number().min(0).describe("Amount"),
-    asf_factor: z.number().min(0).max(1).optional().describe("Override ASF factor"),
+    amount: z.coerce.number().min(0).describe("Amount"),
+    asf_factor: z.coerce.number().min(0).max(1).optional().describe("Override ASF factor"),
   })).describe("Available Stable Funding sources"),
   required_funding: z.array(z.object({
     category: RsfCategoryEnum.describe("RSF category"),
-    amount: z.number().min(0).describe("Amount"),
-    rsf_factor: z.number().min(0).max(1).optional().describe("Override RSF factor"),
+    amount: z.coerce.number().min(0).describe("Amount"),
+    rsf_factor: z.coerce.number().min(0).max(1).optional().describe("Override RSF factor"),
   })).describe("Required Stable Funding items"),
 });
 
@@ -155,17 +155,17 @@ const RateTypeEnum = z.enum(["Fixed", "Floating"]);
 
 const AlmPositionSchema = z.object({
   name: z.string().describe("Position name"),
-  balance: z.number().min(0).describe("Position balance"),
-  rate: z.number().describe("Interest rate"),
+  balance: z.coerce.number().min(0).describe("Position balance"),
+  rate: z.coerce.number().describe("Interest rate"),
   repricing_bucket: RepricingBucketEnum.describe("Repricing bucket"),
   maturity_bucket: MaturityBucketEnum.describe("Maturity bucket"),
   rate_type: RateTypeEnum.describe("Fixed or Floating"),
-  rate_sensitivity: z.number().describe("Rate pass-through sensitivity (0-1)"),
+  rate_sensitivity: z.coerce.number().describe("Rate pass-through sensitivity (0-1)"),
 });
 
 const BucketShiftSchema = z.object({
   bucket: RepricingBucketEnum.describe("Repricing bucket"),
-  shift_bps: z.number().int().describe("Rate shift in basis points"),
+  shift_bps: z.coerce.number().int().describe("Rate shift in basis points"),
 });
 
 const RateScenarioSchema = z.object({
@@ -179,5 +179,5 @@ export const AlmSchema = z.object({
   liabilities: z.array(AlmPositionSchema).describe("Liability positions"),
   off_balance_sheet: z.array(AlmPositionSchema).optional().default([]).describe("Off-balance sheet positions"),
   rate_scenarios: z.array(RateScenarioSchema).describe("Interest rate scenarios"),
-  current_nii: z.number().describe("Current annual Net Interest Income"),
+  current_nii: z.coerce.number().describe("Current annual Net Interest Income"),
 });

@@ -42,7 +42,7 @@ export const ScenarioSchema = z.object({
     .record(z.unknown())
     .describe("Base case input values (model-specific JSON)"),
   output_values: z
-    .array(z.number())
+    .array(z.coerce.number())
     .describe("Pre-computed output value for each scenario"),
   base_case_value: z
     .number()

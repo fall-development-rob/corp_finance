@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads } from "corp-finance-bindings";
 import { BondPricingSchema, BondYieldSchema, BootstrapSchema, NelsonSiegelSchema, DurationSchema, CreditSpreadSchema } from "../schemas/fixed_income.js";
-import { wrapResponse } from "../formatters/response.js";
+import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
 export function registerFixedIncomeTools(server: McpServer) {
   server.tool(
@@ -9,7 +9,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Price a bond — clean/dirty prices, accrued interest, current yield, cashflow schedule, YTC/YTW for callable bonds",
     BondPricingSchema.shape,
     async (params) => {
-      const validated = BondPricingSchema.parse(params);
+      const validated = BondPricingSchema.parse(coerceNumbers(params));
       const result = priceBond(JSON.stringify(validated));
       return wrapResponse(result);
     }
@@ -20,7 +20,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Calculate bond yield metrics — YTM (Newton-Raphson), current yield, BEY, effective annual yield",
     BondYieldSchema.shape,
     async (params) => {
-      const validated = BondYieldSchema.parse(params);
+      const validated = BondYieldSchema.parse(coerceNumbers(params));
       const result = calculateBondYield(JSON.stringify(validated));
       return wrapResponse(result);
     }
@@ -31,7 +31,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Bootstrap a zero-coupon spot rate curve from par instruments — spot rates, forward rates, discount factors",
     BootstrapSchema.shape,
     async (params) => {
-      const validated = BootstrapSchema.parse(params);
+      const validated = BootstrapSchema.parse(coerceNumbers(params));
       const result = bootstrapSpotCurve(JSON.stringify(validated));
       return wrapResponse(result);
     }
@@ -42,7 +42,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Fit a Nelson-Siegel yield curve model to observed market yields — beta parameters, fitted rates, RMSE",
     NelsonSiegelSchema.shape,
     async (params) => {
-      const validated = NelsonSiegelSchema.parse(params);
+      const validated = NelsonSiegelSchema.parse(coerceNumbers(params));
       const result = fitNelsonSiegel(JSON.stringify(validated));
       return wrapResponse(result);
     }
@@ -53,7 +53,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Calculate bond duration, convexity, DV01, and key rate durations — Macaulay, modified, effective duration",
     DurationSchema.shape,
     async (params) => {
-      const validated = DurationSchema.parse(params);
+      const validated = DurationSchema.parse(coerceNumbers(params));
       const result = calculateDuration(JSON.stringify(validated));
       return wrapResponse(result);
     }
@@ -64,7 +64,7 @@ export function registerFixedIncomeTools(server: McpServer) {
     "Calculate credit spreads — I-spread, G-spread, Z-spread, spread duration, CDS spread estimate, credit quality indicator",
     CreditSpreadSchema.shape,
     async (params) => {
-      const validated = CreditSpreadSchema.parse(params);
+      const validated = CreditSpreadSchema.parse(coerceNumbers(params));
       const result = calculateCreditSpreads(JSON.stringify(validated));
       return wrapResponse(result);
     }

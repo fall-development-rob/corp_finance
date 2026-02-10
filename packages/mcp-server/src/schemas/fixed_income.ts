@@ -4,14 +4,14 @@ import { z } from 'zod';
 // Bond Pricing — matches BondPricingInput in bonds.rs
 // ---------------------------------------------------------------------------
 export const BondPricingSchema = z.object({
-  face_value: z.number().positive().describe('Par / face value (e.g. 1000)'),
-  coupon_rate: z.number().min(0).describe('Annual coupon rate as decimal (0.05 = 5%)'),
-  coupon_frequency: z.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
-  ytm: z.number().describe('Yield to maturity as decimal'),
+  face_value: z.coerce.number().positive().describe('Par / face value (e.g. 1000)'),
+  coupon_rate: z.coerce.number().min(0).describe('Annual coupon rate as decimal (0.05 = 5%)'),
+  coupon_frequency: z.coerce.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
+  ytm: z.coerce.number().describe('Yield to maturity as decimal'),
   settlement_date: z.string().describe('Settlement date in YYYY-MM-DD format'),
   maturity_date: z.string().describe('Maturity date in YYYY-MM-DD format'),
   day_count: z.enum(['Thirty360', 'Actual360', 'Actual365', 'ActualActual']).describe('Day count convention'),
-  call_price: z.number().optional().describe('Call price for callable bonds'),
+  call_price: z.coerce.number().optional().describe('Call price for callable bonds'),
   call_date: z.string().optional().describe('Call date for callable bonds in YYYY-MM-DD format'),
 });
 
@@ -19,21 +19,21 @@ export const BondPricingSchema = z.object({
 // Bond Yield — matches BondYieldInput in yields.rs
 // ---------------------------------------------------------------------------
 export const BondYieldSchema = z.object({
-  face_value: z.number().positive().describe('Par / face value'),
-  coupon_rate: z.number().min(0).describe('Annual coupon rate as decimal'),
-  coupon_frequency: z.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
-  market_price: z.number().positive().describe('Market (dirty) price of the bond'),
-  years_to_maturity: z.number().positive().describe('Years remaining until maturity'),
-  current_yield_only: z.boolean().optional().default(false).describe('Skip Newton-Raphson YTM solve'),
+  face_value: z.coerce.number().positive().describe('Par / face value'),
+  coupon_rate: z.coerce.number().min(0).describe('Annual coupon rate as decimal'),
+  coupon_frequency: z.coerce.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
+  market_price: z.coerce.number().positive().describe('Market (dirty) price of the bond'),
+  years_to_maturity: z.coerce.number().positive().describe('Years remaining until maturity'),
+  current_yield_only: z.coerce.boolean().optional().default(false).describe('Skip Newton-Raphson YTM solve'),
 });
 
 // ---------------------------------------------------------------------------
 // Bootstrap Spot Curve — matches BootstrapInput / ParInstrument in yields.rs
 // ---------------------------------------------------------------------------
 export const ParInstrumentSchema = z.object({
-  maturity_years: z.number().positive().describe('Maturity in years'),
-  par_rate: z.number().describe('Par (coupon) rate as decimal'),
-  coupon_frequency: z.number().int().describe('Coupons per year'),
+  maturity_years: z.coerce.number().positive().describe('Maturity in years'),
+  par_rate: z.coerce.number().describe('Par (coupon) rate as decimal'),
+  coupon_frequency: z.coerce.number().int().describe('Coupons per year'),
 });
 
 export const BootstrapSchema = z.object({
@@ -44,43 +44,43 @@ export const BootstrapSchema = z.object({
 // Nelson-Siegel — matches NelsonSiegelInput / ObservedRate in yields.rs
 // ---------------------------------------------------------------------------
 export const ObservedRateSchema = z.object({
-  maturity: z.number().positive().describe('Maturity in years'),
-  rate: z.number().describe('Observed yield as decimal'),
+  maturity: z.coerce.number().positive().describe('Maturity in years'),
+  rate: z.coerce.number().describe('Observed yield as decimal'),
 });
 
 export const NelsonSiegelSchema = z.object({
   observed_rates: z.array(ObservedRateSchema).min(3).describe('Observed market rates at various tenors'),
-  initial_lambda: z.number().optional().describe('Decay parameter lambda (default 1.0 if not provided)'),
+  initial_lambda: z.coerce.number().optional().describe('Decay parameter lambda (default 1.0 if not provided)'),
 });
 
 // ---------------------------------------------------------------------------
 // Duration — matches DurationInput in duration.rs
 // ---------------------------------------------------------------------------
 export const DurationSchema = z.object({
-  face_value: z.number().positive().describe('Par / face value'),
-  coupon_rate: z.number().min(0).describe('Annual coupon rate as decimal'),
-  coupon_frequency: z.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
-  ytm: z.number().describe('Yield to maturity as decimal'),
-  years_to_maturity: z.number().positive().describe('Years remaining until maturity'),
-  yield_shift_bps: z.number().optional().describe('Yield shift in basis points for effective duration (default 10)'),
-  key_rate_tenors: z.array(z.number()).optional().describe('Tenors for key rate duration analysis (e.g. [1, 2, 5, 10, 30])'),
+  face_value: z.coerce.number().positive().describe('Par / face value'),
+  coupon_rate: z.coerce.number().min(0).describe('Annual coupon rate as decimal'),
+  coupon_frequency: z.coerce.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
+  ytm: z.coerce.number().describe('Yield to maturity as decimal'),
+  years_to_maturity: z.coerce.number().positive().describe('Years remaining until maturity'),
+  yield_shift_bps: z.coerce.number().optional().describe('Yield shift in basis points for effective duration (default 10)'),
+  key_rate_tenors: z.array(z.coerce.number()).optional().describe('Tenors for key rate duration analysis (e.g. [1, 2, 5, 10, 30])'),
 });
 
 // ---------------------------------------------------------------------------
 // Credit Spreads — matches CreditSpreadInput / BenchmarkPoint in spreads.rs
 // ---------------------------------------------------------------------------
 export const BenchmarkPointSchema = z.object({
-  maturity: z.number().positive().describe('Time to maturity in years'),
-  rate: z.number().describe('Spot rate as decimal'),
+  maturity: z.coerce.number().positive().describe('Time to maturity in years'),
+  rate: z.coerce.number().describe('Spot rate as decimal'),
 });
 
 export const CreditSpreadSchema = z.object({
-  face_value: z.number().positive().describe('Par / face value'),
-  coupon_rate: z.number().min(0).describe('Annual coupon rate as decimal'),
-  coupon_frequency: z.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
-  market_price: z.number().positive().describe('Dirty market price of the bond'),
-  years_to_maturity: z.number().positive().describe('Years remaining until maturity'),
+  face_value: z.coerce.number().positive().describe('Par / face value'),
+  coupon_rate: z.coerce.number().min(0).describe('Annual coupon rate as decimal'),
+  coupon_frequency: z.coerce.number().int().describe('Coupons per year: 1, 2, 4, or 12'),
+  market_price: z.coerce.number().positive().describe('Dirty market price of the bond'),
+  years_to_maturity: z.coerce.number().positive().describe('Years remaining until maturity'),
   benchmark_curve: z.array(BenchmarkPointSchema).min(2).describe('Risk-free benchmark spot-rate curve sorted ascending by maturity'),
-  recovery_rate: z.number().min(0).max(1).optional().describe('Recovery rate for CDS spread estimate (default 0.40)'),
-  default_probability: z.number().min(0).max(1).optional().describe('Annual default probability for CDS spread estimate'),
+  recovery_rate: z.coerce.number().min(0).max(1).optional().describe('Recovery rate for CDS spread estimate (default 0.40)'),
+  default_probability: z.coerce.number().min(0).max(1).optional().describe('Annual default probability for CDS spread estimate'),
 });
