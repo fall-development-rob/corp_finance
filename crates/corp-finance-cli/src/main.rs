@@ -7,6 +7,13 @@ use colored::Colorize;
 use std::process;
 
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
+use commands::derivatives::{
+    BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
+    IrsArgs, OptionPriceArgs, StrategyArgs,
+};
+use commands::fixed_income::{
+    BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
+};
 use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
@@ -87,6 +94,34 @@ enum Commands {
     TradingDay(TradingDayArgs),
     /// Multi-day trading performance analytics
     TradingAnalytics(TradingAnalyticsArgs),
+    /// Bond pricing (clean/dirty, accrued interest)
+    BondPricing(BondPricingArgs),
+    /// Bond yield calculator (YTM, BEY, effective yield)
+    BondYield(BondYieldArgs),
+    /// Bootstrap spot rate curve from par instruments
+    Bootstrap(BootstrapArgs),
+    /// Nelson-Siegel yield curve fitting
+    NelsonSiegel(NelsonSiegelArgs),
+    /// Bond duration & convexity
+    Duration(DurationArgs),
+    /// Credit spread analysis (Z-spread, OAS, I-spread)
+    CreditSpread(CreditSpreadArgs),
+    /// Option pricing (Black-Scholes & binomial)
+    OptionPrice(OptionPriceArgs),
+    /// Implied volatility solver
+    ImpliedVol(ImpliedVolArgs),
+    /// Forward/futures pricing
+    ForwardPrice(ForwardPriceArgs),
+    /// Forward position valuation
+    ForwardPosition(ForwardPositionArgs),
+    /// Futures basis analysis
+    BasisAnalysis(BasisAnalysisArgs),
+    /// Interest rate swap valuation
+    Irs(IrsArgs),
+    /// Currency swap valuation
+    CurrencySwap(CurrencySwapArgs),
+    /// Option strategy analysis
+    Strategy(StrategyArgs),
     /// Print version information
     Version,
 }
@@ -129,6 +164,20 @@ fn main() {
         Commands::UbtiScreening(args) => commands::jurisdiction::run_ubti_screening(args),
         Commands::TradingDay(args) => commands::trading::run_trading_day(args),
         Commands::TradingAnalytics(args) => commands::trading::run_trading_analytics(args),
+        Commands::BondPricing(args) => commands::fixed_income::run_bond_pricing(args),
+        Commands::BondYield(args) => commands::fixed_income::run_bond_yield(args),
+        Commands::Bootstrap(args) => commands::fixed_income::run_bootstrap(args),
+        Commands::NelsonSiegel(args) => commands::fixed_income::run_nelson_siegel(args),
+        Commands::Duration(args) => commands::fixed_income::run_duration(args),
+        Commands::CreditSpread(args) => commands::fixed_income::run_credit_spreads(args),
+        Commands::OptionPrice(args) => commands::derivatives::run_option_price(args),
+        Commands::ImpliedVol(args) => commands::derivatives::run_implied_vol(args),
+        Commands::ForwardPrice(args) => commands::derivatives::run_forward_price(args),
+        Commands::ForwardPosition(args) => commands::derivatives::run_forward_position(args),
+        Commands::BasisAnalysis(args) => commands::derivatives::run_basis_analysis(args),
+        Commands::Irs(args) => commands::derivatives::run_irs(args),
+        Commands::CurrencySwap(args) => commands::derivatives::run_currency_swap(args),
+        Commands::Strategy(args) => commands::derivatives::run_strategy(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

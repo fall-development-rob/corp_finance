@@ -26,6 +26,12 @@ pub mod scenarios;
 #[cfg(feature = "trading")]
 pub mod trading;
 
+#[cfg(feature = "fixed_income")]
+pub mod fixed_income;
+
+#[cfg(feature = "derivatives")]
+pub mod derivatives;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

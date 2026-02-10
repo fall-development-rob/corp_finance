@@ -54,3 +54,23 @@ export {
   DaySummarySchema,
   TradingAnalyticsSchema,
 } from "./trading.js";
+
+export {
+  BondPricingSchema,
+  BondYieldSchema,
+  BootstrapSchema,
+  NelsonSiegelSchema,
+  DurationSchema,
+  CreditSpreadSchema,
+} from "./fixed_income.js";
+
+export {
+  OptionPriceSchema,
+  ImpliedVolSchema,
+  ForwardPriceSchema,
+  ForwardPositionSchema,
+  BasisAnalysisSchema,
+  IrsSchema,
+  CurrencySwapSchema,
+  StrategySchema,
+} from "./derivatives.js";

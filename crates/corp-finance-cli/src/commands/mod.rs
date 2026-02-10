@@ -1,4 +1,6 @@
 pub mod credit;
+pub mod derivatives;
+pub mod fixed_income;
 pub mod jurisdiction;
 pub mod ma;
 pub mod pe;

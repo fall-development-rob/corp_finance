@@ -247,6 +247,140 @@ pub fn analyze_trading_performance(input_json: String) -> NapiResult<String> {
 }
 
 // ---------------------------------------------------------------------------
+// Fixed Income
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_bond(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::bonds::BondPricingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fixed_income::bonds::price_bond(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_bond_yield(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::yields::BondYieldInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::yields::calculate_bond_yield(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn bootstrap_spot_curve(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::yields::BootstrapInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::yields::bootstrap_spot_curve(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn fit_nelson_siegel(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::yields::NelsonSiegelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::yields::fit_nelson_siegel(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_duration(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::duration::DurationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::duration::calculate_duration(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_credit_spreads(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::spreads::CreditSpreadInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::spreads::calculate_credit_spreads(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Derivatives
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_option(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::options::OptionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::derivatives::options::price_option(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn implied_volatility(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::options::ImpliedVolInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::options::implied_volatility(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn price_forward(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::forwards::ForwardInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::derivatives::forwards::price_forward(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn value_forward_position(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::forwards::ForwardPositionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::forwards::value_forward_position(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn futures_basis_analysis(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::forwards::BasisAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::forwards::futures_basis_analysis(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn value_interest_rate_swap(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::swaps::IrsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::swaps::value_interest_rate_swap(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn value_currency_swap(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::swaps::CurrencySwapInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::swaps::value_currency_swap(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_strategy(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::derivatives::strategies::StrategyInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::derivatives::strategies::analyze_strategy(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
 // Portfolio
 // ---------------------------------------------------------------------------
 

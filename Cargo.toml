@@ -9,5 +9,5 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["Robert Fall <robert@rob-otix.ai>"]
+authors = ["Robert Fall <hello@rob-otix.com>"]
 license = "MIT"
