@@ -1,9 +1,15 @@
 pub mod credit;
 pub mod derivatives;
 pub mod fixed_income;
+pub mod fx_commodities;
 pub mod jurisdiction;
 pub mod ma;
+pub mod monte_carlo;
 pub mod pe;
 pub mod portfolio;
+pub mod quant_risk;
+pub mod real_assets;
+pub mod restructuring;
 pub mod scenarios;
+pub mod three_statement;
 pub mod valuation;

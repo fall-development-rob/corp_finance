@@ -66,3 +66,28 @@ export {
   CurrencySwapSchema,
   StrategySchema,
 } from "./derivatives.js";
+
+export { ThreeStatementSchema } from "./three_statement.js";
+
+export { MonteCarloSchema, McDcfSchema } from "./monte_carlo.js";
+
+export {
+  FactorModelSchema,
+  BlackLittermanSchema,
+  RiskParitySchema,
+  StressTestSchema,
+} from "./quant_risk.js";
+
+export { RecoverySchema, DistressedDebtSchema } from "./restructuring.js";
+
+export {
+  PropertyValuationSchema,
+  ProjectFinanceSchema,
+} from "./real_assets.js";
+
+export {
+  FxForwardSchema,
+  CrossRateSchema,
+  CommodityForwardSchema,
+  CommodityCurveSchema,
+} from "./fx_commodities.js";

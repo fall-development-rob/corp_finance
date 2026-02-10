@@ -10,6 +10,12 @@ import { registerMATools } from "./tools/ma.js";
 import { registerJurisdictionTools } from "./tools/jurisdiction.js";
 import { registerFixedIncomeTools } from "./tools/fixed_income.js";
 import { registerDerivativesTools } from "./tools/derivatives.js";
+import { registerThreeStatementTools } from "./tools/three_statement.js";
+import { registerMonteCarloTools } from "./tools/monte_carlo.js";
+import { registerQuantRiskTools } from "./tools/quant_risk.js";
+import { registerRestructuringTools } from "./tools/restructuring.js";
+import { registerRealAssetsTools } from "./tools/real_assets.js";
+import { registerFxCommoditiesTools } from "./tools/fx_commodities.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -25,6 +31,12 @@ registerMATools(server);
 registerJurisdictionTools(server);
 registerFixedIncomeTools(server);
 registerDerivativesTools(server);
+registerThreeStatementTools(server);
+registerMonteCarloTools(server);
+registerQuantRiskTools(server);
+registerRestructuringTools(server);
+registerRealAssetsTools(server);
+registerFxCommoditiesTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

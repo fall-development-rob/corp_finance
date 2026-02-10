@@ -14,14 +14,22 @@ use commands::derivatives::{
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
+use commands::fx_commodities::{
+    CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
+};
 use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
 };
 use commands::ma::MergerArgs;
+use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
+use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
+use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
+use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::scenarios::SensitivityArgs;
+use commands::three_statement::ThreeStatementArgs;
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 
 /// Institutional-grade corporate finance calculations
@@ -117,6 +125,36 @@ enum Commands {
     CurrencySwap(CurrencySwapArgs),
     /// Option strategy analysis
     Strategy(StrategyArgs),
+    /// Build a linked three-statement financial model (IS, BS, CF)
+    ThreeStatement(ThreeStatementArgs),
+    /// Run a generic Monte Carlo simulation
+    MonteCarlo(MonteCarloArgs),
+    /// Monte Carlo DCF valuation
+    McDcf(McDcfArgs),
+    /// Factor model regression (CAPM, Fama-French, Carhart)
+    FactorModel(FactorModelArgs),
+    /// Black-Litterman portfolio optimisation
+    BlackLitterman(BlackLittermanArgs),
+    /// Risk-parity portfolio construction
+    RiskParity(RiskParityArgs),
+    /// Portfolio stress testing across multiple scenarios
+    StressTest(StressTestArgs),
+    /// Restructuring recovery analysis (APR waterfall)
+    Recovery(RecoveryArgs),
+    /// Distressed debt analysis and restructuring plan
+    DistressedDebt(DistressedDebtArgs),
+    /// Property valuation (direct cap, DCF, GRM)
+    PropertyValuation(PropertyValuationArgs),
+    /// Project finance model (infrastructure / PPP)
+    ProjectFinance(ProjectFinanceArgs),
+    /// FX forward pricing (covered interest rate parity)
+    FxForward(FxForwardArgs),
+    /// Cross rate calculation from two currency pairs
+    CrossRate(CrossRateArgs),
+    /// Commodity forward pricing (cost-of-carry model)
+    CommodityForward(CommodityForwardArgs),
+    /// Commodity term structure and curve analysis
+    CommodityCurve(CommodityCurveArgs),
     /// Print version information
     Version,
 }
@@ -171,6 +209,21 @@ fn main() {
         Commands::Irs(args) => commands::derivatives::run_irs(args),
         Commands::CurrencySwap(args) => commands::derivatives::run_currency_swap(args),
         Commands::Strategy(args) => commands::derivatives::run_strategy(args),
+        Commands::ThreeStatement(args) => commands::three_statement::run_three_statement(args),
+        Commands::MonteCarlo(args) => commands::monte_carlo::run_monte_carlo(args),
+        Commands::McDcf(args) => commands::monte_carlo::run_mc_dcf(args),
+        Commands::FactorModel(args) => commands::quant_risk::run_factor_model(args),
+        Commands::BlackLitterman(args) => commands::quant_risk::run_black_litterman(args),
+        Commands::RiskParity(args) => commands::quant_risk::run_risk_parity(args),
+        Commands::StressTest(args) => commands::quant_risk::run_stress_test(args),
+        Commands::Recovery(args) => commands::restructuring::run_recovery(args),
+        Commands::DistressedDebt(args) => commands::restructuring::run_distressed_debt(args),
+        Commands::PropertyValuation(args) => commands::real_assets::run_property_valuation(args),
+        Commands::ProjectFinance(args) => commands::real_assets::run_project_finance(args),
+        Commands::FxForward(args) => commands::fx_commodities::run_fx_forward(args),
+        Commands::CrossRate(args) => commands::fx_commodities::run_cross_rate(args),
+        Commands::CommodityForward(args) => commands::fx_commodities::run_commodity_forward(args),
+        Commands::CommodityCurve(args) => commands::fx_commodities::run_commodity_curve(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

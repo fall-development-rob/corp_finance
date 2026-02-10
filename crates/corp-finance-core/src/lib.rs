@@ -29,6 +29,24 @@ pub mod fixed_income;
 #[cfg(feature = "derivatives")]
 pub mod derivatives;
 
+#[cfg(feature = "three_statement")]
+pub mod three_statement;
+
+#[cfg(feature = "monte_carlo")]
+pub mod monte_carlo;
+
+#[cfg(feature = "quant_risk")]
+pub mod quant_risk;
+
+#[cfg(feature = "restructuring")]
+pub mod restructuring;
+
+#[cfg(feature = "real_assets")]
+pub mod real_assets;
+
+#[cfg(feature = "fx_commodities")]
+pub mod fx_commodities;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

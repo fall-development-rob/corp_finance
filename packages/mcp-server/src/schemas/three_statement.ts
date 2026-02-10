@@ -1,0 +1,26 @@
+import { z } from "zod";
+
+export const ThreeStatementSchema = z.object({
+  base_revenue: z.number().positive().describe("Base year revenue"),
+  revenue_growth_rates: z.array(z.number()).describe("Growth rate per projection year (length determines number of years)"),
+  cogs_pct: z.number().min(0).max(1).describe("COGS as % of revenue"),
+  sga_pct: z.number().min(0).max(1).describe("SG&A as % of revenue"),
+  rnd_pct: z.number().min(0).max(1).describe("R&D as % of revenue"),
+  da_pct: z.number().min(0).max(1).describe("D&A as % of prior PP&E"),
+  interest_rate: z.number().min(0).max(0.3).describe("Interest rate on average debt"),
+  tax_rate: z.number().min(0).max(0.5).describe("Corporate tax rate"),
+  base_cash: z.number().min(0).describe("Base year cash balance"),
+  base_receivables: z.number().min(0).describe("Base year accounts receivable"),
+  base_inventory: z.number().min(0).describe("Base year inventory"),
+  base_payables: z.number().min(0).describe("Base year accounts payable"),
+  base_ppe: z.number().min(0).describe("Base year PP&E (net)"),
+  base_debt: z.number().min(0).describe("Base year total debt"),
+  base_equity: z.number().describe("Base year shareholders' equity"),
+  dso_days: z.number().min(0).describe("Days sales outstanding"),
+  dio_days: z.number().min(0).describe("Days inventory outstanding"),
+  dpo_days: z.number().min(0).describe("Days payable outstanding"),
+  capex_pct: z.number().min(0).max(1).describe("Capex as % of revenue"),
+  debt_repayment_pct: z.number().min(0).max(1).describe("Annual debt repayment as % of beginning debt"),
+  dividend_payout_ratio: z.number().min(0).max(1).describe("Dividends as % of net income"),
+  min_cash_balance: z.number().min(0).describe("Minimum cash to maintain"),
+});

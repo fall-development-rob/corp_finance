@@ -1,0 +1,61 @@
+import { z } from "zod";
+
+export const PropertyValuationSchema = z.object({
+  property_name: z.string().describe("Property identifier"),
+  valuation_method: z.enum(["DirectCap", "Dcf", "GrossRentMultiplier", "All"]).describe("Which valuation method(s) to run"),
+  gross_potential_rent: z.number().positive().describe("Annual gross potential rental income"),
+  vacancy_rate: z.number().min(0).max(1).describe("Vacancy and collection loss rate (e.g. 0.05 = 5%)"),
+  other_income: z.number().min(0).describe("Other income (parking, laundry, etc.)"),
+  operating_expenses: z.number().min(0).describe("Annual operating expenses"),
+  capital_reserves: z.number().min(0).describe("Annual capital reserve / replacement allowance"),
+  purchase_price: z.number().positive().optional().describe("Acquisition price (for return calculations)"),
+  equity_investment: z.number().positive().optional().describe("Equity portion of acquisition"),
+  loan_amount: z.number().min(0).optional().describe("Mortgage / loan amount"),
+  loan_rate: z.number().min(0).max(0.2).optional().describe("Annual mortgage interest rate"),
+  loan_term_years: z.number().int().min(1).optional().describe("Mortgage term in years"),
+  loan_amortization_years: z.number().int().min(1).optional().describe("Amortization period in years"),
+  cap_rate: z.number().min(0.01).max(0.2).optional().describe("Market capitalisation rate (for direct cap method)"),
+  market_rent_growth: z.number().min(-0.1).max(0.2).describe("Annual rent growth rate"),
+  expense_growth: z.number().min(-0.1).max(0.2).describe("Annual expense growth rate"),
+  exit_cap_rate: z.number().min(0.01).max(0.2).optional().describe("Exit / reversion cap rate at sale"),
+  holding_period_years: z.number().int().min(1).max(30).describe("Investment holding period in years (for DCF)"),
+  discount_rate: z.number().min(0).max(0.3).optional().describe("Discount rate for DCF"),
+  comparable_sales: z.array(z.object({
+    address: z.string().describe("Comparable property address"),
+    sale_price: z.number().positive().describe("Sale price"),
+    gross_rent: z.number().positive().describe("Annual gross rent"),
+  })).optional().describe("Comparable sales for GRM analysis"),
+});
+
+export const ProjectFinanceSchema = z.object({
+  project_name: z.string().describe("Project name / identifier"),
+  total_project_cost: z.number().positive().describe("Total development and construction cost"),
+  construction_period_years: z.number().int().min(0).max(10).describe("Years of construction (no revenue)"),
+  operating_period_years: z.number().int().min(1).max(50).describe("Years of operation post-construction"),
+  revenue_assumptions: z.object({
+    base_revenue: z.number().positive().describe("Year 1 operating revenue"),
+    revenue_growth: z.number().min(-0.1).max(0.2).describe("Annual revenue growth rate"),
+    capacity_factor: z.number().min(0).max(1).optional().describe("Capacity factor for power/infra projects"),
+    offtake_pct: z.number().min(0).max(1).describe("% of revenue under long-term offtake contract"),
+  }).describe("Revenue assumptions for the operating phase"),
+  operating_assumptions: z.object({
+    fixed_opex: z.number().min(0).describe("Annual fixed operating costs"),
+    variable_opex_pct: z.number().min(0).max(1).describe("Variable OpEx as % of revenue"),
+    opex_escalation: z.number().min(0).max(0.1).describe("Annual OpEx escalation rate"),
+    major_maintenance_reserve: z.number().min(0).describe("Annual reserve for major maintenance"),
+  }).describe("Operating cost assumptions"),
+  debt_assumptions: z.object({
+    senior_debt: z.number().min(0).describe("Senior secured debt amount"),
+    senior_rate: z.number().min(0).max(0.2).describe("Annual interest rate on senior debt"),
+    senior_tenor_years: z.number().int().min(1).describe("Repayment period in years"),
+    sculpting: z.enum(["LevelRepayment", "Sculpted", "BulletMaturity"]).describe("Debt sculpting / repayment profile"),
+    target_dscr: z.number().min(1).max(3).describe("Target DSCR when using sculpted repayment"),
+    dsra_months: z.number().int().min(0).max(12).describe("Months of debt service to hold in reserve"),
+    subordinated_debt: z.number().min(0).optional().describe("Optional subordinated / mezzanine tranche"),
+    sub_rate: z.number().min(0).max(0.3).optional().describe("Interest rate on subordinated debt"),
+  }).describe("Debt structure and repayment assumptions"),
+  equity_contribution: z.number().positive().describe("Sponsor equity contribution"),
+  discount_rate: z.number().min(0).max(0.3).describe("Discount rate for project NPV"),
+  tax_rate: z.number().min(0).max(0.5).describe("Corporate / project tax rate"),
+  depreciation_years: z.number().int().min(1).max(50).describe("Straight-line depreciation period in years"),
+});

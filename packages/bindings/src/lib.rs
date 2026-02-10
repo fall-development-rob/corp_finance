@@ -402,6 +402,169 @@ pub fn build_sensitivity_grid(input_json: String) -> NapiResult<String> {
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
+// ---------------------------------------------------------------------------
+// Three-Statement Model
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn build_three_statement(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::three_statement::model::ThreeStatementInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::three_statement::model::build_three_statement_model(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Monte Carlo
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn run_monte_carlo(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::monte_carlo::simulation::MonteCarloInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::monte_carlo::simulation::run_monte_carlo_simulation(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn run_mc_dcf(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::monte_carlo::simulation::McDcfInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::monte_carlo::simulation::run_monte_carlo_dcf(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Quant Risk
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn run_factor_model(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_risk::factor_models::FactorModelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_risk::factor_models::run_factor_model(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn run_black_litterman(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_risk::black_litterman::BlackLittermanInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_risk::black_litterman::run_black_litterman(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_risk_parity(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_risk::risk_parity::RiskParityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_risk::risk_parity::calculate_risk_parity(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn run_stress_test(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_risk::stress_testing::StressTestInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_risk::stress_testing::run_stress_test(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Restructuring
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_recovery(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::restructuring::recovery::RecoveryAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::restructuring::recovery::analyze_recovery(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_distressed_debt(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::restructuring::distressed_debt::DistressedDebtInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::restructuring::distressed_debt::analyze_distressed_debt(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Real Assets
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn value_property(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::real_assets::real_estate::PropertyValuationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::real_assets::real_estate::value_property(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn model_project_finance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::real_assets::project_finance::ProjectFinanceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::real_assets::project_finance::model_project_finance(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// FX & Commodities
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_fx_forward(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fx_commodities::fx::FxForwardInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fx_commodities::fx::price_fx_forward(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_cross_rate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fx_commodities::fx::CrossRateInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fx_commodities::fx::calculate_cross_rate(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn price_commodity_forward(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fx_commodities::commodities::CommodityForwardInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fx_commodities::commodities::price_commodity_forward(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_commodity_curve(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fx_commodities::commodities::CommodityCurveInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fx_commodities::commodities::analyze_commodity_curve(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Scenarios
+// ---------------------------------------------------------------------------
+
 #[derive(serde::Deserialize)]
 struct ScenarioBindingInput {
     #[serde(flatten)]
