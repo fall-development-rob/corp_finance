@@ -516,8 +516,8 @@ fn compute_dcf(
     let irr = newton_raphson_irr(&unlev_cfs, warnings);
 
     // --- Levered IRR ---
-    let levered_irr = if leverage.is_some() && input.equity_investment.is_some() {
-        let equity = input.equity_investment.unwrap();
+    let levered_irr = if let (Some(_), Some(equity)) = (&leverage, &input.equity_investment) {
+        let equity = *equity;
         let loan_bal = compute_loan_balance_at_year(input, n)?;
         let mut lev_cfs = Vec::with_capacity(n + 1);
         lev_cfs.push(-equity);

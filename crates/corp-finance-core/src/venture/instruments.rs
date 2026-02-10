@@ -461,49 +461,49 @@ fn convert_safe_post_money(
     // For post-money SAFEs with a cap, ownership is deterministic:
     //   ownership = investment / cap
     //   shares = pre_money_shares * ownership / (1 - ownership)
-    let (shares_issued, ownership_pct) = if input.valuation_cap.is_some() && method_used == "cap" {
-        let cap = input.valuation_cap.unwrap();
-        let ownership = input.investment_amount / cap;
-        let denom = dec!(1) - ownership;
-        if denom.is_zero() || denom.is_sign_negative() {
-            return Err(CorpFinanceError::FinancialImpossibility(
-                "Investment equals or exceeds post-money cap".into(),
-            ));
-        }
-        let shares_dec_issued = (shares_dec * ownership / denom).floor();
-        let si = decimal_to_u64(shares_dec_issued)?;
+    let (shares_issued, ownership_pct) =
+        if let (Some(cap), true) = (input.valuation_cap, method_used == "cap") {
+            let ownership = input.investment_amount / cap;
+            let denom = dec!(1) - ownership;
+            if denom.is_zero() || denom.is_sign_negative() {
+                return Err(CorpFinanceError::FinancialImpossibility(
+                    "Investment equals or exceeds post-money cap".into(),
+                ));
+            }
+            let shares_dec_issued = (shares_dec * ownership / denom).floor();
+            let si = decimal_to_u64(shares_dec_issued)?;
 
-        // Ownership of total company (including new round shares)
-        let new_round_shares = if price_at_round.is_zero() {
-            Decimal::ZERO
+            // Ownership of total company (including new round shares)
+            let new_round_shares = if price_at_round.is_zero() {
+                Decimal::ZERO
+            } else {
+                (input.qualified_financing_amount / price_at_round).floor()
+            };
+            let total_post = shares_dec + new_round_shares + shares_dec_issued;
+            let own = if total_post.is_zero() {
+                Decimal::ZERO
+            } else {
+                shares_dec_issued / total_post
+            };
+            (si, own)
         } else {
-            (input.qualified_financing_amount / price_at_round).floor()
-        };
-        let total_post = shares_dec + new_round_shares + shares_dec_issued;
-        let own = if total_post.is_zero() {
-            Decimal::ZERO
-        } else {
-            shares_dec_issued / total_post
-        };
-        (si, own)
-    } else {
-        // Discount-only or round-price path
-        let shares_issued_dec = (input.investment_amount / conversion_price).floor();
-        let si = decimal_to_u64(shares_issued_dec)?;
+            // Discount-only or round-price path
+            let shares_issued_dec = (input.investment_amount / conversion_price).floor();
+            let si = decimal_to_u64(shares_issued_dec)?;
 
-        let new_round_shares = if price_at_round.is_zero() {
-            Decimal::ZERO
-        } else {
-            (input.qualified_financing_amount / price_at_round).floor()
+            let new_round_shares = if price_at_round.is_zero() {
+                Decimal::ZERO
+            } else {
+                (input.qualified_financing_amount / price_at_round).floor()
+            };
+            let total_post = shares_dec + new_round_shares + shares_issued_dec;
+            let own = if total_post.is_zero() {
+                Decimal::ZERO
+            } else {
+                shares_issued_dec / total_post
+            };
+            (si, own)
         };
-        let total_post = shares_dec + new_round_shares + shares_issued_dec;
-        let own = if total_post.is_zero() {
-            Decimal::ZERO
-        } else {
-            shares_issued_dec / total_post
-        };
-        (si, own)
-    };
 
     let effective_valuation = conversion_price * shares_dec;
 
