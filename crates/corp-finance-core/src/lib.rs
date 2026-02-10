@@ -47,6 +47,18 @@ pub mod real_assets;
 #[cfg(feature = "fx_commodities")]
 pub mod fx_commodities;
 
+#[cfg(feature = "securitization")]
+pub mod securitization;
+
+#[cfg(feature = "venture")]
+pub mod venture;
+
+#[cfg(feature = "esg")]
+pub mod esg;
+
+#[cfg(feature = "regulatory")]
+pub mod regulatory;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

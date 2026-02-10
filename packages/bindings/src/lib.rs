@@ -585,3 +585,153 @@ pub fn scenario_analysis(input_json: String) -> NapiResult<String> {
     .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Securitization
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn model_abs_cashflows(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::securitization::abs_mbs::AbsMbsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::securitization::abs_mbs::model_abs_cashflows(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_tranching(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::securitization::tranching::TranchingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::securitization::tranching::analyze_tranching(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Venture Capital
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn model_funding_round(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::venture::valuation::FundingRoundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::venture::valuation::model_funding_round(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_dilution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::venture::valuation::DilutionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::venture::valuation::analyze_dilution(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn convert_note(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::venture::instruments::ConvertibleNoteInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::venture::instruments::convert_note(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn convert_safe(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::venture::instruments::SafeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::venture::instruments::convert_safe(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn model_venture_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::venture::returns::VentureFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::venture::returns::model_venture_fund(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// ESG
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_esg_score(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::esg::scoring::EsgScoreInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::esg::scoring::calculate_esg_score(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_carbon_footprint(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::esg::climate::CarbonFootprintInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::esg::climate::analyze_carbon_footprint(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_green_bond(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::esg::climate::GreenBondInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::esg::climate::analyze_green_bond(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn test_sll_covenants(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::esg::climate::SllInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::esg::climate::test_sll_covenants(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Regulatory
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_regulatory_capital(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory::capital::RegulatoryCapitalInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::regulatory::capital::calculate_regulatory_capital(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_lcr(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory::liquidity::LcrInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::regulatory::liquidity::calculate_lcr(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_nsfr(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory::liquidity::NsfrInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::regulatory::liquidity::calculate_nsfr(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_alm(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory::alm::AlmInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::regulatory::alm::analyze_alm(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

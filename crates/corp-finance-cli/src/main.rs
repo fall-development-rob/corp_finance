@@ -11,6 +11,7 @@ use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
     IrsArgs, OptionPriceArgs, StrategyArgs,
 };
+use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
@@ -27,10 +28,15 @@ use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
+use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::scenarios::SensitivityArgs;
+use commands::securitization::{AbsMbsArgs, TranchingArgs};
 use commands::three_statement::ThreeStatementArgs;
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
+use commands::venture::{
+    ConvertibleNoteArgs, DilutionArgs, FundingRoundArgs, SafeArgs, VentureFundArgs,
+};
 
 /// Institutional-grade corporate finance calculations
 #[derive(Parser)]
@@ -155,6 +161,36 @@ enum Commands {
     CommodityForward(CommodityForwardArgs),
     /// Commodity term structure and curve analysis
     CommodityCurve(CommodityCurveArgs),
+    /// ABS/MBS cash flow modelling (CPR/PSA/CDR/SDA)
+    AbsMbs(AbsMbsArgs),
+    /// CDO/CLO tranching and waterfall analysis
+    Tranching(TranchingArgs),
+    /// VC funding round modelling with option pool shuffle
+    FundingRound(FundingRoundArgs),
+    /// Multi-round dilution analysis
+    Dilution(DilutionArgs),
+    /// Convertible note conversion mechanics
+    ConvertibleNote(ConvertibleNoteArgs),
+    /// SAFE conversion mechanics (pre-money / post-money)
+    Safe(SafeArgs),
+    /// Venture fund returns modelling (J-curve, DPI, TVPI)
+    VentureFund(VentureFundArgs),
+    /// ESG scoring with pillar weighting and peer benchmarking
+    EsgScore(EsgScoreArgs),
+    /// Carbon footprint analysis (Scope 1/2/3)
+    CarbonFootprint(CarbonFootprintArgs),
+    /// Green bond premium (greenium) analysis
+    GreenBond(GreenBondArgs),
+    /// Sustainability-linked loan covenant testing
+    Sll(SllArgs),
+    /// Basel III/IV regulatory capital and RWA
+    RegulatoryCapital(RegulatoryCapitalArgs),
+    /// Basel III Liquidity Coverage Ratio (LCR)
+    Lcr(LcrArgs),
+    /// Basel III Net Stable Funding Ratio (NSFR)
+    Nsfr(NsfrArgs),
+    /// Asset-Liability Management (ALM / IRRBB)
+    Alm(AlmArgs),
     /// Print version information
     Version,
 }
@@ -224,6 +260,21 @@ fn main() {
         Commands::CrossRate(args) => commands::fx_commodities::run_cross_rate(args),
         Commands::CommodityForward(args) => commands::fx_commodities::run_commodity_forward(args),
         Commands::CommodityCurve(args) => commands::fx_commodities::run_commodity_curve(args),
+        Commands::AbsMbs(args) => commands::securitization::run_abs_mbs(args),
+        Commands::Tranching(args) => commands::securitization::run_tranching(args),
+        Commands::FundingRound(args) => commands::venture::run_funding_round(args),
+        Commands::Dilution(args) => commands::venture::run_dilution(args),
+        Commands::ConvertibleNote(args) => commands::venture::run_convertible_note(args),
+        Commands::Safe(args) => commands::venture::run_safe(args),
+        Commands::VentureFund(args) => commands::venture::run_venture_fund(args),
+        Commands::EsgScore(args) => commands::esg::run_esg_score(args),
+        Commands::CarbonFootprint(args) => commands::esg::run_carbon_footprint(args),
+        Commands::GreenBond(args) => commands::esg::run_green_bond(args),
+        Commands::Sll(args) => commands::esg::run_sll(args),
+        Commands::RegulatoryCapital(args) => commands::regulatory::run_regulatory_capital(args),
+        Commands::Lcr(args) => commands::regulatory::run_lcr(args),
+        Commands::Nsfr(args) => commands::regulatory::run_nsfr(args),
+        Commands::Alm(args) => commands::regulatory::run_alm(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

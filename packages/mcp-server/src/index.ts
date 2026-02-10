@@ -16,6 +16,10 @@ import { registerQuantRiskTools } from "./tools/quant_risk.js";
 import { registerRestructuringTools } from "./tools/restructuring.js";
 import { registerRealAssetsTools } from "./tools/real_assets.js";
 import { registerFxCommoditiesTools } from "./tools/fx_commodities.js";
+import { registerSecuritizationTools } from "./tools/securitization.js";
+import { registerVentureTools } from "./tools/venture.js";
+import { registerEsgTools } from "./tools/esg.js";
+import { registerRegulatoryTools } from "./tools/regulatory.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -37,6 +41,10 @@ registerQuantRiskTools(server);
 registerRestructuringTools(server);
 registerRealAssetsTools(server);
 registerFxCommoditiesTools(server);
+registerSecuritizationTools(server);
+registerVentureTools(server);
+registerEsgTools(server);
+registerRegulatoryTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
