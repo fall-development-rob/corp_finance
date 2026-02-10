@@ -23,9 +23,6 @@ pub mod jurisdiction;
 #[cfg(feature = "scenarios")]
 pub mod scenarios;
 
-#[cfg(feature = "trading")]
-pub mod trading;
-
 #[cfg(feature = "fixed_income")]
 pub mod fixed_income;
 

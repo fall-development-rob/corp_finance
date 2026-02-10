@@ -22,7 +22,6 @@ use commands::ma::MergerArgs;
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::scenarios::SensitivityArgs;
-use commands::trading::{TradingAnalyticsArgs, TradingDayArgs};
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 
 /// Institutional-grade corporate finance calculations
@@ -90,10 +89,6 @@ enum Commands {
     InvestorNetReturns(InvestorNetReturnsArgs),
     /// UBTI/ECI screening
     UbtiScreening(UbtiScreeningArgs),
-    /// Analyze a single trading day
-    TradingDay(TradingDayArgs),
-    /// Multi-day trading performance analytics
-    TradingAnalytics(TradingAnalyticsArgs),
     /// Bond pricing (clean/dirty, accrued interest)
     BondPricing(BondPricingArgs),
     /// Bond yield calculator (YTM, BEY, effective yield)
@@ -162,8 +157,6 @@ fn main() {
             commands::jurisdiction::run_investor_net_returns(args)
         }
         Commands::UbtiScreening(args) => commands::jurisdiction::run_ubti_screening(args),
-        Commands::TradingDay(args) => commands::trading::run_trading_day(args),
-        Commands::TradingAnalytics(args) => commands::trading::run_trading_analytics(args),
         Commands::BondPricing(args) => commands::fixed_income::run_bond_pricing(args),
         Commands::BondYield(args) => commands::fixed_income::run_bond_yield(args),
         Commands::Bootstrap(args) => commands::fixed_income::run_bootstrap(args),

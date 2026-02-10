@@ -225,28 +225,6 @@ pub fn screen_ubti_eci(input_json: String) -> NapiResult<String> {
 }
 
 // ---------------------------------------------------------------------------
-// Trading
-// ---------------------------------------------------------------------------
-
-#[napi]
-pub fn analyze_trading_day(input_json: String) -> NapiResult<String> {
-    let input: corp_finance_core::trading::diary::TradingDayInput =
-        serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output =
-        corp_finance_core::trading::diary::analyze_trading_day(&input).map_err(to_napi_error)?;
-    serde_json::to_string(&output).map_err(to_napi_error)
-}
-
-#[napi]
-pub fn analyze_trading_performance(input_json: String) -> NapiResult<String> {
-    let input: corp_finance_core::trading::analytics::TradingAnalyticsInput =
-        serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    let output = corp_finance_core::trading::analytics::analyze_trading_performance(&input)
-        .map_err(to_napi_error)?;
-    serde_json::to_string(&output).map_err(to_napi_error)
-}
-
-// ---------------------------------------------------------------------------
 // Fixed Income
 // ---------------------------------------------------------------------------
 

@@ -16,11 +16,10 @@ portfolio = []
 fixed_income = []
 three_statement = []
 jurisdiction = []
-trading = []
 derivatives = []
 scenarios = ["dep:rand", "dep:statrs"]
 monte_carlo = ["scenarios"]
-full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "trading", "scenarios", "monte_carlo", "derivatives"]
+full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "scenarios", "monte_carlo", "derivatives"]
 
 [dependencies]
 rust_decimal = { version = "1", features = ["serde-with-str", "maths"] }

@@ -48,14 +48,6 @@ export {
 } from "./pe.js";
 
 export {
-  TradeEntrySchema,
-  CancelledTradeSchema,
-  TradingDaySchema,
-  DaySummarySchema,
-  TradingAnalyticsSchema,
-} from "./trading.js";
-
-export {
   BondPricingSchema,
   BondYieldSchema,
   BootstrapSchema,

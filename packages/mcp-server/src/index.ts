@@ -8,7 +8,6 @@ import { registerPortfolioTools } from "./tools/portfolio.js";
 import { registerScenarioTools } from "./tools/scenarios.js";
 import { registerMATools } from "./tools/ma.js";
 import { registerJurisdictionTools } from "./tools/jurisdiction.js";
-import { registerTradingTools } from "./tools/trading.js";
 import { registerFixedIncomeTools } from "./tools/fixed_income.js";
 import { registerDerivativesTools } from "./tools/derivatives.js";
 
@@ -24,7 +23,6 @@ registerPortfolioTools(server);
 registerScenarioTools(server);
 registerMATools(server);
 registerJurisdictionTools(server);
-registerTradingTools(server);
 registerFixedIncomeTools(server);
 registerDerivativesTools(server);
 
