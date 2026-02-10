@@ -1,159 +1,205 @@
 import { z } from "zod";
 import { CurrencySchema } from "./common.js";
 
+// ---------------------------------------------------------------------------
+// Jurisdiction enum (matches Rust Jurisdiction enum in withholding_tax.rs)
+// ---------------------------------------------------------------------------
+const JurisdictionSchema = z.enum([
+  "US", "UK", "Cayman", "Ireland", "Luxembourg", "Jersey", "Guernsey",
+  "BVI", "Germany", "France", "Netherlands", "Switzerland", "Singapore",
+  "HongKong", "Japan", "Australia", "Canada",
+]).describe("Jurisdiction code");
+
+// ---------------------------------------------------------------------------
+// FundFeeInput (fund_fees.rs)
+// ---------------------------------------------------------------------------
 export const FundFeeSchema = z.object({
   fund_size: z.number().positive().describe("Total fund size / commitments"),
-  management_fee_rate: z.number().min(0).max(0.05).describe("Annual management fee rate (e.g. 0.02 for 2%)"),
+  management_fee_rate: z.number().min(0).max(1).describe("Annual management fee rate (e.g. 0.02 for 2%)"),
   management_fee_basis: z.enum(["CommittedCapital", "InvestedCapital", "NetAssetValue"]).describe("Basis for management fee calculation"),
-  performance_fee_rate: z.number().min(0).max(0.5).describe("Carried interest rate (e.g. 0.20 for 20%)"),
-  hurdle_rate: z.number().min(0).max(0.2).describe("Preferred return / hurdle rate"),
+  performance_fee_rate: z.number().min(0).max(1).describe("Carried interest rate (e.g. 0.20 for 20%)"),
+  hurdle_rate: z.number().min(0).max(1).describe("Preferred return / hurdle rate"),
   catch_up_rate: z.number().min(0).max(1).describe("GP catch-up rate (1.0 = 100% catch-up)"),
   waterfall_type: z.enum(["European", "American"]).describe("Waterfall type for carry calculation"),
-  gp_commitment_pct: z.number().min(0).max(0.1).describe("GP co-investment as % of fund"),
+  gp_commitment_pct: z.number().min(0).max(1).describe("GP co-investment as % of fund"),
   clawback: z.boolean().describe("Whether GP clawback provision exists"),
-  fund_life_years: z.number().int().min(1).max(20).describe("Total fund life in years"),
-  investment_period_years: z.number().int().min(1).max(10).describe("Investment period in years"),
-  gross_irr_assumption: z.number().min(-0.5).max(1).describe("Assumed gross IRR for projections"),
-  gross_moic_assumption: z.number().min(0).max(10).describe("Assumed gross MOIC for projections"),
+  fund_life_years: z.number().int().min(1).describe("Total fund life in years"),
+  investment_period_years: z.number().int().min(0).describe("Investment period in years"),
+  gross_irr_assumption: z.number().describe("Assumed gross IRR for projections"),
+  gross_moic_assumption: z.number().min(0).describe("Assumed gross MOIC for projections"),
   annual_fund_expenses: z.number().min(0).describe("Annual fund operating expenses"),
   currency: CurrencySchema.optional(),
 });
 
+// ---------------------------------------------------------------------------
+// ReconciliationInput (reconciliation.rs)
+// ---------------------------------------------------------------------------
 export const ReconciliationSchema = z.object({
-  source_standard: z.enum(["USGAAP", "IFRS"]).describe("Source accounting standard"),
-  target_standard: z.enum(["USGAAP", "IFRS"]).describe("Target accounting standard to reconcile to"),
+  source_standard: z.enum(["UsGaap", "Ifrs"]).describe("Source accounting standard"),
+  target_standard: z.enum(["UsGaap", "Ifrs"]).describe("Target accounting standard to reconcile to"),
   revenue: z.number().describe("Total revenue under source standard"),
-  cost_of_goods_sold: z.number().describe("Cost of goods sold under source standard"),
-  operating_expenses: z.number().describe("Operating expenses under source standard"),
+  ebitda: z.number().describe("EBITDA under source standard"),
+  ebit: z.number().describe("EBIT under source standard"),
+  net_income: z.number().describe("Net income under source standard"),
   total_assets: z.number().describe("Total assets under source standard"),
-  total_liabilities: z.number().describe("Total liabilities under source standard"),
-  shareholders_equity: z.number().describe("Shareholders equity under source standard"),
-  rd_costs: z.number().optional().describe("R&D costs (treatment differs between GAAP/IFRS)"),
-  lease_payments: z.number().optional().describe("Annual lease payments for lease accounting adjustment"),
-  lease_term_years: z.number().int().optional().describe("Remaining lease term in years"),
-  inventory_method: z.enum(["FIFO", "LIFO", "WeightedAverage"]).optional().describe("Inventory valuation method"),
-  inventory_value: z.number().optional().describe("Inventory value under source standard"),
+  total_debt: z.number().describe("Total debt under source standard"),
+  total_equity: z.number().describe("Total equity under source standard"),
+  inventory: z.number().describe("Inventory value under source standard"),
+  ppe_net: z.number().describe("Net PP&E under source standard"),
+  operating_lease_payments: z.number().optional().describe("Annual operating lease payments"),
+  operating_lease_remaining_years: z.number().int().optional().describe("Remaining operating lease term in years"),
   lifo_reserve: z.number().optional().describe("LIFO reserve (GAAP only, for LIFO to FIFO conversion)"),
-  goodwill: z.number().optional().describe("Goodwill on balance sheet"),
-  goodwill_impairment: z.number().optional().describe("Goodwill impairment charge (GAAP amortises, IFRS impairs)"),
-  development_costs: z.number().optional().describe("Development costs eligible for capitalisation under IFRS"),
+  capitalised_dev_costs: z.number().optional().describe("Capitalised development costs eligible for IAS 38 treatment"),
+  dev_cost_amortisation: z.number().optional().describe("Annual amortisation of capitalised development costs"),
   revaluation_surplus: z.number().optional().describe("Asset revaluation surplus (IFRS allows, GAAP does not)"),
+  discount_rate_for_leases: z.number().optional().describe("Discount rate for lease capitalisation PV calculation"),
   currency: CurrencySchema.optional(),
 });
 
+// ---------------------------------------------------------------------------
+// WhtInput (withholding_tax.rs)
+// ---------------------------------------------------------------------------
 export const WhtSchema = z.object({
-  source_jurisdiction: z.string().describe("ISO 3166-1 alpha-2 code of the source country (e.g. US, GB, DE)"),
-  investor_jurisdiction: z.string().describe("ISO 3166-1 alpha-2 code of the investor country"),
-  income_type: z.enum(["Dividend", "Interest", "Royalty", "CapitalGain", "RentalIncome"]).describe("Type of income subject to withholding"),
+  source_jurisdiction: JurisdictionSchema.describe("Jurisdiction where income is sourced"),
+  investor_jurisdiction: JurisdictionSchema.describe("Jurisdiction of the investor"),
+  fund_jurisdiction: JurisdictionSchema.optional().describe("Jurisdiction of the fund vehicle (if applicable)"),
+  income_type: z.enum(["Dividend", "Interest", "Royalty", "RentalIncome", "CapitalGain"]).describe("Type of income subject to withholding"),
   gross_income: z.number().positive().describe("Gross income amount before withholding"),
-  treaty_eligible: z.boolean().describe("Whether the investor is eligible for treaty benefits"),
-  beneficial_owner: z.boolean().describe("Whether the investor is the beneficial owner"),
-  tax_exempt_entity: z.boolean().optional().describe("Whether the investor is a tax-exempt entity"),
-  pension_fund: z.boolean().optional().describe("Whether the investor is a pension fund (often reduced rates)"),
-  sovereign_wealth_fund: z.boolean().optional().describe("Whether the investor is a sovereign wealth fund"),
-  holding_period_days: z.number().int().min(0).optional().describe("Holding period in days for qualified dividend treatment"),
+  is_tax_exempt_investor: z.boolean().describe("Whether the investor is a tax-exempt entity"),
   currency: CurrencySchema.optional(),
 });
 
+// ---------------------------------------------------------------------------
+// PortfolioWhtInput (withholding_tax.rs)
+// ---------------------------------------------------------------------------
+export const PortfolioWhtSchema = z.object({
+  holdings: z.array(WhtSchema).describe("Array of individual WHT holdings to analyse"),
+});
+
+// ---------------------------------------------------------------------------
+// ShareClassInput (nav.rs) - sub-schema for NavInput
+// ---------------------------------------------------------------------------
+const SubscriptionSchema = z.object({
+  investor_id: z.string().describe("Investor identifier"),
+  amount: z.number().describe("Subscription amount"),
+  nav_per_share_at_entry: z.number().describe("NAV per share at time of subscription"),
+  shares_issued: z.number().describe("Number of shares issued for the subscription"),
+});
+
+const RedemptionSchema = z.object({
+  investor_id: z.string().describe("Investor identifier"),
+  shares_redeemed: z.number().describe("Number of shares redeemed"),
+  nav_per_share_at_exit: z.number().describe("NAV per share at time of redemption"),
+});
+
+const ShareClassInputSchema = z.object({
+  class_name: z.string().describe("Share class name (e.g. Class A, Class B)"),
+  currency: CurrencySchema.describe("Currency for this share class"),
+  shares_outstanding: z.number().positive().describe("Number of shares outstanding"),
+  nav_per_share_opening: z.number().positive().describe("Opening NAV per share"),
+  high_water_mark: z.number().positive().describe("High water mark NAV per share"),
+  management_fee_rate: z.number().min(0).describe("Annual management fee rate for this class"),
+  performance_fee_rate: z.number().min(0).describe("Performance fee rate for this class"),
+  hurdle_rate: z.number().min(0).optional().describe("Hurdle rate for performance fee"),
+  crystallisation_frequency: z.enum(["Monthly", "Quarterly", "SemiAnnually", "Annually", "OnRedemption"]).describe("Performance fee crystallisation frequency"),
+  fx_rate_to_base: z.number().optional().describe("FX rate to convert class currency to base currency"),
+  fx_hedging_cost: z.number().optional().describe("Annual FX hedging cost as a rate"),
+  subscriptions: z.array(SubscriptionSchema).describe("Subscriptions during the period"),
+  redemptions: z.array(RedemptionSchema).describe("Redemptions during the period"),
+});
+
+// ---------------------------------------------------------------------------
+// NavInput (nav.rs)
+// ---------------------------------------------------------------------------
 export const NavSchema = z.object({
-  share_classes: z.array(z.object({
-    name: z.string().describe("Share class name (e.g. Class A, Class B)"),
-    nav_per_share: z.number().positive().describe("Current NAV per share"),
-    shares_outstanding: z.number().positive().describe("Number of shares outstanding"),
-    management_fee_rate: z.number().min(0).max(0.05).describe("Annual management fee rate for this class"),
-    performance_fee_rate: z.number().min(0).max(0.5).describe("Performance fee rate for this class"),
-    hurdle_rate: z.number().min(0).max(0.3).describe("Hurdle rate for performance fee"),
-    high_water_mark: z.number().optional().describe("High water mark NAV per share"),
-  })).describe("Array of share classes in the fund"),
-  gross_portfolio_return: z.number().describe("Gross portfolio return for the period (e.g. 0.08 for 8%)"),
-  equalisation_method: z.enum(["Depreciation", "SeriesAccounting", "SinglePrice"]).describe("NAV equalisation method"),
-  period_days: z.number().int().min(1).max(366).describe("Number of days in the calculation period"),
-  accrued_expenses: z.number().min(0).optional().describe("Total accrued fund expenses for the period"),
-  subscriptions: z.array(z.object({
-    share_class: z.string().describe("Name of the share class"),
-    amount: z.number().positive().describe("Subscription amount"),
-    date_offset_days: z.number().int().min(0).describe("Days from start of period when subscription occurred"),
-  })).optional().describe("Subscriptions during the period"),
-  redemptions: z.array(z.object({
-    share_class: z.string().describe("Name of the share class"),
-    shares: z.number().positive().describe("Number of shares redeemed"),
-    date_offset_days: z.number().int().min(0).describe("Days from start of period when redemption occurred"),
-  })).optional().describe("Redemptions during the period"),
-  currency: CurrencySchema.optional(),
+  share_classes: z.array(ShareClassInputSchema).describe("Array of share classes in the fund"),
+  gross_portfolio_return: z.number().describe("Gross portfolio return for the period (e.g. 0.10 for 10%)"),
+  period_label: z.string().describe("Label for the calculation period (e.g. Q4 2025)"),
+  equalisation_method: z.enum(["EqualisationShares", "SeriesAccounting", "DepreciationDeposit", "None"]).describe("NAV equalisation method"),
+  base_currency: CurrencySchema.describe("Base currency for total fund NAV calculation"),
 });
 
+// ---------------------------------------------------------------------------
+// GpEconomicsInput (gp_economics.rs)
+// ---------------------------------------------------------------------------
 export const GpEconomicsSchema = z.object({
   fund_size: z.number().positive().describe("Total fund size / commitments"),
   management_fee_rate: z.number().min(0).max(0.05).describe("Annual management fee rate"),
+  carried_interest_rate: z.number().min(0).max(0.50).describe("Carried interest rate"),
+  hurdle_rate: z.number().min(0).describe("Preferred return / hurdle rate"),
+  gp_commitment_pct: z.number().min(0).describe("GP co-investment as % of fund"),
+  fund_life_years: z.number().int().min(1).describe("Total fund life in years"),
+  investment_period_years: z.number().int().min(0).describe("Investment period in years"),
   num_investment_professionals: z.number().int().min(1).describe("Number of investment professionals"),
-  avg_compensation_per_professional: z.number().positive().describe("Average annual compensation per investment professional"),
-  annual_overhead: z.number().min(0).describe("Annual overhead costs (rent, systems, travel, etc.)"),
-  gp_commitment_pct: z.number().min(0).max(0.1).describe("GP co-investment as % of fund"),
-  carried_interest_rate: z.number().min(0).max(0.5).describe("Carried interest rate"),
-  hurdle_rate: z.number().min(0).max(0.2).describe("Preferred return / hurdle rate"),
-  fund_life_years: z.number().int().min(1).max(20).describe("Total fund life in years"),
-  investment_period_years: z.number().int().min(1).max(10).describe("Investment period in years"),
-  gross_irr_assumption: z.number().min(-0.5).max(1).describe("Assumed gross IRR for projections"),
-  gross_moic_assumption: z.number().min(0).max(10).describe("Assumed gross MOIC for projections"),
-  num_funds_in_platform: z.number().int().min(1).optional().describe("Number of funds managed on the platform"),
-  fee_sharing_pct: z.number().min(0).max(1).optional().describe("Percentage of fees shared with LPs (offset)"),
+  annual_gp_overhead: z.number().min(0).describe("Annual GP overhead costs (rent, systems, travel, etc.)"),
+  gross_irr_assumption: z.number().describe("Assumed gross IRR for projections"),
+  gross_moic_assumption: z.number().min(0).describe("Assumed gross MOIC for projections"),
+  fee_holiday_years: z.number().int().min(0).optional().describe("Years with reduced/no management fee at fund inception"),
+  fee_discount_rate: z.number().min(0).max(1).optional().describe("Discount on management fee (e.g. for anchor LPs)"),
+  successor_fund_offset: z.number().int().min(1).optional().describe("Year when successor fund starts charging fees"),
   currency: CurrencySchema.optional(),
 });
 
+// ---------------------------------------------------------------------------
+// InvestorNetReturnsInput (investor_returns.rs)
+// ---------------------------------------------------------------------------
 export const InvestorNetReturnsSchema = z.object({
-  gross_return: z.number().describe("Gross investment return (e.g. 0.15 for 15%)"),
+  gross_return: z.number().describe("Annualised gross return (e.g. 0.15 for 15%)"),
   investment_amount: z.number().positive().describe("Total investment amount"),
-  holding_period_years: z.number().positive().describe("Investment holding period in years"),
-  management_fee_rate: z.number().min(0).max(0.05).describe("Annual management fee rate"),
-  performance_fee_rate: z.number().min(0).max(0.5).describe("Performance fee / carried interest rate"),
-  hurdle_rate: z.number().min(0).max(0.2).describe("Hurdle rate for performance fee"),
-  admin_fee_rate: z.number().min(0).max(0.02).optional().describe("Annual administrative fee rate"),
-  placement_fee_pct: z.number().min(0).max(0.05).optional().describe("One-time placement fee as % of investment"),
-  withholding_tax_rate: z.number().min(0).max(0.5).optional().describe("Withholding tax rate on distributions"),
-  income_tax_rate: z.number().min(0).max(0.5).optional().describe("Income tax rate on gains"),
-  capital_gains_tax_rate: z.number().min(0).max(0.5).optional().describe("Capital gains tax rate"),
-  fund_expenses_rate: z.number().min(0).max(0.02).optional().describe("Annual fund-level expenses rate"),
-  waterfall_type: z.enum(["European", "American"]).optional().describe("Carry waterfall structure"),
-  catch_up_rate: z.number().min(0).max(1).optional().describe("GP catch-up rate"),
+  holding_period_years: z.number().positive().describe("Holding period in years (can be fractional)"),
+  management_fee: z.number().min(0).describe("Annual management fee as a rate"),
+  performance_fee: z.number().min(0).describe("Performance fee rate (applied to gain above hurdle)"),
+  hurdle_rate: z.number().min(0).optional().describe("Hurdle rate for the performance fee"),
+  fund_expenses_pct: z.number().min(0).describe("Annual fund operating expenses as % of NAV"),
+  fof_management_fee: z.number().min(0).optional().describe("Fund-of-funds additional management fee layer"),
+  fof_performance_fee: z.number().min(0).optional().describe("Fund-of-funds performance fee layer"),
+  wht_drag: z.number().min(0).describe("Annual withholding tax drag on returns"),
+  blocker_cost: z.number().min(0).optional().describe("Annual blocker entity maintenance cost as a rate"),
+  investor_tax_rate: z.number().min(0).optional().describe("Personal/institutional tax rate on gains"),
   currency: CurrencySchema.optional(),
 });
 
+// ---------------------------------------------------------------------------
+// InvestmentDetail sub-schema (ubti.rs)
+// ---------------------------------------------------------------------------
+const InvestmentDetailSchema = z.object({
+  name: z.string().describe("Investment name or identifier"),
+  investment_type: z.enum([
+    "DirectEquity",
+    "DirectDebt",
+    "LeveragedRealEstate",
+    "OperatingBusiness",
+    "MLP",
+    "DebtFinancedProperty",
+    "HedgeFund",
+    "PrivateEquityFund",
+    "VentureCapitalFund",
+    "RealEstateFund",
+    "FundOfFunds",
+    "PublicEquity",
+    "PublicFixedIncome",
+    "Commodities",
+    "Derivatives",
+  ]).describe("Type of investment"),
+  amount: z.number().positive().describe("Investment amount"),
+  is_leveraged: z.boolean().describe("Whether the investment uses leverage"),
+  leverage_ratio: z.number().min(0).optional().describe("Debt/equity ratio at the investment level"),
+  has_operating_income: z.boolean().describe("Whether the investment generates operating business income"),
+  us_source_income_pct: z.number().min(0).max(1).optional().describe("Percentage of income that is US-source (0-1)"),
+});
+
+// ---------------------------------------------------------------------------
+// UbtiScreeningInput (ubti.rs)
+// ---------------------------------------------------------------------------
 export const UbtiScreeningSchema = z.object({
   investor_type: z.enum([
-    "TaxExemptFoundation",
-    "PensionFund",
-    "Endowment",
-    "IRA",
-    "CharitableTrust",
-    "ReligiousOrganization",
-    "EducationalInstitution",
-    "Other",
-  ]).describe("Type of tax-exempt investor"),
-  investments: z.array(z.object({
-    name: z.string().describe("Investment name or identifier"),
-    investment_type: z.enum([
-      "DirectEquity",
-      "DirectDebt",
-      "FundInterest",
-      "RealEstate",
-      "MLP",
-      "REIT",
-      "HedgeFund",
-      "PrivateEquity",
-      "PrivateCredit",
-      "Infrastructure",
-    ]).describe("Type of investment"),
-    amount: z.number().positive().describe("Investment amount"),
-    leverage_ratio: z.number().min(0).optional().describe("Leverage ratio (debt/equity) at the investment level"),
-    uses_debt_financing: z.boolean().describe("Whether the investment uses debt financing"),
-    generates_business_income: z.boolean().describe("Whether the investment generates active trade or business income"),
-    is_controlled_entity: z.boolean().optional().describe("Whether the investor controls the entity (>50% ownership)"),
-    has_blocker: z.boolean().optional().describe("Whether a blocker entity is used"),
-    blocker_jurisdiction: z.string().optional().describe("Jurisdiction of the blocker entity"),
-    annual_income: z.number().optional().describe("Estimated annual income from the investment"),
-  })).describe("Array of investments to screen for UBTI/ECI"),
-  total_portfolio_value: z.number().positive().describe("Total portfolio value"),
-  eci_threshold: z.number().min(0).optional().describe("ECI threshold for reporting (default $1,000)"),
-  ubti_threshold: z.number().min(0).optional().describe("UBTI threshold for tax filing (default $1,000)"),
+    "TaxExemptUS",
+    "ForeignInvestor",
+    "TaxableUS",
+    "SovereignWealth",
+    "InsuranceCompany",
+  ]).describe("Type of investor for UBTI/ECI screening"),
+  investments: z.array(InvestmentDetailSchema).describe("Array of investments to screen for UBTI/ECI"),
+  use_blocker: z.boolean().optional().describe("Whether a blocker entity is being considered"),
   currency: CurrencySchema.optional(),
 });

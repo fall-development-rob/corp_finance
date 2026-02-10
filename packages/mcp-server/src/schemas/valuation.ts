@@ -45,6 +45,30 @@ export const WaccSchema = z.object({
     .number()
     .optional()
     .describe("Company-specific risk premium"),
+  unlevered_beta: z
+    .number()
+    .optional()
+    .describe("Unlevered (asset) beta for Hamada re-levering"),
+  target_debt_equity: z
+    .number()
+    .optional()
+    .describe("Target debt-to-equity ratio for Hamada re-levering"),
+});
+
+const CompanyMetricsSchema = z.object({
+  enterprise_value: z.number().optional().describe("Enterprise value"),
+  market_cap: z.number().optional().describe("Market capitalisation"),
+  revenue: z.number().optional().describe("Total revenue / sales"),
+  ebitda: z.number().optional().describe("EBITDA"),
+  ebit: z.number().optional().describe("EBIT / operating income"),
+  net_income: z.number().optional().describe("Net income"),
+  book_value: z.number().optional().describe("Book value of equity"),
+  eps: z.number().optional().describe("Earnings per share"),
+  eps_growth_rate: z
+    .number()
+    .optional()
+    .describe("Expected EPS growth rate (for PEG ratio)"),
+  share_price: z.number().optional().describe("Share price"),
 });
 
 export const DcfSchema = z.object({
@@ -89,6 +113,9 @@ export const DcfSchema = z.object({
     .min(0.001)
     .max(0.3)
     .describe("Weighted average cost of capital"),
+  wacc_input: WaccSchema.optional().describe(
+    "If provided, WACC is computed from these inputs (overrides wacc field)"
+  ),
   terminal_method: z
     .enum(["GordonGrowth", "ExitMultiple", "Both"])
     .describe("Terminal value calculation methodology"),
@@ -104,7 +131,7 @@ export const DcfSchema = z.object({
     .max(50)
     .optional()
     .describe("Exit EV/EBITDA multiple for terminal value"),
-  currency: CurrencySchema.optional(),
+  currency: CurrencySchema.describe("Reporting currency"),
   forecast_years: z
     .number()
     .int()
@@ -116,7 +143,10 @@ export const DcfSchema = z.object({
     .boolean()
     .optional()
     .describe("Use mid-year discounting convention (default true)"),
-  net_debt: z.number().optional().describe("Net debt to bridge EV to equity value"),
+  net_debt: z
+    .number()
+    .optional()
+    .describe("Net debt to bridge EV to equity value"),
   minority_interest: z
     .number()
     .optional()
@@ -129,42 +159,20 @@ export const DcfSchema = z.object({
 });
 
 export const CompsSchema = z.object({
-  target: z
-    .object({
-      enterprise_value: z.number().optional().describe("Target enterprise value"),
-      market_cap: z.number().optional().describe("Target market capitalisation"),
-      revenue: z.number().optional().describe("Target LTM revenue"),
-      ebitda: z.number().optional().describe("Target LTM EBITDA"),
-      ebit: z.number().optional().describe("Target LTM EBIT"),
-      net_income: z.number().optional().describe("Target LTM net income"),
-      book_value: z.number().optional().describe("Target book value of equity"),
-      earnings_growth: z
-        .number()
-        .optional()
-        .describe("Target forward earnings growth rate"),
-    })
-    .describe("Financial metrics of the company being valued"),
+  target_name: z.string().describe("Target company name"),
+  target_metrics: CompanyMetricsSchema.describe(
+    "Financial metrics of the company being valued"
+  ),
   comparables: z
     .array(
       z.object({
         name: z.string().describe("Comparable company name"),
-        metrics: z.object({
-          enterprise_value: z.number().optional().describe("Comparable EV"),
-          market_cap: z.number().optional().describe("Comparable market cap"),
-          revenue: z.number().optional().describe("Comparable LTM revenue"),
-          ebitda: z.number().optional().describe("Comparable LTM EBITDA"),
-          ebit: z.number().optional().describe("Comparable LTM EBIT"),
-          net_income: z.number().optional().describe("Comparable LTM net income"),
-          book_value: z.number().optional().describe("Comparable book value"),
-          earnings_growth: z
-            .number()
-            .optional()
-            .describe("Comparable earnings growth"),
-        }),
+        metrics: CompanyMetricsSchema.describe("Financial metrics"),
         include: z
           .boolean()
-          .optional()
-          .describe("Include in analysis (default true, set false for outliers)"),
+          .describe(
+            "Include in analysis (set false for outliers)"
+          ),
       })
     )
     .min(1)
@@ -177,9 +185,10 @@ export const CompsSchema = z.object({
         "EvEbit",
         "PriceEarnings",
         "PriceBook",
-        "PegRatio",
+        "Peg",
       ])
     )
     .min(1)
     .describe("Valuation multiples to compute"),
+  currency: CurrencySchema.describe("Reporting currency"),
 });

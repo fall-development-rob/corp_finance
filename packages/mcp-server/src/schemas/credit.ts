@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// --- CreditMetricsInput ---
+// Rust struct: CreditMetricsInput in credit/metrics.rs
+// All fields match exactly as-is. No changes needed.
 export const CreditMetricsSchema = z.object({
   revenue: z.number().positive().describe("Total revenue"),
   ebitda: z.number().describe("EBITDA"),
@@ -34,36 +37,36 @@ export const CreditMetricsSchema = z.object({
   market_cap: z
     .number()
     .optional()
-    .describe("Market capitalisation for Altman Z-score market variant"),
+    .describe("Market capitalisation for EV calculation"),
 });
 
+// --- DebtCapacityInput ---
+// Rust struct: DebtCapacityInput in credit/capacity.rs
+// All fields match exactly as-is. No changes needed.
 export const DebtCapacitySchema = z.object({
   ebitda: z.number().positive().describe("Current or projected EBITDA"),
   interest_rate: z
     .number()
     .min(0)
-    .max(0.3)
     .describe("Expected interest rate on new debt"),
   max_leverage: z
     .number()
-    .min(0)
-    .max(20)
+    .positive()
     .optional()
     .describe("Maximum Net Debt / EBITDA (e.g. 4.0x)"),
   min_interest_coverage: z
     .number()
-    .min(0)
+    .positive()
     .optional()
     .describe("Minimum EBITDA / Interest coverage (e.g. 3.0x)"),
   min_dscr: z
     .number()
-    .min(0)
+    .positive()
     .optional()
     .describe("Minimum debt service coverage ratio (e.g. 1.5x)"),
   min_ffo_to_debt: z
     .number()
     .min(0)
-    .max(1)
     .optional()
     .describe("Minimum FFO / Total Debt (e.g. 0.15 = 15%)"),
   existing_debt: z
@@ -79,40 +82,94 @@ export const DebtCapacitySchema = z.object({
   ffo: z.number().optional().describe("Funds from operations"),
 });
 
+// --- CreditMetricsOutput ---
+// Rust struct: CreditMetricsOutput in credit/metrics.rs
+// Used as the `actuals` field in CovenantTestInput.
+// The CreditRating enum has serde(rename) for variants like "AA+", "AA-", etc.
+const CreditRatingSchema = z.enum([
+  "AAA",
+  "AA+",
+  "AA",
+  "AA-",
+  "A+",
+  "A",
+  "A-",
+  "BBB+",
+  "BBB",
+  "BBB-",
+  "BB+",
+  "BB",
+  "BB-",
+  "B+",
+  "B",
+  "B-",
+  "CCC+",
+  "CCC",
+  "CCC-",
+  "CC",
+  "C",
+  "D",
+]);
+
+const CreditMetricsOutputSchema = z.object({
+  net_debt: z.number(),
+  net_debt_to_ebitda: z.number(),
+  total_debt_to_ebitda: z.number(),
+  debt_to_equity: z.number(),
+  debt_to_assets: z.number(),
+  net_debt_to_ev: z.number().optional(),
+  interest_coverage: z.number(),
+  ebit_coverage: z.number(),
+  fixed_charge_coverage: z.number().optional(),
+  dscr: z.number(),
+  ffo_to_debt: z.number().optional(),
+  ocf_to_debt: z.number(),
+  fcf_to_debt: z.number(),
+  fcf: z.number(),
+  cash_conversion: z.number(),
+  current_ratio: z.number(),
+  quick_ratio: z.number(),
+  cash_to_debt: z.number(),
+  implied_rating: CreditRatingSchema,
+  rating_rationale: z.array(z.string()),
+});
+
+// --- CovenantMetric ---
+// Rust enum: CovenantMetric in credit/covenants.rs
+// Variants: NetDebtToEbitda, InterestCoverage, Dscr, DebtToEquity, MinCash, MaxCapex, Custom(String)
+// Custom is externally tagged: { "Custom": "some_metric" }
+const CovenantMetricSchema = z.union([
+  z.enum([
+    "NetDebtToEbitda",
+    "InterestCoverage",
+    "Dscr",
+    "DebtToEquity",
+    "MinCash",
+    "MaxCapex",
+  ]),
+  z.object({ Custom: z.string() }),
+]);
+
+// --- CovenantTestInput ---
+// Rust struct: CovenantTestInput in credit/covenants.rs
+// Fields: covenants (Vec<Covenant>), actuals (CreditMetricsOutput)
 export const CovenantTestSchema = z.object({
   covenants: z
     .array(
       z.object({
         name: z.string().describe("Covenant name (e.g. Maximum Leverage)"),
-        metric: z
-          .enum([
-            "NetDebtToEbitda",
-            "InterestCoverage",
-            "Dscr",
-            "DebtToEquity",
-            "MinCash",
-            "MaxCapex",
-          ])
-          .describe("Financial metric being tested"),
+        metric: CovenantMetricSchema.describe("Financial metric being tested"),
         threshold: z.number().describe("Covenant threshold value"),
         direction: z
           .enum(["MaxOf", "MinOf"])
-          .describe("MaxOf = actual must be <= threshold; MinOf = actual must be >= threshold"),
+          .describe(
+            "MaxOf = actual must be <= threshold; MinOf = actual must be >= threshold"
+          ),
       })
     )
     .min(1)
     .describe("List of covenant definitions to test"),
-  actuals: z
-    .object({
-      net_debt_to_ebitda: z.number().optional().describe("Actual Net Debt / EBITDA"),
-      interest_coverage: z
-        .number()
-        .optional()
-        .describe("Actual EBITDA / Interest"),
-      dscr: z.number().optional().describe("Actual debt service coverage ratio"),
-      debt_to_equity: z.number().optional().describe("Actual Debt / Equity"),
-      cash: z.number().optional().describe("Actual cash balance"),
-      capex: z.number().optional().describe("Actual capital expenditure"),
-    })
-    .describe("Actual financial metrics to test against covenants"),
+  actuals: CreditMetricsOutputSchema.describe(
+    "Actual CreditMetricsOutput to test against covenants"
+  ),
 });

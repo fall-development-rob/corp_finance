@@ -35,6 +35,7 @@ export {
   FundFeeSchema,
   ReconciliationSchema,
   WhtSchema,
+  PortfolioWhtSchema,
   NavSchema,
   GpEconomicsSchema,
   InvestorNetReturnsSchema,

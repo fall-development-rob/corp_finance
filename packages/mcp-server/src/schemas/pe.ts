@@ -1,180 +1,250 @@
 import { z } from "zod";
-import { CurrencySchema } from "./common.js";
+import { CashFlowSchema, CurrencySchema } from "./common.js";
 
+// --- ReturnsInput ---
+// Rust struct: ReturnsInput in pe/returns.rs
+// Fields: cash_flows, dated_cash_flows?, entry_equity, exit_equity,
+//         holding_period_years?, dates?
 export const ReturnsSchema = z.object({
   cash_flows: z
     .array(z.number())
-    .min(2)
-    .describe("Cash flow series (negative for investments, positive for proceeds)"),
-  dates: z
-    .array(z.string())
+    .describe(
+      "Periodic cash flows for IRR calculation (index 0 = initial investment, negative)"
+    ),
+  dated_cash_flows: z
+    .array(CashFlowSchema)
     .optional()
-    .describe("ISO 8601 dates for XIRR (one per cash flow)"),
-  guess: z
+    .describe("Dated cash flows for XIRR calculation"),
+  entry_equity: z.number().describe("Equity invested at entry"),
+  exit_equity: z.number().describe("Equity received at exit"),
+  holding_period_years: z
     .number()
-    .min(-0.99)
-    .max(10)
     .optional()
-    .describe("Initial IRR guess for Newton-Raphson solver (default 0.10)"),
+    .describe("Holding period in years (for periodic IRR)"),
+  dates: z
+    .tuple([z.string(), z.string()])
+    .optional()
+    .describe(
+      "Entry and exit dates as [entry, exit] ISO 8601 strings for XIRR and date-based holding period"
+    ),
 });
 
-export const DebtScheduleSchema = z.object({
-  tranches: z
-    .array(
-      z.object({
-        name: z.string().describe("Tranche name (e.g. Senior Term Loan A)"),
-        amount: z.number().positive().describe("Initial principal amount"),
-        interest_rate: z
-          .number()
-          .min(0)
-          .max(0.3)
-          .describe("Annual interest rate"),
-        is_floating: z
-          .boolean()
-          .optional()
-          .describe("Whether rate is floating (base + spread)"),
-        base_rate: z
-          .number()
-          .optional()
-          .describe("Base rate (SOFR/SONIA) if floating"),
-        spread: z
-          .number()
-          .optional()
-          .describe("Credit spread above base rate"),
-        amortisation_type: z
-          .enum(["Bullet", "StraightLine", "CashSweep"])
-          .describe("Amortisation schedule type"),
-        amortisation_rate: z
-          .number()
-          .min(0)
-          .max(1)
-          .optional()
-          .describe("Annual amortisation rate for StraightLine, sweep % for CashSweep"),
-        maturity_years: z
-          .number()
-          .int()
-          .min(1)
-          .max(30)
-          .describe("Years to maturity"),
-        pik_rate: z
-          .number()
-          .min(0)
-          .max(0.2)
-          .optional()
-          .describe("Payment-in-kind interest rate"),
-        seniority: z
-          .number()
-          .int()
-          .min(1)
-          .describe("Seniority ranking (1 = most senior)"),
-        is_revolver: z
-          .boolean()
-          .optional()
-          .describe("Whether this is a revolving credit facility"),
-        commitment_fee: z
-          .number()
-          .min(0)
-          .max(0.05)
-          .optional()
-          .describe("Commitment fee on undrawn revolver"),
-      })
-    )
-    .min(1)
-    .describe("Debt tranches to schedule"),
-  projection_years: z
+// --- AmortisationType ---
+// Rust enum (externally tagged serde default):
+//   Bullet           -> "Bullet"
+//   StraightLine(r)  -> { "StraightLine": r }
+//   Custom(vec)      -> { "Custom": [amounts] }
+//   CashSweep(r)     -> { "CashSweep": r }
+const AmortisationTypeSchema = z.union([
+  z.literal("Bullet"),
+  z.object({ StraightLine: z.number() }),
+  z.object({ Custom: z.array(z.number()) }),
+  z.object({ CashSweep: z.number() }),
+]);
+
+// --- DebtTrancheInput ---
+// Rust struct: DebtTrancheInput in pe/debt_schedule.rs
+// napi binding build_debt_schedule deserializes directly to DebtTrancheInput (single tranche)
+const DebtTrancheSchema = z.object({
+  name: z.string().describe("Tranche name (e.g. Senior Term Loan A)"),
+  amount: z.number().positive().describe("Initial principal amount"),
+  interest_rate: z.number().min(0).describe("Annual interest rate (decimal)"),
+  is_floating: z.boolean().describe("Whether rate is floating (base + spread)"),
+  base_rate: z
+    .number()
+    .optional()
+    .describe("Base rate (SOFR/SONIA) if floating"),
+  spread: z
+    .number()
+    .optional()
+    .describe("Credit spread above base rate"),
+  amortisation: AmortisationTypeSchema.describe(
+    'Amortisation type: "Bullet", {"StraightLine": rate}, {"Custom": [amounts]}, or {"CashSweep": rate}'
+  ),
+  maturity_years: z
     .number()
     .int()
     .min(1)
-    .max(30)
-    .describe("Number of years to project"),
-  annual_cash_available: z
-    .array(z.number().min(0))
+    .describe("Years to maturity"),
+  pik_rate: z
+    .number()
     .optional()
-    .describe("Annual free cash flow available for debt service (for cash sweep)"),
+    .describe("Payment-in-kind interest rate"),
+  seniority: z
+    .number()
+    .int()
+    .min(1)
+    .describe("Seniority ranking (1 = most senior)"),
+  commitment_fee: z
+    .number()
+    .optional()
+    .describe("Commitment fee on undrawn revolver"),
+  is_revolver: z
+    .boolean()
+    .describe("Whether this is a revolving credit facility"),
 });
 
+// DebtScheduleSchema matches the single DebtTrancheInput struct that the
+// napi binding deserializes into.
+export const DebtScheduleSchema = DebtTrancheSchema;
+
+// --- SourcesUsesInput ---
+// Rust struct: SourcesUsesInput in pe/sources_uses.rs
+// Fields: enterprise_value, equity_contribution, debt_tranches (Vec<(String, Money)>),
+//         transaction_fees?, financing_fees?, management_rollover?
 export const SourcesUsesSchema = z.object({
-  sources: z
-    .array(
-      z.object({
-        name: z.string().describe("Source of funds (e.g. Senior Debt, Sponsor Equity)"),
-        amount: z.number().positive().describe("Amount contributed"),
-      })
-    )
-    .min(1)
-    .describe("Sources of transaction financing"),
-  uses: z
-    .array(
-      z.object({
-        name: z.string().describe("Use of funds (e.g. Enterprise Value, Transaction Fees)"),
-        amount: z.number().positive().describe("Amount used"),
-      })
-    )
-    .min(1)
-    .describe("Uses of transaction financing"),
-  currency: CurrencySchema.optional(),
+  enterprise_value: z
+    .number()
+    .positive()
+    .describe("Enterprise value of the target"),
+  equity_contribution: z
+    .number()
+    .min(0)
+    .describe("Equity contribution from sponsor"),
+  debt_tranches: z
+    .array(z.tuple([z.string(), z.number()]))
+    .describe("Debt tranches as [name, amount] tuples"),
+  transaction_fees: z
+    .number()
+    .optional()
+    .describe("Transaction advisory fees"),
+  financing_fees: z
+    .number()
+    .optional()
+    .describe("Debt financing/arrangement fees"),
+  management_rollover: z
+    .number()
+    .optional()
+    .describe("Management equity rollover"),
 });
 
+// --- LboInput ---
+// Rust struct: LboInput in pe/lbo.rs
 export const LboSchema = z.object({
   entry_ev: z.number().positive().describe("Enterprise value at entry"),
   entry_ebitda: z.number().positive().describe("EBITDA at entry"),
-  base_revenue: z.number().positive().describe("Base year revenue"),
-  revenue_growth: z.array(z.number()).min(1).describe("Annual revenue growth rates"),
-  ebitda_margin: z.array(z.number().min(0).max(1)).min(1).describe("Annual EBITDA margins"),
-  capex_as_pct_revenue: z.number().min(0).max(0.5).describe("Capex as % of revenue"),
-  nwc_as_pct_revenue: z.number().min(0).max(0.5).describe("Net working capital as % of revenue"),
-  tax_rate: z.number().min(0).max(0.5).describe("Corporate tax rate"),
-  da_as_pct_revenue: z.number().min(0).max(0.3).describe("D&A as % of revenue"),
-  tranches: z.array(z.object({
-    name: z.string(),
-    amount: z.number().positive(),
-    interest_rate: z.number().min(0).max(0.3),
-    is_floating: z.boolean().optional(),
-    base_rate: z.number().optional(),
-    spread: z.number().optional(),
-    amortisation: z.object({
-      type: z.enum(["Bullet", "StraightLine", "CashSweep"]),
-      rate: z.number().optional(),
-    }),
-    maturity_years: z.number().int().min(1).max(30),
-    pik_rate: z.number().optional(),
-    seniority: z.number().int().min(1),
-    is_revolver: z.boolean().optional(),
-    commitment_fee: z.number().optional(),
-  })).min(1).describe("Debt tranches"),
-  equity_contribution: z.number().positive().describe("Sponsor equity"),
-  cash_sweep_pct: z.number().min(0).max(1).optional().describe("Cash sweep percentage"),
-  exit_year: z.number().int().min(1).max(15).describe("Exit year"),
+  revenue_growth: z
+    .array(z.number())
+    .min(1)
+    .describe("Annual revenue growth rates (decimal, e.g. 0.05 = 5%)"),
+  ebitda_margin: z
+    .array(z.number())
+    .min(1)
+    .describe("Annual EBITDA margins (decimal, e.g. 0.20 = 20%)"),
+  capex_as_pct_revenue: z
+    .number()
+    .min(0)
+    .describe("Capex as percentage of revenue"),
+  nwc_as_pct_revenue: z
+    .number()
+    .min(0)
+    .describe("Net working capital change as percentage of revenue"),
+  tax_rate: z.number().min(0).max(1).describe("Corporate tax rate"),
+  da_as_pct_revenue: z
+    .number()
+    .min(0)
+    .describe("Depreciation & amortisation as percentage of revenue"),
+  base_revenue: z.number().positive().describe("Revenue in the base year (year 0)"),
+  tranches: z
+    .array(DebtTrancheSchema)
+    .min(1)
+    .describe("Debt tranches in seniority order"),
+  equity_contribution: z
+    .number()
+    .positive()
+    .describe("Sponsor equity contribution"),
+  cash_sweep_pct: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe("Percentage of excess FCF used for mandatory cash sweep repayment"),
+  exit_year: z.number().int().min(1).describe("Exit year (e.g. 5 for a 5-year hold)"),
   exit_multiple: z.number().positive().describe("Exit EV/EBITDA multiple"),
-  transaction_fees: z.number().optional(),
-  financing_fees: z.number().optional(),
-  management_rollover: z.number().optional(),
-  minimum_cash: z.number().optional(),
+  transaction_fees: z
+    .number()
+    .optional()
+    .describe("Transaction advisory fees"),
+  financing_fees: z
+    .number()
+    .optional()
+    .describe("Debt financing/arrangement fees"),
+  management_rollover: z
+    .number()
+    .optional()
+    .describe("Management equity rollover"),
+  currency: CurrencySchema.optional().describe("Currency code"),
+  minimum_cash: z
+    .number()
+    .optional()
+    .describe("Minimum cash balance to maintain before optional repayments"),
 });
 
+// --- WaterfallTierType ---
+// Rust enum (externally tagged serde default):
+//   ReturnOfCapital             -> "ReturnOfCapital"
+//   PreferredReturn { rate }    -> { "PreferredReturn": { "rate": 0.08 } }
+//   CatchUp { gp_share }       -> { "CatchUp": { "gp_share": 1.0 } }
+//   CarriedInterest { gp_share} -> { "CarriedInterest": { "gp_share": 0.20 } }
+//   Residual { gp_share }      -> { "Residual": { "gp_share": 0.20 } }
+const WaterfallTierTypeSchema = z.union([
+  z.literal("ReturnOfCapital"),
+  z.object({ PreferredReturn: z.object({ rate: z.number() }) }),
+  z.object({ CatchUp: z.object({ gp_share: z.number() }) }),
+  z.object({ CarriedInterest: z.object({ gp_share: z.number() }) }),
+  z.object({ Residual: z.object({ gp_share: z.number() }) }),
+]);
+
+// --- WaterfallInput ---
+// Rust struct: WaterfallInput in pe/waterfall.rs
+// Fields: total_proceeds, total_invested, tiers (Vec<WaterfallTier>), gp_commitment_pct
 export const WaterfallSchema = z.object({
-  total_proceeds: z.number().min(0).describe("Total fund/deal proceeds to distribute"),
-  total_invested: z.number().positive().describe("Total capital invested"),
-  tiers: z.array(z.object({
-    name: z.string().describe("Tier name"),
-    tier_type: z.object({
-      type: z.enum(["ReturnOfCapital", "PreferredReturn", "CatchUp", "CarriedInterest", "Residual"]),
-      rate: z.number().optional().describe("Rate for PreferredReturn"),
-      gp_share: z.number().optional().describe("GP share for CatchUp/CarriedInterest/Residual"),
-    }),
-  })).min(1).describe("Distribution tiers in priority order"),
-  gp_commitment_pct: z.number().min(0).max(0.1).describe("GP commitment as % of fund"),
+  total_proceeds: z
+    .number()
+    .min(0)
+    .describe("Total exit proceeds available for distribution"),
+  total_invested: z
+    .number()
+    .positive()
+    .describe("Total capital invested by the fund"),
+  tiers: z
+    .array(
+      z.object({
+        name: z.string().describe("Human-readable tier name"),
+        tier_type: WaterfallTierTypeSchema.describe("Distribution logic for this tier"),
+      })
+    )
+    .min(1)
+    .describe("Ordered waterfall tiers (executed top-to-bottom)"),
+  gp_commitment_pct: z
+    .number()
+    .min(0)
+    .max(1)
+    .describe("GP commitment as a fraction of fund (typically 0.01 - 0.05)"),
 });
 
+// --- AltmanInput ---
+// Rust struct: AltmanInput in credit/altman.rs
+// Registered via tools/pe.ts for historical reasons.
 export const AltmanSchema = z.object({
-  working_capital: z.number().describe("Working capital (current assets - current liabilities)"),
+  working_capital: z
+    .number()
+    .describe("Working capital (current assets - current liabilities)"),
   total_assets: z.number().positive().describe("Total assets"),
   retained_earnings: z.number().describe("Retained earnings"),
   ebit: z.number().describe("Earnings before interest and taxes"),
   revenue: z.number().describe("Total revenue / sales"),
   total_liabilities: z.number().positive().describe("Total liabilities"),
-  market_cap: z.number().optional().describe("Market capitalization (for public companies)"),
-  book_equity: z.number().optional().describe("Book value of equity (for private companies)"),
+  market_cap: z
+    .number()
+    .optional()
+    .describe("Market capitalization (for public companies)"),
+  book_equity: z
+    .number()
+    .optional()
+    .describe("Book value of equity (for private companies)"),
   is_public: z.boolean().describe("Whether the company is publicly traded"),
-  is_manufacturing: z.boolean().describe("Whether the company is in manufacturing"),
+  is_manufacturing: z
+    .boolean()
+    .describe("Whether the company is in manufacturing"),
 });

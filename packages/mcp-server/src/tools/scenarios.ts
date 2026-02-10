@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
-  sensitivityMatrix,
+  buildSensitivityGrid,
   scenarioAnalysis,
 } from "corp-finance-bindings";
 import {
@@ -16,7 +16,7 @@ export function registerScenarioTools(server: McpServer) {
     SensitivitySchema.shape,
     async (params) => {
       const validated = SensitivitySchema.parse(params);
-      const result = sensitivityMatrix(JSON.stringify(validated));
+      const result = buildSensitivityGrid(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );

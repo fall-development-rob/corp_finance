@@ -2,30 +2,26 @@ import { z } from "zod";
 import { SensitivityVariableSchema } from "./common.js";
 
 export const SensitivitySchema = z.object({
-  model: z
-    .enum(["Dcf", "Lbo", "Bond", "CreditMetrics"])
-    .describe("Financial model to run sensitivity on"),
+  base_inputs: z
+    .record(z.unknown())
+    .describe("Base case input values (model-specific JSON)"),
   variable_1: SensitivityVariableSchema.describe(
     "First sensitivity axis (row variable)"
   ),
   variable_2: SensitivityVariableSchema.describe(
     "Second sensitivity axis (column variable)"
   ),
-  base_inputs: z
-    .record(z.unknown())
-    .describe("Full set of model inputs as baseline parameters"),
   output_metric: z
     .string()
-    .optional()
     .describe(
-      "Output field to extract (e.g. enterprise_value, irr). Defaults to primary output."
+      "Name of the output metric being measured (e.g. enterprise_value, irr)"
     ),
+  compute_fn: z
+    .string()
+    .describe("Model function identifier (e.g. dcf, lbo)"),
 });
 
 export const ScenarioSchema = z.object({
-  model: z
-    .enum(["Dcf", "Lbo", "Bond", "CreditMetrics"])
-    .describe("Financial model to run scenarios on"),
   scenarios: z
     .array(
       z.object({
@@ -44,9 +40,11 @@ export const ScenarioSchema = z.object({
     .describe("Scenario definitions with probability weights"),
   base_inputs: z
     .record(z.unknown())
-    .describe("Full set of baseline model inputs"),
-  output_metric: z
-    .string()
-    .optional()
-    .describe("Output field to extract for comparison across scenarios"),
+    .describe("Base case input values (model-specific JSON)"),
+  output_values: z
+    .array(z.number())
+    .describe("Pre-computed output value for each scenario"),
+  base_case_value: z
+    .number()
+    .describe("Base case output value for deviation calculations"),
 });

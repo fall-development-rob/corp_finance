@@ -64,13 +64,13 @@ export const CarbonFootprintSchema = z.object({
 export const GreenBondSchema = z.object({
   bond_name: z.string().describe("Bond name / identifier"),
   face_value: z.number().positive().describe("Face value of the bond"),
-  coupon_rate: z.number().min(0).max(0.2).describe("Annual coupon rate"),
+  coupon_rate: z.number().min(0).describe("Annual coupon rate"),
   maturity_years: z.number().positive().describe("Years to maturity"),
-  green_bond_yield: z.number().min(0).max(0.3).describe("Yield of the green bond"),
-  conventional_yield: z.number().min(0).max(0.3).describe("Yield of comparable conventional bond"),
+  green_bond_yield: z.number().min(0).describe("Yield of the green bond"),
+  conventional_yield: z.number().min(0).describe("Yield of comparable conventional bond"),
   use_of_proceeds: z.array(z.object({
     project_name: z.string().describe("Project name"),
-    allocation: z.number().positive().describe("Amount allocated from proceeds"),
+    allocation: z.number().min(0).describe("Amount allocated from proceeds"),
     category: z.string().describe("Category: Renewable Energy, Energy Efficiency, etc."),
     expected_co2_avoided: z.number().min(0).describe("Expected annual CO2 avoided (tCO2e)"),
   })).describe("Projects funded by green bond proceeds"),
@@ -86,7 +86,7 @@ export const SllSchema = z.object({
     baseline_value: z.number().describe("Baseline value"),
     target_value: z.number().describe("Target value"),
     current_value: z.number().describe("Current value"),
-    margin_adjustment_bps: z.number().describe("Margin adjustment in bps if target met"),
+    margin_adjustment_bps: z.number().min(0).describe("Margin adjustment in bps if target met"),
     direction: z.enum(["Lower", "Higher"]).describe("Whether lower or higher is better"),
   })).describe("Sustainability performance targets"),
 });

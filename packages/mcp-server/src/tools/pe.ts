@@ -1,8 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
-  returnsCalculator,
-  debtSchedule,
-  sourcesUses,
+  calculateReturns,
+  buildDebtSchedule,
+  sourcesAndUses,
   buildLbo,
   calculateWaterfall,
   altmanZscore,
@@ -24,7 +24,7 @@ export function registerPETools(server: McpServer) {
     ReturnsSchema.shape,
     async (params) => {
       const validated = ReturnsSchema.parse(params);
-      const result = returnsCalculator(JSON.stringify(validated));
+      const result = calculateReturns(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );
@@ -35,7 +35,7 @@ export function registerPETools(server: McpServer) {
     DebtScheduleSchema.shape,
     async (params) => {
       const validated = DebtScheduleSchema.parse(params);
-      const result = debtSchedule(JSON.stringify(validated));
+      const result = buildDebtSchedule(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );
@@ -46,7 +46,7 @@ export function registerPETools(server: McpServer) {
     SourcesUsesSchema.shape,
     async (params) => {
       const validated = SourcesUsesSchema.parse(params);
-      const result = sourcesUses(JSON.stringify(validated));
+      const result = sourcesAndUses(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );
