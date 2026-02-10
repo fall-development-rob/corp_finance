@@ -44,6 +44,10 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install deps
+        working-directory: packages/bindings
+        run: npm install
+
       - name: Build bindings
         working-directory: packages/bindings
         run: npm run build
