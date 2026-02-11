@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
+use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
 use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
 use commands::credit_derivatives::{CdsArgs, CvaArgs};
@@ -14,6 +15,7 @@ use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
     IrsArgs, OptionPriceArgs, StrategyArgs,
 };
+use commands::equity_research::{SotpArgs, TargetPriceArgs};
 use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
@@ -37,10 +39,12 @@ use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
+use commands::real_options::{DecisionTreeArgs, RealOptionArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
+use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
 use commands::three_statement::ThreeStatementArgs;
 use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
@@ -263,6 +267,22 @@ enum Commands {
     PensionFunding(PensionFundingArgs),
     /// Liability-Driven Investing (LDI) strategy design
     LdiStrategy(LdiStrategyArgs),
+    /// Sovereign bond analysis (yield decomposition, risk premium)
+    SovereignBond(SovereignBondArgs),
+    /// Country risk assessment (political, economic, financial)
+    CountryRisk(CountryRiskArgs),
+    /// Real option valuation (Black-Scholes, binomial, Monte Carlo)
+    RealOption(RealOptionArgs),
+    /// Decision tree analysis for investment decisions
+    DecisionTree(DecisionTreeArgs),
+    /// Sum-of-the-parts (SOTP) valuation
+    Sotp(SotpArgs),
+    /// Equity research target price calculation
+    TargetPrice(TargetPriceArgs),
+    /// Commodity spread analysis (calendar, crack, crush, spark)
+    CommoditySpread(CommoditySpreadArgs),
+    /// Storage economics analysis (carry trade, injection/withdrawal)
+    StorageEconomics(StorageEconomicsArgs),
     /// Print version information
     Version,
 }
@@ -383,6 +403,16 @@ fn main() {
         Commands::SaleLeaseback(args) => commands::lease_accounting::run_sale_leaseback(args),
         Commands::PensionFunding(args) => commands::pension::run_pension_funding(args),
         Commands::LdiStrategy(args) => commands::pension::run_ldi_strategy(args),
+        Commands::SovereignBond(args) => commands::sovereign::run_sovereign_bond(args),
+        Commands::CountryRisk(args) => commands::sovereign::run_country_risk(args),
+        Commands::RealOption(args) => commands::real_options::run_real_option(args),
+        Commands::DecisionTree(args) => commands::real_options::run_decision_tree(args),
+        Commands::Sotp(args) => commands::equity_research::run_sotp(args),
+        Commands::TargetPrice(args) => commands::equity_research::run_target_price(args),
+        Commands::CommoditySpread(args) => commands::commodity_trading::run_commodity_spread(args),
+        Commands::StorageEconomics(args) => {
+            commands::commodity_trading::run_storage_economics(args)
+        }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

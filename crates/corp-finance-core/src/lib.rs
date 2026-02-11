@@ -95,6 +95,18 @@ pub mod lease_accounting;
 #[cfg(feature = "pension")]
 pub mod pension;
 
+#[cfg(feature = "sovereign")]
+pub mod sovereign;
+
+#[cfg(feature = "real_options")]
+pub mod real_options;
+
+#[cfg(feature = "equity_research")]
+pub mod equity_research;
+
+#[cfg(feature = "commodity_trading")]
+pub mod commodity_trading;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

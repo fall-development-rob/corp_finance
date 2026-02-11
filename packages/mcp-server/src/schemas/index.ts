@@ -182,3 +182,23 @@ export {
   PensionFundingSchema,
   LdiStrategySchema,
 } from "./pension.js";
+
+export {
+  SovereignBondSchema,
+  CountryRiskSchema,
+} from "./sovereign.js";
+
+export {
+  RealOptionSchema,
+  DecisionTreeSchema,
+} from "./real_options.js";
+
+export {
+  SotpSchema,
+  TargetPriceSchema,
+} from "./equity_research.js";
+
+export {
+  CommoditySpreadSchema,
+  StorageEconomicsSchema,
+} from "./commodity_trading.js";

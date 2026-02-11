@@ -1054,3 +1054,91 @@ pub fn design_ldi_strategy(input_json: String) -> NapiResult<String> {
         corp_finance_core::pension::ldi::design_ldi_strategy(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Sovereign — Phase 10
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_sovereign_bond(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::sovereign::sovereign_bonds::SovereignBondInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::sovereign::sovereign_bonds::analyze_sovereign_bond(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn assess_country_risk(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::sovereign::country_risk::CountryRiskInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::sovereign::country_risk::assess_country_risk(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Real Options — Phase 10
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn value_real_option(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::real_options::valuation::RealOptionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::real_options::valuation::value_real_option(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_decision_tree(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::real_options::decision_tree::DecisionTreeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::real_options::decision_tree::analyze_decision_tree(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Equity Research — Phase 10
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_sotp(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::equity_research::sotp::SotpInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::equity_research::sotp::calculate_sotp(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_target_price(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::equity_research::target_price::TargetPriceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::equity_research::target_price::calculate_target_price(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Commodity Trading — Phase 10
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_commodity_spread(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::commodity_trading::spreads::CommoditySpreadInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::commodity_trading::spreads::analyze_commodity_spread(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_storage_economics(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::commodity_trading::storage::StorageEconomicsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::commodity_trading::storage::analyze_storage_economics(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

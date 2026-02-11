@@ -103,3 +103,11 @@ export declare function classifyLease(inputJson: string): string
 export declare function analyzeSaleLeaseback(inputJson: string): string
 export declare function analyzePensionFunding(inputJson: string): string
 export declare function designLdiStrategy(inputJson: string): string
+export declare function analyzeSovereignBond(inputJson: string): string
+export declare function assessCountryRisk(inputJson: string): string
+export declare function valueRealOption(inputJson: string): string
+export declare function analyzeDecisionTree(inputJson: string): string
+export declare function calculateSotp(inputJson: string): string
+export declare function calculateTargetPrice(inputJson: string): string
+export declare function analyzeCommoditySpread(inputJson: string): string
+export declare function analyzeStorageEconomics(inputJson: string): string
