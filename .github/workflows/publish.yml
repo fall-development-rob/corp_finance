@@ -1,0 +1,244 @@
+name: Publish
+
+# Trigger on version tags or manual dispatch
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.2.0)"
+        required: true
+        type: string
+      dry-run:
+        description: "Dry run — build and validate without publishing"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write    # Required for creating GitHub releases
+  id-token: write    # Required for npm provenance
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Run the full test suite before building release artifacts
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --workspace --all-features
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Build native .node bindings for each platform/arch combination
+  # ---------------------------------------------------------------------------
+  build-bindings:
+    name: Build — ${{ matrix.target }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            # Native compilation — no cross toolchain needed
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            # Cross-compiled via zig as the linker
+            use-zig: true
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Zig is used as a cross-compilation linker for Linux aarch64 builds
+      # running on x86_64 GitHub runners
+      - name: Setup zig (cross-compilation)
+        if: matrix.use-zig
+        uses: goto-bus-stop/setup-zig@v2
+
+      - name: Install npm dependencies
+        working-directory: packages/bindings
+        run: npm install
+
+      - name: Build native binding
+        working-directory: packages/bindings
+        run: npx napi build --platform --release --target ${{ matrix.target }}
+        env:
+          # Tell napi-rs to use zig as the linker for cross-compilation
+          NAPI_RS_CROSS_COMPILE: ${{ matrix.use-zig && '1' || '' }}
+
+      # Upload the compiled .node file so the publish job can collect them all
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.target }}
+          path: packages/bindings/corp-finance.*.node
+          if-no-files-found: error
+          retention-days: 3
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Collect all platform binaries and publish npm packages
+  # ---------------------------------------------------------------------------
+  publish-npm:
+    name: Publish npm packages
+    needs: build-bindings
+    runs-on: ubuntu-latest
+    # Only publish when this is NOT a dry run
+    if: ${{ !(github.event.inputs.dry-run == 'true') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Download every platform artifact into packages/bindings/
+      - name: Download all binding artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: packages/bindings/
+          pattern: bindings-*
+          merge-multiple: true
+
+      - name: List binding artifacts
+        run: ls -la packages/bindings/corp-finance.*.node
+
+      # Create .npmrc with auth token for publishing
+      - name: Configure npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      # Publish the native bindings package first since the MCP server depends on it
+      - name: Publish corp-finance-bindings
+        working-directory: packages/bindings
+        run: |
+          npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Build and publish the MCP server package
+      # The dependency on corp-finance-bindings must be changed from file: to
+      # a registry version before publishing
+      - name: Publish corp-finance-mcp
+        working-directory: packages/mcp-server
+        run: |
+          # Determine the version to reference for the bindings dependency
+          BINDINGS_VERSION=$(node -p "require('../bindings/package.json').version")
+
+          # Replace the local file: dependency with the published version
+          node -e "
+            const pkg = require('./package.json');
+            pkg.dependencies['corp-finance-bindings'] = '^${BINDINGS_VERSION}';
+            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          npm install
+          npm run build
+          npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Create a GitHub Release with auto-generated notes and binary assets
+  # ---------------------------------------------------------------------------
+  github-release:
+    name: GitHub Release
+    needs: build-bindings
+    runs-on: ubuntu-latest
+    # Only create a release on tag pushes (not manual dispatch)
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binding artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: bindings-*
+          merge-multiple: true
+
+      # Rename artifacts to include the version for clarity in release assets
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          for f in artifacts/corp-finance.*.node; do
+            cp "$f" "release-assets/$(basename "$f")"
+          done
+          ls -la release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # Job 5: Publish the core Rust crate to crates.io (manual trigger only)
+  # ---------------------------------------------------------------------------
+  publish-crates:
+    name: Publish to crates.io
+    needs: test
+    runs-on: ubuntu-latest
+    # Only run on manual dispatch and when not a dry run. Tag pushes skip this
+    # because crates.io publishing should be a deliberate choice.
+    if: github.event_name == 'workflow_dispatch' && !(github.event.inputs.dry-run == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Publish corp-finance-core first (it has no internal deps)
+      - name: Publish corp-finance-core
+        run: cargo publish -p corp-finance-core --all-features
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # Wait for crates.io index to propagate before publishing dependents
+      - name: Wait for crates.io index
+        run: sleep 30
+
+      - name: Publish corp-finance-cli
+        run: cargo publish -p corp-finance-cli --all-features
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

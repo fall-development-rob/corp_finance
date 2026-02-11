@@ -5,21 +5,38 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -Dwarnings
+  NODE_VERSION: "20"
 
 jobs:
   rust-checks:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
 
       - name: Format check
         run: cargo fmt --all --check
@@ -30,42 +47,96 @@ jobs:
       - name: Test
         run: cargo test --workspace --all-features
 
+  cargo-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run cargo audit
+        run: cargo audit
+
   bindings-build:
     runs-on: ubuntu-latest
     needs: rust-checks
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: packages/bindings/package-lock.json
 
-      - name: Install deps
+      - name: Install dependencies
         working-directory: packages/bindings
-        run: npm install
+        run: npm ci
 
       - name: Build bindings
         working-directory: packages/bindings
         run: npm run build
 
+      - name: Upload bindings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-linux-x64
+          path: |
+            packages/bindings/*.node
+            packages/bindings/index.js
+            packages/bindings/index.d.ts
+            packages/bindings/package.json
+          retention-days: 1
+
   mcp-server:
     runs-on: ubuntu-latest
     needs: bindings-build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: packages/mcp-server/package-lock.json
 
-      - name: Install deps
+      - name: Download bindings artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-linux-x64
+          path: packages/bindings
+
+      - name: Install MCP server dependencies
         working-directory: packages/mcp-server
-        run: npm install
+        run: npm ci
 
-      - name: Build
+      - name: Build MCP server
         working-directory: packages/mcp-server
         run: npm run build
+
+      - name: Smoke test - verify server module loads
+        working-directory: packages/mcp-server
+        shell: bash
+        run: |
+          set +e
+          timeout 10 node -e "import('./dist/index.js')"
+          STATUS=$?
+          set -e
+          if [ "$STATUS" -eq 0 ] || [ "$STATUS" -eq 124 ]; then
+            echo "Server module loaded successfully (exit code $STATUS)"
+            exit 0
+          fi
+          echo "Server failed to load (exit code $STATUS)"
+          exit 1

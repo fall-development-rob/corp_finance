@@ -1,0 +1,36 @@
+# Dependabot configuration
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  # Rust crates (workspace root)
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, rust]
+    open-pull-requests-limit: 5
+
+  # Node.js - napi bindings
+  - package-ecosystem: npm
+    directory: /packages/bindings
+    schedule:
+      interval: weekly
+    labels: [dependencies, npm]
+    open-pull-requests-limit: 3
+
+  # Node.js - MCP server
+  - package-ecosystem: npm
+    directory: /packages/mcp-server
+    schedule:
+      interval: weekly
+    labels: [dependencies, npm]
+    open-pull-requests-limit: 3
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, ci]
+    open-pull-requests-limit: 3

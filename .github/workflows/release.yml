@@ -1,0 +1,227 @@
+# Release preparation workflow
+#
+# Bumps the workspace version across all manifests, generates a changelog
+# entry from conventional commits, runs the full test suite, and optionally
+# commits + tags the release.
+#
+# By default dry_run is true so nothing is pushed -- reviewers can inspect
+# the workflow output before doing a real release.
+
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: "Dry run (no commit, tag, or push)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  NODE_VERSION: "20"
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      # ------------------------------------------------------------------
+      # 1. Checkout with full history (needed for changelog generation)
+      # ------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------
+      # 2. Toolchains
+      # ------------------------------------------------------------------
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # ------------------------------------------------------------------
+      # 3. Determine current and new version
+      # ------------------------------------------------------------------
+      - name: Compute new version
+        id: version
+        run: |
+          # Read the workspace version from the root Cargo.toml
+          CURRENT=$(grep -E '^version\s*=\s*"' Cargo.toml | head -1 \
+            | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+
+          if [ -z "$CURRENT" ]; then
+            echo "::error::Could not read version from Cargo.toml"
+            exit 1
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ inputs.bump_type }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW="${MAJOR}.${MINOR}.${PATCH}"
+
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW"         >> "$GITHUB_OUTPUT"
+
+          echo "### Version bump" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | Version |"   >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|"        >> "$GITHUB_STEP_SUMMARY"
+          echo "| Current | \`$CURRENT\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| New     | \`$NEW\` |"     >> "$GITHUB_STEP_SUMMARY"
+
+      # ------------------------------------------------------------------
+      # 4. Update version in all manifests
+      # ------------------------------------------------------------------
+      - name: Bump workspace Cargo.toml
+        run: |
+          sed -i "s/^version = \"${{ steps.version.outputs.current }}\"/version = \"${{ steps.version.outputs.new }}\"/" Cargo.toml
+          echo "Updated Cargo.toml workspace version"
+
+      - name: Bump crate Cargo.toml files (hardcoded versions only)
+        run: |
+          for toml in crates/*/Cargo.toml packages/*/Cargo.toml; do
+            [ -f "$toml" ] || continue
+            # Only touch files that have a hardcoded version (not version.workspace = true)
+            if grep -qE '^version\s*=\s*"[0-9]' "$toml"; then
+              sed -i "s/^version = \"${{ steps.version.outputs.current }}\"/version = \"${{ steps.version.outputs.new }}\"/" "$toml"
+              echo "Updated $toml"
+            fi
+          done
+
+      - name: Bump packages/bindings/package.json
+        run: |
+          cd packages/bindings
+          # Use node to update version in-place (portable, handles JSON correctly)
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${{ steps.version.outputs.new }}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated packages/bindings/package.json"
+
+      - name: Bump packages/mcp-server/package.json
+        run: |
+          cd packages/mcp-server
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${{ steps.version.outputs.new }}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated packages/mcp-server/package.json"
+
+      - name: Bump MCP server version string in index.ts
+        run: |
+          INDEX="packages/mcp-server/src/index.ts"
+          if [ -f "$INDEX" ] && grep -q "version: \"${{ steps.version.outputs.current }}\"" "$INDEX"; then
+            sed -i "s/version: \"${{ steps.version.outputs.current }}\"/version: \"${{ steps.version.outputs.new }}\"/" "$INDEX"
+            echo "Updated $INDEX"
+          fi
+
+      # ------------------------------------------------------------------
+      # 5. Generate changelog entry
+      # ------------------------------------------------------------------
+      - name: Generate changelog entry
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new }}"
+          TODAY=$(date +%Y-%m-%d)
+
+          chmod +x scripts/changelog-gen.sh
+          ENTRY=$(scripts/changelog-gen.sh "" "HEAD" "$NEW_VERSION" "$TODAY" 2>/dev/null || true)
+
+          if [ -z "$ENTRY" ]; then
+            echo "::warning::No commits found for changelog entry"
+            exit 0
+          fi
+
+          echo "Generated changelog entry:"
+          echo "$ENTRY"
+          echo ""
+
+          # Prepend entry to CHANGELOG.md (after the 6-line header)
+          if [ -f CHANGELOG.md ]; then
+            TMPFILE=$(mktemp)
+            head -6 CHANGELOG.md > "$TMPFILE"
+            echo ""           >> "$TMPFILE"
+            echo "$ENTRY"     >> "$TMPFILE"
+            tail -n +7 CHANGELOG.md >> "$TMPFILE"
+            mv "$TMPFILE" CHANGELOG.md
+          fi
+
+      - name: Show changed files
+        run: git diff --stat
+
+      # ------------------------------------------------------------------
+      # 6. Run full test suite to verify the release is healthy
+      # ------------------------------------------------------------------
+      - name: Format check
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --all-features
+
+      # ------------------------------------------------------------------
+      # 7. Commit, tag, and push (only when dry_run is false)
+      # ------------------------------------------------------------------
+      - name: Commit and tag release
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new }}"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore(release): v${NEW_VERSION}"
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+
+          echo "### Release committed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`chore(release): v${NEW_VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: \`v${NEW_VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Push commit and tag
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git push origin HEAD
+          git push origin "v${{ steps.version.outputs.new }}"
+
+      - name: Dry-run notice
+        if: ${{ inputs.dry_run == true }}
+        run: |
+          echo "::notice::Dry run complete -- no commit, tag, or push was made."
+          echo "### Dry run" >> "$GITHUB_STEP_SUMMARY"
+          echo "No changes were committed. Re-run with **dry_run = false** to create the release." >> "$GITHUB_STEP_SUMMARY"
