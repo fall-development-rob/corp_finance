@@ -107,6 +107,18 @@ pub mod equity_research;
 #[cfg(feature = "commodity_trading")]
 pub mod commodity_trading;
 
+#[cfg(feature = "quant_strategies")]
+pub mod quant_strategies;
+
+#[cfg(feature = "treasury")]
+pub mod treasury;
+
+#[cfg(feature = "infrastructure")]
+pub mod infrastructure;
+
+#[cfg(feature = "behavioral")]
+pub mod behavioral;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

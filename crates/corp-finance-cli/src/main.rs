@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
+use commands::behavioral::{ProspectTheoryArgs, SentimentArgs};
 use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
 use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
@@ -24,6 +25,7 @@ use commands::fpa::{BreakevenArgs, RollingForecastArgs, VarianceArgs, WorkingCap
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
 };
+use commands::infrastructure::{ConcessionArgs, PppModelArgs};
 use commands::insurance::{CombinedRatioArgs, PremiumPricingArgs, ReservingArgs, ScrArgs};
 use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
@@ -38,6 +40,7 @@ use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
+use commands::quant_strategies::{MomentumArgs, PairsTradingArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
 use commands::real_options::{DecisionTreeArgs, RealOptionArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
@@ -48,6 +51,7 @@ use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
 use commands::three_statement::ThreeStatementArgs;
 use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
+use commands::treasury::{CashManagementArgs, HedgingArgs};
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 use commands::venture::{
     ConvertibleNoteArgs, DilutionArgs, FundingRoundArgs, SafeArgs, VentureFundArgs,
@@ -283,6 +287,22 @@ enum Commands {
     CommoditySpread(CommoditySpreadArgs),
     /// Storage economics analysis (carry trade, injection/withdrawal)
     StorageEconomics(StorageEconomicsArgs),
+    /// Pairs trading analysis (cointegration, z-scores, backtest)
+    PairsTrading(PairsTradingArgs),
+    /// Momentum factor analysis and portfolio construction
+    Momentum(MomentumArgs),
+    /// Corporate cash management and liquidity analysis
+    CashManagement(CashManagementArgs),
+    /// Hedge effectiveness analysis (FX, IR hedging)
+    HedgeEffectiveness(HedgingArgs),
+    /// PPP/PFI project financial model
+    PppModel(PppModelArgs),
+    /// Concession valuation and analysis
+    Concession(ConcessionArgs),
+    /// Prospect theory and behavioral bias analysis
+    ProspectTheory(ProspectTheoryArgs),
+    /// Market sentiment analysis (Fear & Greed scoring)
+    Sentiment(SentimentArgs),
     /// Print version information
     Version,
 }
@@ -413,6 +433,14 @@ fn main() {
         Commands::StorageEconomics(args) => {
             commands::commodity_trading::run_storage_economics(args)
         }
+        Commands::PairsTrading(args) => commands::quant_strategies::run_pairs_trading(args),
+        Commands::Momentum(args) => commands::quant_strategies::run_momentum(args),
+        Commands::CashManagement(args) => commands::treasury::run_cash_management(args),
+        Commands::HedgeEffectiveness(args) => commands::treasury::run_hedging(args),
+        Commands::PppModel(args) => commands::infrastructure::run_ppp_model(args),
+        Commands::Concession(args) => commands::infrastructure::run_concession(args),
+        Commands::ProspectTheory(args) => commands::behavioral::run_prospect_theory(args),
+        Commands::Sentiment(args) => commands::behavioral::run_sentiment(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

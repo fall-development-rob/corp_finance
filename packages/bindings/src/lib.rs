@@ -1142,3 +1142,91 @@ pub fn analyze_storage_economics(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Quant Strategies — Phase 11
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_pairs_trading(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_strategies::pairs_trading::PairsTradingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_strategies::pairs_trading::analyze_pairs_trading(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_momentum(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::quant_strategies::momentum::MomentumInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::quant_strategies::momentum::analyze_momentum(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Treasury — Phase 11
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_cash_management(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::treasury::cash_management::CashManagementInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::treasury::cash_management::analyze_cash_management(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_hedging(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::treasury::hedging::HedgingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::treasury::hedging::analyze_hedging(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Infrastructure — Phase 11
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn model_ppp(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::infrastructure::ppp_model::PppModelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::infrastructure::ppp_model::model_ppp(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn value_concession(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::infrastructure::concession::ConcessionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::infrastructure::concession::value_concession(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Behavioral Finance — Phase 11
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_prospect_theory(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::behavioral::prospect_theory::ProspectTheoryInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::behavioral::prospect_theory::analyze_prospect_theory(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_sentiment(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::behavioral::sentiment::SentimentInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::behavioral::sentiment::analyze_sentiment(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

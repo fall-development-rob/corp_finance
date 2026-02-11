@@ -202,3 +202,23 @@ export {
   CommoditySpreadSchema,
   StorageEconomicsSchema,
 } from "./commodity_trading.js";
+
+export {
+  PairsTradingSchema,
+  MomentumSchema,
+} from "./quant_strategies.js";
+
+export {
+  CashManagementSchema,
+  HedgingSchema,
+} from "./treasury.js";
+
+export {
+  PppModelSchema,
+  ConcessionSchema,
+} from "./infrastructure.js";
+
+export {
+  ProspectTheorySchema,
+  SentimentSchema,
+} from "./behavioral.js";

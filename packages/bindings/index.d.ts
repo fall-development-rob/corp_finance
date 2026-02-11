@@ -111,3 +111,11 @@ export declare function calculateSotp(inputJson: string): string
 export declare function calculateTargetPrice(inputJson: string): string
 export declare function analyzeCommoditySpread(inputJson: string): string
 export declare function analyzeStorageEconomics(inputJson: string): string
+export declare function analyzePairsTrading(inputJson: string): string
+export declare function analyzeMomentum(inputJson: string): string
+export declare function analyzeCashManagement(inputJson: string): string
+export declare function analyzeHedging(inputJson: string): string
+export declare function modelPpp(inputJson: string): string
+export declare function valueConcession(inputJson: string): string
+export declare function analyzeProspectTheory(inputJson: string): string
+export declare function analyzeSentiment(inputJson: string): string
