@@ -7,6 +7,7 @@ use colored::Colorize;
 use std::process;
 
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
+use commands::crypto::{DefiAnalysisArgs, TokenValuationArgs};
 use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
     IrsArgs, OptionPriceArgs, StrategyArgs,
@@ -26,6 +27,7 @@ use commands::jurisdiction::{
 };
 use commands::ma::MergerArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
+use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
@@ -35,7 +37,9 @@ use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
+use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
 use commands::three_statement::ThreeStatementArgs;
+use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 use commands::venture::{
     ConvertibleNoteArgs, DilutionArgs, FundingRoundArgs, SafeArgs, VentureFundArgs,
@@ -223,6 +227,22 @@ enum Commands {
     Tlh(TlhArgs),
     /// Estate planning (gift tax, GST, trust analysis)
     EstatePlan(EstatePlanArgs),
+    /// Token/protocol valuation using on-chain metrics
+    TokenValuation(TokenValuationArgs),
+    /// DeFi yield, impermanent loss, staking & LP analysis
+    DefiAnalysis(DefiAnalysisArgs),
+    /// Municipal bond pricing with tax-equivalent yield
+    MuniBond(MuniBondArgs),
+    /// Municipal credit analysis (GO, revenue, scoring, refunding)
+    MuniAnalysis(MuniAnalysisArgs),
+    /// Structured note pricing (capital-protected, yield enhancement, participation, credit-linked)
+    StructuredNote(StructuredNoteArgs),
+    /// Exotic product pricing (autocallable, barrier, digital options)
+    ExoticProduct(ExoticProductArgs),
+    /// Letter of credit pricing and risk assessment
+    LetterOfCredit(LetterOfCreditArgs),
+    /// Supply chain finance analysis (reverse factoring, dynamic discounting, forfaiting, export credit)
+    SupplyChainFinance(SupplyChainFinanceArgs),
     /// Print version information
     Version,
 }
@@ -321,6 +341,16 @@ fn main() {
         Commands::Retirement(args) => commands::wealth::run_retirement(args),
         Commands::Tlh(args) => commands::wealth::run_tlh(args),
         Commands::EstatePlan(args) => commands::wealth::run_estate_plan(args),
+        Commands::TokenValuation(args) => commands::crypto::run_token_valuation(args),
+        Commands::DefiAnalysis(args) => commands::crypto::run_defi_analysis(args),
+        Commands::MuniBond(args) => commands::municipal::run_muni_bond(args),
+        Commands::MuniAnalysis(args) => commands::municipal::run_muni_analysis(args),
+        Commands::StructuredNote(args) => commands::structured_products::run_structured_note(args),
+        Commands::ExoticProduct(args) => commands::structured_products::run_exotic_product(args),
+        Commands::LetterOfCredit(args) => commands::trade_finance::run_letter_of_credit(args),
+        Commands::SupplyChainFinance(args) => {
+            commands::trade_finance::run_supply_chain_finance(args)
+        }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

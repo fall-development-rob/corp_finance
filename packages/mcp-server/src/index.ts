@@ -24,6 +24,10 @@ import { registerPrivateCreditTools } from "./tools/private_credit.js";
 import { registerInsuranceTools } from "./tools/insurance.js";
 import { registerFpaTools } from "./tools/fpa.js";
 import { registerWealthTools } from "./tools/wealth.js";
+import { registerCryptoTools } from "./tools/crypto.js";
+import { registerMunicipalTools } from "./tools/municipal.js";
+import { registerStructuredProductsTools } from "./tools/structured_products.js";
+import { registerTradeFinanceTools } from "./tools/trade_finance.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -53,6 +57,10 @@ registerPrivateCreditTools(server);
 registerInsuranceTools(server);
 registerFpaTools(server);
 registerWealthTools(server);
+registerCryptoTools(server);
+registerMunicipalTools(server);
+registerStructuredProductsTools(server);
+registerTradeFinanceTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

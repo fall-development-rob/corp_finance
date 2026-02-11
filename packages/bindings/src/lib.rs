@@ -877,3 +877,91 @@ pub fn plan_estate(input_json: String) -> NapiResult<String> {
         corp_finance_core::wealth::tax_estate::plan_estate(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Crypto / Digital Assets — Phase 8
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn value_token(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::crypto::valuation::TokenValuationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::crypto::valuation::value_token(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_defi(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::crypto::defi::DefiYieldInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::crypto::defi::analyze_defi(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Municipal Bonds — Phase 8
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_muni_bond(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::municipal::bonds::MuniBondInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::municipal::bonds::price_muni_bond(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_municipal(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::municipal::analysis::MuniAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::municipal::analysis::analyze_municipal(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Structured Products — Phase 8
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_structured_note(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::structured_products::notes::StructuredNoteInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::structured_products::notes::price_structured_note(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn price_exotic(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::structured_products::exotic::ExoticProductInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::structured_products::exotic::price_exotic(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Trade Finance — Phase 8
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_letter_of_credit(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::trade_finance::letter_of_credit::LetterOfCreditInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::trade_finance::letter_of_credit::price_letter_of_credit(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_supply_chain_finance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::trade_finance::supply_chain::SupplyChainFinanceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::trade_finance::supply_chain::analyze_supply_chain_finance(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

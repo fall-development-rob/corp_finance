@@ -142,3 +142,23 @@ export {
   TlhSchema,
   EstatePlanSchema,
 } from "./wealth.js";
+
+export {
+  TokenValuationSchema,
+  DefiYieldSchema,
+} from "./crypto.js";
+
+export {
+  MuniBondSchema,
+  MuniAnalysisSchema,
+} from "./municipal.js";
+
+export {
+  StructuredNoteSchema,
+  ExoticProductSchema,
+} from "./structured_products.js";
+
+export {
+  LetterOfCreditSchema,
+  SupplyChainFinanceSchema,
+} from "./trade_finance.js";

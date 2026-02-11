@@ -71,6 +71,18 @@ pub mod fpa;
 #[cfg(feature = "wealth")]
 pub mod wealth;
 
+#[cfg(feature = "crypto")]
+pub mod crypto;
+
+#[cfg(feature = "trade_finance")]
+pub mod trade_finance;
+
+#[cfg(feature = "structured_products")]
+pub mod structured_products;
+
+#[cfg(feature = "municipal")]
+pub mod municipal;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

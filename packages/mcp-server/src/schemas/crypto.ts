@@ -1,0 +1,55 @@
+import { z } from "zod";
+
+const ComparableProtocolSchema = z.object({
+  name: z.string().describe("Protocol name"),
+  fdv: z.coerce.number().positive().describe("Fully diluted valuation"),
+  revenue: z.coerce.number().positive().describe("Annual protocol revenue"),
+  tvl: z.coerce.number().positive().optional().describe("Total value locked"),
+  fees: z.coerce.number().positive().optional().describe("Annual protocol fees"),
+});
+
+export const TokenValuationSchema = z.object({
+  token_name: z.string().describe("Token or protocol name"),
+  network_value: z.coerce.number().positive().describe("Fully diluted valuation / market cap"),
+  daily_transaction_volume: z.coerce.number().min(0).describe("Daily on-chain transaction volume"),
+  active_addresses: z.coerce.number().int().min(0).describe("Number of active addresses"),
+  annual_protocol_revenue: z.coerce.number().min(0).describe("Annual protocol revenue"),
+  total_value_locked: z.coerce.number().min(0).optional().describe("Total value locked (DeFi)"),
+  token_supply: z.coerce.number().positive().describe("Total / max token supply"),
+  circulating_supply: z.coerce.number().positive().describe("Currently circulating supply"),
+  discount_rate: z.coerce.number().describe("Discount rate for DCF (e.g. 0.20)"),
+  revenue_growth_rate: z.coerce.number().describe("Expected annual revenue growth rate"),
+  terminal_growth_rate: z.coerce.number().describe("Terminal growth rate"),
+  projection_years: z.coerce.number().int().positive().optional().describe("Projection years for DCF"),
+  comparable_protocols: z.array(ComparableProtocolSchema).optional().describe("Comparable protocols for relative valuation"),
+});
+
+export const DefiYieldSchema = z.object({
+  protocol_name: z.string().describe("Protocol or pool name"),
+  analysis_type: z.enum(["YieldFarm", "ImpermanentLoss", "Staking", "LiquidityPool"]).describe("Analysis type"),
+  base_apr: z.coerce.number().optional().describe("Base APR"),
+  reward_apr: z.coerce.number().optional().describe("Additional token incentive APR"),
+  compounding_frequency: z.coerce.number().int().optional().describe("Compounds per year"),
+  gas_cost_per_compound: z.coerce.number().optional().describe("Gas cost per compound"),
+  principal: z.coerce.number().optional().describe("Principal deposited"),
+  holding_period_days: z.coerce.number().int().optional().describe("Holding period in days"),
+  initial_price_a: z.coerce.number().optional().describe("Initial price of token A"),
+  initial_price_b: z.coerce.number().optional().describe("Initial price of token B"),
+  final_price_a: z.coerce.number().optional().describe("Final price of token A"),
+  final_price_b: z.coerce.number().optional().describe("Final price of token B"),
+  initial_deposit_value: z.coerce.number().optional().describe("Initial deposit value"),
+  pool_fee_apr: z.coerce.number().optional().describe("Pool trading fee APR"),
+  staked_amount: z.coerce.number().optional().describe("Amount staked"),
+  annual_reward_rate: z.coerce.number().optional().describe("Annual reward rate"),
+  validator_commission: z.coerce.number().optional().describe("Validator commission rate"),
+  slashing_probability: z.coerce.number().optional().describe("Annual slashing probability"),
+  slashing_penalty: z.coerce.number().optional().describe("Fraction of stake lost if slashed"),
+  unbonding_period_days: z.coerce.number().int().optional().describe("Unbonding period in days"),
+  compounding: z.coerce.boolean().optional().describe("Whether rewards auto-compound"),
+  pool_tvl: z.coerce.number().optional().describe("Total value locked in pool"),
+  user_deposit: z.coerce.number().optional().describe("User deposit into pool"),
+  daily_volume: z.coerce.number().optional().describe("Average daily trading volume"),
+  swap_fee_rate: z.coerce.number().optional().describe("Pool swap fee rate"),
+  token_a_weight: z.coerce.number().optional().describe("Token A weight in pool"),
+  token_b_weight: z.coerce.number().optional().describe("Token B weight in pool"),
+});
