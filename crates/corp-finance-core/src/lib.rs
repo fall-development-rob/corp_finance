@@ -119,6 +119,18 @@ pub mod infrastructure;
 #[cfg(feature = "behavioral")]
 pub mod behavioral;
 
+#[cfg(feature = "performance_attribution")]
+pub mod performance_attribution;
+
+#[cfg(feature = "credit_portfolio")]
+pub mod credit_portfolio;
+
+#[cfg(feature = "macro_economics")]
+pub mod macro_economics;
+
+#[cfg(feature = "compliance")]
+pub mod compliance;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

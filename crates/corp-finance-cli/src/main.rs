@@ -8,9 +8,11 @@ use std::process;
 
 use commands::behavioral::{ProspectTheoryArgs, SentimentArgs};
 use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
+use commands::compliance::{BestExecutionArgs, GipsReportArgs};
 use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
 use commands::credit_derivatives::{CdsArgs, CvaArgs};
+use commands::credit_portfolio::{MigrationArgs, PortfolioCreditRiskArgs};
 use commands::crypto::{DefiAnalysisArgs, TokenValuationArgs};
 use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
@@ -33,10 +35,12 @@ use commands::jurisdiction::{
 };
 use commands::lease_accounting::{LeaseClassificationArgs, SaleLeasebackArgs};
 use commands::ma::MergerArgs;
+use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
+use commands::performance_attribution::{BrinsonArgs, FactorAttributionArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
@@ -303,6 +307,22 @@ enum Commands {
     ProspectTheory(ProspectTheoryArgs),
     /// Market sentiment analysis (Fear & Greed scoring)
     Sentiment(SentimentArgs),
+    /// Brinson-Fachler performance attribution (allocation, selection, interaction)
+    Brinson(BrinsonArgs),
+    /// Factor-based return attribution and tracking error decomposition
+    FactorAttribution(FactorAttributionArgs),
+    /// Portfolio credit risk analysis (Gaussian copula VaR, concentration)
+    PortfolioCreditRisk(PortfolioCreditRiskArgs),
+    /// Rating migration analysis (transition matrices, mark-to-market VaR)
+    CreditMigration(MigrationArgs),
+    /// Monetary policy analysis (Taylor Rule, Phillips Curve, Okun's Law)
+    MonetaryPolicy(MonetaryPolicyArgs),
+    /// International economics (PPP, interest rate parity, balance of payments)
+    International(InternationalArgs),
+    /// MiFID II best execution and transaction cost analysis
+    BestExecution(BestExecutionArgs),
+    /// GIPS-compliant performance reporting
+    GipsReport(GipsReportArgs),
     /// Print version information
     Version,
 }
@@ -441,6 +461,18 @@ fn main() {
         Commands::Concession(args) => commands::infrastructure::run_concession(args),
         Commands::ProspectTheory(args) => commands::behavioral::run_prospect_theory(args),
         Commands::Sentiment(args) => commands::behavioral::run_sentiment(args),
+        Commands::Brinson(args) => commands::performance_attribution::run_brinson(args),
+        Commands::FactorAttribution(args) => {
+            commands::performance_attribution::run_factor_attribution(args)
+        }
+        Commands::PortfolioCreditRisk(args) => {
+            commands::credit_portfolio::run_portfolio_credit_risk(args)
+        }
+        Commands::CreditMigration(args) => commands::credit_portfolio::run_migration(args),
+        Commands::MonetaryPolicy(args) => commands::macro_economics::run_monetary_policy(args),
+        Commands::International(args) => commands::macro_economics::run_international(args),
+        Commands::BestExecution(args) => commands::compliance::run_best_execution(args),
+        Commands::GipsReport(args) => commands::compliance::run_gips_report(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

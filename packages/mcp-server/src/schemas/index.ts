@@ -222,3 +222,23 @@ export {
   ProspectTheorySchema,
   SentimentSchema,
 } from "./behavioral.js";
+
+export {
+  BrinsonSchema,
+  FactorAttributionSchema,
+} from "./performance_attribution.js";
+
+export {
+  PortfolioRiskSchema,
+  MigrationSchema,
+} from "./credit_portfolio.js";
+
+export {
+  MonetaryPolicySchema,
+  InternationalSchema,
+} from "./macro_economics.js";
+
+export {
+  BestExecutionSchema,
+  GipsReportSchema,
+} from "./compliance.js";

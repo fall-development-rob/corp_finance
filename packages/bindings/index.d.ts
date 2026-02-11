@@ -119,3 +119,11 @@ export declare function modelPpp(inputJson: string): string
 export declare function valueConcession(inputJson: string): string
 export declare function analyzeProspectTheory(inputJson: string): string
 export declare function analyzeSentiment(inputJson: string): string
+export declare function brinsonAttribution(inputJson: string): string
+export declare function factorAttribution(inputJson: string): string
+export declare function calculatePortfolioCreditRisk(inputJson: string): string
+export declare function calculateMigration(inputJson: string): string
+export declare function analyzeMonetaryPolicy(inputJson: string): string
+export declare function analyzeInternational(inputJson: string): string
+export declare function analyzeBestExecution(inputJson: string): string
+export declare function generateGipsReport(inputJson: string): string

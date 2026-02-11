@@ -1230,3 +1230,94 @@ pub fn analyze_sentiment(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Performance Attribution — Phase 12
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn brinson_attribution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::performance_attribution::brinson::BrinsonInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::performance_attribution::brinson::brinson_attribution(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn factor_attribution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::performance_attribution::factor_attribution::FactorAttributionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::performance_attribution::factor_attribution::factor_attribution(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Credit Portfolio — Phase 12
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_portfolio_credit_risk(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_portfolio::portfolio_risk::PortfolioRiskInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::credit_portfolio::portfolio_risk::calculate_portfolio_risk(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_migration(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_portfolio::migration::MigrationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit_portfolio::migration::calculate_migration(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Macro Economics — Phase 12
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_monetary_policy(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::macro_economics::monetary_policy::MonetaryPolicyInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::macro_economics::monetary_policy::analyze_monetary_policy(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_international(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::macro_economics::international::InternationalInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::macro_economics::international::analyze_international(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Compliance — Phase 12
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_best_execution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::compliance::best_execution::BestExecutionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::compliance::best_execution::analyze_best_execution(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn generate_gips_report(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::compliance::reporting::GipsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::compliance::reporting::generate_gips_report(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

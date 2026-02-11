@@ -40,6 +40,10 @@ import { registerQuantStrategiesTools } from "./tools/quant_strategies.js";
 import { registerTreasuryTools } from "./tools/treasury.js";
 import { registerInfrastructureTools } from "./tools/infrastructure.js";
 import { registerBehavioralTools } from "./tools/behavioral.js";
+import { registerPerformanceAttributionTools } from "./tools/performance_attribution.js";
+import { registerCreditPortfolioTools } from "./tools/credit_portfolio.js";
+import { registerMacroEconomicsTools } from "./tools/macro_economics.js";
+import { registerComplianceTools } from "./tools/compliance.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -85,6 +89,10 @@ registerQuantStrategiesTools(server);
 registerTreasuryTools(server);
 registerInfrastructureTools(server);
 registerBehavioralTools(server);
+registerPerformanceAttributionTools(server);
+registerCreditPortfolioTools(server);
+registerMacroEconomicsTools(server);
+registerComplianceTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
