@@ -95,3 +95,11 @@ export declare function priceStructuredNote(inputJson: string): string
 export declare function priceExotic(inputJson: string): string
 export declare function priceLetterOfCredit(inputJson: string): string
 export declare function analyzeSupplyChainFinance(inputJson: string): string
+export declare function priceCds(inputJson: string): string
+export declare function calculateCva(inputJson: string): string
+export declare function priceConvertible(inputJson: string): string
+export declare function analyzeConvertible(inputJson: string): string
+export declare function classifyLease(inputJson: string): string
+export declare function analyzeSaleLeaseback(inputJson: string): string
+export declare function analyzePensionFunding(inputJson: string): string
+export declare function designLdiStrategy(inputJson: string): string

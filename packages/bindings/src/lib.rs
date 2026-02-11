@@ -965,3 +965,92 @@ pub fn analyze_supply_chain_finance(input_json: String) -> NapiResult<String> {
             .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Credit Derivatives — Phase 9
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_cds(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_derivatives::cds::CdsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::credit_derivatives::cds::price_cds(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_cva(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_derivatives::cva::CvaInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::credit_derivatives::cva::calculate_cva(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Convertible Bonds — Phase 9
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_convertible(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::convertibles::pricing::ConvertibleBondInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::convertibles::pricing::price_convertible(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_convertible(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::convertibles::analysis::ConvertibleAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::convertibles::analysis::analyze_convertible(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Lease Accounting — Phase 9
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn classify_lease(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::lease_accounting::classification::LeaseInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::lease_accounting::classification::classify_lease(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_sale_leaseback(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::lease_accounting::sale_leaseback::SaleLeasebackInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::lease_accounting::sale_leaseback::analyze_sale_leaseback(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Pension & LDI — Phase 9
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_pension_funding(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::pension::funding::PensionFundingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::pension::funding::analyze_pension_funding(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn design_ldi_strategy(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::pension::ldi::LdiInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::pension::ldi::design_ldi_strategy(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

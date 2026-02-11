@@ -6,7 +6,9 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
+use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
+use commands::credit_derivatives::{CdsArgs, CvaArgs};
 use commands::crypto::{DefiAnalysisArgs, TokenValuationArgs};
 use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
@@ -25,10 +27,12 @@ use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
 };
+use commands::lease_accounting::{LeaseClassificationArgs, SaleLeasebackArgs};
 use commands::ma::MergerArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
+use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
@@ -243,6 +247,22 @@ enum Commands {
     LetterOfCredit(LetterOfCreditArgs),
     /// Supply chain finance analysis (reverse factoring, dynamic discounting, forfaiting, export credit)
     SupplyChainFinance(SupplyChainFinanceArgs),
+    /// Price a single-name credit default swap
+    CdsPricing(CdsArgs),
+    /// Credit Valuation Adjustment (CVA/DVA)
+    CvaCalculation(CvaArgs),
+    /// Price a convertible bond (CRR binomial tree)
+    ConvertiblePricing(ConvertiblePricingArgs),
+    /// Convertible bond scenario analysis
+    ConvertibleAnalysis(ConvertibleAnalysisArgs),
+    /// ASC 842 / IFRS 16 lease classification and measurement
+    LeaseClassification(LeaseClassificationArgs),
+    /// Sale-leaseback transaction analysis
+    SaleLeaseback(SaleLeasebackArgs),
+    /// Pension funding analysis (PBO, ABO, NPPC)
+    PensionFunding(PensionFundingArgs),
+    /// Liability-Driven Investing (LDI) strategy design
+    LdiStrategy(LdiStrategyArgs),
     /// Print version information
     Version,
 }
@@ -351,6 +371,18 @@ fn main() {
         Commands::SupplyChainFinance(args) => {
             commands::trade_finance::run_supply_chain_finance(args)
         }
+        Commands::CdsPricing(args) => commands::credit_derivatives::run_cds_pricing(args),
+        Commands::CvaCalculation(args) => commands::credit_derivatives::run_cva_calculation(args),
+        Commands::ConvertiblePricing(args) => commands::convertibles::run_convertible_pricing(args),
+        Commands::ConvertibleAnalysis(args) => {
+            commands::convertibles::run_convertible_analysis(args)
+        }
+        Commands::LeaseClassification(args) => {
+            commands::lease_accounting::run_lease_classification(args)
+        }
+        Commands::SaleLeaseback(args) => commands::lease_accounting::run_sale_leaseback(args),
+        Commands::PensionFunding(args) => commands::pension::run_pension_funding(args),
+        Commands::LdiStrategy(args) => commands::pension::run_ldi_strategy(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

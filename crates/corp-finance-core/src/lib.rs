@@ -83,6 +83,18 @@ pub mod structured_products;
 #[cfg(feature = "municipal")]
 pub mod municipal;
 
+#[cfg(feature = "credit_derivatives")]
+pub mod credit_derivatives;
+
+#[cfg(feature = "convertibles")]
+pub mod convertibles;
+
+#[cfg(feature = "lease_accounting")]
+pub mod lease_accounting;
+
+#[cfg(feature = "pension")]
+pub mod pension;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

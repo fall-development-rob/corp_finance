@@ -162,3 +162,23 @@ export {
   LetterOfCreditSchema,
   SupplyChainFinanceSchema,
 } from "./trade_finance.js";
+
+export {
+  CdsPricingSchema,
+  CvaCalculationSchema,
+} from "./credit_derivatives.js";
+
+export {
+  ConvertiblePricingSchema,
+  ConvertibleAnalysisSchema,
+} from "./convertibles.js";
+
+export {
+  LeaseClassificationSchema,
+  SaleLeasebackSchema,
+} from "./lease_accounting.js";
+
+export {
+  PensionFundingSchema,
+  LdiStrategySchema,
+} from "./pension.js";
