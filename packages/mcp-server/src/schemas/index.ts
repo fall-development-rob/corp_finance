@@ -262,3 +262,23 @@ export {
   TreatyNetworkSchema,
   TreatyOptSchema,
 } from "./tax_treaty.js";
+
+export {
+  FatcaCrsReportingSchema,
+  EntityClassificationSchema,
+} from "./fatca_crs.js";
+
+export {
+  EconomicSubstanceSchema,
+  JurisdictionSubstanceTestSchema,
+} from "./substance_requirements.js";
+
+export {
+  AifmdReportingSchema,
+  SecCftcReportingSchema,
+} from "./regulatory_reporting.js";
+
+export {
+  KycRiskSchema,
+  SanctionsScreeningSchema,
+} from "./aml_compliance.js";

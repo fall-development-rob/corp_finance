@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
+use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
 use commands::behavioral::{ProspectTheoryArgs, SentimentArgs};
 use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
 use commands::compliance::{BestExecutionArgs, GipsReportArgs};
@@ -20,6 +21,7 @@ use commands::derivatives::{
 };
 use commands::equity_research::{SotpArgs, TargetPriceArgs};
 use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
+use commands::fatca_crs::{EntityClassificationArgs, FatcaCrsReportingArgs};
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
@@ -50,11 +52,13 @@ use commands::quant_strategies::{MomentumArgs, PairsTradingArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
 use commands::real_options::{DecisionTreeArgs, RealOptionArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
+use commands::regulatory_reporting::{AifmdReportingArgs, SecCftcReportingArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
 use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
+use commands::substance_requirements::{EconomicSubstanceArgs, JurisdictionSubstanceTestArgs};
 use commands::tax_treaty::{TreatyNetworkArgs, TreatyOptArgs};
 use commands::three_statement::ThreeStatementArgs;
 use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
@@ -343,6 +347,22 @@ enum Commands {
     TreatyNetwork(TreatyNetworkArgs),
     /// Multi-jurisdiction holding structure optimization (PE risk, substance)
     TreatyOptimization(TreatyOptArgs),
+    /// FATCA/CRS reporting compliance analysis
+    FatcaCrsReporting(FatcaCrsReportingArgs),
+    /// FATCA/CRS entity classification (US person, FI, NFFE)
+    EntityClassification(EntityClassificationArgs),
+    /// Economic substance analysis (BEPS Action 5, EU ATAD)
+    EconomicSubstance(EconomicSubstanceArgs),
+    /// Jurisdiction substance test (single or comparative)
+    JurisdictionSubstanceTest(JurisdictionSubstanceTestArgs),
+    /// AIFMD Annex IV reporting
+    AifmdReporting(AifmdReportingArgs),
+    /// SEC/CFTC regulatory reporting (Form PF, Form ADV, Form CPO-PQR)
+    SecCftcReporting(SecCftcReportingArgs),
+    /// KYC risk assessment and scoring
+    KycRisk(KycRiskArgs),
+    /// Sanctions screening (OFAC, EU, UN)
+    SanctionsScreening(SanctionsScreeningArgs),
     /// Print version information
     Version,
 }
@@ -501,6 +521,24 @@ fn main() {
         Commands::Intercompany(args) => commands::transfer_pricing::run_intercompany(args),
         Commands::TreatyNetwork(args) => commands::tax_treaty::run_treaty_network(args),
         Commands::TreatyOptimization(args) => commands::tax_treaty::run_treaty_optimization(args),
+        Commands::FatcaCrsReporting(args) => commands::fatca_crs::run_fatca_crs_reporting(args),
+        Commands::EntityClassification(args) => {
+            commands::fatca_crs::run_entity_classification(args)
+        }
+        Commands::EconomicSubstance(args) => {
+            commands::substance_requirements::run_economic_substance(args)
+        }
+        Commands::JurisdictionSubstanceTest(args) => {
+            commands::substance_requirements::run_jurisdiction_substance_test(args)
+        }
+        Commands::AifmdReporting(args) => commands::regulatory_reporting::run_aifmd_reporting(args),
+        Commands::SecCftcReporting(args) => {
+            commands::regulatory_reporting::run_sec_cftc_reporting(args)
+        }
+        Commands::KycRisk(args) => commands::aml_compliance::run_kyc_risk(args),
+        Commands::SanctionsScreening(args) => {
+            commands::aml_compliance::run_sanctions_screening(args)
+        }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

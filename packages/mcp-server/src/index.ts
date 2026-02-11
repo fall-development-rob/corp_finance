@@ -48,6 +48,10 @@ import { registerOnshoreStructuresTools } from "./tools/onshore_structures.js";
 import { registerOffshoreStructuresTools } from "./tools/offshore_structures.js";
 import { registerTransferPricingTools } from "./tools/transfer_pricing.js";
 import { registerTaxTreatyTools } from "./tools/tax_treaty.js";
+import { registerFatcaCrsTools } from "./tools/fatca_crs.js";
+import { registerSubstanceRequirementsTools } from "./tools/substance_requirements.js";
+import { registerRegulatoryReportingTools } from "./tools/regulatory_reporting.js";
+import { registerAmlComplianceTools } from "./tools/aml_compliance.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -101,6 +105,10 @@ registerOnshoreStructuresTools(server);
 registerOffshoreStructuresTools(server);
 registerTransferPricingTools(server);
 registerTaxTreatyTools(server);
+registerFatcaCrsTools(server);
+registerSubstanceRequirementsTools(server);
+registerRegulatoryReportingTools(server);
+registerAmlComplianceTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

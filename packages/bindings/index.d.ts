@@ -135,3 +135,11 @@ export declare function analyzeBepsCompliance(inputJson: string): string
 export declare function analyzeIntercompany(inputJson: string): string
 export declare function analyzeTreatyNetwork(inputJson: string): string
 export declare function optimizeTreatyStructure(inputJson: string): string
+export declare function analyzeFatcaCrsReporting(inputJson: string): string
+export declare function classifyEntity(inputJson: string): string
+export declare function analyzeEconomicSubstance(inputJson: string): string
+export declare function runJurisdictionSubstanceTest(inputJson: string): string
+export declare function generateAifmdReport(inputJson: string): string
+export declare function generateSecCftcReport(inputJson: string): string
+export declare function assessKycRisk(inputJson: string): string
+export declare function screenSanctions(inputJson: string): string

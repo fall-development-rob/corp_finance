@@ -1,0 +1,61 @@
+import { z } from "zod";
+
+export const EconomicSubstanceSchema = z.object({
+  entity_name: z.string().describe("Entity name"),
+  jurisdiction: z.string().describe("Jurisdiction code (e.g. Cayman, BVI, Luxembourg, Ireland, Jersey, Singapore)"),
+  entity_type: z.enum([
+    "HoldingCompany",
+    "IPHolding",
+    "FinanceLease",
+    "FundManagement",
+    "Banking",
+    "Insurance",
+    "HQ",
+    "ServiceCentre",
+    "PureEquityHolding",
+  ]).describe("Entity type classification"),
+  activity_type: z.string().describe("Description of the entity's primary activity"),
+  annual_revenue: z.coerce.number().min(0).describe("Annual revenue"),
+  passive_income_ratio: z.coerce.number().min(0).max(1).describe("Ratio of passive income to total income (0-1)"),
+  local_employees: z.coerce.number().int().min(0).describe("Number of local employees"),
+  local_qualified_directors: z.coerce.number().int().min(0).describe("Number of locally qualified directors"),
+  total_directors: z.coerce.number().int().min(0).describe("Total number of directors"),
+  has_local_premises: z.boolean().describe("Whether the entity has local premises"),
+  premises_type: z.enum(["Dedicated", "Shared", "Virtual", "None"]).describe("Type of local premises"),
+  board_meetings_in_jurisdiction: z.coerce.number().int().min(0).describe("Number of board meetings held in jurisdiction"),
+  total_board_meetings: z.coerce.number().int().min(0).describe("Total number of board meetings"),
+  annual_operating_expenditure: z.coerce.number().min(0).describe("Total annual operating expenditure"),
+  local_expenditure: z.coerce.number().min(0).describe("Local expenditure amount"),
+  ciga_performed_locally: z.boolean().describe("Whether Core Income Generating Activities are performed locally"),
+  outsourced_ciga: z.boolean().describe("Whether CIGA is outsourced"),
+  years_established: z.coerce.number().int().min(0).describe("Number of years the entity has been established"),
+});
+
+const JurisdictionInfoSchema = z.object({
+  name: z.string().describe("Jurisdiction name"),
+  entity_type: z.string().describe("Entity type description"),
+  activity: z.string().describe("Activity description"),
+  local_staff: z.coerce.number().int().min(0).describe("Number of local staff"),
+  qualified_directors: z.coerce.number().int().min(0).describe("Number of qualified directors"),
+  total_directors: z.coerce.number().int().min(0).describe("Total number of directors"),
+  has_premises: z.boolean().describe("Whether entity has premises in jurisdiction"),
+  premises_dedicated: z.boolean().describe("Whether premises are dedicated (not shared)"),
+  board_meetings_local: z.coerce.number().int().min(0).describe("Number of board meetings held locally"),
+  board_meetings_total: z.coerce.number().int().min(0).describe("Total board meetings"),
+  annual_expenditure: z.coerce.number().min(0).describe("Annual expenditure in jurisdiction"),
+  local_expenditure: z.coerce.number().min(0).describe("Local expenditure amount"),
+  ciga_local: z.boolean().describe("Whether CIGA is performed locally"),
+  outsourced_ciga: z.boolean().describe("Whether CIGA is outsourced"),
+  annual_substance_cost: z.coerce.number().min(0).describe("Annual substance cost for this jurisdiction"),
+  tax_savings: z.coerce.number().min(0).describe("Tax savings obtained from this jurisdiction"),
+});
+
+export const JurisdictionSubstanceTestSchema = z.object({
+  entity_name: z.string().describe("Entity name"),
+  jurisdictions: z.array(JurisdictionInfoSchema).describe("List of jurisdictions to test"),
+  comparison_mode: z.boolean().describe("Whether to compare substance across all jurisdictions"),
+  parent_jurisdiction: z.string().describe("Parent entity jurisdiction"),
+  treaty_reliance: z.boolean().describe("Whether the structure relies on tax treaty benefits"),
+  annual_tax_savings: z.coerce.number().min(0).describe("Total annual tax savings from the structure"),
+  restructuring_budget: z.coerce.number().min(0).describe("Budget available for restructuring"),
+});

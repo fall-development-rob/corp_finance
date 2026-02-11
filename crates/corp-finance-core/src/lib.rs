@@ -143,6 +143,18 @@ pub mod transfer_pricing;
 #[cfg(feature = "tax_treaty")]
 pub mod tax_treaty;
 
+#[cfg(feature = "fatca_crs")]
+pub mod fatca_crs;
+
+#[cfg(feature = "substance_requirements")]
+pub mod substance_requirements;
+
+#[cfg(feature = "regulatory_reporting")]
+pub mod regulatory_reporting;
+
+#[cfg(feature = "aml_compliance")]
+pub mod aml_compliance;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

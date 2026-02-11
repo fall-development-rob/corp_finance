@@ -1409,3 +1409,98 @@ pub fn optimize_treaty_structure(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// FATCA/CRS — Phase 14
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_fatca_crs_reporting(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fatca_crs::reporting::FatcaCrsReportingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fatca_crs::reporting::analyze_fatca_crs_reporting(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn classify_entity(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fatca_crs::classification::EntityClassificationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fatca_crs::classification::classify_entity(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Substance Requirements — Phase 14
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_economic_substance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::substance_requirements::economic_substance::EconomicSubstanceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::substance_requirements::economic_substance::analyze_economic_substance(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn run_jurisdiction_substance_test(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::substance_requirements::jurisdiction_tests::JurisdictionTestInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::substance_requirements::jurisdiction_tests::run_jurisdiction_substance_test(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Regulatory Reporting — Phase 14
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn generate_aifmd_report(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory_reporting::aifmd_reporting::AifmdReportingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::regulatory_reporting::aifmd_reporting::generate_aifmd_report(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn generate_sec_cftc_report(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::regulatory_reporting::sec_cftc_reporting::SecCftcReportingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::regulatory_reporting::sec_cftc_reporting::generate_sec_cftc_report(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// AML Compliance — Phase 14
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn assess_kyc_risk(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::aml_compliance::kyc_scoring::KycRiskInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::aml_compliance::kyc_scoring::assess_kyc_risk(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn screen_sanctions(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::aml_compliance::sanctions_screening::SanctionsScreeningInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::aml_compliance::sanctions_screening::screen_sanctions(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
