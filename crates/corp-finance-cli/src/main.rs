@@ -38,6 +38,8 @@ use commands::ma::MergerArgs;
 use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
+use commands::offshore_structures::{CaymanFundArgs, LuxFundArgs};
+use commands::onshore_structures::{UkEuFundArgs, UsFundArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
 use commands::performance_attribution::{BrinsonArgs, FactorAttributionArgs};
@@ -53,8 +55,10 @@ use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
 use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
+use commands::tax_treaty::{TreatyNetworkArgs, TreatyOptArgs};
 use commands::three_statement::ThreeStatementArgs;
 use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
+use commands::transfer_pricing::{BepsArgs, IntercompanyArgs};
 use commands::treasury::{CashManagementArgs, HedgingArgs};
 use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 use commands::venture::{
@@ -323,6 +327,22 @@ enum Commands {
     BestExecution(BestExecutionArgs),
     /// GIPS-compliant performance reporting
     GipsReport(GipsReportArgs),
+    /// US onshore fund structure analysis (Delaware LP, REIT, MLP, BDC, QOZ)
+    UsFund(UsFundArgs),
+    /// UK/EU onshore fund structure analysis (LP, LLP, OEIC, SICAV, FCP, KG)
+    UkEuFund(UkEuFundArgs),
+    /// Cayman/BVI offshore fund structure analysis (Exempted LP, SPC, BVI BCA)
+    CaymanFund(CaymanFundArgs),
+    /// Luxembourg/Ireland fund structure analysis (SICAV-SIF, RAIF, SCSp, ICAV, QIAIF)
+    LuxFund(LuxFundArgs),
+    /// OECD BEPS compliance analysis (CbCR, Pillar Two, functional analysis)
+    BepsCompliance(BepsArgs),
+    /// Intercompany transfer pricing analysis (CUP, TNMM, Profit Split, CFC)
+    Intercompany(IntercompanyArgs),
+    /// Tax treaty network analysis (WHT optimization, conduit routing, anti-avoidance)
+    TreatyNetwork(TreatyNetworkArgs),
+    /// Multi-jurisdiction holding structure optimization (PE risk, substance)
+    TreatyOptimization(TreatyOptArgs),
     /// Print version information
     Version,
 }
@@ -473,6 +493,14 @@ fn main() {
         Commands::International(args) => commands::macro_economics::run_international(args),
         Commands::BestExecution(args) => commands::compliance::run_best_execution(args),
         Commands::GipsReport(args) => commands::compliance::run_gips_report(args),
+        Commands::UsFund(args) => commands::onshore_structures::run_us_fund(args),
+        Commands::UkEuFund(args) => commands::onshore_structures::run_uk_eu_fund(args),
+        Commands::CaymanFund(args) => commands::offshore_structures::run_cayman_fund(args),
+        Commands::LuxFund(args) => commands::offshore_structures::run_lux_fund(args),
+        Commands::BepsCompliance(args) => commands::transfer_pricing::run_beps(args),
+        Commands::Intercompany(args) => commands::transfer_pricing::run_intercompany(args),
+        Commands::TreatyNetwork(args) => commands::tax_treaty::run_treaty_network(args),
+        Commands::TreatyOptimization(args) => commands::tax_treaty::run_treaty_optimization(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

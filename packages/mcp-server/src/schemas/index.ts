@@ -242,3 +242,23 @@ export {
   BestExecutionSchema,
   GipsReportSchema,
 } from "./compliance.js";
+
+export {
+  UsFundSchema,
+  UkEuFundSchema,
+} from "./onshore_structures.js";
+
+export {
+  CaymanFundSchema,
+  LuxFundSchema,
+} from "./offshore_structures.js";
+
+export {
+  BepsSchema,
+  IntercompanySchema,
+} from "./transfer_pricing.js";
+
+export {
+  TreatyNetworkSchema,
+  TreatyOptSchema,
+} from "./tax_treaty.js";

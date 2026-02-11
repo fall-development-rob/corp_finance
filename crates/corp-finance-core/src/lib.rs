@@ -131,6 +131,18 @@ pub mod macro_economics;
 #[cfg(feature = "compliance")]
 pub mod compliance;
 
+#[cfg(feature = "onshore_structures")]
+pub mod onshore_structures;
+
+#[cfg(feature = "offshore_structures")]
+pub mod offshore_structures;
+
+#[cfg(feature = "transfer_pricing")]
+pub mod transfer_pricing;
+
+#[cfg(feature = "tax_treaty")]
+pub mod tax_treaty;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

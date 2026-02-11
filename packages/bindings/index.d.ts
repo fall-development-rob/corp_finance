@@ -127,3 +127,11 @@ export declare function analyzeMonetaryPolicy(inputJson: string): string
 export declare function analyzeInternational(inputJson: string): string
 export declare function analyzeBestExecution(inputJson: string): string
 export declare function generateGipsReport(inputJson: string): string
+export declare function analyzeUsFundStructure(inputJson: string): string
+export declare function analyzeUkEuFund(inputJson: string): string
+export declare function analyzeCaymanStructure(inputJson: string): string
+export declare function analyzeLuxStructure(inputJson: string): string
+export declare function analyzeBepsCompliance(inputJson: string): string
+export declare function analyzeIntercompany(inputJson: string): string
+export declare function analyzeTreatyNetwork(inputJson: string): string
+export declare function optimizeTreatyStructure(inputJson: string): string

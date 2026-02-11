@@ -1321,3 +1321,91 @@ pub fn generate_gips_report(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Onshore Structures — Phase 13
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_us_fund_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::onshore_structures::us_funds::UsFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::onshore_structures::us_funds::analyze_us_fund_structure(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_uk_eu_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::onshore_structures::uk_eu_funds::UkEuFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::onshore_structures::uk_eu_funds::analyze_uk_eu_fund(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Offshore Structures — Phase 13
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_cayman_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::cayman::CaymanFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::offshore_structures::cayman::analyze_cayman_structure(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_lux_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::luxembourg::LuxFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::offshore_structures::luxembourg::analyze_lux_structure(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Transfer Pricing — Phase 13
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_beps_compliance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::transfer_pricing::beps::BepsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::transfer_pricing::beps::analyze_beps_compliance(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_intercompany(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::transfer_pricing::intercompany::IntercompanyInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::transfer_pricing::intercompany::analyze_intercompany(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Tax Treaty — Phase 13
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_treaty_network(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::tax_treaty::treaty_network::TreatyNetworkInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::tax_treaty::treaty_network::analyze_treaty_network(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn optimize_treaty_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::tax_treaty::optimization::TreatyOptInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::tax_treaty::optimization::optimize_treaty_structure(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
