@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-02-11
+
+### Added
+- **Phase 8: Crypto, Municipal, Structured Products, Trade Finance** (8 new MCP tools, 152 new tests)
+  - Crypto: token/protocol valuation (NVT ratio, P/S, FDV vs circulating, DCF of protocol revenue, relative valuation via comparable protocols), DeFi analysis (yield farming with gas-adjusted APR/APY, impermanent loss, staking with validator commission and slashing risk, liquidity pool fee income and pool share)
+  - Municipal bonds: pricing with tax-equivalent yield, de minimis rule, callable analysis, muni/Treasury and muni/corporate spreads (GO, Revenue, Assessment, TIF, COP types), credit analysis with GO debt ratios, revenue bond DSCR and rate covenant, 10-factor composite credit scoring, advance refunding savings
+  - Structured products: note pricing for capital-protected (zero-coupon bond + call), yield enhancement / reverse convertible (short put + bond), participation, and credit-linked notes; exotic products including autocallable (observation schedule with knock-in probability), barrier options (up/down in/out with Greeks), digital options (cash-or-nothing, asset-or-nothing)
+  - Trade finance: letter of credit pricing for 5 LC types (commercial, standby, revolving, back-to-back, transferable) with multi-dimensional risk scoring and banker's acceptance discounting; supply chain finance (reverse factoring, dynamic discounting, forfaiting with avalised/non-avalised analysis, export credit with ECA/CIRR/OECD terms)
+- 91 MCP tools total, 27 Cargo features, 1,548 tests passing
+
 ## [0.5.0] - 2026-02-10
 
 ### Added
