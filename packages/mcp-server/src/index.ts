@@ -75,7 +75,7 @@ import { registerFinancialForensicsTools } from "./tools/financial_forensics.js"
 
 const server = new McpServer({
   name: "corp-finance-mcp",
-  version: "0.1.0",
+  version: "1.0.0",
 });
 
 registerValuationTools(server);
