@@ -113,7 +113,7 @@ jobs:
           cache-dependency-path: packages/mcp-server/package-lock.json
 
       - name: Download bindings artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: bindings-linux-x64
           path: packages/bindings
