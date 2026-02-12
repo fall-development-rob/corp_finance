@@ -5,7 +5,7 @@ import {
   analyzeCbam,
   valueCarbonOffset,
   calculateShadowCarbonPrice,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   CarbonCreditPricingSchema,
   EtsComplianceSchema,

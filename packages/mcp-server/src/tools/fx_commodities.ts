@@ -4,7 +4,7 @@ import {
   calculateCrossRate,
   priceCommodityForward,
   analyzeCommodityCurve,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   FxForwardSchema,
   CrossRateSchema,

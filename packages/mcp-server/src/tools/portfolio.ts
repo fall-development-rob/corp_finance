@@ -3,7 +3,7 @@ import {
   riskAdjustedReturns,
   riskMetrics,
   kellySizing,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   RiskAdjustedSchema,
   RiskMetricsSchema,

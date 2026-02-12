@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   calculatePortfolioCreditRisk,
   calculateMigration,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   PortfolioRiskSchema,
   MigrationSchema,

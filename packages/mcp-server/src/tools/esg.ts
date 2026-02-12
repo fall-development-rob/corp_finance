@@ -4,7 +4,7 @@ import {
   analyzeCarbonFootprint,
   analyzeGreenBond,
   testSllCovenants,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   EsgScoreSchema,
   CarbonFootprintSchema,

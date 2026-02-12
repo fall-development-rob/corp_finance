@@ -5,7 +5,7 @@ import {
   calculateCeclProvision,
   analyzeDepositBeta,
   analyzeLoanBook,
-} from "@rob-otixai/corp-finance-bindings";
+} from "@robotixai/corp-finance-bindings";
 import {
   NimAnalysisSchema,
   CamelsRatingSchema,
