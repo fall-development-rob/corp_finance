@@ -8,12 +8,21 @@ use std::process;
 
 use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
 use commands::behavioral::{ProspectTheoryArgs, SentimentArgs};
+use commands::capital_allocation::{
+    EconomicCapitalArgs, EulerAllocationArgs, LimitManagementArgs, RarocArgs, ShapleyAllocationArgs,
+};
+use commands::clo_analytics::{
+    CloCoverageArgs, CloReinvestmentArgs, CloScenarioArgs, CloTrancheArgs, CloWaterfallArgs,
+};
 use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
 use commands::compliance::{BestExecutionArgs, GipsReportArgs};
 use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
 use commands::credit_derivatives::{CdsArgs, CvaArgs};
 use commands::credit_portfolio::{MigrationArgs, PortfolioCreditRiskArgs};
+use commands::credit_scoring::{
+    CreditScorecardArgs, IntensityModelArgs, MertonPdArgs, PdCalibrationArgs, ScoringValidationArgs,
+};
 use commands::crypto::{DefiAnalysisArgs, TokenValuationArgs};
 use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
@@ -26,6 +35,10 @@ use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
 use commands::fpa::{BreakevenArgs, RollingForecastArgs, VarianceArgs, WorkingCapitalArgs};
+use commands::fund_of_funds::{
+    CommitmentPacingArgs, FofPortfolioArgs, JCurveArgs, ManagerSelectionArgs,
+    SecondariesPricingArgs,
+};
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
 };
@@ -403,6 +416,46 @@ enum Commands {
     RepoAnalytics(RepoAnalyticsArgs),
     /// Collateral management (haircuts, margin, rehypothecation)
     CollateralAnalytics(CollateralArgs),
+    /// Credit scorecard (WoE, IV, Gini, KS)
+    CreditScorecard(CreditScorecardArgs),
+    /// Merton structural model (PD, distance-to-default, KMV EDF)
+    MertonPd(MertonPdArgs),
+    /// Reduced-form intensity model (hazard rates, survival)
+    IntensityModel(IntensityModelArgs),
+    /// PIT/TTC PD calibration (Vasicek single-factor)
+    PdCalibration(PdCalibrationArgs),
+    /// Credit model validation (AUC-ROC, Brier, Hosmer-Lemeshow)
+    ScoringValidation(ScoringValidationArgs),
+    /// Economic capital (VaR/ES, IRB, stress buffer)
+    EconomicCapital(EconomicCapitalArgs),
+    /// RAROC and risk-adjusted pricing
+    Raroc(RarocArgs),
+    /// Euler risk contribution allocation
+    EulerAllocation(EulerAllocationArgs),
+    /// Shapley value capital allocation
+    ShapleyAllocation(ShapleyAllocationArgs),
+    /// Risk limit management and breach detection
+    LimitManagement(LimitManagementArgs),
+    /// CLO waterfall engine
+    CloWaterfall(CloWaterfallArgs),
+    /// CLO OC/IC coverage tests
+    CloCoverage(CloCoverageArgs),
+    /// CLO reinvestment period analytics
+    CloReinvestment(CloReinvestmentArgs),
+    /// CLO tranche analytics (yield, WAL, breakeven CDR)
+    CloTranche(CloTrancheArgs),
+    /// CLO scenario analysis (stress testing)
+    CloScenario(CloScenarioArgs),
+    /// J-Curve fund lifecycle model
+    JCurve(JCurveArgs),
+    /// Commitment pacing and NAV projection
+    CommitmentPacing(CommitmentPacingArgs),
+    /// Manager due diligence and selection
+    ManagerSelection(ManagerSelectionArgs),
+    /// Secondaries pricing and IRR sensitivity
+    SecondariesPricing(SecondariesPricingArgs),
+    /// Fund of funds portfolio analytics
+    FofPortfolio(FofPortfolioArgs),
     /// Print version information
     Version,
 }
@@ -611,6 +664,30 @@ fn main() {
         Commands::CollateralAnalytics(args) => {
             commands::repo_financing::run_collateral_analytics(args)
         }
+        Commands::CreditScorecard(args) => commands::credit_scoring::run_credit_scorecard(args),
+        Commands::MertonPd(args) => commands::credit_scoring::run_merton_pd(args),
+        Commands::IntensityModel(args) => commands::credit_scoring::run_intensity_model(args),
+        Commands::PdCalibration(args) => commands::credit_scoring::run_pd_calibration(args),
+        Commands::ScoringValidation(args) => commands::credit_scoring::run_scoring_validation(args),
+        Commands::EconomicCapital(args) => commands::capital_allocation::run_economic_capital(args),
+        Commands::Raroc(args) => commands::capital_allocation::run_raroc(args),
+        Commands::EulerAllocation(args) => commands::capital_allocation::run_euler_allocation(args),
+        Commands::ShapleyAllocation(args) => {
+            commands::capital_allocation::run_shapley_allocation(args)
+        }
+        Commands::LimitManagement(args) => commands::capital_allocation::run_limit_management(args),
+        Commands::CloWaterfall(args) => commands::clo_analytics::run_clo_waterfall(args),
+        Commands::CloCoverage(args) => commands::clo_analytics::run_clo_coverage(args),
+        Commands::CloReinvestment(args) => commands::clo_analytics::run_clo_reinvestment(args),
+        Commands::CloTranche(args) => commands::clo_analytics::run_clo_tranche(args),
+        Commands::CloScenario(args) => commands::clo_analytics::run_clo_scenario(args),
+        Commands::JCurve(args) => commands::fund_of_funds::run_j_curve(args),
+        Commands::CommitmentPacing(args) => commands::fund_of_funds::run_commitment_pacing(args),
+        Commands::ManagerSelection(args) => commands::fund_of_funds::run_manager_selection(args),
+        Commands::SecondariesPricing(args) => {
+            commands::fund_of_funds::run_secondaries_pricing(args)
+        }
+        Commands::FofPortfolio(args) => commands::fund_of_funds::run_fof_portfolio(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

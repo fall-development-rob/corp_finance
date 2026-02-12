@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate, buildImpliedVolSurface, calibrateSabr, optimizeMeanVariance, optimizeBlackLittermanPortfolio, analyzeFactorRiskBudget, analyzeTailRisk, analyzeSpreads, optimizeExecution, analyzeShortRate, fitTermStructure, analyzePrepayment, analyzeMbs, analyzeTips, analyzeInflationDerivatives, analyzeRepo, analyzeCollateral } = nativeBinding
+const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate, buildImpliedVolSurface, calibrateSabr, optimizeMeanVariance, optimizeBlackLittermanPortfolio, analyzeFactorRiskBudget, analyzeTailRisk, analyzeSpreads, optimizeExecution, analyzeShortRate, fitTermStructure, analyzePrepayment, analyzeMbs, analyzeTips, analyzeInflationDerivatives, analyzeRepo, analyzeCollateral, calculateScorecard, calculateMerton, calculateIntensityModel, calculateCalibration, calculateScoringValidation, calculateEconomicCapital, calculateRaroc, calculateEulerAllocation, calculateShapleyAllocation, evaluateLimits, calculateCloWaterfall, calculateCoverageTests, calculateReinvestment, calculateTrancheAnalytics, calculateCloScenario, calculateJCurve, calculateCommitmentPacing, analyzeManagerSelection, calculateSecondariesPricing, analyzeFofPortfolio } = nativeBinding
 
 module.exports.calculateWacc = calculateWacc
 module.exports.buildDcf = buildDcf
@@ -412,3 +412,23 @@ module.exports.analyzeTips = analyzeTips
 module.exports.analyzeInflationDerivatives = analyzeInflationDerivatives
 module.exports.analyzeRepo = analyzeRepo
 module.exports.analyzeCollateral = analyzeCollateral
+module.exports.calculateScorecard = calculateScorecard
+module.exports.calculateMerton = calculateMerton
+module.exports.calculateIntensityModel = calculateIntensityModel
+module.exports.calculateCalibration = calculateCalibration
+module.exports.calculateScoringValidation = calculateScoringValidation
+module.exports.calculateEconomicCapital = calculateEconomicCapital
+module.exports.calculateRaroc = calculateRaroc
+module.exports.calculateEulerAllocation = calculateEulerAllocation
+module.exports.calculateShapleyAllocation = calculateShapleyAllocation
+module.exports.evaluateLimits = evaluateLimits
+module.exports.calculateCloWaterfall = calculateCloWaterfall
+module.exports.calculateCoverageTests = calculateCoverageTests
+module.exports.calculateReinvestment = calculateReinvestment
+module.exports.calculateTrancheAnalytics = calculateTrancheAnalytics
+module.exports.calculateCloScenario = calculateCloScenario
+module.exports.calculateJCurve = calculateJCurve
+module.exports.calculateCommitmentPacing = calculateCommitmentPacing
+module.exports.analyzeManagerSelection = analyzeManagerSelection
+module.exports.calculateSecondariesPricing = calculateSecondariesPricing
+module.exports.analyzeFofPortfolio = analyzeFofPortfolio

@@ -179,6 +179,18 @@ pub mod inflation_linked;
 #[cfg(feature = "repo_financing")]
 pub mod repo_financing;
 
+#[cfg(feature = "capital_allocation")]
+pub mod capital_allocation;
+
+#[cfg(feature = "credit_scoring")]
+pub mod credit_scoring;
+
+#[cfg(feature = "clo_analytics")]
+pub mod clo_analytics;
+
+#[cfg(feature = "fund_of_funds")]
+pub mod fund_of_funds;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

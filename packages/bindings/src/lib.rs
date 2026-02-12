@@ -1691,3 +1691,210 @@ pub fn analyze_collateral(input_json: String) -> NapiResult<String> {
             .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Credit Scoring — Phase 18
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_scorecard(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_scoring::scorecard::ScorecardInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit_scoring::scorecard::calculate_scorecard(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_merton(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_scoring::structural_model::MertonInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit_scoring::structural_model::calculate_merton(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_intensity_model(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_scoring::intensity_model::IntensityModelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::credit_scoring::intensity_model::calculate_intensity_model(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_calibration(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_scoring::calibration::CalibrationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit_scoring::calibration::calculate_calibration(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_scoring_validation(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::credit_scoring::validation::ValidationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::credit_scoring::validation::calculate_validation(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Capital Allocation — Phase 18
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_economic_capital(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::capital_allocation::economic_capital::EconomicCapitalInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::capital_allocation::economic_capital::calculate_economic_capital(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_raroc(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::capital_allocation::raroc::RarocInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::capital_allocation::raroc::calculate_raroc(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_euler_allocation(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::capital_allocation::euler_allocation::EulerAllocationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::capital_allocation::euler_allocation::calculate_euler_allocation(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_shapley_allocation(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::capital_allocation::shapley_allocation::ShapleyAllocationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::capital_allocation::shapley_allocation::calculate_shapley_allocation(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn evaluate_limits(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::capital_allocation::limit_management::LimitManagementInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::capital_allocation::limit_management::evaluate_limits(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// CLO Analytics — Phase 18
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_clo_waterfall(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::clo_analytics::waterfall::WaterfallInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::clo_analytics::waterfall::calculate_waterfall(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_coverage_tests(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::clo_analytics::coverage_tests::CoverageTestInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::clo_analytics::coverage_tests::calculate_coverage_tests(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_reinvestment(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::clo_analytics::reinvestment::ReinvestmentInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::clo_analytics::reinvestment::calculate_reinvestment(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_tranche_analytics(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::clo_analytics::tranche_analytics::TrancheAnalyticsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::clo_analytics::tranche_analytics::calculate_tranche_analytics(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_clo_scenario(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::clo_analytics::scenario::CloScenarioInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::clo_analytics::scenario::calculate_clo_scenario(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Fund of Funds — Phase 18
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_j_curve(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fund_of_funds::j_curve::JCurveInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fund_of_funds::j_curve::calculate_j_curve(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_commitment_pacing(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fund_of_funds::commitment_pacing::CommitmentPacingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fund_of_funds::commitment_pacing::calculate_commitment_pacing(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_manager_selection(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fund_of_funds::manager_selection::ManagerSelectionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fund_of_funds::manager_selection::analyze_manager_selection(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_secondaries_pricing(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fund_of_funds::secondaries::SecondariesPricingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fund_of_funds::secondaries::calculate_secondaries_pricing(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_fof_portfolio(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fund_of_funds::portfolio_construction::FofPortfolioInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::fund_of_funds::portfolio_construction::analyze_fof_portfolio(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

@@ -60,6 +60,10 @@ import { registerInterestRateModelsTools } from "./tools/interest_rate_models.js
 import { registerMortgageAnalyticsTools } from "./tools/mortgage_analytics.js";
 import { registerInflationLinkedTools } from "./tools/inflation_linked.js";
 import { registerRepoFinancingTools } from "./tools/repo_financing.js";
+import { registerCreditScoringTools } from "./tools/credit_scoring.js";
+import { registerCapitalAllocationTools } from "./tools/capital_allocation.js";
+import { registerCloAnalyticsTools } from "./tools/clo_analytics.js";
+import { registerFundOfFundsTools } from "./tools/fund_of_funds.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -125,6 +129,10 @@ registerInterestRateModelsTools(server);
 registerMortgageAnalyticsTools(server);
 registerInflationLinkedTools(server);
 registerRepoFinancingTools(server);
+registerCreditScoringTools(server);
+registerCapitalAllocationTools(server);
+registerCloAnalyticsTools(server);
+registerFundOfFundsTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
