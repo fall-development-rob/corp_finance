@@ -120,6 +120,7 @@ jobs:
     name: Publish to npmjs.org
     needs: build-bindings
     runs-on: ubuntu-latest
+    environment: Prod
     if: ${{ !(github.event.inputs.dry-run == 'true') }}
     steps:
       - uses: actions/checkout@v4
@@ -299,6 +300,7 @@ jobs:
     name: Publish to crates.io
     needs: test
     runs-on: ubuntu-latest
+    environment: Prod
     if: ${{ !(github.event.inputs.dry-run == 'true') }}
     steps:
       - uses: actions/checkout@v4
