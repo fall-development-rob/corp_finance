@@ -20,6 +20,10 @@ agentdb.db-shm
 agentdb.db-wal
 files-cfa.zip
 .swarm/
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/corp-finance-*/
 .claude-flow/
 docs/Excel Trading Diary SS.xlsx
+.mcp.json
