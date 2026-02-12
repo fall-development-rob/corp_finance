@@ -64,6 +64,10 @@ import { registerCreditScoringTools } from "./tools/credit_scoring.js";
 import { registerCapitalAllocationTools } from "./tools/capital_allocation.js";
 import { registerCloAnalyticsTools } from "./tools/clo_analytics.js";
 import { registerFundOfFundsTools } from "./tools/fund_of_funds.js";
+import { registerEarningsQualityTools } from "./tools/earnings_quality.js";
+import { registerBankAnalyticsTools } from "./tools/bank_analytics.js";
+import { registerDividendPolicyTools } from "./tools/dividend_policy.js";
+import { registerCarbonMarketsTools } from "./tools/carbon_markets.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -133,6 +137,10 @@ registerCreditScoringTools(server);
 registerCapitalAllocationTools(server);
 registerCloAnalyticsTools(server);
 registerFundOfFundsTools(server);
+registerEarningsQualityTools(server);
+registerBankAnalyticsTools(server);
+registerDividendPolicyTools(server);
+registerCarbonMarketsTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

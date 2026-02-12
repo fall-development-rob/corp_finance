@@ -1898,3 +1898,215 @@ pub fn analyze_fof_portfolio(input_json: String) -> NapiResult<String> {
             .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Earnings Quality — Phase 19
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_beneish_mscore(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::earnings_quality::beneish::BeneishInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::earnings_quality::beneish::calculate_beneish_m_score(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_piotroski_fscore(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::earnings_quality::piotroski::PiotroskiInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::earnings_quality::piotroski::calculate_piotroski_f_score(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_accrual_quality(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::earnings_quality::accrual_quality::AccrualQualityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::earnings_quality::accrual_quality::calculate_accrual_quality(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_revenue_quality(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::earnings_quality::revenue_quality::RevenueQualityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::earnings_quality::revenue_quality::calculate_revenue_quality(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_earnings_quality_composite(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::earnings_quality::composite::EarningsQualityCompositeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::earnings_quality::composite::calculate_earnings_quality_composite(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Bank Analytics — Phase 19
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_nim(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::bank_analytics::nim_analysis::NimAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::bank_analytics::nim_analysis::analyze_nim(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_camels_rating(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::bank_analytics::camels::CamelsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::bank_analytics::camels::calculate_camels(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_cecl_provision(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::bank_analytics::cecl_provisioning::CeclProvisioningInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::bank_analytics::cecl_provisioning::calculate_cecl(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_deposit_beta(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::bank_analytics::deposit_beta::DepositBetaInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::bank_analytics::deposit_beta::analyze_deposit_beta(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_loan_book(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::bank_analytics::loan_book::LoanBookInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::bank_analytics::loan_book::analyze_loan_book(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Dividend Policy — Phase 19
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_h_model_ddm(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::dividend_policy::h_model::HModelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::dividend_policy::h_model::calculate_h_model(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_multistage_ddm(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::dividend_policy::multistage_ddm::MultistageDdmInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::dividend_policy::multistage_ddm::calculate_multistage_ddm(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_buyback(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::dividend_policy::buyback::BuybackInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::dividend_policy::buyback::calculate_buyback(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_payout_sustainability(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::dividend_policy::payout_sustainability::PayoutSustainabilityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::dividend_policy::payout_sustainability::calculate_payout_sustainability(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_total_shareholder_return(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::dividend_policy::total_shareholder_return::TotalShareholderReturnInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::dividend_policy::total_shareholder_return::calculate_total_shareholder_return(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Carbon Markets — Phase 19
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn price_carbon_credit(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::carbon_markets::carbon_pricing::CarbonPricingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::carbon_markets::carbon_pricing::calculate_carbon_pricing(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_ets_compliance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::carbon_markets::ets_compliance::EtsComplianceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::carbon_markets::ets_compliance::calculate_ets_compliance(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_cbam(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::carbon_markets::cbam::CbamInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::carbon_markets::cbam::calculate_cbam(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn value_carbon_offset(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::carbon_markets::offset_valuation::OffsetValuationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::carbon_markets::offset_valuation::calculate_offset_valuation(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_shadow_carbon_price(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::carbon_markets::shadow_carbon::ShadowCarbonInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::carbon_markets::shadow_carbon::calculate_shadow_carbon(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

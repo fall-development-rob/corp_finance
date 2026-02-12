@@ -191,6 +191,18 @@ pub mod clo_analytics;
 #[cfg(feature = "fund_of_funds")]
 pub mod fund_of_funds;
 
+#[cfg(feature = "earnings_quality")]
+pub mod earnings_quality;
+
+#[cfg(feature = "dividend_policy")]
+pub mod dividend_policy;
+
+#[cfg(feature = "carbon_markets")]
+pub mod carbon_markets;
+
+#[cfg(feature = "bank_analytics")]
+pub mod bank_analytics;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

@@ -7,9 +7,15 @@ use colored::Colorize;
 use std::process;
 
 use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
+use commands::bank_analytics::{
+    CamelsRatingArgs, CeclProvisioningArgs, DepositBetaArgs, LoanBookArgs, NimAnalysisArgs,
+};
 use commands::behavioral::{ProspectTheoryArgs, SentimentArgs};
 use commands::capital_allocation::{
     EconomicCapitalArgs, EulerAllocationArgs, LimitManagementArgs, RarocArgs, ShapleyAllocationArgs,
+};
+use commands::carbon_markets::{
+    CarbonPricingArgs, CbamArgs, EtsComplianceArgs, OffsetValuationArgs, ShadowCarbonArgs,
 };
 use commands::clo_analytics::{
     CloCoverageArgs, CloReinvestmentArgs, CloScenarioArgs, CloTrancheArgs, CloWaterfallArgs,
@@ -27,6 +33,14 @@ use commands::crypto::{DefiAnalysisArgs, TokenValuationArgs};
 use commands::derivatives::{
     BasisAnalysisArgs, CurrencySwapArgs, ForwardPositionArgs, ForwardPriceArgs, ImpliedVolArgs,
     IrsArgs, OptionPriceArgs, StrategyArgs,
+};
+use commands::dividend_policy::{
+    BuybackArgs, HModelDdmArgs, MultistageDdmArgs, PayoutSustainabilityArgs,
+    TotalShareholderReturnArgs,
+};
+use commands::earnings_quality::{
+    AccrualQualityArgs, BeneishArgs, EarningsQualityCompositeArgs, PiotroskiArgs,
+    RevenueQualityArgs,
 };
 use commands::equity_research::{SotpArgs, TargetPriceArgs};
 use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
@@ -456,6 +470,46 @@ enum Commands {
     SecondariesPricing(SecondariesPricingArgs),
     /// Fund of funds portfolio analytics
     FofPortfolio(FofPortfolioArgs),
+    /// Beneish M-Score earnings manipulation detection
+    Beneish(BeneishArgs),
+    /// Piotroski F-Score fundamental strength
+    Piotroski(PiotroskiArgs),
+    /// Accrual quality analysis (Dechow-Dichev)
+    AccrualQuality(AccrualQualityArgs),
+    /// Revenue quality analysis (persistence, predictability)
+    RevenueQuality(RevenueQualityArgs),
+    /// Composite earnings quality score
+    EarningsQualityComposite(EarningsQualityCompositeArgs),
+    /// Net interest margin analysis
+    NimAnalysis(NimAnalysisArgs),
+    /// CAMELS bank rating system
+    CamelsRating(CamelsRatingArgs),
+    /// CECL expected credit loss provisioning
+    CeclProvisioning(CeclProvisioningArgs),
+    /// Deposit beta and funding cost analysis
+    DepositBeta(DepositBetaArgs),
+    /// Loan book analysis (concentration, migration, NPL)
+    LoanBook(LoanBookArgs),
+    /// H-Model dividend discount model
+    HModelDdm(HModelDdmArgs),
+    /// Multi-stage dividend discount model
+    MultistageDdm(MultistageDdmArgs),
+    /// Share buyback analysis (accretion, EPS impact)
+    Buyback(BuybackArgs),
+    /// Payout sustainability analysis
+    PayoutSustainability(PayoutSustainabilityArgs),
+    /// Total shareholder return decomposition
+    TotalShareholderReturn(TotalShareholderReturnArgs),
+    /// Carbon pricing analysis (EU ETS, CBAM, internal)
+    CarbonPricing(CarbonPricingArgs),
+    /// ETS compliance analysis (allowance, hedging, auction)
+    EtsCompliance(EtsComplianceArgs),
+    /// CBAM carbon border adjustment analysis
+    Cbam(CbamArgs),
+    /// Carbon offset valuation and portfolio analysis
+    OffsetValuation(OffsetValuationArgs),
+    /// Shadow carbon price and abatement cost analysis
+    ShadowCarbon(ShadowCarbonArgs),
     /// Print version information
     Version,
 }
@@ -688,6 +742,32 @@ fn main() {
             commands::fund_of_funds::run_secondaries_pricing(args)
         }
         Commands::FofPortfolio(args) => commands::fund_of_funds::run_fof_portfolio(args),
+        Commands::Beneish(args) => commands::earnings_quality::run_beneish(args),
+        Commands::Piotroski(args) => commands::earnings_quality::run_piotroski(args),
+        Commands::AccrualQuality(args) => commands::earnings_quality::run_accrual_quality(args),
+        Commands::RevenueQuality(args) => commands::earnings_quality::run_revenue_quality(args),
+        Commands::EarningsQualityComposite(args) => {
+            commands::earnings_quality::run_earnings_quality_composite(args)
+        }
+        Commands::NimAnalysis(args) => commands::bank_analytics::run_nim_analysis(args),
+        Commands::CamelsRating(args) => commands::bank_analytics::run_camels_rating(args),
+        Commands::CeclProvisioning(args) => commands::bank_analytics::run_cecl_provisioning(args),
+        Commands::DepositBeta(args) => commands::bank_analytics::run_deposit_beta(args),
+        Commands::LoanBook(args) => commands::bank_analytics::run_loan_book(args),
+        Commands::HModelDdm(args) => commands::dividend_policy::run_h_model_ddm(args),
+        Commands::MultistageDdm(args) => commands::dividend_policy::run_multistage_ddm(args),
+        Commands::Buyback(args) => commands::dividend_policy::run_buyback(args),
+        Commands::PayoutSustainability(args) => {
+            commands::dividend_policy::run_payout_sustainability(args)
+        }
+        Commands::TotalShareholderReturn(args) => {
+            commands::dividend_policy::run_total_shareholder_return(args)
+        }
+        Commands::CarbonPricing(args) => commands::carbon_markets::run_carbon_pricing(args),
+        Commands::EtsCompliance(args) => commands::carbon_markets::run_ets_compliance(args),
+        Commands::Cbam(args) => commands::carbon_markets::run_cbam(args),
+        Commands::OffsetValuation(args) => commands::carbon_markets::run_offset_valuation(args),
+        Commands::ShadowCarbon(args) => commands::carbon_markets::run_shadow_carbon(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

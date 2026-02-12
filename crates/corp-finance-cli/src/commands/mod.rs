@@ -1,6 +1,8 @@
 pub mod aml_compliance;
+pub mod bank_analytics;
 pub mod behavioral;
 pub mod capital_allocation;
+pub mod carbon_markets;
 pub mod clo_analytics;
 pub mod commodity_trading;
 pub mod compliance;
@@ -11,6 +13,8 @@ pub mod credit_portfolio;
 pub mod credit_scoring;
 pub mod crypto;
 pub mod derivatives;
+pub mod dividend_policy;
+pub mod earnings_quality;
 pub mod equity_research;
 pub mod esg;
 pub mod fatca_crs;
