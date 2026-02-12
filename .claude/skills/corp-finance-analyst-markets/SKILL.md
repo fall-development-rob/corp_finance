@@ -1,6 +1,6 @@
 ---
 name: "Financial Analyst - Markets"
-description: "Transforms Claude into a CFA-level financial analyst for fixed income analysis, derivatives pricing, yield curve analysis, volatility surface calibration, interest rate modelling, mortgage/MBS analytics, inflation-linked instruments, repo financing, FX/commodity analysis, and securitization. Use when bond pricing/yield/duration, yield curve analysis, option pricing, forward/futures valuation, swap valuation, volatility surface construction, SABR calibration, short rate modelling, MBS prepayment/OAS analytics, TIPS/inflation derivative pricing, repo/collateral management, FX forwards, commodity curve analysis, or securitization analysis is required. Pairs with corp-finance-mcp tools for computation."
+description: "Transforms Claude into a CFA-level financial analyst for fixed income analysis, derivatives pricing, yield curve analysis, volatility surface calibration, interest rate modelling, mortgage/MBS analytics, inflation-linked instruments, repo financing, FX/commodity analysis, securitization, CLO analytics (waterfall, coverage tests, reinvestment, tranche analytics, scenario analysis), and emerging markets analysis (country risk premium, political risk, capital controls, EM bond analysis, EM equity premium). Use when bond pricing/yield/duration, yield curve analysis, option pricing, forward/futures valuation, swap valuation, volatility surface construction, SABR calibration, short rate modelling, MBS prepayment/OAS analytics, TIPS/inflation derivative pricing, repo/collateral management, FX forwards, commodity curve analysis, securitization analysis, CLO investment analysis, or emerging markets cost of equity/fixed income analysis is required. Pairs with corp-finance-mcp tools for computation."
 ---
 
 # Financial Analyst - Markets Skill
@@ -34,6 +34,9 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 | FX hedging / forwards | CIP forward pricing | Cross-rate arbitrage check | `fx_forward` + `cross_rate` |
 | Commodity analysis | Cost-of-carry forward pricing | Term structure analysis | `commodity_forward` + `commodity_curve` |
 | Securitization analysis | Pool cash flow + tranching waterfall | Sensitivity on prepay/default | `abs_mbs_cashflows` + `cdo_tranching` |
+| CLO investment analysis | Waterfall + coverage tests + tranche analytics | Scenario stress testing | `clo_waterfall` + `clo_coverage_tests` + `clo_tranche_analytics` + `clo_scenario` |
+| Emerging markets cost of equity | CRP + political risk assessment | Capital controls cost | `country_risk_premium` + `political_risk` + `em_equity_premium` |
+| EM fixed income analysis | Local vs hard currency bond comparison | Carry trade decomposition | `em_bond_analysis` + `capital_controls` |
 
 ## Analysis Workflows
 
@@ -237,6 +240,82 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 3. **Key metrics**: weighted average life (WAL), credit enhancement %, tranche YTM, excess spread
 4. **Sensitivity**: vary prepayment speed (e.g., 100% vs 200% PSA) and default rate to stress tranche returns
 
+### CLO Analytics Workflow
+
+1. **Model CLO waterfall**: call `clo_waterfall` with deal structure and collateral cash flows
+   - Interest waterfall: senior management fees -> trustee fees -> AAA interest -> AA interest -> A interest -> BBB interest -> BB interest -> subordinated management fees -> equity residual
+   - Principal waterfall: AAA principal (sequential paydown) -> AA -> A -> BBB -> BB -> equity
+   - Turbo paydown: when OC/IC triggers are breached, divert excess interest to accelerate senior principal repayment
+   - Track period-by-period cash flows to each tranche, including deferred interest and PIK toggles
+2. **Monitor coverage tests**: call `clo_coverage_tests` with par values and interest data
+   - OC (overcollateralisation) test: collateral par value / tranche par outstanding > OC trigger (e.g., AAA OC ~120%)
+   - IC (interest coverage) test: interest received from collateral / interest payable on tranche > IC trigger
+   - Breach consequences: redirect equity and subordinated cash flows to cure breached test
+   - Cure mechanics: quantify the diversion amount required to restore OC/IC above trigger levels
+   - Monitor trends: declining OC ratio signals credit deterioration in the collateral pool
+3. **Manage reinvestment period**: call `clo_reinvestment` with portfolio and criteria data
+   - WARF (weighted average rating factor): portfolio credit quality metric — lower WARF = higher quality
+   - WAL (weighted average life): average time-weighted maturity of collateral pool — must stay within limits
+   - Diversity score: Moody's measure of effective uncorrelated issuers — higher is better (target > 50)
+   - Par build test: reinvestment proceeds must maintain or increase par coverage vs original deal terms
+   - Criteria compliance: CCC bucket limits (typically < 7.5%), single obligor limits, industry concentration
+4. **Analyse tranche metrics**: call `clo_tranche_analytics` with tranche cash flows and pricing
+   - Yield-to-worst: minimum yield considering call dates, amortisation, and prepayment
+   - Spread duration: sensitivity of tranche price to credit spread changes
+   - Breakeven CDR: constant default rate at which tranche principal is impaired
+   - Equity IRR: internal rate of return on equity tranche based on projected residual cash flows
+   - Cash-on-cash: periodic cash yield on equity tranche (current income / equity investment)
+5. **Stress test scenarios**: call `clo_scenario` with deal structure and stress parameters
+   - Default rate stress: 2x, 3x, 5x baseline CDR — where does each tranche break?
+   - Recovery stress: 20%, 30%, 40% recovery rates (vs baseline 60-70%)
+   - Prepayment stress: fast prepayment shortens reinvestment period, reduces equity returns
+   - Loss allocation: losses hit equity first, then BB, BBB, A, AA, AAA (attachment/detachment points)
+   - Rating migration: what if WARF deteriorates by 100, 200, 500 points?
+6. **Key benchmarks**:
+   - CLO AAA OC trigger ~120%; AA OC ~110%; BBB OC ~105%
+   - BB CDR breakeven 3-5%; BBB CDR breakeven 8-12%
+   - Equity IRR target 12-18%; cash-on-cash 10-15%
+   - Reinvestment period typically 4-5 years; non-call period 1-2 years
+   - Diversity score > 50 for well-diversified pool; CCC bucket < 7.5%
+
+### Emerging Markets Workflow
+
+1. **Estimate country risk premium**: call `country_risk_premium` with sovereign and market data
+   - Damodaran sovereign spread method: CRP = sovereign default spread * (equity_vol / bond_vol)
+   - Relative volatility method: CRP = base_ERP * (EM_equity_vol / DM_equity_vol)
+   - Composite: blend methods with governance adjustments (WGI scores) and macro indicators (inflation, current account)
+   - Use CRP to adjust WACC for emerging market investments: cost of equity = Rf + beta * ERP + CRP
+   - Lambda approach: CRP * lambda, where lambda = company's EM revenue exposure (0-1)
+2. **Assess political risk**: call `political_risk` with country governance and risk data
+   - World Governance Indicators (WGI): 6 dimensions — voice & accountability, political stability, government effectiveness, regulatory quality, rule of law, control of corruption
+   - Composite score: weighted average of WGI dimensions, normalised to 0-100 scale
+   - MIGA insurance valuation: cost of political risk insurance as a quantified risk premium
+   - Specific risk quantification: expropriation probability, sanctions exposure, conflict risk scoring
+   - Translate political risk into discount rate adjustment or scenario probability weighting
+3. **Quantify capital controls cost**: call `capital_controls` with investment parameters
+   - Repatriation delay: opportunity cost of locked capital (delay_days / 365 * opportunity_cost_rate)
+   - Withholding tax drag: gross yield * (1 - WHT_rate) — net yield after tax leakage
+   - FX conversion cost: bid-ask spread and forced conversion at off-market rates
+   - Total cost of controls: sum of repatriation delay cost + WHT drag + FX conversion cost
+   - Effective yield: gross yield minus total cost of controls — compare vs DM alternatives
+4. **Analyse EM fixed income**: call `em_bond_analysis` with local and hard currency bond data
+   - Local vs hard currency yield comparison: local currency yields embed FX depreciation risk
+   - FX-adjusted yield: local yield - expected depreciation (from forward rate or inflation differential)
+   - Carry trade decomposition: interest rate differential + expected FX appreciation + rolldown return
+   - Hedged return: local yield - hedge cost (forward points); unhedged = local yield + actual FX move
+   - Duration and convexity differences between local and hard currency benchmarks
+5. **Estimate EM equity premium**: call `em_equity_premium` with market data
+   - Sovereign spread method: ERP_EM = ERP_DM + CRP (additive approach)
+   - Relative volatility method: ERP_EM = ERP_DM * (EM_vol / DM_vol)
+   - Composite: blend methods with valuation adjustment (PE ratio vs DM) and growth adjustment (GDP growth differential)
+   - Compare implied ERP (from earnings yield) vs estimated ERP for relative value signal
+6. **Key benchmarks**:
+   - EM CRP range 100-800bps depending on country (frontier markets at the high end)
+   - Political risk insurance typically 0.5-3% annually (MIGA, private insurers)
+   - Capital control cost 50-300bps effective drag on returns
+   - EM local-hard currency spread 200-600bps (compensation for FX and local risks)
+   - EM equity premium typically 2-5% above DM ERP; total EM cost of equity 12-20%
+
 ## Output Standards
 
 All analyst output should:
@@ -259,6 +338,8 @@ For comprehensive capital markets knowledge including:
 - Mortgage analytics (PSA/CPR/refinancing prepayment models, MBS pass-through cash flows, OAS/Z-spread, effective duration/convexity, negative convexity, WAL/WAC)
 - Inflation-linked instruments (TIPS CPI-adjusted pricing, breakeven inflation term structure, real yield curve, deflation floor, ZCIS/YYIS inflation swaps, inflation caps/floors)
 - Repo financing (repo rate calculation, implied repo, term structure, specialness premium, securities lending, risk-based haircuts, margin calls, rehypothecation analysis)
+- CLO analytics (waterfall payment cascades, OC/IC coverage tests, reinvestment period management, WARF/WAL/diversity score, tranche yield-to-worst/breakeven CDR/equity IRR, multi-scenario stress testing)
+- Emerging markets (country risk premium estimation, Damodaran sovereign spread, political risk WGI scoring, MIGA insurance, capital controls cost analysis, EM local vs hard currency bonds, carry trade decomposition, EM equity risk premium)
 - Ethics and professional standards (GIPS, FCA, MiFID II)
 
 See [docs/SKILL.md](../../../docs/SKILL.md) for the complete financial analyst knowledge base.

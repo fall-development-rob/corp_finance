@@ -1,11 +1,11 @@
 ---
 name: "Corp Finance Tools - Specialty & Regulatory"
-description: "Use the corp-finance-mcp server tools for specialty finance, regulatory, and compliance calculations. Invoke when performing private credit (unitranche, direct lending, syndication), insurance (loss reserving, premium pricing, Solvency II SCR), FP&A (variance analysis, break-even, working capital, rolling forecast), wealth management (retirement planning, tax-loss harvesting, estate planning), restructuring (recovery analysis, distressed debt), real assets (property valuation, project finance), venture capital (dilution, convertible instruments, fund returns), ESG (scoring, climate/carbon, green bonds, SLL), regulatory capital (Basel III, LCR/NSFR, ALM), compliance (MiFID II best execution, GIPS reporting), credit derivatives (CDS pricing, CVA/DVA), convertible bonds (binomial tree pricing, scenario analysis), lease accounting (ASC 842/IFRS 16, sale-leaseback), pension & LDI (funding analysis, liability-driven investing), sovereign risk (bond analysis, country risk), real options (binomial valuation, decision trees), equity research (SOTP, target price), commodity trading (spread analysis, storage economics), treasury management (cash management, hedge effectiveness), infrastructure finance (PPP models, concession valuation), crypto (token valuation, DeFi analysis), municipal bonds (pricing, credit analysis), structured products (notes, exotic), trade finance (LC, supply chain), fund structuring (US onshore, UK/EU, Cayman/BVI offshore, Luxembourg/Ireland), transfer pricing (BEPS/Pillar Two, intercompany pricing), tax treaty (treaty network optimization, holding structures), FATCA/CRS (reporting, entity classification), economic substance (multi-jurisdiction testing), regulatory reporting (AIFMD Annex IV, SEC Form PF, CFTC CPO-PQR), AML compliance (KYC risk scoring, sanctions screening). All computation uses 128-bit decimal precision."
+description: "Use the corp-finance-mcp server tools for specialty finance, regulatory, and compliance calculations. Invoke when performing private credit (unitranche, direct lending, syndication), insurance (loss reserving, premium pricing, Solvency II SCR), FP&A (variance analysis, break-even, working capital, rolling forecast), wealth management (retirement planning, tax-loss harvesting, estate planning), restructuring (recovery analysis, distressed debt), real assets (property valuation, project finance), venture capital (dilution, convertible instruments, fund returns), ESG (scoring, climate/carbon, green bonds, SLL), regulatory capital (Basel III, LCR/NSFR, ALM), compliance (MiFID II best execution, GIPS reporting), credit derivatives (CDS pricing, CVA/DVA), convertible bonds (binomial tree pricing, scenario analysis), lease accounting (ASC 842/IFRS 16, sale-leaseback), pension & LDI (funding analysis, liability-driven investing), sovereign risk (bond analysis, country risk), real options (binomial valuation, decision trees), equity research (SOTP, target price), commodity trading (spread analysis, storage economics), treasury management (cash management, hedge effectiveness), infrastructure finance (PPP models, concession valuation), crypto (token valuation, DeFi analysis), municipal bonds (pricing, credit analysis), structured products (notes, exotic), trade finance (LC, supply chain), fund structuring (US onshore, UK/EU, Cayman/BVI offshore, Luxembourg/Ireland), transfer pricing (BEPS/Pillar Two, intercompany pricing), tax treaty (treaty network optimization, holding structures), FATCA/CRS (reporting, entity classification), economic substance (multi-jurisdiction testing), regulatory reporting (AIFMD Annex IV, SEC Form PF, CFTC CPO-PQR), AML compliance (KYC risk scoring, sanctions screening), fund of funds (J-curve, commitment pacing, manager selection, secondaries pricing), bank analytics (NIM analysis, CAMELS rating, CECL provisioning, deposit beta, loan book), carbon markets (credit pricing, ETS compliance, CBAM, offset valuation, shadow carbon price), private wealth (concentrated stock, philanthropic vehicles, wealth transfer, direct indexing, family governance). All computation uses 128-bit decimal precision."
 ---
 
 # Corp Finance MCP Tools - Specialty & Regulatory
 
-You have access to 74 specialty finance, regulatory, and compliance MCP tools. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
+You have access to 94 specialty finance, regulatory, and compliance MCP tools covering private credit, insurance, FP&A, wealth management, restructuring, real assets, venture capital, ESG, regulatory capital, compliance, credit derivatives, convertible bonds, lease accounting, pension & LDI, sovereign risk, real options, equity research, commodity trading, treasury management, infrastructure finance, crypto, municipal bonds, structured products, trade finance, fund structuring, transfer pricing, tax treaty, FATCA/CRS, economic substance, regulatory reporting, AML compliance, fund of funds, bank analytics, carbon markets, and private wealth. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
 
 ## Tool Reference
 
@@ -242,6 +242,46 @@ You have access to 74 specialty finance, regulatory, and compliance MCP tools. A
 |----------|---------|------------|
 | `kyc_risk_assessment` | Assess KYC/AML risk scoring | customer type, jurisdiction, PEP status, transactions |
 | `sanctions_screening` | Screen against sanctions lists | entities, lists to check, threshold, transaction details |
+
+### Fund of Funds
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `j_curve_model` | J-curve fund lifecycle: cash flow projection, TVPI/DPI/RVPI, PME (Kaplan-Schoar), net/gross IRR, trough analysis | fund_size, vintage_year, investment_period, fund_life, management_fee, carry_rate, hurdle, drawdown_schedule, exit_multiples, public_market_returns |
+| `commitment_pacing` | Commitment pacing: vintage year allocation, drawdown modeling, NAV projection, over-commitment ratio | target_allocation, total_portfolio, vintage_commitments, drawdown_rates, distribution_rates, nav_growth, rebalancing_frequency |
+| `manager_selection` | Manager due diligence: performance scoring, persistence analysis, alpha estimation, qualitative rating | manager_name, fund_returns, benchmark_returns, peer_quartiles, team_stability, strategy, operational_dd_scores |
+| `secondaries_pricing` | Secondaries pricing: NAV discount, unfunded PV, IRR sensitivity at multiple exit multiples, breakeven | fund_nav, unfunded_commitment, remaining_life, expected_distributions, discount_rate, exit_multiple_scenarios |
+| `fof_portfolio` | Fund of funds portfolio: diversification by strategy/vintage/geography, HHI, constraint monitoring | funds (name, strategy, vintage, geography, nav, commitment), constraints, rebalancing_targets |
+
+### Bank Analytics
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `nim_analysis` | Net interest margin analysis: NIM calculation, rate/volume decomposition, asset/liability mix contribution, interest rate gap | interest_income, interest_expense, earning_assets, interest_bearing_liabilities, asset_mix, liability_mix, repricing_buckets, rate_scenarios |
+| `camels_rating` | CAMELS bank rating: Capital adequacy, Asset quality, Management, Earnings, Liquidity, Sensitivity composite score (1-5) | cet1_ratio, tier1_ratio, total_capital_ratio, npl_ratio, provision_coverage, roa, roe, efficiency_ratio, lcr, nsfr, loan_to_deposit, rate_sensitivity, governance_scores |
+| `cecl_provisioning` | CECL/IFRS 9 expected credit loss: multi-scenario weighted ECL by segment, stage classification, lifetime vs 12-month provision | loan_segments, pd_by_segment, lgd_by_segment, ead_by_segment, scenarios (base/upside/downside), scenario_weights, stage_classification, methodology (CECL/IFRS9) |
+| `deposit_beta` | Deposit beta analysis: pass-through rate estimation, cumulative beta, asymmetry analysis (up vs down cycles), repricing lag | deposit_rates_history, policy_rates_history, deposit_types, observation_periods, cycle_direction |
+| `loan_book_analysis` | Loan book analysis: sector/geography concentration (HHI), NPL analysis, provision adequacy, weighted average rate and maturity | loans (sector, geography, outstanding, rate, maturity, status, provision), benchmark_npl_ratios |
+
+### Carbon Markets
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `carbon_credit_pricing` | Carbon credit pricing: forward price via cost-of-carry, vintage discount, registry premium, credit type adjustment | spot_price, risk_free_rate, tenor, vintage_year, registry, credit_type (compliance/voluntary), storage_cost, seasonal_factors |
+| `ets_compliance` | ETS compliance analysis: allowance surplus/deficit, compliance cost, price volatility, carbon intensity vs benchmark | free_allocation, purchased_allowances, surrendered, verified_emissions, carbon_price_scenarios, sector_benchmark_intensity, revenue |
+| `cbam_analysis` | EU CBAM analysis: certificate cost per good, net CBAM liability after origin carbon price credit, total exposure | goods (type, quantity, embedded_emissions), eu_ets_price, origin_carbon_prices, origin_jurisdictions, reporting_period |
+| `offset_valuation` | Carbon offset valuation: quality-adjusted price, permanence/additionality/vintage/certification adjustments, co-benefit premium | base_price, permanence_score, additionality_score, vintage_year, certification_standard, co_benefits (social, biodiversity), project_type |
+| `shadow_carbon_price` | Shadow carbon price analysis: carbon-adjusted NPV, abatement cost, project ranking with/without carbon pricing, breakeven carbon price | projects (name, npv, annual_emissions, abatement_cost), shadow_price_scenarios, discount_rate, time_horizon |
+
+### Private Wealth
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `concentrated_stock` | Concentrated stock analysis: collar, exchange fund, prepaid forward, charitable strategies with tax-adjusted after-tax comparison | stock_position (shares, price, cost_basis), strategies (collar, exchange_fund, prepaid_forward, charitable), tax_rates, holding_period, volatility |
+| `philanthropic_vehicles` | Philanthropic vehicle comparison: CRT, CLT, DAF, private foundation with tax deduction, income stream, and remainder analysis | donation_amount, asset_type, tax_bracket, vehicles (CRT, CLT, DAF, foundation), discount_rate, payout_rate, term_years |
+| `wealth_transfer` | Wealth transfer planning: estate tax, GST, annual exclusion, GRAT, grantor trust, dynasty trust, ILIT analysis with tax savings | estate_value, gift_amount, trust_types (GRAT, grantor, dynasty, ILIT), section_7520_rate, exemption_used, annual_exclusion_recipients, life_insurance_face |
+| `direct_indexing` | Direct indexing analysis: tax-loss harvesting opportunities, wash sale compliance, tracking error, after-tax alpha estimation | portfolio_positions (ticker, shares, cost_basis, market_value, acquisition_date), target_index, tax_rates, wash_sale_window, rebalancing_frequency |
+| `family_governance` | Family governance evaluation: governance score, complexity assessment, structure recommendations, risk identification | family_members, entities (trusts, companies, foundations), jurisdictions, governance_practices, succession_plan, meeting_frequency, documentation_level |
 
 ---
 
@@ -680,6 +720,110 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
    - Country risk: comprehensive embargo, sectoral sanctions, FATF monitoring
 3. **Key benchmarks**: risk score >70 = EDD required; PEP always EDD; match score >70 = manual review; SAR filing 24h (terrorism) / 30d (other)
 
+### Fund of Funds Analysis
+
+1. `j_curve_model` — model PE fund lifecycle cash flows
+   - Cash flow projection by vintage year
+   - TVPI/DPI/RVPI multiples, PME (Kaplan-Schoar) vs public market
+   - J-curve trough: typically year 3-4 for PE, year 2-3 for VC
+   - Net vs gross IRR spread
+2. `commitment_pacing` — plan vintage year allocation
+   - Drawdown modelling: pace new commitments to smooth exposure
+   - NAV projection: forecast portfolio value over time
+   - Over-commitment ratio: total commitments / target allocation (typically 1.3-1.6x)
+3. `manager_selection` — evaluate and score fund managers
+   - Performance: quartile ranking, persistence, alpha vs benchmark
+   - Qualitative: strategy, team stability, operational due diligence
+4. `secondaries_pricing` — value secondary market transactions
+   - NAV discount/premium, unfunded commitment PV
+   - IRR sensitivity at different exit multiples
+   - Breakeven analysis
+5. `fof_portfolio` — portfolio-level diversification analysis
+   - By strategy, vintage, geography, sector
+   - HHI concentration, constraint monitoring
+6. **Key benchmarks**: PE J-curve trough year 3-4; top-quartile PE TVPI > 2.0x; over-commitment ratio 1.3-1.6x; secondaries NAV discount 5-15% (2024 market); FoF management fee 0.5-1.0% on top of underlying GP fees
+
+### Bank Analytics Workflow
+
+1. `nim_analysis` — analyse bank profitability driver
+   - NIM = (interest income - interest expense) / average earning assets
+   - Rate/volume decomposition: separate impact of rate changes vs balance changes
+   - Asset/liability mix contribution: which products drive NIM?
+   - Interest rate gap by repricing bucket
+2. `camels_rating` — composite bank health assessment
+   - Capital adequacy (C): CET1, tier 1, total capital ratios
+   - Asset quality (A): NPL ratio, provision coverage, write-off rate
+   - Management (M): governance, risk management, strategic planning scores
+   - Earnings (E): ROA, ROE, efficiency ratio, core earnings stability
+   - Liquidity (L): LCR, NSFR, loan-to-deposit ratio
+   - Sensitivity (S): interest rate risk, FX exposure, equity risk
+   - Composite 1-5 (1=strong, 5=critically deficient)
+3. `cecl_provisioning` — calculate expected credit losses
+   - Multi-scenario weighted ECL: base/upside/downside with probability weights
+   - Stage classification: Stage 1 (performing, 12-month ECL), Stage 2 (significant increase in credit risk, lifetime ECL), Stage 3 (credit-impaired, lifetime ECL)
+   - CECL (US) vs IFRS 9 (international) approach
+4. `deposit_beta` — analyse deposit repricing behavior
+   - Pass-through rate: how much of rate hike reaches depositors
+   - Cumulative beta: total deposit rate change / total policy rate change
+   - Asymmetry: deposit rates rise slower than they fall (up beta < down beta)
+   - Repricing lag in months
+5. `loan_book_analysis` — assess loan portfolio quality
+   - Sector/geography concentration (HHI)
+   - NPL by segment, provision adequacy, WAR (weighted average rate), WAM (weighted average maturity)
+6. **Key benchmarks**: NIM 2.5-3.5% (commercial banks); CAMELS 1-2 = well-capitalized; CECL day-1 impact +20-40% vs incurred loss; deposit beta 40-60% in rate hike cycles; NPL ratio < 2% = healthy
+
+### Carbon Markets Workflow
+
+1. `carbon_credit_pricing` — price carbon credits
+   - Forward pricing via cost-of-carry: F = S * (1+r)^T
+   - Vintage discount: older credits trade at discount (5-15% per year)
+   - Registry premium: Gold Standard, VCS, ACR pricing differentials
+   - Credit type: compliance (EU ETS) vs voluntary
+2. `ets_compliance` — assess ETS position
+   - Allowance surplus/deficit: free allocation + purchases - surrendered
+   - Compliance cost projection at multiple carbon price scenarios
+   - Carbon intensity vs sector benchmark
+3. `cbam_analysis` — EU carbon border adjustment
+   - Certificate cost: embedded emissions * EU ETS price
+   - Credit for carbon price already paid at origin
+   - Net CBAM liability = EU certificate cost - origin carbon credit
+4. `offset_valuation` — value carbon offsets with quality adjustments
+   - Quality-adjusted price based on permanence, additionality, vintage, certification
+   - Co-benefit premium for social/biodiversity co-benefits
+5. `shadow_carbon_price` — internal carbon pricing
+   - Carbon-adjusted NPV: base NPV - PV of carbon cost at shadow price
+   - Abatement cost curve: marginal cost of emission reduction
+   - Breakeven carbon price: price at which project NPV = 0
+6. **Key benchmarks**: EU ETS price EUR 60-100/tCO2; voluntary market EUR 5-50/tCO2; CBAM phases in 2026-2034; shadow carbon price $50-100 (corporate best practice); vintage discount 5-15%/year
+
+### Private Wealth Workflow
+
+1. `concentrated_stock` — manage single-stock risk
+   - Hedging strategies: costless collar (cap upside, floor downside), prepaid forward (monetize without sale), exchange fund (diversify tax-free)
+   - Charitable strategies: donor-advised fund, charitable remainder trust
+   - Tax-adjusted after-tax comparison across strategies
+2. `philanthropic_vehicles` — compare giving vehicles
+   - CRT (Charitable Remainder Trust): income stream to donor, remainder to charity
+   - CLT (Charitable Lead Trust): income to charity, remainder to heirs
+   - DAF (Donor-Advised Fund): immediate deduction, grant over time
+   - Private foundation: maximum control, 5% minimum distribution
+   - Compare: tax deduction, income stream, administrative cost, control
+3. `wealth_transfer` — estate and gift tax planning
+   - Federal estate tax, GST tax, annual exclusion gifting
+   - GRAT (Grantor Retained Annuity Trust): transfer appreciation above hurdle rate
+   - Dynasty trust: multi-generational tax-exempt wealth transfer
+   - ILIT: life insurance outside estate
+4. `direct_indexing` — tax-efficient portfolio management
+   - Tax-loss harvesting opportunities across individual stock positions
+   - Wash sale compliance: 30-day rule monitoring
+   - Tracking error vs target index
+   - After-tax alpha: TLH benefit in basis points
+5. `family_governance` — evaluate family office governance
+   - Governance score across 5 dimensions
+   - Complexity assessment: number of entities, jurisdictions, family members
+   - Structure recommendations and risk identification
+6. **Key benchmarks**: concentrated stock > 10% of NW = significant risk; GRAT annuity rate = Section 7520 rate + 1-2%; TLH adds 50-150bps annually; family governance score > 70 = well-governed; DAF minimum $5-25k initial contribution
+
 ---
 
 ## CLI Equivalent
@@ -834,6 +978,46 @@ cfa sec-cftc-reporting --input sec.json --output json
 cfa kyc-risk-assessment --input kyc.json --output table
 
 cfa sanctions-screening --input screening.json --output json
+
+cfa j-curve --input jcurve.json --output table
+
+cfa commitment-pacing --input pacing.json --output json
+
+cfa manager-selection --input manager.json --output table
+
+cfa secondaries-pricing --input secondaries.json --output json
+
+cfa fof-portfolio --input fof.json --output table
+
+cfa nim-analysis --input nim.json --output table
+
+cfa camels-rating --input camels.json --output json
+
+cfa cecl-provisioning --input cecl.json --output table
+
+cfa deposit-beta --input beta.json --output json
+
+cfa loan-book --input loanbook.json --output table
+
+cfa carbon-credit-pricing --input carbon.json --output table
+
+cfa ets-compliance --input ets.json --output json
+
+cfa cbam-analysis --input cbam.json --output table
+
+cfa offset-valuation --input offset.json --output json
+
+cfa shadow-carbon-price --input shadow.json --output table
+
+cfa concentrated-stock --input stock.json --output table
+
+cfa philanthropic-vehicles --input philanthropy.json --output json
+
+cfa wealth-transfer --input transfer.json --output table
+
+cfa direct-indexing --input indexing.json --output json
+
+cfa family-governance --input governance.json --output table
 ```
 
 Output formats: `--output json` (default), `--output table`, `--output csv`, `--output minimal`.

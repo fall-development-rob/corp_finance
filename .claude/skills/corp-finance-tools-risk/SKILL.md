@@ -1,11 +1,11 @@
 ---
 name: "Corp Finance Tools - Risk & Quant"
-description: "Use the corp-finance-mcp server tools for quantitative risk and analytics calculations. Invoke when performing quantitative risk analysis (factor models, Black-Litterman, risk parity, stress testing), portfolio optimization (Markowitz mean-variance, Black-Litterman portfolio), risk budgeting (factor-based risk decomposition, tail risk VaR/CVaR), market microstructure (bid-ask spread analysis, optimal execution), quantitative strategies (pairs trading, momentum), behavioral finance (prospect theory, market sentiment), performance attribution (Brinson-Fachler, factor-based), credit portfolio analytics (credit VaR, rating migration), macro economics (Taylor rule, Phillips curve, Okun's law, recession risk, PPP, interest rate parity, balance of payments). All computation uses 128-bit decimal precision."
+description: "Use the corp-finance-mcp server tools for quantitative risk and analytics calculations. Invoke when performing quantitative risk analysis (factor models, Black-Litterman, risk parity, stress testing), portfolio optimization (Markowitz mean-variance, Black-Litterman portfolio), risk budgeting (factor-based risk decomposition, tail risk VaR/CVaR), market microstructure (bid-ask spread analysis, optimal execution), quantitative strategies (pairs trading, momentum), behavioral finance (prospect theory, market sentiment), performance attribution (Brinson-Fachler, factor-based), credit portfolio analytics (credit VaR, rating migration), macro economics (Taylor rule, Phillips curve, Okun's law, recession risk, PPP, interest rate parity, balance of payments), credit scoring (logistic regression scorecard, Merton structural model, intensity model, PD calibration, scoring validation), capital allocation (economic capital, RAROC, Euler allocation, Shapley allocation, limit management), index construction (weighting, rebalancing, tracking error, smart beta, reconstitution). All computation uses 128-bit decimal precision."
 ---
 
 # Corp Finance Tools - Risk & Quant
 
-You have access to 20 quantitative risk and analytics MCP tools for factor analysis, portfolio optimization, risk budgeting, market microstructure, quantitative strategies, behavioral finance, performance attribution, credit portfolio analytics, and macro economics. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
+You have access to 35 quantitative risk and analytics MCP tools for factor analysis, portfolio optimization, risk budgeting, market microstructure, quantitative strategies, behavioral finance, performance attribution, credit portfolio analytics, macro economics, credit scoring, capital allocation, and index construction. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
 
 ## Tool Reference
 
@@ -73,6 +73,36 @@ You have access to 20 quantitative risk and analytics MCP tools for factor analy
 |----------|---------|------------|
 | `monetary_policy` | Monetary policy analysis (Taylor Rule, Phillips Curve, Okun's Law) | current_fed_funds_rate, inflation_rate, target_inflation, gdp_growth, potential_gdp_growth, unemployment_rate, natural_unemployment_rate, output_gap |
 | `international_economics` | International economics (PPP, interest rate parity, BoP, REER) | domestic_country, foreign_country, spot_fx_rate, domestic_inflation, foreign_inflation, domestic_interest_rate, foreign_interest_rate, forward_fx_rate, trade_balance, capital_flows |
+
+### Credit Scoring
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `credit_scorecard` | Logistic regression scorecard: WoE binning, IV calculation, scorecard points, Gini coefficient, KS statistic | applicant_data, target_variable, features, base_score, pdo (points to double odds), binning_method |
+| `merton_pd` | Merton structural model: asset value/volatility estimation, distance to default, PD, KMV EDF | equity_value, equity_volatility, debt_face_value, risk_free_rate, time_horizon, dividend_yield |
+| `intensity_model` | Reduced-form intensity model: hazard rates from CDS spreads, survival probability, term structure | cds_spreads, tenors, recovery_rate, discount_curve, interpolation_method |
+| `pd_calibration` | PIT/TTC PD calibration: Vasicek single-factor model, Basel IRB correlation, central tendency | raw_pds, rating_grades, macro_factor, calibration_method (PIT/TTC), central_tendency, asset_correlation |
+| `scoring_validation` | Credit model validation: AUC-ROC, accuracy ratio, Gini, Brier score, Hosmer-Lemeshow test | predicted_probabilities, actual_outcomes, score_bins, validation_method |
+
+### Capital Allocation
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `economic_capital` | Economic capital: VaR/ES-based capital, IRB capital requirement (Basel), stress capital buffer, adequacy ratio | exposures, pds, lgds, correlations, confidence_level, capital_method (VaR/ES/IRB), available_capital |
+| `raroc_calculation` | RAROC: risk-adjusted return on capital, RORAC, EVA, SVA, spread to hurdle, risk-adjusted pricing | revenue, costs, expected_loss, economic_capital, cost_of_capital, hurdle_rate, tax_rate |
+| `euler_allocation` | Euler risk contribution: marginal capital allocation, diversification benefit, HHI concentration | business_units, standalone_risks, portfolio_risk, correlation_matrix, risk_measure (VaR/ES) |
+| `shapley_allocation` | Shapley value capital allocation: game-theoretic fair allocation (exact N<=8, sampled N>8) | business_units, risk_function, num_samples (for N>8), confidence_interval |
+| `limit_management` | Risk limit management: notional/VaR/concentration limits, utilization tracking, breach detection | business_units, limits (notional/VaR/concentration), current_exposures, escalation_thresholds |
+
+### Index Construction
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `index_weighting` | Index weighting: market-cap, equal, fundamental, free-float with cap constraints, HHI concentration, sector breakdown | constituents, weighting_method (MarketCap/Equal/Fundamental/FreeFloat), cap_constraint, sector_caps |
+| `index_rebalancing` | Index rebalancing: drift analysis, optimal trade list, transaction cost estimation, turnover metrics, liquidity-adjusted scheduling | current_weights, target_weights, market_data, cost_model, rebalance_frequency, liquidity_data |
+| `tracking_error` | Tracking error analysis: ex-post TE from returns, ex-ante TE from weights/covariance, active share, information ratio decomposition | portfolio_returns, benchmark_returns, portfolio_weights, benchmark_weights, covariance_matrix |
+| `smart_beta` | Smart beta construction: multi-factor tilted weights (value, momentum, quality, low-vol, dividend) with factor exposure and risk analysis | constituents, factor_data, factor_weights, tilt_strength, constraints, risk_model |
+| `index_reconstitution` | Index reconstitution: member eligibility screening, additions/deletions, buffer zone management, turnover estimation, impact analysis | universe, eligibility_criteria, current_members, buffer_pct, effective_date, market_data |
 
 ---
 
@@ -270,6 +300,90 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
    - Current account deficit > 4% GDP: external vulnerability
    - REER deviation > 15% from 10Y average: mean-reversion opportunity
 
+### Credit Scoring Workflow
+
+1. `credit_scorecard` — build logistic regression scorecard
+   - Weight of Evidence (WoE) binning for each variable
+   - Information Value (IV) for variable selection (IV > 0.3 = strong predictor)
+   - Scorecard points: scale to industry standard (e.g., 600 base, 20 points per doubling of odds)
+   - Gini coefficient and KS statistic for discrimination power
+2. `merton_pd` — structural model probability of default
+   - Estimate asset value and asset volatility from equity price and volatility
+   - Distance to default: (ln(V/D) + (mu - 0.5*sigma^2)*T) / (sigma*sqrt(T))
+   - PD from distance to default via normal CDF
+   - KMV EDF (Expected Default Frequency) mapping
+3. `intensity_model` — reduced-form hazard rate model
+   - Extract hazard rates from CDS spreads: lambda = spread / (1 - recovery)
+   - Survival probability term structure
+   - Forward hazard rates for conditional default probability
+4. `pd_calibration` — calibrate PIT/TTC probabilities
+   - Vasicek single-factor model: conditional PD at given systematic factor
+   - Basel IRB correlation function: rho = 0.12 * (1 - e^(-50*PD)) / (1 - e^(-50)) + 0.24 * (1 - ...)
+   - Central tendency adjustment for through-the-cycle PD
+5. `scoring_validation` — validate credit model performance
+   - AUC-ROC (area under receiver operating characteristic curve)
+   - Accuracy ratio = 2*AUC - 1 (Gini coefficient)
+   - Brier score: mean squared probability error
+   - Hosmer-Lemeshow goodness-of-fit test
+Key benchmarks: Gini > 0.60 = good scorecard; AUC > 0.80 = strong discriminator; KS > 40% = good separation; Basel IRB minimum requirements: AR > 0.40
+
+### Capital Allocation Workflow
+
+1. `economic_capital` — compute risk-based capital requirements
+   - VaR/ES-based economic capital at 99.9% confidence
+   - IRB capital requirement: K = LGD * (Phi^-1(PD) + sqrt(rho)*Phi^-1(0.999)) / sqrt(1-rho) - PD*LGD
+   - Stress capital buffer: incremental capital for stress scenarios
+   - Adequacy ratio: available capital / required capital
+2. `raroc_calculation` — risk-adjusted pricing and performance
+   - RAROC = (revenue - costs - expected_loss) / economic_capital
+   - RORAC = net income / economic_capital
+   - EVA = net income - (cost_of_capital * economic_capital)
+   - Spread to hurdle: minimum spread above funding cost to earn hurdle rate
+3. `euler_allocation` — proportional risk contribution
+   - Marginal contribution: partial derivative of portfolio risk w.r.t. position size
+   - Euler property: marginal contributions sum to total portfolio risk
+   - Diversification benefit: total of standalone risks minus portfolio risk
+4. `shapley_allocation` — game-theoretic fair allocation
+   - Exact computation for N<=8 (all permutations)
+   - Sampled approximation for N>8 (Monte Carlo permutation sampling)
+   - Each business unit assigned capital reflecting marginal contribution across all possible coalitions
+5. `limit_management` — risk limit monitoring
+   - Notional, VaR, and concentration limits per business unit
+   - Utilization tracking: current exposure / limit
+   - Breach detection and escalation triggers
+Key benchmarks: RAROC hurdle rate typically 12-15%; Euler allocation ensures sub-additivity; Shapley is the unique allocation satisfying efficiency, symmetry, dummy, and additivity axioms
+
+### Index Construction Workflow
+
+1. `index_weighting` — choose and apply weighting scheme
+   - Market-cap: standard float-adjusted capitalization
+   - Equal-weight: 1/N allocation, rebalanced periodically
+   - Fundamental: weighted by revenue, earnings, book value, or dividends
+   - Free-float: exclude locked-up/strategic/government holdings
+   - Cap constraints: max weight per constituent, sector caps
+   - HHI concentration: measure index concentration
+2. `index_rebalancing` — manage periodic rebalancing
+   - Drift analysis: current weights vs target weights
+   - Optimal trade list: buy/sell quantities to restore target
+   - Transaction cost estimation: spread + impact + opportunity cost
+   - Turnover: sum of absolute weight changes / 2
+   - Liquidity-adjusted scheduling: phase trades for illiquid names
+3. `tracking_error` — measure index replication quality
+   - Ex-post TE: standard deviation of return differences (portfolio vs benchmark)
+   - Ex-ante TE: from weights and covariance matrix
+   - Active share: sum of |w_portfolio - w_benchmark| / 2
+   - Information ratio = active return / tracking error
+4. `smart_beta` — construct factor-tilted indices
+   - Multi-factor: value, momentum, quality, low-volatility, dividend yield
+   - Factor exposure analysis: loading on each factor
+   - Risk decomposition: factor risk vs specific risk
+5. `index_reconstitution` — manage index membership changes
+   - Eligibility screening: market cap, liquidity, domicile, free float
+   - Buffer zone: prevents excessive turnover from borderline constituents
+   - Additions/deletions list with effective date
+   - Turnover estimation and market impact analysis
+Key benchmarks: TE < 50bps = close replication; active share > 60% = truly active; turnover < 20% annual for low-cost index; HHI < 0.10 = well-diversified
+
 ---
 
 ## CLI Equivalent
@@ -316,6 +430,36 @@ cfa credit-migration --input migration.json --output json
 cfa monetary-policy --input macro.json --output table
 
 cfa international-economics --input intl_econ.json --output json
+
+cfa credit-scorecard --input scorecard.json --output table
+
+cfa merton-pd --input merton.json --output json
+
+cfa intensity-model --input intensity.json --output table
+
+cfa pd-calibration --input calibration.json --output json
+
+cfa scoring-validation --input validation.json --output table
+
+cfa economic-capital --input ecap.json --output table
+
+cfa raroc --input raroc.json --output json
+
+cfa euler-allocation --input euler.json --output table
+
+cfa shapley-allocation --input shapley.json --output json
+
+cfa limit-management --input limits.json --output table
+
+cfa index-weighting --input weights.json --output table
+
+cfa index-rebalancing --input rebalance.json --output json
+
+cfa tracking-error --input te.json --output table
+
+cfa smart-beta --input smartbeta.json --output json
+
+cfa index-reconstitution --input reconst.json --output table
 ```
 
 Output formats: `--output json` (default), `--output table`, `--output csv`, `--output minimal`.

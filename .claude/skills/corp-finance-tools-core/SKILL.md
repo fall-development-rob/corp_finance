@@ -1,11 +1,11 @@
 ---
 name: "Corp Finance Tools - Core"
-description: "Use the corp-finance-mcp server tools for core corporate finance calculations. Invoke when performing valuations (DCF, WACC, comps), credit analysis (metrics, debt capacity, covenants, Altman Z-score), PE/M&A (LBO models, IRR, MOIC, debt schedules, waterfall distributions, merger accretion/dilution), portfolio analytics (Sharpe, VaR, Kelly), fund economics (fee calculator, GP/LP splits, GP economics, investor net returns), jurisdiction (GAAP/IFRS reconciliation, withholding tax, NAV with equalisation, UBTI/ECI screening), three-statement financial modelling, Monte Carlo simulation (DCF, generic), scenario/sensitivity analysis. All computation uses 128-bit decimal precision."
+description: "Use the corp-finance-mcp server tools for core corporate finance calculations. Invoke when performing valuations (DCF, WACC, comps), credit analysis (metrics, debt capacity, covenants, Altman Z-score), PE/M&A (LBO models, IRR, MOIC, debt schedules, waterfall distributions, merger accretion/dilution), portfolio analytics (Sharpe, VaR, Kelly), fund economics (fee calculator, GP/LP splits, GP economics, investor net returns), jurisdiction (GAAP/IFRS reconciliation, withholding tax, NAV with equalisation, UBTI/ECI screening), three-statement financial modelling, Monte Carlo simulation (DCF, generic), scenario/sensitivity analysis, earnings quality (Beneish M-Score, Piotroski F-Score, accrual quality, revenue quality, composite scoring), dividend policy (H-Model DDM, multi-stage DDM, buyback analysis, payout sustainability, total shareholder return), financial forensics (Benford's Law, DuPont analysis, Z-score models, peer benchmarking, red flag scoring). All computation uses 128-bit decimal precision."
 ---
 
 # Corp Finance Tools - Core
 
-You have access to 29 core corporate finance MCP tools for fundamental valuation, credit, PE/M&A, portfolio, fund economics, jurisdiction, three-statement modelling, Monte Carlo, and scenario analysis. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point (except Monte Carlo which uses f64 for performance).
+You have access to 44 core corporate finance MCP tools for fundamental valuation, credit, PE/M&A, portfolio, fund economics, jurisdiction, three-statement modelling, Monte Carlo, scenario analysis, earnings quality, dividend policy, and financial forensics. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point (except Monte Carlo which uses f64 for performance).
 
 ## Tool Reference
 
@@ -82,6 +82,36 @@ You have access to 29 core corporate finance MCP tools for fundamental valuation
 |----------|---------|------------|
 | `monte_carlo_simulation` | Generic MC simulation with statistical output | variables (name, distribution), num_simulations, seed |
 | `monte_carlo_dcf` | Stochastic DCF valuation with confidence intervals | base_fcf, projection_years, distributions for growth/margin/wacc/terminal_growth |
+
+### Earnings Quality
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `beneish_mscore` | Beneish M-Score: 8-variable earnings manipulation model | dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata (or raw financials for 2 periods to compute indices) |
+| `piotroski_fscore` | Piotroski F-Score: 9-signal fundamental strength score | net_income, operating_cash_flow, roa, roa_prior, leverage, leverage_prior, current_ratio, current_ratio_prior, shares_outstanding, shares_prior, gross_margin, gross_margin_prior, asset_turnover, asset_turnover_prior |
+| `accrual_quality` | Accrual quality analysis: Sloan ratio, Dechow-Dichev, Jones, modified Jones | total_accruals, cash_from_operations, net_income, total_assets, delta_revenue, ppe, delta_receivables, prior period data |
+| `revenue_quality` | Revenue quality assessment: receivables, deferred revenue, concentration | revenue, receivables, revenue_prior, receivables_prior, deferred_revenue, deferred_revenue_prior, allowance, segment_revenues |
+| `earnings_quality_composite` | Composite earnings quality score with traffic-light rating | beneish_mscore_output, piotroski_fscore_output, accrual_quality_output, revenue_quality_output, weights (optional) |
+
+### Dividend Policy
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `h_model_ddm` | H-Model DDM: Fuller & Hsia declining growth valuation | current_dividend, short_term_growth, long_term_growth, half_life_years, required_return |
+| `multistage_ddm` | Multi-stage DDM: N-stage with terminal Gordon Growth | current_dividend, growth_stages (rate, years per stage), terminal_growth, required_return |
+| `buyback_analysis` | Share buyback analysis: EPS accretion/dilution, P/E breakeven | shares_outstanding, current_eps, share_price, buyback_amount, funding_source, cost_of_debt, tax_rate, dividend_per_share |
+| `payout_sustainability` | Payout sustainability: payout ratio, FCF coverage, Lintner smoothing | dividends_paid, net_income, free_cash_flow, total_debt, ebitda, prior_dividend, target_payout_ratio, speed_of_adjustment |
+| `total_shareholder_return` | Total shareholder return: price + dividend + buyback attribution | price_begin, price_end, dividends_per_share, shares_repurchased, shares_outstanding, period_years |
+
+### Financial Forensics
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `benfords_law` | Benford's Law: digit distribution conformity testing | data_series, test_type (first_digit, second_digit, first_two_digits), significance_level |
+| `dupont_analysis` | DuPont decomposition: 3-step and 5-step ROE breakdown | net_income, revenue, total_assets, total_equity, interest_expense, pretax_income, tax_expense, prior_period (optional for trend) |
+| `zscore_models` | Z-Score models: Altman, Ohlson, Zmijewski, Springate | working_capital, total_assets, retained_earnings, ebit, revenue, total_liabilities, market_cap, book_equity, net_income, current_assets, current_liabilities, total_debt, cash_from_operations, is_public, is_manufacturing |
+| `peer_benchmarking` | Peer benchmarking: percentile ranking, z-score normalisation | target_metrics, peer_metrics (array of peer company metrics), metric_definitions (name, direction: higher_better/lower_better) |
+| `red_flag_scoring` | Red flag scoring: composite fraud/distress risk assessment | beneish_output, altman_output, piotroski_output, financial_ratios, audit_indicators (auditor_changes, restatements, late_filings, going_concern) |
 
 ---
 
@@ -208,6 +238,50 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
    - Vary revenue growth, EBITDA margin, WACC, terminal growth simultaneously
    - Returns: EV percentiles, 90% confidence interval, probability above thresholds
 
+### Earnings Quality Assessment
+
+1. `beneish_mscore` — compute M-Score for earnings manipulation detection
+   - 8 variables: DSRI, GMI, AQI, SGI, DEPI, SGAI, LVGI, TATA
+   - M-Score > -1.78 suggests possible manipulation
+2. `piotroski_fscore` — assess fundamental strength (0-9)
+   - Profitability (4 signals), leverage (3 signals), operating efficiency (2 signals)
+   - F-Score >= 8 = strong fundamentals; <= 2 = weak
+3. `accrual_quality` — analyse earnings persistence
+   - Sloan ratio, Dechow-Dichev, Jones model for discretionary accruals
+4. `revenue_quality` — assess revenue recognition quality
+   - Receivables vs revenue growth, deferred revenue trends, concentration
+5. `earnings_quality_composite` — weighted composite score with traffic-light rating
+
+### Dividend Policy Analysis
+
+1. `h_model_ddm` — H-Model for declining growth assumptions
+   - Fuller & Hsia: V = D0(1+gL)/(r-gL) + D0*H*(gS-gL)/(r-gL)
+2. `multistage_ddm` — explicit growth periods + terminal value
+   - N-stage with Gordon Growth terminal value
+3. `buyback_analysis` — compare buyback vs dividend alternatives
+   - EPS accretion/dilution, P/E breakeven, tax efficiency
+4. `payout_sustainability` — assess dividend safety
+   - Payout ratio, FCF coverage, Lintner smoothing model
+5. `total_shareholder_return` — component attribution of TSR
+   - Price + dividend yield + buyback yield
+
+### Financial Forensics Workflow
+
+1. `benfords_law` — test data for manipulation indicators
+   - First/second/first-two digit distribution vs Benford expected
+   - Chi-squared and MAD conformity tests
+2. `dupont_analysis` — decompose ROE drivers (3-way and 5-way)
+   - 3-way: margin x turnover x leverage
+   - 5-way: tax burden x interest burden x operating margin x turnover x leverage
+   - Trend analysis with prior period comparison
+3. `zscore_models` — comprehensive distress scoring
+   - 5 models: Altman (original/revised/private), Ohlson O-Score, Zmijewski, Springate
+   - Composite weighted distress score
+4. `peer_benchmarking` — relative performance analysis
+   - Percentile ranking, z-score normalization across peer group
+5. `red_flag_scoring` — composite fraud/distress risk assessment
+   - Integrates Beneish, Altman, Piotroski, financial ratios, audit indicators
+
 ---
 
 ## CLI Equivalent
@@ -252,6 +326,36 @@ cfa three-statement --input model.json --output table
 cfa monte-carlo --input mc.json --output json
 
 cfa mc-dcf --input mc_dcf.json --output json
+
+cfa beneish-mscore --input mscore.json --output table
+
+cfa piotroski-fscore --input fscore.json --output table
+
+cfa accrual-quality --input accrual.json --output json
+
+cfa revenue-quality --input revenue_quality.json --output table
+
+cfa earnings-quality-composite --input eq_composite.json --output json
+
+cfa h-model-ddm --input ddm.json --output table
+
+cfa multistage-ddm --input ddm_multi.json --output json
+
+cfa buyback-analysis --input buyback.json --output table
+
+cfa payout-sustainability --input payout.json --output json
+
+cfa total-shareholder-return --input tsr.json --output table
+
+cfa benfords-law --input benfords.json --output table
+
+cfa dupont-analysis --input dupont.json --output json
+
+cfa zscore-models --input zscore.json --output table
+
+cfa peer-benchmarking --input peers.json --output json
+
+cfa red-flag-scoring --input redflags.json --output table
 ```
 
 Output formats: `--output json` (default), `--output table`, `--output csv`, `--output minimal`.

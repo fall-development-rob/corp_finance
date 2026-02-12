@@ -1,11 +1,11 @@
 ---
 name: "Corp Finance Tools - Markets"
-description: "Use the corp-finance-mcp server tools for capital markets calculations. Invoke when performing fixed income analysis (bond pricing, yield analysis, duration/convexity, credit spreads, yield curve bootstrapping, Nelson-Siegel fitting), derivatives pricing (option pricing, implied volatility, forwards/futures, interest rate swaps, currency swaps, option strategies), volatility surface (implied vol surface construction, SABR calibration), interest rate models (Vasicek/CIR/Hull-White, Nelson-Siegel-Svensson term structure), mortgage analytics (prepayment modelling, MBS pass-through analytics), inflation-linked instruments (TIPS pricing, inflation swaps/caps/floors), repo financing (repo rates, implied repo, collateral management), FX (forwards, cross rates), commodities (forwards, term structure), securitization (ABS/MBS, CDO tranching). All computation uses 128-bit decimal precision."
+description: "Use the corp-finance-mcp server tools for capital markets calculations. Invoke when performing fixed income analysis (bond pricing, yield analysis, duration/convexity, credit spreads, yield curve bootstrapping, Nelson-Siegel fitting), derivatives pricing (option pricing, implied volatility, forwards/futures, interest rate swaps, currency swaps, option strategies), volatility surface (implied vol surface construction, SABR calibration), interest rate models (Vasicek/CIR/Hull-White, Nelson-Siegel-Svensson term structure), mortgage analytics (prepayment modelling, MBS pass-through analytics), inflation-linked instruments (TIPS pricing, inflation swaps/caps/floors), repo financing (repo rates, implied repo, collateral management), FX (forwards, cross rates), commodities (forwards, term structure), securitization (ABS/MBS, CDO tranching), CLO analytics (waterfall, coverage tests, reinvestment, tranche analytics, scenario analysis), emerging markets (country risk premium, political risk, capital controls, EM bond analysis, EM equity premium). All computation uses 128-bit decimal precision."
 ---
 
 # Corp Finance MCP Tools - Markets
 
-You have access to 30 capital markets MCP tools for fixed income, derivatives, volatility, rate models, mortgage/MBS, inflation, repo, FX, commodities, and securitization. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
+You have access to 40 capital markets MCP tools for fixed income, derivatives, volatility, rate models, mortgage/MBS, inflation, repo, FX, commodities, securitization, CLO analytics, and emerging markets. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.
 
 ## Tool Reference
 
@@ -83,6 +83,26 @@ You have access to 30 capital markets MCP tools for fixed income, derivatives, v
 |----------|---------|------------|
 | `abs_mbs_cashflows` | ABS/MBS pool cash flow projection with prepayment/default models | pool_balance, wac, wam, prepayment_model (CPR/PSA/SMM), default_model (CDR/SDA), loss_severity, recovery_lag |
 | `cdo_tranching` | CDO/CLO tranching waterfall analysis | collateral_balance, cashflow_periods, tranches (name, balance, coupon, seniority), loss_scenarios, OC/IC triggers, reserve_account |
+
+### CLO Analytics
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `clo_waterfall` | CLO waterfall engine: payment priority cascades, interest/principal distribution, sequential paydown, equity cash flows | deal_structure, collateral_cashflows, tranches (name, balance, coupon, seniority), fee_schedule, payment_dates, turbo_paydown |
+| `clo_coverage_tests` | CLO coverage tests: OC/IC ratios, trigger breach detection, cure mechanics, diversion amounts | tranche_par_values, collateral_par_value, interest_received, interest_due, oc_triggers, ic_triggers, cure_waterfall |
+| `clo_reinvestment` | CLO reinvestment period: WARF, WAL, WALS, diversity score, par build test, criteria compliance | portfolio_assets, reinvestment_criteria, warf_limit, wal_limit, diversity_min, par_coverage_target, reinvestment_end_date |
+| `clo_tranche_analytics` | CLO tranche analytics: yield-to-worst, WAL, spread duration, breakeven CDR, equity IRR, cash-on-cash | tranche_cashflows, tranche_price, tranche_coupon, discount_curve, prepayment_assumptions, default_scenarios |
+| `clo_scenario` | CLO scenario analysis: multi-scenario stress testing, tranche loss allocation, attachment/detachment points | deal_structure, scenarios (default_rate, recovery_rate, prepayment_speed), tranches, attachment_points, detachment_points |
+
+### Emerging Markets
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `country_risk_premium` | Country risk premium: Damodaran sovereign spread, relative volatility, composite risk premium with governance and macro adjustments | country_code, sovereign_spread, equity_volatility, bond_volatility, base_erp, governance_score, macro_indicators |
+| `political_risk` | Political risk assessment: WGI composite scoring, MIGA insurance valuation, expropriation/sanctions/conflict risk quantification | country_code, wgi_scores (voice, stability, government, regulatory, rule_of_law, corruption), miga_premium, risk_events |
+| `capital_controls` | Capital controls analysis: repatriation delay cost, withholding tax drag, FX conversion cost, effective yield impact, total cost of controls | country_code, gross_yield, repatriation_delay_days, opportunity_cost_rate, withholding_tax_rate, fx_conversion_spread, investment_horizon |
+| `em_bond_analysis` | EM bond analysis: local vs hard currency comparison, FX-adjusted yield, carry trade decomposition, hedged/unhedged return scenarios | local_currency_yield, hard_currency_yield, spot_fx_rate, forward_fx_rate, hedge_cost, inflation_differential, duration |
+| `em_equity_premium` | EM equity risk premium: sovereign spread method, relative volatility method, composite ERP with valuation and growth adjustments | country_code, sovereign_spread, em_equity_volatility, dm_equity_volatility, base_erp, pe_ratio, gdp_growth, dm_pe_ratio, dm_gdp_growth |
 
 ---
 
@@ -249,6 +269,49 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
    - Senior/mezzanine/equity tranche allocation, credit enhancement, WAL
    - Loss allocation bottom-up, excess spread, reserve account mechanics
 
+### CLO Analytics Workflow
+
+1. `clo_waterfall` — model full CLO payment cascade
+   - Interest waterfall: senior fees -> AAA interest -> AA -> A -> BBB -> BB -> equity residual
+   - Principal waterfall: AAA principal -> sequential paydown through capital structure
+   - Turbo: divert excess interest to principal paydown when OC/IC triggers breached
+2. `clo_coverage_tests` — monitor compliance triggers
+   - OC (overcollateralisation): par value / tranche par > trigger level
+   - IC (interest coverage): interest received / interest due > trigger level
+   - Cure mechanics: redirect equity cash flows to cure breached tests
+3. `clo_reinvestment` — manage reinvestment period constraints
+   - WARF (weighted average rating factor): portfolio credit quality measure
+   - WAL (weighted average life): average maturity of collateral pool
+   - Diversity score: effective number of uncorrelated issuers
+   - Par build test: reinvestment must maintain/increase par coverage
+4. `clo_tranche_analytics` — analyse individual tranche metrics
+   - Yield-to-worst, spread duration, breakeven CDR
+   - Equity IRR and cash-on-cash return analysis
+5. `clo_scenario` — stress test across multiple scenarios
+   - Default rate stress, recovery stress, prepayment stress
+   - Tranche loss allocation at attachment/detachment points
+Key benchmarks: CLO AAA OC trigger ~120%; BB CDR breakeven 3-5%; equity IRR target 12-18%; reinvestment period typically 4-5 years; diversity score > 50 for well-diversified pool
+
+### Emerging Markets Workflow
+
+1. `country_risk_premium` — estimate CRP for WACC adjustments
+   - Damodaran sovereign spread: CRP = default spread * (equity_vol / bond_vol)
+   - Relative volatility method: CRP = base_ERP * (EM_vol / DM_vol)
+   - Composite with governance and macro adjustments
+2. `political_risk` — quantify political/regulatory risks
+   - World Governance Indicators (WGI) composite across 6 dimensions
+   - MIGA insurance: cost of political risk insurance
+   - Expropriation, sanctions, and conflict risk scoring
+3. `capital_controls` — cost of investing with capital restrictions
+   - Repatriation delay opportunity cost, WHT drag, FX conversion friction
+   - Net effective yield after controls vs gross yield
+4. `em_bond_analysis` — local vs hard currency EM fixed income
+   - Carry trade decomposition: interest differential, FX appreciation, rolldown
+   - Hedged vs unhedged return scenarios
+5. `em_equity_premium` — estimate EM equity risk premium
+   - Sovereign spread method, relative volatility, composite ERP
+Key benchmarks: EM CRP range 100-800bps; political risk insurance 0.5-3% annually; capital control cost 50-300bps effective drag; EM local-hard currency spread 200-600bps
+
 ---
 
 ## CLI Equivalent
@@ -315,6 +378,26 @@ cfa commodity-curve --input curve.json --output table
 cfa abs-mbs --input pool.json --output table
 
 cfa cdo-tranching --input cdo.json --output table
+
+cfa clo-waterfall --input clo.json --output table
+
+cfa clo-coverage --input clo_tests.json --output table
+
+cfa clo-reinvestment --input clo_reinvest.json --output json
+
+cfa clo-tranche --input tranche.json --output table
+
+cfa clo-scenario --input clo_stress.json --output json
+
+cfa country-risk-premium --input crp.json --output table
+
+cfa political-risk --input pol_risk.json --output json
+
+cfa capital-controls --input controls.json --output table
+
+cfa em-bond --input em_bond.json --output table
+
+cfa em-equity-premium --input em_erp.json --output json
 ```
 
 Output formats: `--output json` (default), `--output table`, `--output csv`, `--output minimal`.

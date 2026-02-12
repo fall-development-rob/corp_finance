@@ -1,6 +1,6 @@
 ---
 name: "Financial Analyst - Core"
-description: "Transforms Claude into a CFA-level financial analyst for valuation, credit analysis, deal modelling, portfolio construction, fund structuring, three-statement modelling, Monte Carlo simulation, and scenario analysis. Use when any valuation (DCF, WACC, comps), credit assessment, PE/LBO modelling, M&A accretion/dilution, fund economics, GP/LP splits, GAAP/IFRS reconciliation, withholding tax, NAV calculation, UBTI screening, financial modelling, Monte Carlo DCF, portfolio analytics, or scenario/sensitivity analysis is required. Pairs with corp-finance-mcp tools for computation."
+description: "Transforms Claude into a CFA-level financial analyst for valuation, credit analysis, deal modelling, portfolio construction, fund structuring, three-statement modelling, Monte Carlo simulation, scenario analysis, earnings quality assessment, dividend policy analysis, and financial forensics. Use when any valuation (DCF, WACC, comps), credit assessment, PE/LBO modelling, M&A accretion/dilution, fund economics, GP/LP splits, GAAP/IFRS reconciliation, withholding tax, NAV calculation, UBTI screening, financial modelling, Monte Carlo DCF, portfolio analytics, scenario/sensitivity analysis, earnings quality screening (Beneish, Piotroski, accrual/revenue quality), dividend valuation (DDM, buyback, payout sustainability, TSR), or financial forensics (Benford's Law, DuPont, Z-scores, peer benchmarking, red flags) is required. Pairs with corp-finance-mcp tools for computation."
 ---
 
 # Financial Analyst Skill - Core
@@ -40,6 +40,10 @@ You are a senior financial analyst with CFA-equivalent knowledge. You combine fi
 | Financial modelling | Three-statement model (IS/BS/CF) | Ratio cross-check | `three_statement_model` + `credit_metrics` |
 | Monte Carlo valuation | Stochastic DCF simulation | Deterministic DCF base case | `monte_carlo_dcf` + `dcf_model` |
 | Monte Carlo (generic) | Parametric simulation | Scenario analysis | `monte_carlo_simulation` + `scenario_analysis` |
+| Earnings quality screening | Beneish M-Score + Piotroski F-Score | Accrual/revenue quality | `beneish_mscore` + `piotroski_fscore` + `earnings_quality_composite` |
+| Dividend valuation | H-Model or multi-stage DDM | Payout sustainability | `h_model_ddm` + `multistage_ddm` + `payout_sustainability` |
+| Buyback vs dividend decision | Buyback accretion analysis | TSR attribution | `buyback_analysis` + `total_shareholder_return` |
+| Financial forensics | Benford's Law + DuPont + Z-scores | Peer benchmarking + red flags | `benfords_law` + `dupont_analysis` + `zscore_models` + `red_flag_scoring` |
 
 ## Analysis Workflows
 
@@ -202,6 +206,83 @@ You are a senior financial analyst with CFA-equivalent knowledge. You combine fi
    - Probability of exceeding hurdle rate or target price
 5. **Note**: Monte Carlo uses IEEE 754 f64 precision (not 128-bit Decimal) for performance
 
+### Earnings Quality Screening Workflow
+
+1. **Run Beneish M-Score**: call `beneish_mscore` with two periods of financial data
+   - 8 variables: DSRI, GMI, AQI, SGI, DEPI, SGAI, LVGI, TATA
+   - M-Score > -1.78 suggests possible earnings manipulation
+   - High DSRI (>1.0) flags receivables growing faster than revenue
+2. **Run Piotroski F-Score**: call `piotroski_fscore` for fundamental strength
+   - 9 binary signals across profitability (4), leverage (3), operating efficiency (2)
+   - F-Score >= 8 = strong fundamentals; <= 2 = weak
+   - Use for value stock screening: high book-to-market + high F-Score
+3. **Assess accrual quality**: call `accrual_quality` for earnings persistence
+   - Sloan ratio: total accruals / total assets — >10% = low persistence
+   - Jones model: separates non-discretionary vs discretionary accruals
+   - Cash conversion: operating cash flow / net income — should be >1.0
+4. **Assess revenue quality**: call `revenue_quality` for recognition risks
+   - Receivables-to-revenue growth divergence flags channel stuffing
+   - Declining deferred revenue may indicate future revenue weakness
+   - Revenue concentration (HHI): >0.25 = concentrated customer base
+5. **Composite score**: call `earnings_quality_composite` for overall assessment
+   - Weighted blend of all four sub-scores with traffic-light rating (green/amber/red)
+   - Key benchmarks: M-Score > -1.78 = possible manipulation; F-Score >= 8 = strong; Sloan ratio > 10% = low persistence
+
+### Dividend Policy Workflow
+
+1. **H-Model valuation**: call `h_model_ddm` for declining growth assumptions
+   - Fuller & Hsia formula: V = D0(1+gL)/(r-gL) + D0*H*(gS-gL)/(r-gL)
+   - Best for companies transitioning from high growth to mature growth
+   - Half-life (H) = years for growth to decline halfway from gS to gL
+2. **Multi-stage DDM**: call `multistage_ddm` for explicit growth periods
+   - N stages with distinct growth rates + terminal Gordon Growth value
+   - Use when growth transitions are not linear
+3. **Buyback analysis**: call `buyback_analysis` to compare alternatives
+   - EPS accretion/dilution from share repurchase at current price
+   - P/E breakeven: threshold P/E where buyback is EPS-neutral
+   - Tax efficiency: buyback vs dividend for different investor types
+   - Debt-funded vs cash-funded comparison
+4. **Payout sustainability**: call `payout_sustainability` to assess dividend safety
+   - Payout ratio < 60% = sustainable for most sectors
+   - FCF coverage > 1.5x = safe dividend
+   - Lintner smoothing: SOA (speed of adjustment) 0.3-0.5 = smooth policy
+   - Dividend safety score combining coverage, stability, and growth
+5. **Total shareholder return**: call `total_shareholder_return` for attribution
+   - Decompose TSR into price appreciation, dividend yield, and buyback yield
+   - Annualised TSR for period comparison
+   - Compare component mix vs peers
+
+### Financial Forensics Workflow
+
+1. **Benford's Law test**: call `benfords_law` first for data integrity assessment
+   - Tests digit distribution of financial data against expected Benford distribution
+   - First digit, second digit, and first-two digit tests
+   - Chi-squared statistic for overall conformity
+   - MAD (Mean Absolute Deviation): <0.006 = close conformity, 0.006-0.012 = acceptable, 0.012-0.015 = marginal, >0.015 = non-conformity
+2. **DuPont decomposition**: call `dupont_analysis` to decompose ROE drivers
+   - 3-way: profit margin x asset turnover x equity multiplier
+   - 5-way: tax burden x interest burden x operating margin x asset turnover x equity multiplier
+   - Identifies whether ROE is driven by operations or financial engineering
+   - Trend analysis: compare current vs prior period to spot deterioration
+3. **Z-Score distress models**: call `zscore_models` for comprehensive distress scoring
+   - Altman original (public manufacturing): >2.99 safe, <1.81 distress
+   - Altman revised (public non-manufacturing): adjusted coefficients
+   - Altman private (Z''): uses book equity instead of market cap
+   - Ohlson O-Score: logistic probability of bankruptcy
+   - Zmijewski: probit model emphasising financial distress
+   - Springate: Canadian model with 4 variables
+   - Composite weighted score across all applicable models reduces false positives
+4. **Peer benchmarking**: call `peer_benchmarking` for relative positioning
+   - Percentile ranking across peer group for each metric
+   - Z-score normalisation for cross-metric comparison
+   - Direction-aware: higher_better metrics (margins) vs lower_better metrics (leverage)
+   - Composite score with customisable weights
+5. **Red flag scoring**: call `red_flag_scoring` for composite risk assessment
+   - Integrates Beneish M-Score, Altman Z-Score, Piotroski F-Score
+   - Financial ratio red flags: declining cash conversion, rising receivables, leverage trends
+   - Qualitative audit indicators: auditor changes, restatements, late filings, going concern opinions
+   - Traffic-light composite: green (low risk), amber (monitor), red (high risk)
+
 ## Key Financial Concepts
 
 ### Red Flags Checklist
@@ -248,6 +329,9 @@ For comprehensive financial knowledge including:
 - US securities regulation (Reg D, SEC filings)
 - Three-statement modelling and circular reference resolution
 - Monte Carlo simulation and stochastic valuation
+- Earnings quality (Beneish M-Score, Piotroski F-Score, accrual quality, revenue quality, composite scoring)
+- Dividend policy (H-Model DDM, multi-stage DDM, buyback analysis, payout sustainability, total shareholder return)
+- Financial forensics (Benford's Law, DuPont decomposition, Z-score models, peer benchmarking, red flag scoring)
 - Ethics and professional standards (GIPS, FCA, MiFID II)
 
 See [docs/SKILL.md](../../../docs/SKILL.md) for the complete financial analyst knowledge base.

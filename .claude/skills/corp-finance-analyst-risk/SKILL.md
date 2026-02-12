@@ -1,6 +1,6 @@
 ---
 name: "Financial Analyst - Risk & Quant"
-description: "Transforms Claude into a CFA-level financial analyst for quantitative risk analysis, portfolio optimization, risk budgeting, market microstructure, quantitative strategies, behavioral finance, performance attribution, credit portfolio analytics, and macro economics. Use when factor risk attribution, Black-Litterman optimization, risk parity allocation, stress testing, mean-variance portfolio optimization, risk budgeting, tail risk VaR/CVaR, market microstructure analysis, optimal execution, pairs trading, momentum strategy design, prospect theory, market sentiment, Brinson-Fachler attribution, factor-based attribution, credit portfolio VaR, rating migration analysis, Taylor rule, Phillips curve, Okun's law, recession risk, PPP, interest rate parity, or balance of payments analysis is required. Pairs with corp-finance-mcp tools for computation."
+description: "Transforms Claude into a CFA-level financial analyst for quantitative risk analysis, portfolio optimization, risk budgeting, market microstructure, quantitative strategies, behavioral finance, performance attribution, credit portfolio analytics, macro economics, credit scoring, capital allocation, and index construction. Use when factor risk attribution, Black-Litterman optimization, risk parity allocation, stress testing, mean-variance portfolio optimization, risk budgeting, tail risk VaR/CVaR, market microstructure analysis, optimal execution, pairs trading, momentum strategy design, prospect theory, market sentiment, Brinson-Fachler attribution, factor-based attribution, credit portfolio VaR, rating migration analysis, Taylor rule, Phillips curve, Okun's law, recession risk, PPP, interest rate parity, balance of payments, credit scorecard, Merton structural model, PD calibration, intensity model, scoring validation, economic capital, RAROC, Euler allocation, Shapley allocation, limit management, index weighting, index rebalancing, tracking error, smart beta, or index reconstitution analysis is required. Pairs with corp-finance-mcp tools for computation."
 ---
 
 # Financial Analyst Skill - Risk & Quant
@@ -34,6 +34,9 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 | Macro economic analysis | Taylor rule + Phillips curve + Okun | Recession risk composite | `taylor_rule` + `phillips_curve` + `okuns_law` + `recession_risk` |
 | FX macro (PPP/IRP) | Purchasing power parity | Interest rate parity cross-check | `ppp_analysis` + `interest_rate_parity` |
 | Balance of payments | Current account sustainability | Twin deficit detection | `balance_of_payments` |
+| Credit scoring / PD estimation | Scorecard + Merton structural model | Intensity model + validation | `credit_scorecard` + `merton_pd` + `scoring_validation` |
+| Capital allocation / RAROC | Economic capital + risk-adjusted return | Euler/Shapley allocation | `economic_capital` + `raroc_calculation` + `euler_allocation` |
+| Index construction / smart beta | Weighting + rebalancing + reconstitution | Tracking error + smart beta | `index_weighting` + `index_rebalancing` + `tracking_error` + `smart_beta` |
 
 ## Analysis Workflows
 
@@ -238,6 +241,126 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 8. **Combine**: Taylor rule for monetary policy assessment; Phillips/Okun for growth-inflation trade-off; recession risk for cycle positioning; PPP/IRP for FX strategy; BoP for country risk overlay
 9. **Key benchmarks**: Taylor alpha = 1.5 (standard), sacrifice ratio 1.5-3.0 (developed), Okun kappa 2.0-3.0; CA/GDP > 5% = unsustainable; carry Sharpe 0.3-0.6 historically
 
+### Credit Scoring & PD Estimation Workflow
+
+1. **Build scorecard**: call `credit_scorecard` with applicant data and target variable
+   - Weight of Evidence (WoE) binning: transform each variable into monotonic risk ordering
+   - Information Value (IV): measure predictive power per variable (IV < 0.02 = useless; 0.02-0.1 = weak; 0.1-0.3 = medium; > 0.3 = strong)
+   - Scorecard points: convert logistic regression coefficients to points scale
+   - Standard scaling: 600 base score, 20 points per doubling of odds (PDO)
+   - Gini coefficient: 2 * AUC - 1 (measures rank-ordering ability)
+   - KS statistic: maximum separation between cumulative good/bad distributions
+2. **Merton structural model**: call `merton_pd` with equity and debt parameters
+   - Asset value estimation: solve iteratively from equity value = call option on assets
+   - Asset volatility: derived from equity volatility via sigma_A = sigma_E * (E / V) / N(d1)
+   - Distance to default (DD): (ln(V/D) + (mu - 0.5*sigma_A^2)*T) / (sigma_A*sqrt(T))
+   - PD = N(-DD): probability that asset value falls below debt at horizon
+   - KMV EDF: empirical mapping from DD to observed default frequency (more accurate than theoretical PD)
+   - Key inputs: equity value, equity volatility, debt face value, risk-free rate, time horizon
+3. **Intensity model**: call `intensity_model` with CDS spreads and recovery assumption
+   - Hazard rate extraction: lambda(t) = spread(t) / (1 - recovery)
+   - Survival probability: S(t) = exp(-integral of lambda from 0 to t)
+   - Forward hazard rates: conditional default probability between future dates
+   - Term structure: piecewise-constant or bootstrapped hazard curve
+   - Advantage over structural: no need for balance sheet data, market-implied, forward-looking
+4. **PD calibration**: call `pd_calibration` with raw PDs and macro factor
+   - Point-in-time (PIT): PD varies with current economic conditions (cycle-sensitive)
+   - Through-the-cycle (TTC): PD averaged over full business cycle (stable for capital planning)
+   - Vasicek single-factor model: conditional PD = Phi((Phi^-1(PD) + sqrt(rho)*z) / sqrt(1-rho))
+   - Basel IRB correlation: rho = 0.12 * f(PD) + 0.24 * (1 - f(PD)), where f(PD) = (1-e^(-50*PD))/(1-e^(-50))
+   - Central tendency: long-run average default rate for calibration anchor
+5. **Model validation**: call `scoring_validation` with predicted probabilities and outcomes
+   - AUC-ROC: probability that model ranks a random default higher than a random non-default
+   - Accuracy ratio (Gini): = 2*AUC - 1 (industry-standard discrimination measure)
+   - Brier score: mean of (predicted_PD - actual_outcome)^2 (calibration + discrimination)
+   - Hosmer-Lemeshow: chi-squared test comparing predicted vs observed default rates by score decile
+   - Population stability index (PSI): detect score distribution drift over time
+6. **Combine**: scorecard for retail/SME origination; Merton for listed corporates; intensity model for traded credits; calibration for regulatory capital; validation for ongoing model monitoring
+7. **Key benchmarks**: Gini > 0.60 = good scorecard; AUC > 0.80 = strong discriminator; KS > 40% = good separation; Basel IRB minimum: AR > 0.40; Brier score < 0.10 for low-default portfolios; PSI < 0.25 = stable population
+
+### Capital Allocation & RAROC Workflow
+
+1. **Economic capital**: call `economic_capital` with portfolio exposures and default parameters
+   - VaR-based capital: loss at 99.9% confidence level (1-in-1000 year loss)
+   - ES-based capital: expected loss beyond VaR threshold (more sensitive to tail shape)
+   - IRB capital formula: K = LGD * N((N^-1(PD) + sqrt(rho)*N^-1(0.999)) / sqrt(1-rho)) - PD*LGD
+     - rho = Basel IRB correlation (0.12-0.24 depending on PD and asset class)
+     - Maturity adjustment: (1 + (M-2.5)*b) / (1-1.5*b), where b = (0.11852 - 0.05478*ln(PD))^2
+   - Stress capital buffer: incremental capital for severe-but-plausible scenarios
+   - Capital adequacy ratio: available capital / required economic capital (target > 1.0)
+2. **RAROC**: call `raroc_calculation` with revenue, costs, and capital data
+   - RAROC = (revenue - operating_costs - expected_loss - funding_cost) / economic_capital
+   - RORAC = net_income / economic_capital (simpler variant)
+   - EVA (Economic Value Added) = net_income - (cost_of_capital * economic_capital)
+   - SVA (Shareholder Value Added) = EVA / (1 + cost_of_capital) for present value
+   - Spread to hurdle: minimum loan spread to achieve hurdle RAROC (pricing tool)
+   - Risk-adjusted pricing: ensure each deal earns above cost of capital on risk-adjusted basis
+3. **Euler allocation**: call `euler_allocation` with business unit risks and correlations
+   - Marginal contribution: dRisk/dWeight_i -- how much portfolio risk changes per unit increase in BU_i
+   - Euler property: sum of (weight_i * marginal_contribution_i) = total portfolio risk (full allocation)
+   - Diversification benefit: sum of standalone risks minus portfolio risk (always >= 0 for sub-additive measures)
+   - HHI concentration: sum of (capital_share_i)^2 across business units
+   - Advantage: coherent, additive, reflects diversification -- industry standard for internal allocation
+4. **Shapley allocation**: call `shapley_allocation` with business units and risk function
+   - Game-theoretic: average marginal contribution across all possible orderings of business units
+   - Exact computation: N! permutations for N<=8 (computationally feasible)
+   - Sampled approximation: Monte Carlo permutation sampling for N>8 (converges with ~10,000 samples)
+   - Properties: efficiency (sums to total), symmetry (equal units get equal capital), dummy (zero-risk gets zero), additivity
+   - Comparison with Euler: Shapley is order-independent but computationally heavier; Euler is faster for continuous risk measures
+5. **Limit management**: call `limit_management` with limits and current exposures
+   - Limit types: notional (gross exposure), VaR (risk-based), concentration (single-name/sector)
+   - Utilization tracking: current_exposure / limit for each business unit and limit type
+   - Breach detection: flag when utilization exceeds warning (e.g., 80%) or hard limit (100%)
+   - Escalation triggers: automatic notification hierarchy based on breach severity
+   - Limit setting: calibrate limits to be consistent with total economic capital budget
+6. **Combine**: economic capital for total requirement; RAROC for performance measurement and pricing; Euler/Shapley for fair allocation to business units; limits for day-to-day risk control
+7. **Key benchmarks**: RAROC hurdle 12-15% (cost of equity); EVA > 0 = value creation; Euler sums exactly to portfolio risk; Shapley satisfies all 4 fairness axioms; utilization 60-80% = healthy buffer; capital adequacy > 1.10
+
+### Index Construction & Smart Beta Workflow
+
+1. **Choose weighting scheme**: call `index_weighting` with constituents and method
+   - Market-cap weighted: standard approach, float-adjusted (exclude strategic/locked holdings)
+   - Equal-weight: 1/N allocation, higher small-cap exposure, requires periodic rebalancing
+   - Fundamental: weight by revenue, earnings, book value, or dividends (breaks price-link)
+   - Free-float: exclude government, founding family, cross-holdings from market cap
+   - Cap constraints: maximum weight per constituent (e.g., 5% or 10%), sector caps
+   - HHI concentration: sum of (weight_i)^2 -- lower = more diversified (HHI < 0.10 = well-diversified)
+   - Sector breakdown: weight distribution across GICS sectors
+2. **Manage rebalancing**: call `index_rebalancing` with current and target weights
+   - Drift analysis: current weights vs target after market movements
+   - Threshold-based triggers: rebalance when max drift exceeds band (e.g., 1-2%)
+   - Optimal trade list: buy/sell quantities to restore target weights
+   - Transaction cost estimation: bid-ask spread + market impact + opportunity cost
+   - Turnover: sum of |weight_change_i| / 2 (one-way turnover measure)
+   - Liquidity-adjusted scheduling: phase large trades over multiple days for illiquid names
+   - Calendar vs threshold: periodic (quarterly) vs drift-triggered rebalancing trade-off
+3. **Measure replication quality**: call `tracking_error` with portfolio and benchmark data
+   - Ex-post TE: realized standard deviation of (portfolio_return - benchmark_return) over history
+   - Ex-ante TE: forecast TE from active weights and covariance matrix
+   - Active share: sum of |w_portfolio_i - w_benchmark_i| / 2 (measures position-level divergence)
+   - Information ratio: annualized active return / annualized tracking error (risk-adjusted alpha)
+   - IR decomposition: contribution from sector allocation vs security selection
+   - Full replication vs sampling: trade-off between TE minimization and transaction costs
+4. **Construct smart beta**: call `smart_beta` with factor data and tilt parameters
+   - Value tilt: overweight low P/E, low P/B, high dividend yield
+   - Momentum tilt: overweight recent outperformers (12-1 month returns)
+   - Quality tilt: overweight high ROE, low leverage, stable earnings
+   - Low-volatility tilt: overweight low beta, low historical volatility
+   - Dividend yield tilt: overweight high and sustainable dividend payers
+   - Multi-factor: combine tilts with specified factor weights
+   - Factor exposure analysis: verify portfolio loadings on target factors
+   - Risk decomposition: factor risk (systematic) vs specific risk (idiosyncratic)
+5. **Manage reconstitution**: call `index_reconstitution` with universe and eligibility criteria
+   - Eligibility screening: minimum market cap, daily turnover, free-float percentage, domicile
+   - Additions: new constituents meeting all criteria with sufficient buffer above threshold
+   - Deletions: existing members falling below criteria beyond buffer zone
+   - Buffer zone: prevents excessive churn from borderline constituents (e.g., 10-20% around threshold)
+   - Turnover estimation: expected number of additions/deletions and associated trading volume
+   - Market impact analysis: anticipated price impact of index inclusion/exclusion trades
+   - Announcement effect: price run-up between announcement and effective date
+6. **Combine**: weighting for index methodology; rebalancing for maintenance; tracking error for replication; smart beta for factor exposure; reconstitution for membership evolution
+7. **Key benchmarks**: TE < 50bps for close replication (full); TE < 150bps for sampling; active share > 60% = truly active; turnover < 20% annual for low-cost index; HHI < 0.10 = well-diversified; IR > 0.50 = good risk-adjusted alpha; buffer zone reduces reconstitution turnover by 30-50%
+
 ## Deep Reference
 
 For comprehensive financial knowledge including:
@@ -250,6 +373,9 @@ For comprehensive financial knowledge including:
 - Portfolio optimization (Markowitz mean-variance, efficient frontier, tangency portfolio, constrained optimization, Black-Litterman posterior returns, view contribution)
 - Risk budgeting (factor-based risk decomposition, systematic vs idiosyncratic, marginal risk, target budgets, tail risk VaR/CVaR, Cornish-Fisher, component risk)
 - Market microstructure (bid-ask spread decomposition, effective/realized spread, Kyle lambda, Roll model, Almgren-Chriss optimal execution, TWAP/VWAP/IS strategies)
+- Credit scoring (logistic regression scorecard, WoE binning, IV variable selection, Merton structural model, distance to default, KMV EDF, intensity model, hazard rates, PIT/TTC PD calibration, Basel IRB correlation, scoring validation, AUC-ROC, Gini, Hosmer-Lemeshow)
+- Capital allocation (economic capital VaR/ES/IRB, RAROC, RORAC, EVA, SVA, risk-adjusted pricing, Euler marginal contribution, Shapley game-theoretic allocation, limit management, breach detection)
+- Index construction (market-cap/equal/fundamental/free-float weighting, cap constraints, rebalancing, drift analysis, tracking error, active share, information ratio, smart beta multi-factor tilts, reconstitution, buffer zones, eligibility screening)
 - Ethics and professional standards (GIPS, FCA, MiFID II)
 
 See [docs/SKILL.md](../../../docs/SKILL.md) for the complete financial analyst knowledge base.
