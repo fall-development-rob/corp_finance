@@ -1,5 +1,5 @@
 {
-  "name": "@fall-development-rob/corp-finance-bindings",
+  "name": "@rob-otixai/corp-finance-bindings",
   "version": "1.0.0",
   "main": "index.js",
   "types": "index.d.ts",

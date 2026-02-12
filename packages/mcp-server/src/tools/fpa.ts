@@ -4,7 +4,7 @@ import {
   analyzeBreakeven,
   analyzeWorkingCapital,
   buildRollingForecast,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   VarianceSchema,
   BreakevenSchema,

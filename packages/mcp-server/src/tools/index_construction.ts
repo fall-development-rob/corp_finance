@@ -5,7 +5,7 @@ import {
   calculateTrackingError,
   calculateSmartBeta,
   calculateReconstitution,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   WeightingSchema,
   RebalancingSchema,

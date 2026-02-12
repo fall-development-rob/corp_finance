@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   priceLetterOfCredit,
   analyzeSupplyChainFinance,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   LetterOfCreditSchema,
   SupplyChainFinanceSchema,

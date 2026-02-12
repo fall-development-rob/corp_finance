@@ -1,5 +1,5 @@
 {
-  "name": "@fall-development-rob/corp-finance-mcp",
+  "name": "@rob-otixai/corp-finance-mcp",
   "version": "1.0.0",
   "description": "Institutional-grade corporate finance calculations as MCP tools",
   "repository": {
@@ -20,7 +20,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.22.0",
-    "@fall-development-rob/corp-finance-bindings": "file:../bindings"
+    "@rob-otixai/corp-finance-bindings": "file:../bindings"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

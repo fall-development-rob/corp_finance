@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzePensionFunding,
   designLdiStrategy,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   PensionFundingSchema,
   LdiStrategySchema,

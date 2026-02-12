@@ -5,7 +5,7 @@ import {
   analyzeBuyback,
   analyzePayoutSustainability,
   calculateTotalShareholderReturn,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   HModelDdmSchema,
   MultistageDdmSchema,

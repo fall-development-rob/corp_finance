@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { valueProperty, modelProjectFinance } from "@fall-development-rob/corp-finance-bindings";
+import { valueProperty, modelProjectFinance } from "@rob-otixai/corp-finance-bindings";
 import { PropertyValuationSchema, ProjectFinanceSchema } from "../schemas/real_assets.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

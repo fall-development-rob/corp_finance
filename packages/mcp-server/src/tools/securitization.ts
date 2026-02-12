@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { modelAbsCashflows, analyzeTranching } from "@fall-development-rob/corp-finance-bindings";
+import { modelAbsCashflows, analyzeTranching } from "@rob-otixai/corp-finance-bindings";
 import { AbsMbsSchema, TranchingSchema } from "../schemas/securitization.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

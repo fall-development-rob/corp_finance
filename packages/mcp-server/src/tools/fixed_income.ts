@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads } from "@fall-development-rob/corp-finance-bindings";
+import { priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads } from "@rob-otixai/corp-finance-bindings";
 import { BondPricingSchema, BondYieldSchema, BootstrapSchema, NelsonSiegelSchema, DurationSchema, CreditSpreadSchema } from "../schemas/fixed_income.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

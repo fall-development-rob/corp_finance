@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { analyzeMerger } from "@fall-development-rob/corp-finance-bindings";
+import { analyzeMerger } from "@rob-otixai/corp-finance-bindings";
 import { MergerSchema } from "../schemas/ma.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

@@ -5,7 +5,7 @@ import {
   analyseCapitalControls,
   analyseEmBonds,
   calculateEmEquityPremium,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   CountryRiskPremiumSchema,
   PoliticalRiskSchema,

@@ -5,7 +5,7 @@ import {
   analyzeWealthTransfer,
   analyzeDirectIndexing,
   evaluateFamilyGovernance,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   ConcentratedStockSchema,
   PhilanthropicVehiclesSchema,

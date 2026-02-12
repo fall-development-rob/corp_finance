@@ -5,7 +5,7 @@ import {
   convertNote,
   convertSafe,
   modelVentureFund,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   FundingRoundSchema,
   DilutionSchema,

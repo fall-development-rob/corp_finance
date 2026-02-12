@@ -7,7 +7,7 @@ import {
   calculateGpEconomics,
   calculateInvestorNetReturns,
   screenUbtiEci,
-} from "@fall-development-rob/corp-finance-bindings";
+} from "@rob-otixai/corp-finance-bindings";
 import {
   FundFeeSchema,
   ReconciliationSchema,

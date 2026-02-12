@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { calculateWacc, buildDcf, compsAnalysis } from "@fall-development-rob/corp-finance-bindings";
+import { calculateWacc, buildDcf, compsAnalysis } from "@rob-otixai/corp-finance-bindings";
 import { WaccSchema, DcfSchema, CompsSchema } from "../schemas/valuation.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
