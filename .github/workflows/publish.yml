@@ -293,15 +293,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Job 5: Publish the core Rust crate to crates.io (manual trigger only)
+  # Job 5: Publish the core Rust crate to crates.io
   # ---------------------------------------------------------------------------
   publish-crates:
     name: Publish to crates.io
     needs: test
     runs-on: ubuntu-latest
-    # Only run on manual dispatch and when not a dry run. Tag pushes skip this
-    # because crates.io publishing should be a deliberate choice.
-    if: github.event_name == 'workflow_dispatch' && !(github.event.inputs.dry-run == 'true')
+    if: ${{ !(github.event.inputs.dry-run == 'true') }}
     steps:
       - uses: actions/checkout@v4
 
