@@ -395,7 +395,7 @@ cfa political-risk --input pol_risk.json --output json
 
 cfa capital-controls --input controls.json --output table
 
-cfa em-bond --input em_bond.json --output table
+cfa em-bond-analysis --input em_bond.json --output table
 
 cfa em-equity-premium --input em_erp.json --output json
 ```

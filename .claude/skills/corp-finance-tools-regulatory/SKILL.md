@@ -999,15 +999,15 @@ cfa deposit-beta --input beta.json --output json
 
 cfa loan-book --input loanbook.json --output table
 
-cfa carbon-credit-pricing --input carbon.json --output table
+cfa carbon-pricing --input carbon.json --output table
 
 cfa ets-compliance --input ets.json --output json
 
-cfa cbam-analysis --input cbam.json --output table
+cfa cbam --input cbam.json --output table
 
 cfa offset-valuation --input offset.json --output json
 
-cfa shadow-carbon-price --input shadow.json --output table
+cfa shadow-carbon --input shadow.json --output table
 
 cfa concentrated-stock --input stock.json --output table
 

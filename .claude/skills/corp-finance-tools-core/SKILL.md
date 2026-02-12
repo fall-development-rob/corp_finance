@@ -327,9 +327,9 @@ cfa monte-carlo --input mc.json --output json
 
 cfa mc-dcf --input mc_dcf.json --output json
 
-cfa beneish-mscore --input mscore.json --output table
+cfa beneish --input mscore.json --output table
 
-cfa piotroski-fscore --input fscore.json --output table
+cfa piotroski --input fscore.json --output table
 
 cfa accrual-quality --input accrual.json --output json
 
@@ -341,7 +341,7 @@ cfa h-model-ddm --input ddm.json --output table
 
 cfa multistage-ddm --input ddm_multi.json --output json
 
-cfa buyback-analysis --input buyback.json --output table
+cfa buyback --input buyback.json --output table
 
 cfa payout-sustainability --input payout.json --output json
 
