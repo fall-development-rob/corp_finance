@@ -310,8 +310,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       # Publish corp-finance-core first (it has no internal deps)
+      # Skip gracefully if this version is already published
       - name: Publish corp-finance-core
-        run: cargo publish -p corp-finance-core --all-features
+        run: |
+          cargo publish -p corp-finance-core --all-features 2>&1 || {
+            if cargo publish -p corp-finance-core --all-features 2>&1 | grep -q "already exists"; then
+              echo "corp-finance-core already published, skipping"
+            else
+              exit 1
+            fi
+          }
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.RUST_TOKEN }}
 
@@ -320,6 +328,13 @@ jobs:
         run: sleep 30
 
       - name: Publish corp-finance-cli
-        run: cargo publish -p corp-finance-cli --all-features
+        run: |
+          cargo publish -p corp-finance-cli --all-features 2>&1 || {
+            if cargo publish -p corp-finance-cli --all-features 2>&1 | grep -q "already exists"; then
+              echo "corp-finance-cli already published, skipping"
+            else
+              exit 1
+            fi
+          }
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.RUST_TOKEN }}
