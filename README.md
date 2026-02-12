@@ -1,6 +1,6 @@
 # corp-finance-mcp
 
-Institutional-grade corporate finance calculations exposed as an MCP (Model Context Protocol) server. All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings and a TypeScript MCP interface for AI-assisted financial analysis.
+Institutional-grade corporate finance calculations exposed as an MCP (Model Context Protocol) server (v1.0.0). All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings and a TypeScript MCP interface for AI-assisted financial analysis. 71 domain modules, 215 MCP tools, 71 CLI subcommands, 5,879 tests across ~201,000 lines of Rust.
 
 ## Architecture
 
@@ -13,19 +13,19 @@ packages/mcp-server         TypeScript — MCP server with Zod schema validation
 
 \* Monte Carlo simulation uses f64 for performance with `rand`/`statrs`.
 
-## Modules (27 features, 95+ MCP tools)
+## Modules (71 features, 215 MCP tools)
 
 | Phase | Module | Feature Flag | MCP Tools | Description |
 |-------|--------|-------------|-----------|-------------|
 | 1 | Valuation | `valuation` | 3 | WACC (CAPM), DCF (FCFF), trading comps |
-| 1 | Credit | `credit` | 4 | Metrics, debt capacity, covenants, Altman Z |
-| 1 | Private Equity | `pe` | 4 | IRR/MOIC, debt schedules, sources & uses, LBO |
+| 1 | Credit | `credit` | 3 | Metrics, debt capacity, covenants, Altman Z |
+| 1 | Private Equity | `pe` | 6 | IRR/MOIC, debt schedules, sources & uses, LBO, waterfall |
 | 1 | Portfolio | `portfolio` | 3 | Risk-adjusted returns, VaR/CVaR, Kelly sizing |
 | 1 | Scenarios | `scenarios` | 2 | Sensitivity matrix, scenario analysis |
 | 2 | M&A | `ma` | 1 | Merger accretion/dilution |
 | 2 | Jurisdiction | `jurisdiction` | 7 | GAAP/IFRS, WHT, NAV, GP economics, UBTI |
-| 3 | Fixed Income | `fixed_income` | 5 | Bond pricing, yields, duration, spreads, curves |
-| 3 | Derivatives | `derivatives` | 7 | Options, implied vol, forwards, swaps, strategies |
+| 3 | Fixed Income | `fixed_income` | 6 | Bond pricing, yields, duration, spreads, curves, Nelson-Siegel |
+| 3 | Derivatives | `derivatives` | 8 | Options, implied vol, forwards, swaps, basis, strategies |
 | 4 | Three Statement | `three_statement` | 1 | Integrated IS/BS/CF model |
 | 4 | Monte Carlo | `monte_carlo` | 2 | Generic simulation, stochastic DCF |
 | 4 | Quant Risk | `quant_risk` | 4 | Factor models, Black-Litterman, risk parity, stress testing |
@@ -33,9 +33,9 @@ packages/mcp-server         TypeScript — MCP server with Zod schema validation
 | 5 | Real Assets | `real_assets` | 2 | Property valuation, project finance |
 | 5 | FX & Commodities | `fx_commodities` | 4 | FX forwards, cross rates, commodity forwards/curves |
 | 6 | Securitization | `securitization` | 2 | ABS/MBS cash flows, CDO/CLO tranching |
-| 6 | Venture Capital | `venture` | 3 | Dilution, convertibles, fund returns |
+| 6 | Venture Capital | `venture` | 5 | Funding rounds, dilution, convertibles, SAFEs, fund returns |
 | 6 | ESG | `esg` | 4 | Scoring, carbon, green bonds, SLL |
-| 6 | Regulatory | `regulatory` | 3 | Basel III capital, LCR/NSFR, ALM |
+| 6 | Regulatory | `regulatory` | 4 | Basel III capital, LCR, NSFR, ALM |
 | 7 | Private Credit | `private_credit` | 3 | Unitranche, direct lending, syndication |
 | 7 | Insurance | `insurance` | 4 | Loss reserving, premium pricing, combined ratio, SCR |
 | 7 | FP&A | `fpa` | 4 | Variance analysis, break-even, working capital, forecast |
@@ -44,6 +44,50 @@ packages/mcp-server         TypeScript — MCP server with Zod schema validation
 | 8 | Trade Finance | `trade_finance` | 2 | Letters of credit, supply chain finance/forfaiting |
 | 8 | Structured Products | `structured_products` | 2 | Structured notes, exotic derivatives (autocallables, barriers) |
 | 8 | Municipal | `municipal` | 2 | Muni bond pricing/TEY, GO/revenue bond analysis |
+| 9 | Credit Derivatives | `credit_derivatives` | 2 | CDS pricing, CVA/DVA calculation |
+| 9 | Convertibles | `convertibles` | 2 | Convertible bond pricing (CRR), scenario analysis |
+| 9 | Lease Accounting | `lease_accounting` | 2 | ASC 842/IFRS 16 classification, sale-leaseback |
+| 9 | Pension | `pension` | 2 | Pension funding (PBO/ABO/NPPC), LDI strategy |
+| 10 | Sovereign | `sovereign` | 2 | Sovereign bond analysis, country risk assessment |
+| 10 | Real Options | `real_options` | 2 | Real option valuation, decision tree analysis |
+| 10 | Equity Research | `equity_research` | 2 | Sum-of-the-parts (SOTP), target price |
+| 10 | Commodity Trading | `commodity_trading` | 2 | Commodity spreads, storage economics |
+| 11 | Quant Strategies | `quant_strategies` | 2 | Pairs trading (cointegration), momentum factor |
+| 11 | Treasury | `treasury` | 2 | Cash management, hedge effectiveness |
+| 11 | Infrastructure | `infrastructure` | 2 | PPP/PFI project models, concession valuation |
+| 11 | Behavioral | `behavioral` | 2 | Prospect theory, market sentiment (Fear & Greed) |
+| 12 | Performance Attribution | `performance_attribution` | 2 | Brinson-Fachler, factor-based attribution |
+| 12 | Credit Portfolio | `credit_portfolio` | 2 | Portfolio credit risk (Gaussian copula), migration |
+| 12 | Macro Economics | `macro_economics` | 2 | Monetary policy (Taylor Rule), international economics |
+| 12 | Compliance | `compliance` | 2 | MiFID II best execution, GIPS reporting |
+| 13 | Onshore Structures | `onshore_structures` | 2 | US fund structures (LP, REIT, MLP, BDC), UK/EU funds |
+| 13 | Offshore Structures | `offshore_structures` | 2 | Cayman/BVI funds (SPC, Exempted LP), Lux/Ireland (SICAV) |
+| 13 | Transfer Pricing | `transfer_pricing` | 2 | OECD BEPS compliance, intercompany pricing (CUP, TNMM) |
+| 13 | Tax Treaty | `tax_treaty` | 2 | Treaty network analysis, WHT optimization |
+| 14 | FATCA/CRS | `fatca_crs` | 2 | FATCA/CRS reporting, entity classification |
+| 14 | Substance Requirements | `substance_requirements` | 2 | Economic substance (BEPS Action 5), jurisdiction tests |
+| 14 | Regulatory Reporting | `regulatory_reporting` | 2 | AIFMD Annex IV, SEC/CFTC (Form PF, ADV, CPO-PQR) |
+| 14 | AML Compliance | `aml_compliance` | 2 | KYC risk assessment, sanctions screening (OFAC/EU/UN) |
+| 15 | Volatility Surface | `volatility_surface` | 2 | Implied vol surface construction, SABR calibration |
+| 15 | Portfolio Optimization | `portfolio_optimization` | 2 | Mean-variance (Markowitz), Black-Litterman portfolios |
+| 15 | Risk Budgeting | `risk_budgeting` | 2 | Factor-based risk budgets, tail risk (VaR/CVaR) |
+| 16 | Market Microstructure | `market_microstructure` | 2 | Spread decomposition, optimal execution (Almgren-Chriss) |
+| 16 | Interest Rate Models | `interest_rate_models` | 2 | Short rate models (Vasicek/CIR/HW), term structure fitting |
+| 16 | Mortgage Analytics | `mortgage_analytics` | 2 | Prepayment analysis (PSA/CPR), MBS pass-through analytics |
+| 16 | Inflation Linked | `inflation_linked` | 2 | TIPS analytics, inflation derivatives (ZCIS, caps/floors) |
+| 16 | Repo Financing | `repo_financing` | 2 | Repo rate analytics, collateral management |
+| 18 | Credit Scoring | `credit_scoring` | 5 | Scorecards (WoE/IV), Merton PD, intensity models, validation |
+| 18 | Capital Allocation | `capital_allocation` | 5 | Economic capital, RAROC, Euler/Shapley allocation, limits |
+| 18 | CLO Analytics | `clo_analytics` | 5 | CLO waterfall, OC/IC tests, reinvestment, tranche, scenarios |
+| 18 | Fund of Funds | `fund_of_funds` | 5 | J-Curve, commitment pacing, manager selection, secondaries |
+| 19 | Earnings Quality | `earnings_quality` | 5 | Beneish M-Score, Piotroski F-Score, accrual/revenue quality |
+| 19 | Bank Analytics | `bank_analytics` | 5 | NIM analysis, CAMELS rating, CECL provisioning, deposit beta |
+| 19 | Dividend Policy | `dividend_policy` | 5 | H-Model DDM, multi-stage DDM, buyback, payout, TSR |
+| 19 | Carbon Markets | `carbon_markets` | 5 | Carbon pricing, ETS compliance, CBAM, offsets, shadow price |
+| 20 | Private Wealth | `private_wealth` | 5 | Concentrated stock, philanthropy, wealth transfer, direct indexing |
+| 20 | Emerging Markets | `emerging_markets` | 5 | Country risk premium, political risk, EM bonds/equity |
+| 20 | Index Construction | `index_construction` | 5 | Weighting, rebalancing, tracking error, smart beta, reconstitution |
+| 20 | Financial Forensics | `financial_forensics` | 5 | Benford's Law, DuPont, Z-Scores, peer benchmarking, red flags |
 
 ## Quick Start
 
@@ -81,7 +125,7 @@ cd packages/mcp-server && npm start
 ### Run Tests
 
 ```bash
-# All Rust tests (1500+ tests)
+# All Rust tests (5,879 tests)
 cargo test --workspace --all-features
 
 # Clippy lint
@@ -147,11 +191,15 @@ cargo run -p corp-finance-cli -- wacc \
 │   │       ├── derivatives/      # Options, forwards, swaps
 │   │       ├── fixed_income/     # Bonds, yields, duration, spreads
 │   │       ├── quant_risk/       # Factor models, BL, risk parity
-│   │       ├── crypto/           # Token valuation, DeFi yield
-│   │       ├── trade_finance/    # LC, supply chain finance
-│   │       ├── structured_products/ # Notes, exotic derivatives
-│   │       ├── municipal/        # Muni bonds, GO/revenue analysis
-│   │       └── ...               # 13 more domain modules
+│   │       ├── securitization/   # ABS/MBS, CDO/CLO tranching
+│   │       ├── venture/          # Funding rounds, SAFEs, dilution
+│   │       ├── credit_scoring/   # Scorecards, Merton PD, validation
+│   │       ├── clo_analytics/    # CLO waterfall, tranche analytics
+│   │       ├── financial_forensics/ # Benford's Law, DuPont, red flags
+│   │       ├── emerging_markets/ # Country risk, EM bonds/equity
+│   │       ├── index_construction/ # Weighting, smart beta, rebalancing
+│   │       ├── private_wealth/   # Concentrated stock, philanthropy
+│   │       └── ...               # 57 more domain modules (71 total)
 │   └── corp-finance-cli/         # CLI binary
 ├── packages/
 │   ├── bindings/                 # napi-rs Node.js bindings
