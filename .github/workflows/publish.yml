@@ -142,13 +142,24 @@ jobs:
         run: ls -la packages/bindings/corp-finance.*.node
 
       # Publish the native bindings package first since the MCP server depends on it
+      # Skip gracefully if this version is already published
       - name: Publish @robotixai/corp-finance-bindings
         working-directory: packages/bindings
-        run: npm publish --access public --provenance
+        run: |
+          OUTPUT=$(npm publish --access public --provenance 2>&1) || {
+            if echo "$OUTPUT" | grep -q "cannot publish over"; then
+              echo "Version already published, skipping"
+              exit 0
+            fi
+            echo "$OUTPUT" >&2
+            exit 1
+          }
+          echo "$OUTPUT"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # Build and publish the MCP server package
+      # Skip gracefully if this version is already published
       - name: Publish @robotixai/corp-finance-mcp
         working-directory: packages/mcp-server
         run: |
@@ -163,7 +174,15 @@ jobs:
 
           npm install
           npm run build
-          npm publish --access public --provenance
+          OUTPUT=$(npm publish --access public --provenance 2>&1) || {
+            if echo "$OUTPUT" | grep -q "cannot publish over"; then
+              echo "Version already published, skipping"
+              exit 0
+            fi
+            echo "$OUTPUT" >&2
+            exit 1
+          }
+          echo "$OUTPUT"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
