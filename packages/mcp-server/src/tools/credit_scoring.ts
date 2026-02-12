@@ -5,7 +5,7 @@ import {
   calculateIntensityModel,
   calculateCalibration,
   calculateScoringValidation,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   CreditScorecardSchema,
   MertonPdSchema,

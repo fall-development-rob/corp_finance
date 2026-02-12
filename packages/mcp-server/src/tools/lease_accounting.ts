@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   classifyLease,
   analyzeSaleLeaseback,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   LeaseClassificationSchema,
   SaleLeasebackSchema,

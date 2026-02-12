@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   optimizeMeanVariance,
   optimizeBlackLittermanPortfolio,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   MeanVarianceSchema,
   BlackLittermanPortfolioSchema,

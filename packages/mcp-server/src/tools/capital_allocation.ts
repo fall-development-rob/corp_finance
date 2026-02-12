@@ -5,7 +5,7 @@ import {
   calculateEulerAllocation,
   calculateShapleyAllocation,
   evaluateLimits,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   EconomicCapitalSchema,
   RarocSchema,

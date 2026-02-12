@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeTreatyNetwork,
   optimizeTreatyStructure,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   TreatyNetworkSchema,
   TreatyOptSchema,

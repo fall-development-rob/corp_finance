@@ -5,7 +5,7 @@ import {
   calculateAccrualQuality,
   calculateRevenueQuality,
   calculateEarningsQualityComposite,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   BeneishMscoreSchema,
   PiotroskiFscoreSchema,

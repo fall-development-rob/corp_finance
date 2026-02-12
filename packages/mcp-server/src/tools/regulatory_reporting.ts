@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   generateAifmdReport,
   generateSecCftcReport,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   AifmdReportingSchema,
   SecCftcReportingSchema,

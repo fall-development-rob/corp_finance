@@ -1,8 +1,13 @@
 {
-  "name": "corp-finance-bindings",
+  "name": "@fall-development-rob/corp-finance-bindings",
   "version": "1.0.0",
   "main": "index.js",
   "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/corp_finance.git",
+    "directory": "packages/bindings"
+  },
   "napi": {
     "name": "corp-finance",
     "triples": {

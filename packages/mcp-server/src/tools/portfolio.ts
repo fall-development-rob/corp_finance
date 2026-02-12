@@ -3,7 +3,7 @@ import {
   riskAdjustedReturns,
   riskMetrics,
   kellySizing,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   RiskAdjustedSchema,
   RiskMetricsSchema,

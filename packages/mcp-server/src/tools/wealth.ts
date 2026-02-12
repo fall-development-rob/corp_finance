@@ -3,7 +3,7 @@ import {
   planRetirement,
   simulateTaxLossHarvesting,
   planEstate,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   RetirementSchema,
   TlhSchema,

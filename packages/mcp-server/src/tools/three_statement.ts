@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { buildThreeStatement } from "corp-finance-bindings";
+import { buildThreeStatement } from "@fall-development-rob/corp-finance-bindings";
 import { ThreeStatementSchema } from "../schemas/three_statement.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

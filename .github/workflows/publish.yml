@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write    # Required for creating GitHub releases
+  packages: write    # Required for GitHub Packages
   id-token: write    # Required for npm provenance
 
 env:
@@ -114,13 +115,12 @@ jobs:
           retention-days: 3
 
   # ---------------------------------------------------------------------------
-  # Job 3: Collect all platform binaries and publish npm packages
+  # Job 3: Publish packages to GitHub Packages npm registry
   # ---------------------------------------------------------------------------
-  publish-npm:
-    name: Publish npm packages
+  publish-github-packages:
+    name: Publish to GitHub Packages
     needs: build-bindings
     runs-on: ubuntu-latest
-    # Only publish when this is NOT a dry run
     if: ${{ !(github.event.inputs.dry-run == 'true') }}
     steps:
       - uses: actions/checkout@v4
@@ -128,6 +128,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: "@fall-development-rob"
 
       # Download every platform artifact into packages/bindings/
       - name: Download all binding artifacts
@@ -140,39 +142,31 @@ jobs:
       - name: List binding artifacts
         run: ls -la packages/bindings/corp-finance.*.node
 
-      # Create .npmrc with auth token for publishing
-      - name: Configure npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
-      # Publish the native bindings package first since the MCP server depends on it
-      - name: Publish corp-finance-bindings
+      # Publish the native bindings package first
+      - name: Publish @fall-development-rob/corp-finance-bindings
         working-directory: packages/bindings
-        run: |
-          npm publish --access public --provenance
+        run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Build and publish the MCP server package
-      # The dependency on corp-finance-bindings must be changed from file: to
-      # a registry version before publishing
-      - name: Publish corp-finance-mcp
+      - name: Publish @fall-development-rob/corp-finance-mcp
         working-directory: packages/mcp-server
         run: |
-          # Determine the version to reference for the bindings dependency
+          # Replace the local file: dependency with the published registry version
           BINDINGS_VERSION=$(node -p "require('../bindings/package.json').version")
-
-          # Replace the local file: dependency with the published version
           node -e "
-            const pkg = require('./package.json');
-            pkg.dependencies['corp-finance-bindings'] = '^${BINDINGS_VERSION}';
-            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.dependencies['@fall-development-rob/corp-finance-bindings'] = '^' + '${BINDINGS_VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
           npm install
           npm run build
-          npm publish --access public --provenance
+          npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
   # Job 4: Create a GitHub Release with changelog notes and binary assets

@@ -3,7 +3,7 @@ import {
   priceUnitranche,
   modelDirectLoan,
   analyzeSyndication,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   UnitrancheSchema,
   DirectLoanSchema,

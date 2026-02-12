@@ -5,7 +5,7 @@ import {
   analyzeManagerSelection,
   calculateSecondariesPricing,
   analyzeFofPortfolio,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   JCurveSchema,
   CommitmentPacingSchema,

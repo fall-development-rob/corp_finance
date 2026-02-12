@@ -3,7 +3,7 @@ import {
   creditMetrics,
   debtCapacity,
   covenantCompliance,
-} from "corp-finance-bindings";
+} from "@fall-development-rob/corp-finance-bindings";
 import {
   CreditMetricsSchema,
   DebtCapacitySchema,

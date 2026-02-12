@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { runMonteCarlo, runMcDcf } from "corp-finance-bindings";
+import { runMonteCarlo, runMcDcf } from "@fall-development-rob/corp-finance-bindings";
 import { MonteCarloSchema, McDcfSchema } from "../schemas/monte_carlo.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

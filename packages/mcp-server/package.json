@@ -1,7 +1,12 @@
 {
-  "name": "corp-finance-mcp",
+  "name": "@fall-development-rob/corp-finance-mcp",
   "version": "1.0.0",
   "description": "Institutional-grade corporate finance calculations as MCP tools",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/corp_finance.git",
+    "directory": "packages/mcp-server"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -15,7 +20,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.22.0",
-    "corp-finance-bindings": "file:../bindings"
+    "@fall-development-rob/corp-finance-bindings": "file:../bindings"
   },
   "devDependencies": {
     "typescript": "^5.4.0",
