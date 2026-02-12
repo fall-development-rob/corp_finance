@@ -40,6 +40,8 @@ env:
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.new }}
     steps:
       # ------------------------------------------------------------------
       # 1. Checkout with full history (needed for changelog generation)
@@ -218,6 +220,7 @@ jobs:
         run: |
           git push origin HEAD
           git push origin "v${{ steps.version.outputs.new }}"
+          echo "Pushed tag v${{ steps.version.outputs.new }} — this will trigger the Publish workflow"
 
       - name: Dry-run notice
         if: ${{ inputs.dry_run == true }}
@@ -225,3 +228,25 @@ jobs:
           echo "::notice::Dry run complete -- no commit, tag, or push was made."
           echo "### Dry run" >> "$GITHUB_STEP_SUMMARY"
           echo "No changes were committed. Re-run with **dry_run = false** to create the release." >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # Trigger the Publish workflow which builds bindings and creates the
+  # GitHub Release. This only runs when dry_run is false (tag was pushed).
+  # The Publish workflow triggers on v* tag pushes, so pushing the tag
+  # above is sufficient — this summary just documents the chain.
+  # ---------------------------------------------------------------------------
+  release-summary:
+    name: Release Summary
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    if: ${{ inputs.dry_run == false }}
+    steps:
+      - name: Summary
+        run: |
+          echo "### Release pipeline triggered" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "The \`v${{ needs.prepare-release.outputs.version }}\` tag push will trigger the **Publish** workflow which:" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Runs the full test suite" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Builds native bindings for 4 platform targets" >> "$GITHUB_STEP_SUMMARY"
+          echo "3. Publishes npm packages (bindings + MCP server)" >> "$GITHUB_STEP_SUMMARY"
+          echo "4. Creates a GitHub Release with changelog notes and binary assets" >> "$GITHUB_STEP_SUMMARY"

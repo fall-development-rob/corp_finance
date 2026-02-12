@@ -175,7 +175,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Job 4: Create a GitHub Release with auto-generated notes and binary assets
+  # Job 4: Create a GitHub Release with changelog notes and binary assets
   # ---------------------------------------------------------------------------
   github-release:
     name: GitHub Release
@@ -185,6 +185,92 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Version: ${TAG}"
+
+      # Extract the release notes for this version from CHANGELOG.md
+      - name: Extract release notes from CHANGELOG
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+
+          # Extract the section for this version (between ## [VERSION] and the next ## [)
+          NOTES=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md)
+
+          if [ -z "$NOTES" ]; then
+            echo "::warning::No CHANGELOG entry found for v${VERSION}, using commit log"
+            NOTES=$(git log --oneline "$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD" \
+              | sed 's/^[0-9a-f]* /- /')
+          fi
+
+          # Write to file to preserve multiline content
+          echo "$NOTES" > /tmp/release-notes.md
+
+      # Gather project stats for the release summary header
+      - name: Build release body
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+
+          # Count stats from source
+          RUST_FILES=$(find crates -name '*.rs' | wc -l | tr -d ' ')
+          RUST_LINES=$(find crates -name '*.rs' -exec cat {} + | wc -l | tr -d ' ')
+          TEST_COUNT=$(grep -r '#\[test\]' crates/ | wc -l | tr -d ' ')
+          MCP_TOOLS=$(grep -r 'server.tool(' packages/mcp-server/src/tools/ | wc -l | tr -d ' ')
+          MODULES=$(ls -d crates/corp-finance-core/src/*/ 2>/dev/null | wc -l | tr -d ' ')
+
+          cat > /tmp/release-body.md << EOF
+          ## corp-finance-mcp v${VERSION}
+
+          Institutional-grade corporate finance calculations — 128-bit decimal precision, Rust core with MCP server and CLI interfaces.
+
+          ### Project Stats
+
+          | Metric | Count |
+          |--------|-------|
+          | Domain modules | ${MODULES} |
+          | MCP tools | ${MCP_TOOLS} |
+          | Rust source files | ${RUST_FILES} |
+          | Lines of Rust | ~${RUST_LINES} |
+          | Tests | ${TEST_COUNT} |
+
+          ### Architecture
+
+          \`\`\`
+          Rust core (128-bit Decimal) → NAPI-RS bindings → TypeScript MCP server (Zod schemas)
+                                      → CLI binary (clap)
+          \`\`\`
+
+          ### Platforms
+
+          | Target | OS | Arch |
+          |--------|----|------|
+          | x86_64-unknown-linux-gnu | Linux | x64 |
+          | aarch64-unknown-linux-gnu | Linux | ARM64 |
+          | x86_64-apple-darwin | macOS | Intel |
+          | aarch64-apple-darwin | macOS | Apple Silicon |
+
+          ---
+
+          EOF
+
+          # Strip leading whitespace from heredoc indentation
+          sed -i 's/^          //' /tmp/release-body.md
+
+          # Append the CHANGELOG notes
+          cat /tmp/release-notes.md >> /tmp/release-body.md
 
       - name: Download all binding artifacts
         uses: actions/download-artifact@v4
@@ -193,19 +279,22 @@ jobs:
           pattern: bindings-*
           merge-multiple: true
 
-      # Rename artifacts to include the version for clarity in release assets
+      # Rename artifacts to include version for clarity in release assets
       - name: Prepare release assets
         run: |
+          VERSION="${{ steps.version.outputs.tag }}"
           mkdir -p release-assets
           for f in artifacts/corp-finance.*.node; do
-            cp "$f" "release-assets/$(basename "$f")"
+            BASENAME=$(basename "$f")
+            cp "$f" "release-assets/${BASENAME}"
           done
           ls -la release-assets/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          name: v${{ steps.version.outputs.tag }}
+          body_path: /tmp/release-body.md
           make_latest: true
           files: release-assets/*
         env:
