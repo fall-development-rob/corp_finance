@@ -203,6 +203,18 @@ pub mod carbon_markets;
 #[cfg(feature = "bank_analytics")]
 pub mod bank_analytics;
 
+#[cfg(feature = "private_wealth")]
+pub mod private_wealth;
+
+#[cfg(feature = "emerging_markets")]
+pub mod emerging_markets;
+
+#[cfg(feature = "index_construction")]
+pub mod index_construction;
+
+#[cfg(feature = "financial_forensics")]
+pub mod financial_forensics;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

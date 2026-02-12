@@ -42,9 +42,16 @@ use commands::earnings_quality::{
     AccrualQualityArgs, BeneishArgs, EarningsQualityCompositeArgs, PiotroskiArgs,
     RevenueQualityArgs,
 };
+use commands::emerging_markets::{
+    CapitalControlsArgs, CountryRiskPremiumArgs, EmBondAnalysisArgs, EmEquityPremiumArgs,
+    PoliticalRiskArgs,
+};
 use commands::equity_research::{SotpArgs, TargetPriceArgs};
 use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
 use commands::fatca_crs::{EntityClassificationArgs, FatcaCrsReportingArgs};
+use commands::financial_forensics::{
+    BenfordsLawArgs, DupontAnalysisArgs, PeerBenchmarkingArgs, RedFlagScoringArgs, ZscoreModelsArgs,
+};
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
 };
@@ -55,6 +62,10 @@ use commands::fund_of_funds::{
 };
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
+};
+use commands::index_construction::{
+    IndexRebalancingArgs, IndexReconstitutionArgs, IndexWeightingArgs, SmartBetaArgs,
+    TrackingErrorArgs,
 };
 use commands::inflation_linked::{InflationDerivativeArgs, TipsAnalyticsArgs};
 use commands::infrastructure::{ConcessionArgs, PppModelArgs};
@@ -79,6 +90,10 @@ use commands::performance_attribution::{BrinsonArgs, FactorAttributionArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::portfolio_optimization::{BlackLittermanPortfolioArgs, MeanVarianceArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
+use commands::private_wealth::{
+    ConcentratedStockArgs, DirectIndexingArgs, FamilyGovernanceArgs, PhilanthropicVehiclesArgs,
+    WealthTransferArgs,
+};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
 use commands::quant_strategies::{MomentumArgs, PairsTradingArgs};
 use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
@@ -510,6 +525,46 @@ enum Commands {
     OffsetValuation(OffsetValuationArgs),
     /// Shadow carbon price and abatement cost analysis
     ShadowCarbon(ShadowCarbonArgs),
+    /// Concentrated stock position analysis (hedging, exchange funds, monetization)
+    ConcentratedStock(ConcentratedStockArgs),
+    /// Philanthropic vehicle comparison (DAF, private foundation, CRT, CLT)
+    PhilanthropicVehicles(PhilanthropicVehiclesArgs),
+    /// Wealth transfer analysis (GRAT, IDGT, QPRT, FLP)
+    WealthTransfer(WealthTransferArgs),
+    /// Direct indexing analysis (tax alpha, tracking, customization)
+    DirectIndexing(DirectIndexingArgs),
+    /// Family governance evaluation (charter, succession, education)
+    FamilyGovernance(FamilyGovernanceArgs),
+    /// Country risk premium calculation (Damodaran, sovereign spread)
+    CountryRiskPremium(CountryRiskPremiumArgs),
+    /// Political risk assessment (institutional, policy, security)
+    PoliticalRisk(PoliticalRiskArgs),
+    /// Capital controls analysis (convertibility, repatriation)
+    CapitalControls(CapitalControlsArgs),
+    /// Emerging market bond analysis (spread decomposition, Brady)
+    EmBondAnalysis(EmBondAnalysisArgs),
+    /// Emerging market equity premium calculation
+    EmEquityPremium(EmEquityPremiumArgs),
+    /// Index weighting methodology (market-cap, equal, fundamental)
+    IndexWeighting(IndexWeightingArgs),
+    /// Index rebalancing analysis (turnover, drift, cost)
+    IndexRebalancing(IndexRebalancingArgs),
+    /// Tracking error analysis (ex-ante, ex-post, attribution)
+    TrackingError(TrackingErrorArgs),
+    /// Smart beta factor construction (value, momentum, quality, low-vol)
+    SmartBeta(SmartBetaArgs),
+    /// Index reconstitution analysis (additions, deletions, impact)
+    IndexReconstitution(IndexReconstitutionArgs),
+    /// Benford's Law digit analysis for fraud detection
+    BenfordsLaw(BenfordsLawArgs),
+    /// DuPont decomposition analysis (3-factor, 5-factor)
+    DupontAnalysis(DupontAnalysisArgs),
+    /// Z-Score bankruptcy models (Altman, Ohlson, Zmijewski)
+    ZscoreModels(ZscoreModelsArgs),
+    /// Peer benchmarking analysis (percentile, z-score, ranking)
+    PeerBenchmarking(PeerBenchmarkingArgs),
+    /// Red flag scoring for financial statement analysis
+    RedFlagScoring(RedFlagScoringArgs),
     /// Print version information
     Version,
 }
@@ -768,6 +823,36 @@ fn main() {
         Commands::Cbam(args) => commands::carbon_markets::run_cbam(args),
         Commands::OffsetValuation(args) => commands::carbon_markets::run_offset_valuation(args),
         Commands::ShadowCarbon(args) => commands::carbon_markets::run_shadow_carbon(args),
+        Commands::ConcentratedStock(args) => commands::private_wealth::run_concentrated_stock(args),
+        Commands::PhilanthropicVehicles(args) => {
+            commands::private_wealth::run_philanthropic_vehicles(args)
+        }
+        Commands::WealthTransfer(args) => commands::private_wealth::run_wealth_transfer(args),
+        Commands::DirectIndexing(args) => commands::private_wealth::run_direct_indexing(args),
+        Commands::FamilyGovernance(args) => commands::private_wealth::run_family_governance(args),
+        Commands::CountryRiskPremium(args) => {
+            commands::emerging_markets::run_country_risk_premium(args)
+        }
+        Commands::PoliticalRisk(args) => commands::emerging_markets::run_political_risk(args),
+        Commands::CapitalControls(args) => commands::emerging_markets::run_capital_controls(args),
+        Commands::EmBondAnalysis(args) => commands::emerging_markets::run_em_bond_analysis(args),
+        Commands::EmEquityPremium(args) => commands::emerging_markets::run_em_equity_premium(args),
+        Commands::IndexWeighting(args) => commands::index_construction::run_index_weighting(args),
+        Commands::IndexRebalancing(args) => {
+            commands::index_construction::run_index_rebalancing(args)
+        }
+        Commands::TrackingError(args) => commands::index_construction::run_tracking_error(args),
+        Commands::SmartBeta(args) => commands::index_construction::run_smart_beta(args),
+        Commands::IndexReconstitution(args) => {
+            commands::index_construction::run_index_reconstitution(args)
+        }
+        Commands::BenfordsLaw(args) => commands::financial_forensics::run_benfords_law(args),
+        Commands::DupontAnalysis(args) => commands::financial_forensics::run_dupont_analysis(args),
+        Commands::ZscoreModels(args) => commands::financial_forensics::run_zscore_models(args),
+        Commands::PeerBenchmarking(args) => {
+            commands::financial_forensics::run_peer_benchmarking(args)
+        }
+        Commands::RedFlagScoring(args) => commands::financial_forensics::run_red_flag_scoring(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

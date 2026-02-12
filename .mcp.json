@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "corp-finance": {
+      "command": "node",
+      "args": [
+        "/home/robert/cfa_agent/packages/mcp-server/dist/index.js"
+      ]
+    },
     "claude-flow": {
       "command": "npx",
       "args": [

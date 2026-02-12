@@ -2110,3 +2110,220 @@ pub fn calculate_shadow_carbon_price(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Private Wealth — Phase 20
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_concentrated_stock(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_wealth::concentrated_stock::ConcentratedStockInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::private_wealth::concentrated_stock::analyze_concentrated_stock(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn compare_philanthropic_vehicles(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_wealth::philanthropic_vehicles::PhilanthropicInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::private_wealth::philanthropic_vehicles::compare_philanthropic_vehicles(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_wealth_transfer(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_wealth::wealth_transfer::WealthTransferInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::private_wealth::wealth_transfer::analyze_wealth_transfer(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_direct_indexing(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_wealth::direct_indexing::DirectIndexingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::private_wealth::direct_indexing::analyze_direct_indexing(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn evaluate_family_governance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::private_wealth::family_governance::FamilyGovernanceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::private_wealth::family_governance::evaluate_family_governance(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Emerging Markets — Phase 20
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_country_risk_premium(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::emerging_markets::country_risk_premium::CountryRiskPremiumInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::emerging_markets::country_risk_premium::calculate_country_risk_premium(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn assess_political_risk(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::emerging_markets::political_risk::PoliticalRiskInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::emerging_markets::political_risk::assess_political_risk(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyse_capital_controls(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::emerging_markets::capital_controls::CapitalControlsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::emerging_markets::capital_controls::analyse_capital_controls(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyse_em_bonds(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::emerging_markets::em_bond_analysis::EmBondAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::emerging_markets::em_bond_analysis::analyse_em_bonds(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_em_equity_premium(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::emerging_markets::em_equity_premium::EmEquityPremiumInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::emerging_markets::em_equity_premium::calculate_em_equity_premium(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Index Construction — Phase 20
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn calculate_weighting(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::index_construction::weighting::WeightingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::index_construction::weighting::calculate_weighting(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_rebalancing(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::index_construction::rebalancing::RebalancingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::index_construction::rebalancing::calculate_rebalancing(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_tracking_error(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::index_construction::tracking_error::TrackingErrorInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::index_construction::tracking_error::calculate_tracking_error(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_smart_beta(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::index_construction::smart_beta::SmartBetaInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::index_construction::smart_beta::calculate_smart_beta(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_reconstitution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::index_construction::reconstitution::ReconstitutionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::index_construction::reconstitution::calculate_reconstitution(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Financial Forensics — Phase 20
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_benfords_law(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::financial_forensics::benfords_law::BenfordsLawInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::financial_forensics::benfords_law::analyze_benfords_law(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_dupont(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::financial_forensics::dupont_analysis::DupontInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::financial_forensics::dupont_analysis::calculate_dupont(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_zscore_models(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::financial_forensics::zscore_models::ZScoreModelsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::financial_forensics::zscore_models::calculate_zscore_models(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_peer_benchmarking(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::financial_forensics::peer_benchmarking::PeerBenchmarkingInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::financial_forensics::peer_benchmarking::calculate_peer_benchmarking(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calculate_red_flag_scoring(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::financial_forensics::red_flag_scoring::RedFlagScoringInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::financial_forensics::red_flag_scoring::calculate_red_flag_scoring(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
