@@ -155,6 +155,30 @@ pub mod regulatory_reporting;
 #[cfg(feature = "aml_compliance")]
 pub mod aml_compliance;
 
+#[cfg(feature = "volatility_surface")]
+pub mod volatility_surface;
+
+#[cfg(feature = "portfolio_optimization")]
+pub mod portfolio_optimization;
+
+#[cfg(feature = "risk_budgeting")]
+pub mod risk_budgeting;
+
+#[cfg(feature = "market_microstructure")]
+pub mod market_microstructure;
+
+#[cfg(feature = "interest_rate_models")]
+pub mod interest_rate_models;
+
+#[cfg(feature = "mortgage_analytics")]
+pub mod mortgage_analytics;
+
+#[cfg(feature = "inflation_linked")]
+pub mod inflation_linked;
+
+#[cfg(feature = "repo_financing")]
+pub mod repo_financing;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

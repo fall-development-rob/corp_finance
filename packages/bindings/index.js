@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate } = nativeBinding
+const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate, buildImpliedVolSurface, calibrateSabr, optimizeMeanVariance, optimizeBlackLittermanPortfolio, analyzeFactorRiskBudget, analyzeTailRisk, analyzeSpreads, optimizeExecution, analyzeShortRate, fitTermStructure, analyzePrepayment, analyzeMbs, analyzeTips, analyzeInflationDerivatives, analyzeRepo, analyzeCollateral } = nativeBinding
 
 module.exports.calculateWacc = calculateWacc
 module.exports.buildDcf = buildDcf
@@ -396,3 +396,19 @@ module.exports.buildRollingForecast = buildRollingForecast
 module.exports.planRetirement = planRetirement
 module.exports.simulateTaxLossHarvesting = simulateTaxLossHarvesting
 module.exports.planEstate = planEstate
+module.exports.buildImpliedVolSurface = buildImpliedVolSurface
+module.exports.calibrateSabr = calibrateSabr
+module.exports.optimizeMeanVariance = optimizeMeanVariance
+module.exports.optimizeBlackLittermanPortfolio = optimizeBlackLittermanPortfolio
+module.exports.analyzeFactorRiskBudget = analyzeFactorRiskBudget
+module.exports.analyzeTailRisk = analyzeTailRisk
+module.exports.analyzeSpreads = analyzeSpreads
+module.exports.optimizeExecution = optimizeExecution
+module.exports.analyzeShortRate = analyzeShortRate
+module.exports.fitTermStructure = fitTermStructure
+module.exports.analyzePrepayment = analyzePrepayment
+module.exports.analyzeMbs = analyzeMbs
+module.exports.analyzeTips = analyzeTips
+module.exports.analyzeInflationDerivatives = analyzeInflationDerivatives
+module.exports.analyzeRepo = analyzeRepo
+module.exports.analyzeCollateral = analyzeCollateral

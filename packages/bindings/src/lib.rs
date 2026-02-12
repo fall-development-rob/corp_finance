@@ -1504,3 +1504,190 @@ pub fn screen_sanctions(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Volatility Surface — Phase 15
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn build_implied_vol_surface(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::volatility_surface::implied_vol_surface::ImpliedVolSurfaceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::volatility_surface::implied_vol_surface::build_implied_vol_surface(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn calibrate_sabr(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::volatility_surface::sabr_model::SabrCalibrationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::volatility_surface::sabr_model::calibrate_sabr(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Portfolio Optimization — Phase 15
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn optimize_mean_variance(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::portfolio_optimization::mean_variance::MeanVarianceInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::portfolio_optimization::mean_variance::optimize_mean_variance(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn optimize_black_litterman_portfolio(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::portfolio_optimization::black_litterman_portfolio::BlackLittermanInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::portfolio_optimization::black_litterman_portfolio::optimize_black_litterman(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Risk Budgeting — Phase 15
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_factor_risk_budget(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::risk_budgeting::factor_risk_budget::FactorRiskBudgetInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::risk_budgeting::factor_risk_budget::analyze_factor_risk_budget(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_tail_risk(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::risk_budgeting::tail_risk::TailRiskInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::risk_budgeting::tail_risk::analyze_tail_risk(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Market Microstructure — Phase 15
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_spreads(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::market_microstructure::spread_analysis::SpreadAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::market_microstructure::spread_analysis::analyze_spreads(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn optimize_execution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::market_microstructure::optimal_execution::OptimalExecutionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::market_microstructure::optimal_execution::optimize_execution(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Interest Rate Models — Phase 16
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_short_rate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::interest_rate_models::short_rate::ShortRateInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::interest_rate_models::short_rate::analyze_short_rate(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn fit_term_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::interest_rate_models::term_structure::TermStructureInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::interest_rate_models::term_structure::fit_term_structure(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Mortgage Analytics — Phase 16
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_prepayment(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::mortgage_analytics::prepayment::PrepaymentInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::mortgage_analytics::prepayment::analyze_prepayment(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_mbs(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::mortgage_analytics::mbs_analytics::MbsAnalyticsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::mortgage_analytics::mbs_analytics::analyze_mbs(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Inflation-Linked — Phase 16
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_tips(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::inflation_linked::tips_pricing::TipsAnalyticsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::inflation_linked::tips_pricing::analyze_tips(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_inflation_derivatives(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::inflation_linked::inflation_derivatives::InflationDerivativeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::inflation_linked::inflation_derivatives::analyze_inflation_derivatives(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Repo Financing — Phase 16
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_repo(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::repo_financing::repo_rates::RepoAnalyticsInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::repo_financing::repo_rates::analyze_repo(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_collateral(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::repo_financing::collateral_management::CollateralInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::repo_financing::collateral_management::analyze_collateral(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

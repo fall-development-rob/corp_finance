@@ -52,6 +52,14 @@ import { registerFatcaCrsTools } from "./tools/fatca_crs.js";
 import { registerSubstanceRequirementsTools } from "./tools/substance_requirements.js";
 import { registerRegulatoryReportingTools } from "./tools/regulatory_reporting.js";
 import { registerAmlComplianceTools } from "./tools/aml_compliance.js";
+import { registerVolatilitySurfaceTools } from "./tools/volatility_surface.js";
+import { registerPortfolioOptimizationTools } from "./tools/portfolio_optimization.js";
+import { registerRiskBudgetingTools } from "./tools/risk_budgeting.js";
+import { registerMarketMicrostructureTools } from "./tools/market_microstructure.js";
+import { registerInterestRateModelsTools } from "./tools/interest_rate_models.js";
+import { registerMortgageAnalyticsTools } from "./tools/mortgage_analytics.js";
+import { registerInflationLinkedTools } from "./tools/inflation_linked.js";
+import { registerRepoFinancingTools } from "./tools/repo_financing.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -109,6 +117,14 @@ registerFatcaCrsTools(server);
 registerSubstanceRequirementsTools(server);
 registerRegulatoryReportingTools(server);
 registerAmlComplianceTools(server);
+registerVolatilitySurfaceTools(server);
+registerPortfolioOptimizationTools(server);
+registerRiskBudgetingTools(server);
+registerMarketMicrostructureTools(server);
+registerInterestRateModelsTools(server);
+registerMortgageAnalyticsTools(server);
+registerInflationLinkedTools(server);
+registerRepoFinancingTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

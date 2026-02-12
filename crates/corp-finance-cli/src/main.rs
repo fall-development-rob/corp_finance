@@ -29,8 +29,10 @@ use commands::fpa::{BreakevenArgs, RollingForecastArgs, VarianceArgs, WorkingCap
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
 };
+use commands::inflation_linked::{InflationDerivativeArgs, TipsAnalyticsArgs};
 use commands::infrastructure::{ConcessionArgs, PppModelArgs};
 use commands::insurance::{CombinedRatioArgs, PremiumPricingArgs, ReservingArgs, ScrArgs};
+use commands::interest_rate_models::{ShortRateArgs, TermStructureFitArgs};
 use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
@@ -38,7 +40,9 @@ use commands::jurisdiction::{
 use commands::lease_accounting::{LeaseClassificationArgs, SaleLeasebackArgs};
 use commands::ma::MergerArgs;
 use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
+use commands::market_microstructure::{OptimalExecutionArgs, SpreadAnalysisArgs};
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
+use commands::mortgage_analytics::{MbsAnalyticsArgs, PrepaymentArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
 use commands::offshore_structures::{CaymanFundArgs, LuxFundArgs};
 use commands::onshore_structures::{UkEuFundArgs, UsFundArgs};
@@ -46,6 +50,7 @@ use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
 use commands::performance_attribution::{BrinsonArgs, FactorAttributionArgs};
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
+use commands::portfolio_optimization::{BlackLittermanPortfolioArgs, MeanVarianceArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
 use commands::quant_risk::{BlackLittermanArgs, FactorModelArgs, RiskParityArgs, StressTestArgs};
 use commands::quant_strategies::{MomentumArgs, PairsTradingArgs};
@@ -53,7 +58,9 @@ use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
 use commands::real_options::{DecisionTreeArgs, RealOptionArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
 use commands::regulatory_reporting::{AifmdReportingArgs, SecCftcReportingArgs};
+use commands::repo_financing::{CollateralArgs, RepoAnalyticsArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
+use commands::risk_budgeting::{FactorRiskBudgetArgs, TailRiskArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
 use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
@@ -68,6 +75,7 @@ use commands::valuation::{CompsArgs, DcfArgs, WaccArgs};
 use commands::venture::{
     ConvertibleNoteArgs, DilutionArgs, FundingRoundArgs, SafeArgs, VentureFundArgs,
 };
+use commands::volatility_surface::{ImpliedVolSurfaceArgs, SabrCalibrationArgs};
 use commands::wealth::{EstatePlanArgs, RetirementArgs, TlhArgs};
 
 /// Institutional-grade corporate finance calculations
@@ -363,6 +371,38 @@ enum Commands {
     KycRisk(KycRiskArgs),
     /// Sanctions screening (OFAC, EU, UN)
     SanctionsScreening(SanctionsScreeningArgs),
+    /// Build implied volatility surface with interpolation and arbitrage detection
+    ImpliedVolSurface(ImpliedVolSurfaceArgs),
+    /// SABR stochastic volatility model calibration
+    SabrCalibration(SabrCalibrationArgs),
+    /// Markowitz mean-variance portfolio optimization
+    MeanVarianceOpt(MeanVarianceArgs),
+    /// Black-Litterman portfolio optimization with investor views
+    BlackLittermanPortfolio(BlackLittermanPortfolioArgs),
+    /// Factor-based risk budgeting analysis
+    FactorRiskBudget(FactorRiskBudgetArgs),
+    /// Tail risk analysis (VaR, CVaR, stress testing)
+    TailRisk(TailRiskArgs),
+    /// Bid-ask spread decomposition and market quality analysis
+    SpreadAnalysis(SpreadAnalysisArgs),
+    /// Optimal trade execution (Almgren-Chriss, TWAP, VWAP, IS)
+    OptimalExecution(OptimalExecutionArgs),
+    /// Short rate models (Vasicek, CIR, Hull-White)
+    ShortRate(ShortRateArgs),
+    /// Yield curve fitting (Nelson-Siegel, Svensson, Bootstrap)
+    TermStructureFit(TermStructureFitArgs),
+    /// Mortgage prepayment analysis (PSA, CPR, Refinancing)
+    Prepayment(PrepaymentArgs),
+    /// MBS pass-through analytics (cash flows, OAS, duration)
+    MbsAnalytics(MbsAnalyticsArgs),
+    /// TIPS/inflation-linked bond analytics
+    TipsAnalytics(TipsAnalyticsArgs),
+    /// Inflation derivative pricing (ZCIS, YYIS, Cap/Floor)
+    InflationDerivative(InflationDerivativeArgs),
+    /// Repo rate and securities lending analytics
+    RepoAnalytics(RepoAnalyticsArgs),
+    /// Collateral management (haircuts, margin, rehypothecation)
+    CollateralAnalytics(CollateralArgs),
     /// Print version information
     Version,
 }
@@ -538,6 +578,38 @@ fn main() {
         Commands::KycRisk(args) => commands::aml_compliance::run_kyc_risk(args),
         Commands::SanctionsScreening(args) => {
             commands::aml_compliance::run_sanctions_screening(args)
+        }
+        Commands::ImpliedVolSurface(args) => {
+            commands::volatility_surface::run_implied_vol_surface(args)
+        }
+        Commands::SabrCalibration(args) => commands::volatility_surface::run_sabr_calibration(args),
+        Commands::MeanVarianceOpt(args) => {
+            commands::portfolio_optimization::run_mean_variance(args)
+        }
+        Commands::BlackLittermanPortfolio(args) => {
+            commands::portfolio_optimization::run_black_litterman_portfolio(args)
+        }
+        Commands::FactorRiskBudget(args) => commands::risk_budgeting::run_factor_risk_budget(args),
+        Commands::TailRisk(args) => commands::risk_budgeting::run_tail_risk(args),
+        Commands::SpreadAnalysis(args) => {
+            commands::market_microstructure::run_spread_analysis(args)
+        }
+        Commands::OptimalExecution(args) => {
+            commands::market_microstructure::run_optimal_execution(args)
+        }
+        Commands::ShortRate(args) => commands::interest_rate_models::run_short_rate(args),
+        Commands::TermStructureFit(args) => {
+            commands::interest_rate_models::run_term_structure_fit(args)
+        }
+        Commands::Prepayment(args) => commands::mortgage_analytics::run_prepayment(args),
+        Commands::MbsAnalytics(args) => commands::mortgage_analytics::run_mbs_analytics(args),
+        Commands::TipsAnalytics(args) => commands::inflation_linked::run_tips_analytics(args),
+        Commands::InflationDerivative(args) => {
+            commands::inflation_linked::run_inflation_derivatives(args)
+        }
+        Commands::RepoAnalytics(args) => commands::repo_financing::run_repo_analytics(args),
+        Commands::CollateralAnalytics(args) => {
+            commands::repo_financing::run_collateral_analytics(args)
         }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
