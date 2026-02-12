@@ -26,7 +26,7 @@ analyst workflows that require:
 - **Cross-domain synthesis**: An M&A fairness opinion requires DCF valuation, comparable
   company analysis, credit assessment, regulatory review, and ESG scoring -- simultaneously.
 - **Iterative refinement**: Equity research involves cycles of hypothesis, calculation, review,
-  and revision that benefit from scratchpad memory and structured reasoning loops.
+  and revision that benefit from persistent working memory and structured reasoning loops.
 - **Persistent institutional knowledge**: Past analyses, valuation assumptions, and market
   regime observations should accumulate and improve future work.
 - **Parallel specialist work**: A portfolio review touching 50 positions across asset classes
@@ -41,7 +41,7 @@ research output.
 Three open-source projects inform this design:
 
 1. **virattt/dexter** -- A financial research agent with iterative tool-calling loops,
-   scratchpad memory, and streaming events. Proves that structured reasoning cycles
+   working memory, and streaming events. Proves that structured reasoning cycles
    (observe -> think -> act -> reflect) outperform single-pass generation for financial
    analysis. We adopt this pattern for each specialist agent's internal loop.
 2. **ruvnet/agentic-flow** -- Orchestration framework with 66+ agent types, hierarchical/mesh/
@@ -112,7 +112,7 @@ interface between agents and financial calculations.
 
 Each specialist runs a Dexter-style iterative loop internally:
 1. **Observe**: Receive task + relevant context from coordinator
-2. **Think**: Plan which MCP tools to call, review scratchpad from prior iterations
+2. **Think**: Plan which MCP tools to call, review agentdb state from prior iterations
 3. **Act**: Call corp-finance-mcp tools via MCP protocol, capture structured results
 4. **Reflect**: Evaluate results, decide whether to iterate or finalize
 5. **Report**: Return structured findings to coordinator
@@ -272,10 +272,10 @@ tool calls) without LLM-based agents.
 cash flow pivots from DCF to distressed valuation. Static pipelines cannot handle this
 branching logic without encoding every possible path.
 
-### C. virattt/dexter Fork (Single-Agent with Scratchpad)
+### C. virattt/dexter Fork (Single-Agent)
 
 Fork Dexter directly, replacing its tools with corp-finance-mcp tools. Single agent with
-iterative reasoning loops and scratchpad memory.
+iterative reasoning loops and session-scoped memory.
 
 **Rejected because**: While Dexter's iterative loop is excellent (we adopt it within each
 specialist), a single agent cannot parallelize cross-domain work. We take the pattern but

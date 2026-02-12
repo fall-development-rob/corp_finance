@@ -87,14 +87,14 @@ and synthesizes results into coherent analysis.
 - **Result Synthesis**: Combines numerical outputs with narrative explanation.
 - **Citation**: Every number in the output traces back to a specific tool call with inputs.
 
-#### 3.0.3 Scratchpad Working Memory
+#### 3.0.3 AgentDB Working Memory
 
-Inspired by the Dexter architecture -- structured working memory within a session.
+Persistent structured memory via agentic-flow's built-in agentdb.
 
-- **Scratchpad Store**: Key-value workspace for intermediate calculations and assumptions.
+- **Session State**: Key-value workspace for intermediate calculations and assumptions.
 - **Assumption Tracking**: Explicit registry of all assumptions used in an analysis.
 - **Dependency Graph**: Tracks which calculations depend on which inputs.
-- **Rollback**: Change an assumption and automatically identify stale results.
+- **Cross-Session Persistence**: State survives across sessions, enabling iterative refinement over time.
 
 #### 3.0.4 CLI and API Access
 
@@ -203,7 +203,7 @@ Persistent reasoning store accumulating institutional knowledge.
 |                   Orchestration Layer                       |
 |   agentic-flow (TypeScript, Claude Agent SDK)              |
 |   - Hierarchical topology (Chief -> Specialists)           |
-|   - Scratchpad working memory                              |
+|   - AgentDB working memory                                 |
 |   - Streaming event bus                                    |
 +------------------------------------------------------------+
 |                    Memory Layer                             |
@@ -232,7 +232,7 @@ Persistent reasoning store accumulating institutional knowledge.
 | Local embeddings (RuVector)     | No external API calls for embeddings, lower latency, privacy |
 | MCP protocol                    | Standard tool protocol, interop with any MCP client          |
 | Hierarchical agent topology     | Clear chain of command, quality gating, conflict resolution  |
-| Scratchpad over chat history    | Structured memory beats unstructured conversation context    |
+| AgentDB over chat history       | Structured persistent memory beats unstructured conversation context |
 
 ### 4.3 Data Flow: Equity Analysis Example
 
@@ -244,15 +244,15 @@ Chief Analyst: classifies as multi-domain, delegates to:
   |
   +---> Equity Analyst: DCF model, comparable analysis
   |       - Calls: dcf_3stage, wacc_build, terminal_value, multiples_ev_ebitda
-  |       - Writes to scratchpad: fair_value, implied_upside, comp_table
+  |       - Writes to agentdb: fair_value, implied_upside, comp_table
   |
   +---> Quant/Risk Analyst: risk decomposition
   |       - Calls: var_parametric, beta_regression, factor_exposure
-  |       - Writes to scratchpad: risk_metrics, factor_loadings
+  |       - Writes to agentdb: risk_metrics, factor_loadings
   |
   v
 Chief Analyst: synthesizes specialist outputs
-  - Reads scratchpad, checks consistency, produces final report with citations
+  - Reads agentdb, checks consistency, produces final report with citations
   |
   v
 Output: Markdown report + JSON data + audit trail
@@ -303,7 +303,7 @@ Output: Markdown report + JSON data + audit trail
 | Phase | Milestone                          | Deliverable                                     | Target     |
 |-------|------------------------------------|-------------------------------------------------|------------|
 | P0.1  | Hosted MCP Server                  | All 215 tools accessible via SSE                | Week 2     |
-| P0.2  | Single Agent MVP                   | One CFA agent with scratchpad, CLI access       | Week 4     |
+| P0.2  | Single Agent MVP                   | One CFA agent with agentdb memory, CLI access   | Week 4     |
 | P0.3  | API + Polish                       | REST API, output formats, error handling        | Week 6     |
 | P1.1  | Specialist Agents                  | 6 domain agents with curated tool access        | Week 9     |
 | P1.2  | Chief Analyst Orchestrator         | Hierarchical coordination, conflict resolution  | Week 11    |
