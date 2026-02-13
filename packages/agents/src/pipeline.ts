@@ -367,59 +367,11 @@ export class CfaPipeline {
       }
     }
 
-    // Learning & memory modules
-    // CFA_MEMORY_BACKEND: postgres | sqlite (default) | local
-    const memoryBackend = process.env.CFA_MEMORY_BACKEND ?? 'sqlite';
-
-    if (memoryBackend === 'postgres') {
-      // Postgres-backed (ruvector-postgres with pgvector search)
-      try {
-        const { PgReasoningBank } = await import('../learning/pg-reasoning-bank.js');
-        const { PgFinancialMemory } = await import('../memory/pg-financial-memory.js');
-        const { healthCheck, runMigrations } = await import('../db/pg-client.js');
-
-        const healthy = await healthCheck();
-        if (!healthy) throw new Error('Postgres health check failed');
-
-        const migrations = await runMigrations();
-        if (migrations.length > 0) {
-          this.status('init', `Postgres: ran ${migrations.length} migration(s)`);
-        }
-
-        this.reasoningBank = new PgReasoningBank();
-        this.financialMemory = new PgFinancialMemory();
-        this.status('init', `ReasoningBank: PgReasoningBank (${process.env.PG_HOST ?? 'localhost'}:${process.env.PG_PORT ?? '5433'})`);
-        this.status('init', `FinancialMemory: PgFinancialMemory`);
-      } catch (err) {
-        this.status('init', `Postgres init failed: ${err instanceof Error ? err.message : String(err)} — falling back to sqlite`);
-        // Fall through to sqlite/agentdb below
-        await this.initSqliteMemory();
-      }
-    } else if (memoryBackend === 'local') {
-      // Pure in-memory (no persistence)
-      try {
-        const { LocalReasoningBank } = await import('../learning/reasoning-bank.js');
-        const { LocalFinancialMemory } = await import('../memory/financial-memory.js');
-        this.reasoningBank = new LocalReasoningBank();
-        this.financialMemory = new LocalFinancialMemory();
-        this.status('init', 'ReasoningBank: LocalReasoningBank (in-memory)');
-        this.status('init', 'FinancialMemory: LocalFinancialMemory (in-memory)');
-      } catch {
-        this.status('init', 'Memory: local backends unavailable');
-      }
-    } else {
-      // Default: sqlite via agentic-flow's ReasoningBank
-      await this.initSqliteMemory();
-    }
-
-    this.initialized = true;
-  }
-
-  private async initSqliteMemory(): Promise<void> {
+    // Learning modules (best-effort)
     try {
       const { SonaReasoningBank } = await import('../learning/reasoning-bank.js');
       this.reasoningBank = new SonaReasoningBank();
-      this.status('init', 'ReasoningBank: SonaReasoningBank (sqlite)');
+      this.status('init', 'ReasoningBank: SonaReasoningBank');
     } catch {
       try {
         const { LocalReasoningBank } = await import('../learning/reasoning-bank.js');
@@ -433,7 +385,7 @@ export class CfaPipeline {
     try {
       const { AgentDbFinancialMemory } = await import('../memory/financial-memory.js');
       this.financialMemory = new AgentDbFinancialMemory();
-      this.status('init', 'FinancialMemory: AgentDbFinancialMemory (sqlite)');
+      this.status('init', 'FinancialMemory: AgentDbFinancialMemory');
     } catch {
       try {
         const { LocalFinancialMemory } = await import('../memory/financial-memory.js');
@@ -443,6 +395,8 @@ export class CfaPipeline {
         this.status('init', 'FinancialMemory: unavailable');
       }
     }
+
+    this.initialized = true;
   }
 
   // ── Execute: 6-stage pipeline ─────────────────────────────────────
