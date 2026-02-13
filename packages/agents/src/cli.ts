@@ -2,7 +2,9 @@
 // CFA Agent Analyst — centralized CLI
 //
 // Usage:
-//   cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%"   # one-shot
+//   cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%"   # pipeline (multi-agent)
+//   cfa analyze --agent cfa-equity-analyst "Calculate WACC"         # single-agent
+//   cfa analyze --topology mesh "Credit assessment: D/E 0.6"       # custom topology
 //   cfa analyze -i                                                  # interactive REPL
 //   cfa list                                                        # list specialist agents
 //   cfa tools                                                       # list MCP tools
@@ -16,7 +18,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { createRequire } from 'node:module';
 import { createToolCaller } from '../bridge/mcp-client.js';
-import { AGENT_DESCRIPTIONS } from '../config/tool-mappings.js';
+import { CfaPipeline, injectSkills, type Topology } from './pipeline.js';
 import type { McpBridge } from '../bridge/mcp-client.js';
 
 // Resolve agentic-flow deep imports via file path (bypasses exports map)
@@ -29,7 +31,6 @@ const { getAgent, listAgents } = await import(pathToFileURL(join(_afDir, 'dist',
 const __cliDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__cliDir, '..', '..', '..', '..');
 const cfaAgentsDir = join(repoRoot, '.claude', 'agents', 'cfa');
-const skillsDir = join(repoRoot, '.claude', 'skills');
 
 // ── ANSI helpers (no chalk dependency) ──────────────────────────────
 
@@ -52,9 +53,13 @@ function c(color: keyof typeof ansi, text: string): string {
   return `${ansi[color]}${text}${ansi.reset}`;
 }
 
-// ── Agent & tool metadata ───────────────────────────────────────────
+// ── Valid topologies ────────────────────────────────────────────────
 
-const SPECIALIST_AGENTS = Object.keys(AGENT_DESCRIPTIONS) as string[];
+const VALID_TOPOLOGIES: Topology[] = ['mesh', 'hierarchical', 'ring', 'star'];
+
+function isValidTopology(value: string): value is Topology {
+  return VALID_TOPOLOGIES.includes(value as Topology);
+}
 
 // ── MCP config helper ───────────────────────────────────────────────
 
@@ -104,64 +109,26 @@ function listAllAgents() {
   return listAgents(cfaAgentsDir);
 }
 
-// ── Skill injection ─────────────────────────────────────────────────
-// Maps each agent to the skill files whose tool reference content
-// gets appended to the agent's system prompt.
+// ── Environment setup ───────────────────────────────────────────────
 
-const AGENT_SKILLS: Record<string, string[]> = {
-  'cfa-chief-analyst': [
-    'corp-finance-tools-core',
-    'corp-finance-tools-markets',
-    'corp-finance-tools-risk',
-    'corp-finance-tools-regulatory',
-  ],
-  'cfa-equity-analyst':          ['corp-finance-tools-core'],
-  'cfa-credit-analyst':          ['corp-finance-tools-core'],
-  'cfa-private-markets-analyst': ['corp-finance-tools-core'],
-  'cfa-fixed-income-analyst':    ['corp-finance-tools-markets'],
-  'cfa-derivatives-analyst':     ['corp-finance-tools-markets'],
-  'cfa-macro-analyst':           ['corp-finance-tools-markets'],
-  'cfa-quant-risk-analyst':      ['corp-finance-tools-risk'],
-  'cfa-esg-regulatory-analyst':  ['corp-finance-tools-regulatory'],
-};
+function setupEnv(): void {
+  process.env.COMPLETION_MODEL = process.env.CFA_MODEL ?? 'claude-haiku-4-5-20251001';
 
-const skillCache = new Map<string, string>();
+  // Register CFA MCP server with agentic-flow
+  const mcpServerPath = join(__cliDir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
+  ensureMcpConfig(mcpServerPath);
 
-function readSkillBody(skillName: string): string {
-  if (skillCache.has(skillName)) return skillCache.get(skillName)!;
-
-  const skillPath = join(skillsDir, skillName, 'SKILL.md');
-  if (!existsSync(skillPath)) return '';
-
-  const raw = readFileSync(skillPath, 'utf-8');
-  // Strip YAML frontmatter, keep the body
-  const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '').trim();
-  skillCache.set(skillName, body);
-  return body;
-}
-
-function injectSkills(agent: { name: string; description: string; systemPrompt: string; color?: string; tools?: string[]; filePath: string }) {
-  const skills = AGENT_SKILLS[agent.name];
-  if (!skills || skills.length === 0) return agent;
-
-  const skillContent = skills
-    .map(readSkillBody)
-    .filter(Boolean)
-    .join('\n\n---\n\n');
-
-  if (!skillContent) return agent;
-
-  return {
-    ...agent,
-    systemPrompt: agent.systemPrompt + '\n\n---\n\n# MCP Tool Reference\n\n' + skillContent,
-  };
+  // Disable default agentic-flow MCP servers (not relevant for CFA analysis)
+  process.env.ENABLE_CLAUDE_FLOW_MCP = 'false';
+  process.env.ENABLE_FLOW_NEXUS_MCP = 'false';
+  process.env.ENABLE_AGENTIC_PAYMENTS_MCP = 'false';
+  process.env.ENABLE_CLAUDE_FLOW_SDK = 'false';
 }
 
 // ── CLI class ───────────────────────────────────────────────────────
 
 class CfaCli {
   private bridge: McpBridge | null = null;
-  private toolCount = 0;
 
   async start(): Promise<void> {
     const rawArgs = process.argv.slice(2);
@@ -199,18 +166,23 @@ class CfaCli {
 
   private async handleAnalyze(args: string[]): Promise<void> {
     let interactive = false;
-    let model = process.env.CFA_MODEL ?? 'claude-sonnet-4-5-20250929';
-    let agentName = DEFAULT_AGENT;
+    let agentName: string | undefined;
+    let topology: Topology = 'hierarchical';
     const queryParts: string[] = [];
 
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
       if (arg === '-i' || arg === '--interactive') {
         interactive = true;
-      } else if (arg === '--model' && args[i + 1]) {
-        model = args[++i];
       } else if (arg === '--agent' && args[i + 1]) {
         agentName = args[++i];
+      } else if (arg === '--topology' && args[i + 1]) {
+        const val = args[++i];
+        if (!isValidTopology(val)) {
+          console.error(`  ${c('red', 'Error:')} Invalid topology "${val}". Valid: ${VALID_TOPOLOGIES.join(', ')}\n`);
+          process.exit(1);
+        }
+        topology = val;
       } else if (arg === '--max-turns' && args[i + 1]) {
         process.env.MAX_TURNS = args[++i];
       } else if (arg === '--help' || arg === '-h') {
@@ -229,37 +201,75 @@ class CfaCli {
     }
 
     if (interactive) {
-      await this.startRepl(model, agentName);
+      await this.startRepl(agentName, topology);
     } else {
       const query = queryParts.join(' ').trim();
       if (!query) {
         console.error('Error: No query provided. Use "cfa analyze --help" for usage.\n');
         process.exit(1);
       }
-      await this.runAnalysis(query, model, agentName);
+
+      if (agentName) {
+        // Explicit --agent → single-agent mode
+        await this.runSingleAgent(query, agentName);
+      } else {
+        // No --agent → pipeline mode
+        await this.runPipeline(query, topology);
+      }
     }
   }
 
-  // ── One-shot analysis ───────────────────────────────────────────
+  // ── Pipeline mode (multi-agent) ────────────────────────────────
 
-  private async runAnalysis(userQuery: string, model: string, agentName: string = DEFAULT_AGENT): Promise<void> {
+  private async runPipeline(userQuery: string, topology: Topology): Promise<void> {
+    setupEnv();
+
+    const model = process.env.COMPLETION_MODEL!;
+    console.log(`\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', '— multi-agent pipeline')}`);
+    console.log(`  ${c('dim', `Model: ${model} | Topology: ${topology}`)}\n`);
+
+    const startTime = Date.now();
+
+    const pipeline = new CfaPipeline({
+      topology,
+      onStatus: (stage, message) => {
+        process.stderr.write(`  ${c('magenta', `[${stage}]`)} ${c('dim', message)}\n`);
+      },
+    });
+
+    const result = await pipeline.execute(
+      userQuery,
+      (chunk: string) => {
+        process.stdout.write(chunk);
+      },
+    );
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    // If nothing was streamed and single-agent, print the synthesis
+    if (result.synthesis && !process.stdout.isTTY && result.agentResults.length === 1) {
+      console.log(result.synthesis);
+    }
+
+    // Summary
+    console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}`);
+    console.log(`  ${c('dim', `Agents: ${result.routedAgents.join(', ')}`)}`);
+    console.log(`  ${c('dim', `Timings: routing ${result.timings.routingMs}ms | memory ${result.timings.memoryMs}ms | agents ${result.timings.agentsMs}ms | coordination ${result.timings.coordinationMs}ms | synthesis ${result.timings.synthesisMs}ms`)}`);
+    if (result.coordination) {
+      console.log(`  ${c('dim', `Coordination: ${result.coordination.mechanism} | top: ${result.coordination.topAgents.join(', ')}`)}`);
+    }
+    console.log();
+  }
+
+  // ── Single-agent mode (direct claudeAgent) ─────────────────────
+
+  private async runSingleAgent(userQuery: string, agentName: string = DEFAULT_AGENT): Promise<void> {
     const agent = injectSkills(loadAgent(agentName));
 
-    // Register CFA MCP server with agentic-flow
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    const mcpServerPath = join(__dir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
-    ensureMcpConfig(mcpServerPath);
+    setupEnv();
+    const model = process.env.COMPLETION_MODEL!;
 
-    // Disable default agentic-flow MCP servers (not relevant for CFA analysis)
-    process.env.ENABLE_CLAUDE_FLOW_MCP = 'false';
-    process.env.ENABLE_FLOW_NEXUS_MCP = 'false';
-    process.env.ENABLE_AGENTIC_PAYMENTS_MCP = 'false';
-    process.env.ENABLE_CLAUDE_FLOW_SDK = 'false';
-
-    // Set model for agentic-flow's provider routing
-    process.env.COMPLETION_MODEL = model;
-
-    console.log(`\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', '— powered by agentic-flow')}`);
+    console.log(`\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', '— single-agent mode')}`);
     console.log(`  ${c('dim', `Model: ${model} | Agent: ${agent.name}`)}\n`);
 
     const startTime = Date.now();
@@ -286,25 +296,20 @@ class CfaCli {
 
   // ── Interactive REPL ────────────────────────────────────────────
 
-  private async startRepl(model: string, agentName: string = DEFAULT_AGENT): Promise<void> {
+  private async startRepl(agentName?: string, initialTopology: Topology = 'hierarchical'): Promise<void> {
     let currentAgent = agentName;
+    let usePipeline = !agentName; // pipeline mode unless explicit agent
+    let topology = initialTopology;
 
-    // Register CFA MCP server with agentic-flow
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    const mcpServerPath = join(__dir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
-    ensureMcpConfig(mcpServerPath);
+    setupEnv();
+    const model = process.env.COMPLETION_MODEL!;
 
-    // Disable default agentic-flow MCP servers
-    process.env.ENABLE_CLAUDE_FLOW_MCP = 'false';
-    process.env.ENABLE_FLOW_NEXUS_MCP = 'false';
-    process.env.ENABLE_AGENTIC_PAYMENTS_MCP = 'false';
-    process.env.ENABLE_CLAUDE_FLOW_SDK = 'false';
-    process.env.COMPLETION_MODEL = model;
+    const modeLabel = () => usePipeline ? 'pipeline' : `single-agent (${currentAgent ?? DEFAULT_AGENT})`;
 
     console.log(
       `\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', `— powered by agentic-flow`)}`,
     );
-    console.log(`  ${c('dim', `Model: ${model} | Agent: ${currentAgent}`)}`);
+    console.log(`  ${c('dim', `Model: ${model} | Mode: ${modeLabel()} | Topology: ${topology}`)}`);
     console.log(`  ${c('dim', 'Type a query, or /help for commands.')}\n`);
 
     const rl = createInterface({
@@ -347,9 +352,35 @@ class CfaCli {
         try {
           loadAgent(name); // validate it exists
           currentAgent = name;
-          console.log(`  ${c('green', '✓')} Switched to ${c('cyan', name)}\n`);
+          usePipeline = false;
+          console.log(`  ${c('green', '✓')} Switched to single-agent: ${c('cyan', name)}\n`);
         } catch (err) {
           console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
+        }
+        rl.prompt();
+        return;
+      }
+
+      if (input === '/pipeline') {
+        usePipeline = !usePipeline;
+        if (usePipeline) {
+          currentAgent = undefined;
+          console.log(`  ${c('green', '✓')} Pipeline mode ${c('bold', 'enabled')} (multi-agent routing + coordination)\n`);
+        } else {
+          currentAgent = currentAgent ?? DEFAULT_AGENT;
+          console.log(`  ${c('yellow', '✓')} Pipeline mode ${c('bold', 'disabled')} — using single-agent: ${c('cyan', currentAgent)}\n`);
+        }
+        rl.prompt();
+        return;
+      }
+
+      if (input.startsWith('/topology ')) {
+        const val = input.slice(10).trim();
+        if (!isValidTopology(val)) {
+          console.error(`  ${c('red', 'Error:')} Invalid topology "${val}". Valid: ${VALID_TOPOLOGIES.join(', ')}\n`);
+        } else {
+          topology = val;
+          console.log(`  ${c('green', '✓')} Topology set to ${c('cyan', topology)}\n`);
         }
         rl.prompt();
         return;
@@ -369,20 +400,37 @@ class CfaCli {
 
       // Anything else is an analysis query
       try {
-        const agent = injectSkills(loadAgent(currentAgent));
-        const startTime = Date.now();
+        if (usePipeline) {
+          const pipeline = new CfaPipeline({
+            topology,
+            onStatus: (stage, message) => {
+              process.stderr.write(`  ${c('magenta', `[${stage}]`)} ${c('dim', message)}\n`);
+            },
+          });
 
-        await claudeAgent(
-          agent,
-          input,
-          (chunk: string) => {
+          const startTime = Date.now();
+          const result = await pipeline.execute(input, (chunk: string) => {
             process.stdout.write(chunk);
-          },
-          model,
-        );
+          });
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}\n`);
+          console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s | agents: ${result.routedAgents.join(', ')}`)}\n`);
+        } else {
+          const agent = injectSkills(loadAgent(currentAgent ?? DEFAULT_AGENT));
+          const startTime = Date.now();
+
+          await claudeAgent(
+            agent,
+            input,
+            (chunk: string) => {
+              process.stdout.write(chunk);
+            },
+            model,
+          );
+
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}\n`);
+        }
       } catch (err) {
         console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
       }
@@ -461,20 +509,14 @@ class CfaCli {
 
   private async connect(): Promise<{ callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>; bridge: McpBridge }> {
     if (this.bridge) {
-      const tools = await this.bridge.listTools();
-      this.toolCount = tools.length;
       return { callTool: this.bridge.callTool.bind(this.bridge), bridge: this.bridge };
     }
 
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    const mcpServerPath = join(__dir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
+    const mcpServerPath = join(__cliDir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
 
     process.stderr.write(`  ${c('dim', 'Connecting to MCP server...')}\r`);
     const { callTool, bridge } = await createToolCaller({ serverPath: mcpServerPath });
     this.bridge = bridge;
-
-    const tools = await bridge.listTools();
-    this.toolCount = tools.length;
 
     // Clear the "Connecting..." line
     process.stderr.write('                                        \r');
@@ -489,7 +531,9 @@ class CfaCli {
   ${c('bold', 'CFA Agent Analyst')} — AI-powered financial analysis
 
   ${c('bold', 'Usage:')}
-    cfa analyze "<query>"           Run a one-shot analysis
+    cfa analyze "<query>"           Run multi-agent pipeline analysis
+    cfa analyze --agent <name> ...  Run single-agent analysis
+    cfa analyze --topology <type>   Set swarm topology (default: hierarchical)
     cfa analyze -i                  Start interactive REPL
     cfa list                        List available agents
     cfa tools                       List available MCP tools
@@ -498,7 +542,7 @@ class CfaCli {
   ${c('bold', 'Examples:')}
     cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%, ERP 6%"
     cfa analyze --agent cfa-equity-analyst "Run DCF for revenue \\$500M"
-    cfa analyze --model claude-opus-4-6 "Assess credit quality: D/E 0.6, coverage 5x"
+    cfa analyze --topology mesh "Assess credit quality: D/E 0.6, coverage 5x"
     cfa analyze -i
 `);
   }
@@ -513,10 +557,14 @@ class CfaCli {
 
   ${c('bold', 'Options:')}
     -i, --interactive             Start interactive REPL mode
-    --agent <name>                Agent to use (default: ${DEFAULT_AGENT})
-    --model <model>               Claude model to use (default: claude-sonnet-4-5-20250929)
+    --agent <name>                Single-agent mode (skip pipeline)
+    --topology <type>             Swarm topology: mesh, hierarchical, ring, star
     --max-turns <n>               Max agent turns (default: 25)
     -h, --help                    Show this help
+
+  ${c('bold', 'Modes:')}
+    ${c('cyan', 'Pipeline (default)')}     Multi-agent: routing → agents → coordination → synthesis
+    ${c('cyan', 'Single-agent')}           Direct agent call (use --agent to select)
 
   ${c('bold', 'Environment:')}
     ANTHROPIC_API_KEY             Required. Your Anthropic API key.
@@ -526,7 +574,7 @@ class CfaCli {
   ${c('bold', 'Examples:')}
     cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%, ERP 6%"
     cfa analyze --agent cfa-equity-analyst "Run DCF for revenue \\$500M"
-    cfa analyze --agent cfa-credit-analyst "Assess credit quality: D/E 0.6, coverage 5x"
+    cfa analyze --topology mesh "Assess credit quality: D/E 0.6, coverage 5x"
     cfa analyze -i
 `);
   }
@@ -536,7 +584,9 @@ class CfaCli {
   ${c('bold', 'REPL commands:')}
     /help              Show this help
     /agents            List available agents
-    /agent <name>      Switch to a different agent
+    /agent <name>      Switch to single-agent mode with <name>
+    /pipeline          Toggle pipeline mode (multi-agent routing)
+    /topology <type>   Set swarm topology (mesh/hierarchical/ring/star)
     /tools             List MCP tools
     /clear             Clear screen
     exit               Exit REPL
