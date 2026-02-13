@@ -1,13 +1,15 @@
-// Financial Memory — persistent analysis storage via agentic-flow agentdb
-// Uses claude-flow memory CLI for HNSW-indexed vector search
-// Falls back to in-memory for environments without claude-flow
+// Financial Memory — persistent analysis storage via agentic-flow ReasoningBank
+// Uses agentic-flow/reasoningbank for MMR-ranked retrieval and embedding-based search
+// Falls back to in-memory for environments without agentic-flow
 
 import { randomUUID } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import {
+  initialize as initReasoningBank,
+  retrieveMemories,
+  db,
+  computeEmbedding,
+} from 'agentic-flow/reasoningbank';
 import type { MemoryEntry, MemoryMetadata, RetrievalContext } from '../types/memory.js';
-
-const execFileAsync = promisify(execFile);
 
 export interface FinancialMemory {
   store(content: string, metadata: MemoryMetadata): Promise<MemoryEntry>;
@@ -16,34 +18,69 @@ export interface FinancialMemory {
   getByTicker(ticker: string, limit?: number): Promise<MemoryEntry[]>;
 }
 
-// Execute a claude-flow memory command
-async function cfMemoryCmd(
-  action: string,
-  args: Record<string, string>,
-): Promise<string | null> {
-  const cmdArgs = ['@claude-flow/cli@latest', 'memory', action];
-  for (const [k, v] of Object.entries(args)) {
-    cmdArgs.push(`--${k}`, v);
-  }
-  try {
-    const { stdout } = await execFileAsync('npx', cmdArgs, { timeout: 15000 });
-    return stdout.trim();
-  } catch {
-    return null;
-  }
-}
-
-// AgentDB-backed implementation using claude-flow memory
+// AgentDB-backed implementation using agentic-flow ReasoningBank
 export class AgentDbFinancialMemory implements FinancialMemory {
-  private namespace: string;
+  private initialized = false;
+  private domain: string;
 
-  constructor(namespace = 'cfa-memory') {
-    this.namespace = namespace;
+  constructor(domain = 'cfa-analysis') {
+    this.domain = domain;
+  }
+
+  private async ensureInit(): Promise<void> {
+    if (this.initialized) return;
+    await initReasoningBank();
+    this.initialized = true;
   }
 
   async store(content: string, metadata: MemoryMetadata): Promise<MemoryEntry> {
-    const entry: MemoryEntry = {
-      entryId: randomUUID(),
+    await this.ensureInit();
+
+    const entryId = randomUUID();
+    const tags = [
+      metadata.sourceType,
+      ...(metadata.tickers ?? []),
+      ...(metadata.tags ?? []),
+      metadata.sector,
+      metadata.analysisType,
+    ].filter((t): t is string => Boolean(t));
+
+    // Store as a reasoning memory in agentdb
+    db.upsertMemory({
+      id: entryId,
+      type: 'reasoning_memory',
+      pattern_data: {
+        title: metadata.analysisType ?? 'financial-analysis',
+        description: tags.join(', '),
+        content,
+        source: {
+          task_id: entryId,
+          agent_id: metadata.sourceType ?? 'cfa-agent',
+          outcome: 'Success',
+          evidence: tags,
+        },
+        tags,
+        domain: this.domain,
+        created_at: new Date().toISOString(),
+        confidence: 0.8,
+        n_uses: 0,
+      },
+      confidence: 0.8,
+      usage_count: 0,
+    });
+
+    // Generate and store embedding for vector search
+    const embedding = await computeEmbedding(content);
+    db.upsertEmbedding({
+      id: entryId,
+      model: 'all-MiniLM-L6-v2',
+      dims: embedding.length,
+      vector: embedding,
+      created_at: new Date().toISOString(),
+    });
+
+    return {
+      entryId,
       archiveId: 'default',
       content,
       metadata,
@@ -53,102 +90,88 @@ export class AgentDbFinancialMemory implements FinancialMemory {
       lastAccessedAt: new Date(),
       accessCount: 0,
     };
-
-    // Store in agentdb with HNSW indexing
-    const tags = [
-      metadata.sourceType,
-      ...(metadata.tickers ?? []),
-      ...(metadata.tags ?? []),
-      metadata.sector,
-      metadata.analysisType,
-    ].filter(Boolean).join(',');
-
-    await cfMemoryCmd('store', {
-      key: `analysis/${entry.entryId}`,
-      value: JSON.stringify({ content, metadata, entryId: entry.entryId }),
-      namespace: this.namespace,
-      ...(tags ? { tags } : {}),
-    });
-
-    return entry;
   }
 
   async search(query: string, limit = 10): Promise<RetrievalContext> {
-    // Use agentdb HNSW vector search
-    const result = await cfMemoryCmd('search', {
-      query,
-      namespace: this.namespace,
-      limit: String(limit),
+    await this.ensureInit();
+
+    // Use ReasoningBank's MMR-ranked retrieval (cosine + recency + reliability)
+    const memories = await retrieveMemories(query, {
+      k: limit,
+      domain: this.domain,
     });
 
-    if (!result) {
-      return { entries: [], query, totalSearched: 0 };
-    }
+    const entries = memories.map((m) => ({
+      entry: {
+        entryId: m.id,
+        archiveId: 'default',
+        content: m.content,
+        metadata: {
+          sourceType: 'analysis' as const,
+          tags: [],
+        } as MemoryMetadata,
+        embeddingModel: 'all-MiniLM-L6-v2',
+        retentionTier: 'hot' as const,
+        createdAt: new Date(),
+        lastAccessedAt: new Date(),
+        accessCount: 0,
+      },
+      similarityScore: m.score,
+    }));
 
-    // Parse search results
-    try {
-      const parsed = JSON.parse(result);
-      const entries = Array.isArray(parsed)
-        ? parsed.map((r: any) => ({
-            entry: this.parseEntry(r),
-            similarityScore: r.score ?? r.similarity ?? 0.5,
-          }))
-        : [];
-      return { entries, query, totalSearched: entries.length };
-    } catch {
-      return { entries: [], query, totalSearched: 0 };
-    }
+    return { entries, query, totalSearched: entries.length };
   }
 
   async retrieve(entryId: string): Promise<MemoryEntry | null> {
-    const result = await cfMemoryCmd('retrieve', {
-      key: `analysis/${entryId}`,
-      namespace: this.namespace,
-    });
+    await this.ensureInit();
 
-    if (!result) return null;
+    const allMemories = db.getAllActiveMemories();
+    const found = allMemories.find(m => m.id === entryId);
+    if (!found) return null;
 
-    try {
-      const parsed = JSON.parse(result);
-      return this.parseEntry(parsed);
-    } catch {
-      return null;
-    }
+    db.incrementUsage(entryId);
+
+    return {
+      entryId: found.id,
+      archiveId: 'default',
+      content: found.pattern_data.content,
+      metadata: {
+        sourceType: 'analysis',
+        tags: found.pattern_data.tags,
+        sector: found.pattern_data.domain,
+      } as MemoryMetadata,
+      embeddingModel: 'all-MiniLM-L6-v2',
+      retentionTier: 'hot',
+      createdAt: new Date(found.created_at),
+      lastAccessedAt: new Date(),
+      accessCount: found.usage_count,
+    };
   }
 
   async getByTicker(ticker: string, limit = 10): Promise<MemoryEntry[]> {
-    const result = await cfMemoryCmd('search', {
-      query: ticker,
-      namespace: this.namespace,
-      limit: String(limit),
+    await this.ensureInit();
+
+    // Search by ticker symbol using embedding similarity
+    const memories = await retrieveMemories(ticker, {
+      k: limit,
+      domain: this.domain,
     });
 
-    if (!result) return [];
-
-    try {
-      const parsed = JSON.parse(result);
-      return Array.isArray(parsed) ? parsed.map((r: any) => this.parseEntry(r)) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private parseEntry(raw: any): MemoryEntry {
-    return {
-      entryId: raw.entryId ?? raw.key ?? randomUUID(),
+    return memories.map((m) => ({
+      entryId: m.id,
       archiveId: 'default',
-      content: raw.content ?? raw.value ?? '',
-      metadata: raw.metadata ?? { sourceType: 'analysis', tags: [] },
+      content: m.content,
+      metadata: { sourceType: 'analysis' as const, tags: [], tickers: [ticker] } as MemoryMetadata,
       embeddingModel: 'all-MiniLM-L6-v2',
-      retentionTier: 'hot',
-      createdAt: new Date(raw.createdAt ?? Date.now()),
+      retentionTier: 'hot' as const,
+      createdAt: new Date(),
       lastAccessedAt: new Date(),
-      accessCount: raw.accessCount ?? 0,
-    };
+      accessCount: 0,
+    }));
   }
 }
 
-// In-memory fallback (no agentdb dependency)
+// In-memory fallback (no agentic-flow dependency)
 export class LocalFinancialMemory implements FinancialMemory {
   private entries = new Map<string, MemoryEntry>();
 

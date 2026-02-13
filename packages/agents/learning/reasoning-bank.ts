@@ -1,15 +1,21 @@
-// ReasoningBank — stores analysis patterns via agentic-flow SONA
-// Uses claude-flow memory CLI with pattern-specific namespace for SONA learning
-// Falls back to in-memory for environments without claude-flow
+// ReasoningBank — stores analysis patterns via agentic-flow
+// Uses agentic-flow/reasoningbank for trajectory recording, judging, and distillation
+// Falls back to in-memory for environments without agentic-flow
 
 import { randomUUID, createHash } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import {
+  initialize as initReasoningBank,
+  runTask,
+  retrieveMemories,
+  judgeTrajectory,
+  distillMemories,
+  db,
+  computeEmbedding,
+} from 'agentic-flow/reasoningbank';
+import type { Trajectory } from 'agentic-flow/reasoningbank';
 import type {
   LearningPattern, ReasoningTrace, QualityFeedback, TaskType,
 } from '../types/learning.js';
-
-const execFileAsync = promisify(execFile);
 
 export interface ReasoningBank {
   recordTrace(trace: ReasoningTrace): Promise<void>;
@@ -19,43 +25,72 @@ export interface ReasoningBank {
   getStats(): { totalPatterns: number; totalTraces: number; avgReward: number };
 }
 
-// Execute claude-flow memory command
-async function cfMemory(
-  action: string,
-  args: Record<string, string>,
-): Promise<string | null> {
-  const cmdArgs = ['@claude-flow/cli@latest', 'memory', action];
-  for (const [k, v] of Object.entries(args)) {
-    cmdArgs.push(`--${k}`, v);
-  }
-  try {
-    const { stdout } = await execFileAsync('npx', cmdArgs, { timeout: 15000 });
-    return stdout.trim();
-  } catch {
-    return null;
-  }
-}
-
-// SONA-backed implementation using claude-flow
+// agentic-flow ReasoningBank implementation
 export class SonaReasoningBank implements ReasoningBank {
-  private namespace = 'cfa-reasoning';
   private patternCount = 0;
   private traceCount = 0;
   private totalReward = 0;
+  private initialized = false;
+
+  private async ensureInit(): Promise<void> {
+    if (this.initialized) return;
+    await initReasoningBank();
+    this.initialized = true;
+  }
 
   async recordTrace(trace: ReasoningTrace): Promise<void> {
+    await this.ensureInit();
     this.traceCount++;
 
-    // Store trace in agentdb
-    await cfMemory('store', {
-      key: `trace/${trace.traceId}`,
-      value: JSON.stringify(trace),
-      namespace: this.namespace,
-      tags: `trace,${trace.agentType},${trace.outcome}`,
+    // Build trajectory in agentic-flow format
+    const trajectory: Trajectory = {
+      steps: trace.steps.map(s => ({
+        action: s.phase,
+        summary: s.content,
+        toolCalls: s.toolCalls,
+        timestamp: new Date().toISOString(),
+      })),
+      metadata: {
+        agentType: trace.agentType,
+        requestId: trace.requestId,
+        outcome: trace.outcome,
+      },
+    };
+
+    // Store trajectory in ReasoningBank DB
+    db.storeTrajectory({
+      task_id: trace.requestId,
+      agent_id: trace.agentType,
+      query: trace.steps[0]?.content ?? '',
+      trajectory_json: JSON.stringify(trajectory),
+      started_at: new Date().toISOString(),
+      ended_at: new Date().toISOString(),
+      judge_label: trace.outcome === 'success' ? 'Success' : 'Failure',
+      judge_conf: trace.outcome === 'success' ? 0.8 : 0.2,
     });
 
-    // Extract pattern from successful traces
+    // Judge and distill if successful
     if (trace.outcome === 'success') {
+      const query = trace.steps[0]?.content ?? '';
+
+      try {
+        const verdict = await judgeTrajectory(trajectory, query);
+        if (verdict.label === 'Success') {
+          // Distill memories from successful trajectory
+          const memoryIds = await distillMemories(trajectory, verdict, query, {
+            taskId: trace.requestId,
+            agentId: trace.agentType,
+            domain: this.inferDomain(trace),
+          });
+
+          this.patternCount += memoryIds.length;
+          this.totalReward += verdict.confidence * memoryIds.length;
+        }
+      } catch {
+        // Judge/distill are best-effort
+      }
+
+      // Also store as a learning pattern
       const toolCalls = trace.steps
         .filter(s => s.phase === 'act' && s.toolCalls)
         .flatMap(s => s.toolCalls ?? []);
@@ -67,75 +102,138 @@ export class SonaReasoningBank implements ReasoningBank {
           .slice(0, 16);
 
         const taskType = this.inferTaskType(trace);
-        const pattern: LearningPattern = {
-          patternId: randomUUID(),
-          taskType,
-          toolSequence: toolCalls,
-          agentTypes: [trace.agentType],
-          rewardScore: 0.5,
-          usageCount: 1,
-          fingerprint,
-          createdAt: new Date(),
-          lastUsedAt: new Date(),
-        };
+        const patternId = randomUUID();
 
-        // Store pattern for SONA learning
-        await cfMemory('store', {
-          key: `pattern/${pattern.patternId}`,
-          value: JSON.stringify(pattern),
-          namespace: this.namespace,
-          tags: `pattern,${taskType},reward-${Math.round(pattern.rewardScore * 100)}`,
+        db.upsertMemory({
+          id: patternId,
+          type: 'reasoning_memory',
+          pattern_data: {
+            title: `${taskType}-pattern`,
+            description: `Tool sequence: ${toolCalls.join(' → ')}`,
+            content: JSON.stringify({
+              patternId,
+              taskType,
+              toolSequence: toolCalls,
+              agentTypes: [trace.agentType],
+              rewardScore: 0.5,
+              fingerprint,
+            }),
+            source: {
+              task_id: trace.requestId,
+              agent_id: trace.agentType,
+              outcome: 'Success',
+              evidence: toolCalls,
+            },
+            tags: ['cfa-pattern', taskType],
+            domain: this.inferDomain(trace),
+            created_at: new Date().toISOString(),
+            confidence: 0.5,
+            n_uses: 1,
+          },
+          confidence: 0.5,
+          usage_count: 1,
         });
 
+        // Generate embedding for pattern search
+        try {
+          const embedding = await computeEmbedding(
+            `${taskType} ${toolCalls.join(' ')} ${trace.agentType}`,
+          );
+          db.upsertEmbedding({
+            id: patternId,
+            model: 'all-MiniLM-L6-v2',
+            dims: embedding.length,
+            vector: embedding,
+            created_at: new Date().toISOString(),
+          });
+        } catch { /* embedding is best-effort */ }
+
         this.patternCount++;
-        this.totalReward += pattern.rewardScore;
+        this.totalReward += 0.5;
       }
     }
   }
 
   async recordFeedback(feedback: QualityFeedback): Promise<void> {
-    // Store feedback for SONA reward signal
-    await cfMemory('store', {
-      key: `feedback/${feedback.feedbackId}`,
-      value: JSON.stringify(feedback),
-      namespace: this.namespace,
-      tags: `feedback,score-${Math.round(feedback.score * 100)}`,
+    await this.ensureInit();
+
+    // Store feedback as a reasoning memory for reward signal
+    db.upsertMemory({
+      id: feedback.feedbackId,
+      type: 'reasoning_memory',
+      pattern_data: {
+        title: 'quality-feedback',
+        description: `Score: ${feedback.score}`,
+        content: JSON.stringify(feedback),
+        source: {
+          task_id: feedback.requestId,
+          agent_id: 'feedback',
+          outcome: feedback.score >= 0.5 ? 'Success' : 'Failure',
+          evidence: [],
+        },
+        tags: ['cfa-feedback', `score-${Math.round(feedback.score * 100)}`],
+        domain: 'cfa-learning',
+        created_at: new Date().toISOString(),
+        confidence: feedback.score,
+        n_uses: 0,
+      },
+      confidence: feedback.score,
+      usage_count: 0,
     });
   }
 
   async searchPatterns(taskType: TaskType, limit = 10): Promise<LearningPattern[]> {
-    // Search patterns via agentdb HNSW
-    const result = await cfMemory('search', {
-      query: `${taskType} analysis pattern`,
-      namespace: this.namespace,
-      limit: String(limit),
+    await this.ensureInit();
+
+    // Use ReasoningBank MMR retrieval for semantic pattern search
+    const memories = await retrieveMemories(`${taskType} analysis pattern`, {
+      k: limit,
+      domain: this.domainForTaskType(taskType),
     });
 
-    if (!result) return [];
-
-    try {
-      const parsed = JSON.parse(result);
-      if (Array.isArray(parsed)) {
-        return parsed
-          .filter((p: any) => p.taskType === taskType || p.tags?.includes(taskType))
-          .map((p: any) => p as LearningPattern)
-          .slice(0, limit);
-      }
-    } catch {
-      // Fall through
-    }
-    return [];
+    return memories
+      .map(m => {
+        try {
+          const data = JSON.parse(m.content);
+          return {
+            patternId: data.patternId ?? m.id,
+            taskType: data.taskType ?? taskType,
+            toolSequence: data.toolSequence ?? [],
+            agentTypes: data.agentTypes ?? [],
+            rewardScore: m.components.reliability,
+            usageCount: 0,
+            fingerprint: data.fingerprint ?? m.id.slice(0, 16),
+            createdAt: new Date(),
+            lastUsedAt: new Date(),
+          } as LearningPattern;
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is LearningPattern => p !== null)
+      .slice(0, limit);
   }
 
   async getPattern(patternId: string): Promise<LearningPattern | null> {
-    const result = await cfMemory('retrieve', {
-      key: `pattern/${patternId}`,
-      namespace: this.namespace,
-    });
+    await this.ensureInit();
 
-    if (!result) return null;
+    const allMemories = db.getAllActiveMemories();
+    const found = allMemories.find(m => m.id === patternId);
+    if (!found) return null;
+
     try {
-      return JSON.parse(result) as LearningPattern;
+      const data = JSON.parse(found.pattern_data.content);
+      return {
+        patternId: data.patternId ?? found.id,
+        taskType: data.taskType ?? 'valuation',
+        toolSequence: data.toolSequence ?? [],
+        agentTypes: data.agentTypes ?? [],
+        rewardScore: found.confidence,
+        usageCount: found.usage_count,
+        fingerprint: data.fingerprint ?? found.id.slice(0, 16),
+        createdAt: new Date(found.created_at),
+        lastUsedAt: new Date(found.last_used ?? found.created_at),
+      };
     } catch {
       return null;
     }
@@ -160,6 +258,14 @@ export class SonaReasoningBank implements ReasoningBank {
     if (type.includes('portfolio')) return 'portfolio_construction';
     if (type.includes('regulatory')) return 'regulatory_check';
     return 'valuation';
+  }
+
+  private inferDomain(trace: ReasoningTrace): string {
+    return `cfa-${this.inferTaskType(trace).replace(/_/g, '-')}`;
+  }
+
+  private domainForTaskType(taskType: TaskType): string {
+    return `cfa-${taskType.replace(/_/g, '-')}`;
   }
 }
 
