@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeSpreads,
   optimizeExecution,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   SpreadAnalysisSchema,
   OptimalExecutionSchema,

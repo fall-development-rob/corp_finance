@@ -5,7 +5,7 @@ import {
   convertNote,
   convertSafe,
   modelVentureFund,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   FundingRoundSchema,
   DilutionSchema,

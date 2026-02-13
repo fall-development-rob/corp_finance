@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzePairsTrading,
   analyzeMomentum,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   PairsTradingSchema,
   MomentumSchema,

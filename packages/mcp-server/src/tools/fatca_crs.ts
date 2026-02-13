@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeFatcaCrsReporting,
   classifyEntity,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   FatcaCrsReportingSchema,
   EntityClassificationSchema,

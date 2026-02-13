@@ -5,7 +5,7 @@ import {
   calculateAccrualQuality,
   calculateRevenueQuality,
   calculateEarningsQualityComposite,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   BeneishMscoreSchema,
   PiotroskiFscoreSchema,

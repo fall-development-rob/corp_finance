@@ -1,8 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  valueToken,
-  analyzeDefi,
-} from "@robotixai/corp-finance-bindings";
+import { valueToken, analyzeDefi } from "../bindings.js";
 import {
   TokenValuationSchema,
   DefiYieldSchema,
@@ -10,13 +7,21 @@ import {
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
 export function registerCryptoTools(server: McpServer) {
+  if (!valueToken || !analyzeDefi) {
+    // Crypto bindings not yet compiled — skip registration
+    return;
+  }
+
+  const _valueToken = valueToken;
+  const _analyzeDefi = analyzeDefi;
+
   server.tool(
     "token_valuation",
     "Comprehensive token/protocol valuation using on-chain metrics. Computes NVT ratio (network value to transaction volume), P/S ratio, fully-diluted vs circulating valuation, DCF of protocol revenue with terminal value, and relative valuation against comparable protocols. Supports DeFi protocols with TVL analysis.",
     TokenValuationSchema.shape,
     async (params) => {
       const validated = TokenValuationSchema.parse(coerceNumbers(params));
-      const result = valueToken(JSON.stringify(validated));
+      const result = _valueToken(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );
@@ -27,7 +32,7 @@ export function registerCryptoTools(server: McpServer) {
     DefiYieldSchema.shape,
     async (params) => {
       const validated = DefiYieldSchema.parse(coerceNumbers(params));
-      const result = analyzeDefi(JSON.stringify(validated));
+      const result = _analyzeDefi(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );

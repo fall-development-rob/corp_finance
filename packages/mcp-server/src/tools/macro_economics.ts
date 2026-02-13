@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeMonetaryPolicy,
   analyzeInternational,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   MonetaryPolicySchema,
   InternationalSchema,

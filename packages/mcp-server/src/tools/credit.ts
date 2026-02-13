@@ -3,7 +3,7 @@ import {
   creditMetrics,
   debtCapacity,
   covenantCompliance,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   CreditMetricsSchema,
   DebtCapacitySchema,

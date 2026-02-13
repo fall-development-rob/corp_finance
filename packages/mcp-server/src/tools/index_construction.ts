@@ -5,7 +5,7 @@ import {
   calculateTrackingError,
   calculateSmartBeta,
   calculateReconstitution,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   WeightingSchema,
   RebalancingSchema,

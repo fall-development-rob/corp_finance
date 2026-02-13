@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   buildImpliedVolSurface,
   calibrateSabr,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   ImpliedVolSurfaceSchema,
   SabrCalibrationSchema,

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   modelPpp,
   valueConcession,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   PppModelSchema,
   ConcessionSchema,

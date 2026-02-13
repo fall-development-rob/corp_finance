@@ -4,6 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Finding } from '../types/agents.js';
 import { BaseAnalyst, type AnalystContext, type ReasoningState } from './base-analyst.js';
+import { buildToolParams } from '../utils/param-builder.js';
 
 export class DerivativesAnalyst extends BaseAnalyst {
   constructor() {
@@ -16,41 +17,41 @@ export class DerivativesAnalyst extends BaseAnalyst {
   ): Promise<Array<{ toolName: string; params: Record<string, unknown> }>> {
     const task = ctx.task.toLowerCase();
     const plan: Array<{ toolName: string; params: Record<string, unknown> }> = [];
-    const baseParams = { query: ctx.task };
+    // baseParams removed — now using buildToolParams()
 
     if (state.iteration === 1) {
       // Primary analysis pass — pattern-match on keywords
       if (task.includes('option') || task.includes('greeks') || task.includes('black-scholes')) {
         plan.push(
-          { toolName: 'derivatives_option_pricing', params: { ...baseParams } },
-          { toolName: 'derivatives_greeks_calculation', params: { ...baseParams } },
+          { toolName: 'derivatives_option_pricing', params: buildToolParams('derivatives_option_pricing', state.metrics) },
+          { toolName: 'derivatives_greeks_calculation', params: buildToolParams('derivatives_greeks_calculation', state.metrics) },
         );
       }
 
       if (task.includes('volatility') || task.includes('vol surface') || task.includes('skew')) {
         plan.push(
-          { toolName: 'volatility_surface_interpolation', params: { ...baseParams } },
-          { toolName: 'volatility_surface_smile_analysis', params: { ...baseParams } },
+          { toolName: 'volatility_surface_interpolation', params: buildToolParams('volatility_surface_interpolation', state.metrics) },
+          { toolName: 'volatility_surface_smile_analysis', params: buildToolParams('volatility_surface_smile_analysis', state.metrics) },
         );
       }
 
       if (task.includes('monte carlo') || task.includes('simulation')) {
-        plan.push({ toolName: 'monte_carlo_simulation', params: { ...baseParams } });
+        plan.push({ toolName: 'monte_carlo_simulation', params: buildToolParams('monte_carlo_simulation', state.metrics) });
       }
 
       if (task.includes('convertible')) {
-        plan.push({ toolName: 'convertibles_pricing', params: { ...baseParams } });
+        plan.push({ toolName: 'convertibles_pricing', params: buildToolParams('convertibles_pricing', state.metrics) });
       }
 
       if (task.includes('structured') || task.includes('note')) {
-        plan.push({ toolName: 'structured_products_analysis', params: { ...baseParams } });
+        plan.push({ toolName: 'structured_products_analysis', params: buildToolParams('structured_products_analysis', state.metrics) });
       }
 
       // Default fallback when no keywords matched
       if (plan.length === 0) {
         plan.push(
-          { toolName: 'derivatives_option_pricing', params: { ...baseParams } },
-          { toolName: 'monte_carlo_simulation', params: { ...baseParams } },
+          { toolName: 'derivatives_option_pricing', params: buildToolParams('derivatives_option_pricing', state.metrics) },
+          { toolName: 'monte_carlo_simulation', params: buildToolParams('monte_carlo_simulation', state.metrics) },
         );
       }
     } else {
@@ -58,15 +59,15 @@ export class DerivativesAnalyst extends BaseAnalyst {
       const priorTools = new Set(state.toolResults.map(t => t.toolName));
 
       if (!priorTools.has('real_options_valuation') && (task.includes('real option') || task.includes('project'))) {
-        plan.push({ toolName: 'real_options_valuation', params: { ...baseParams } });
+        plan.push({ toolName: 'real_options_valuation', params: buildToolParams('real_options_valuation', state.metrics) });
       }
 
       if (!priorTools.has('credit_derivatives_cds_pricing') && (task.includes('credit') || task.includes('cds'))) {
-        plan.push({ toolName: 'credit_derivatives_cds_pricing', params: { ...baseParams } });
+        plan.push({ toolName: 'credit_derivatives_cds_pricing', params: buildToolParams('credit_derivatives_cds_pricing', state.metrics) });
       }
 
       if (!priorTools.has('monte_carlo_simulation') && plan.length === 0) {
-        plan.push({ toolName: 'monte_carlo_simulation', params: { ...baseParams } });
+        plan.push({ toolName: 'monte_carlo_simulation', params: buildToolParams('monte_carlo_simulation', state.metrics) });
       }
     }
 

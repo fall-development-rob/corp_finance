@@ -5,7 +5,7 @@ import {
   calculateReinvestment,
   calculateTrancheAnalytics,
   calculateCloScenario,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   CloWaterfallSchema,
   CloCoverageTestsSchema,

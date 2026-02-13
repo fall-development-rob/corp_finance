@@ -4,7 +4,7 @@ import {
   analyzeBreakeven,
   analyzeWorkingCapital,
   buildRollingForecast,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   VarianceSchema,
   BreakevenSchema,

@@ -6,7 +6,7 @@ import {
   buildLbo,
   calculateWaterfall,
   altmanZscore,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   ReturnsSchema,
   DebtScheduleSchema,

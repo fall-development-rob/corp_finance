@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  ruvector-postgres:
+    image: ruvnet/ruvector-postgres:latest
+    container_name: cfa-ruvector-pg
+    ports:
+      - "${PG_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${PG_USER:-cfa}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-cfa_dev_pass}
+      POSTGRES_DB: ${PG_DATABASE:-cfa_agents}
+    volumes:
+      - cfa_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-cfa} -d ${PG_DATABASE:-cfa_agents}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  cfa_pgdata:
+    name: cfa_ruvector_data

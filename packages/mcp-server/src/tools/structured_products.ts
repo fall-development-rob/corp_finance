@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   priceStructuredNote,
   priceExotic,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   StructuredNoteSchema,
   ExoticProductSchema,

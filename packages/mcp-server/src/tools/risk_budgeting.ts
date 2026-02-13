@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeFactorRiskBudget,
   analyzeTailRisk,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   FactorRiskBudgetSchema,
   TailRiskSchema,

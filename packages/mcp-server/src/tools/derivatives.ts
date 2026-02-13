@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy } from "@robotixai/corp-finance-bindings";
+import { priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy } from "../bindings.js";
 import { OptionPriceSchema, ImpliedVolSchema, ForwardPriceSchema, ForwardPositionSchema, BasisAnalysisSchema, IrsSchema, CurrencySwapSchema, StrategySchema } from "../schemas/derivatives.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

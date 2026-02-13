@@ -3,7 +3,7 @@ import {
   priceUnitranche,
   modelDirectLoan,
   analyzeSyndication,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   UnitrancheSchema,
   DirectLoanSchema,

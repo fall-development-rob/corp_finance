@@ -4,7 +4,7 @@ import {
   pricePremium,
   analyzeCombinedRatio,
   calculateScr,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   ReservingSchema,
   PremiumPricingSchema,

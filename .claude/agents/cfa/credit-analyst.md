@@ -78,7 +78,7 @@ References the **corp-finance-analyst-core** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -88,7 +88,7 @@ mcp__claude-flow__memory_usage {
 ### 2. Search Prior Analyses
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "search",
   query: "credit analysis ratings covenants default",
   namespace: "analysis",
@@ -113,7 +113,7 @@ For credit scoring:
 ### 4. Store Results
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/results/credit-analyst",
   namespace: "analysis",
@@ -139,7 +139,7 @@ mcp__claude-flow__memory_usage {
 ### 5. Store Learning
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/learning/credit-analyst/" + Date.now(),
   namespace: "learning",
