@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-13
+
+### Added
+- **Multi-agent pipeline** with 6-stage execution: task routing, vector search, agent spawning, attention-based coordination, synthesis, and learning (`src/pipeline.ts`)
+  - SemanticRouter with HNSW-indexed intent matching routes queries to the best specialist agent(s) from 9 CFA analysts (equity, credit, fixed income, derivatives, quant-risk, macro, ESG, private markets, chief)
+  - AttentionCoordinator with flash attention (384-dim, 8 heads) and topology-aware coordination (mesh, hierarchical, ring, star) for multi-agent consensus
+  - TransformersEmbeddingService using local Xenova/all-MiniLM-L6-v2 ONNX model (384-dim, no API calls)
+  - Multi-intent detection spawns multiple specialist agents in parallel with 120s timeout per agent
+  - Chief analyst synthesis stage streams the final coordinated response to stdout
+  - SONA learning records successful tool sequences as patterns for future retrieval
+- **Postgres memory backend** via `CFA_MEMORY_BACKEND` environment variable
+  - `postgres`: PgReasoningBank + PgFinancialMemory backed by ruvector-postgres with pgvector HNSW search
+  - `sqlite` (default): SonaReasoningBank + AgentDbFinancialMemory
+  - `local`: in-memory LocalReasoningBank + LocalFinancialMemory
+  - Automatic health check, migrations, and fallback to sqlite on Postgres failure
+- **CLI enhancements** (`src/cli.ts`)
+  - `--topology <mesh|hierarchical|ring|star>` flag for swarm coordination topology
+  - Pipeline mode (default) vs single-agent mode (`--agent <name>`)
+  - REPL commands: `/pipeline` toggle, `/topology <type>`, updated `/help`
+  - Model selection via `CFA_MODEL` env var (default: claude-haiku-4-5-20251001)
+- **Type declarations** for agentic-flow deep imports: SemanticRouter, AttentionCoordinator, EmbeddingService, FlashAttention (`src/agentic-flow.d.ts`)
+
+### Fixed
+- ruvector HNSW segfault recovery: added `queryWithRetry()` in `db/pg-client.ts` with automatic pool reset and retry on connection termination / recovery mode errors
+- Mock embeddings fallback removed — pipeline now requires real TransformersEmbeddingService or fails explicitly
+- SemanticRouter cosine similarity returning zero due to `EmbeddingResult` object vs raw `number[]` mismatch — added `createRouterEmbedder()` adapter
+- Confidence threshold lowered from 0.6 to 0.4 to match real embedding similarity score ranges
+- Added `route()` fallback when `detectMultiIntent()` returns empty results
+
+### Changed
+- Removed `--model` CLI flag in favor of `CFA_MODEL` environment variable
+- Moved `AGENT_SKILLS`, `injectSkills()`, and skill loading from `cli.ts` to `pipeline.ts` for sharing across pipeline stages
+
 ## [1.0.0] - 2026-02-12
 
 ### Added
