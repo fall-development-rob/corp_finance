@@ -82,6 +82,21 @@ function ensureMcpConfig(mcpServerPath: string): void {
     env: {},
   };
 
+  // Register FMP market data MCP server (if FMP_API_KEY is set)
+  if (process.env.FMP_API_KEY) {
+    const fmpServerPath = join(dirname(mcpServerPath), '..', '..', 'fmp-mcp-server', 'dist', 'index.js');
+    const fmpEnv: Record<string, string> = {
+      FMP_API_KEY: process.env.FMP_API_KEY!,
+    };
+    if (process.env.FMP_BASE_URL) fmpEnv.FMP_BASE_URL = process.env.FMP_BASE_URL;
+    config.servers['fmp-market-data'] = {
+      enabled: true,
+      command: 'node',
+      args: [fmpServerPath],
+      env: fmpEnv,
+    };
+  }
+
   writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
