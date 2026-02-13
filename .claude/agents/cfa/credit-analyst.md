@@ -2,7 +2,6 @@
 name: cfa-credit-analyst
 description: CFA credit analysis specialist — credit metrics, synthetic ratings, debt capacity sizing, covenant compliance, Altman Z-score distress screening, credit scoring, credit derivatives (CDS, CVA), and credit portfolio analytics
 color: "#E74C3C"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -79,7 +78,7 @@ References the **corp-finance-analyst-core** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -89,7 +88,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "credit analysis ratings covenants default",
   namespace: "analysis",
@@ -114,7 +113,7 @@ For credit scoring:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/credit-analyst",
   namespace: "analysis",
@@ -140,7 +139,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/credit-analyst/" + Date.now(),
   namespace: "learning",

@@ -2,7 +2,6 @@
 name: cfa-equity-analyst
 description: CFA equity research specialist — DCF valuation, trading comps, earnings quality screening, dividend policy analysis, financial forensics, and target price derivation using corp-finance-mcp tools
 color: "#2E86C1"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -87,7 +86,7 @@ References the **corp-finance-analyst-core** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -97,7 +96,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "equity valuation DCF comps",
   namespace: "analysis",
@@ -117,7 +116,7 @@ Run the appropriate tools for the assignment. Always chain:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/equity-analyst",
   namespace: "analysis",
@@ -141,7 +140,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/equity-analyst/" + Date.now(),
   namespace: "learning",

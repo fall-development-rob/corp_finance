@@ -2,7 +2,6 @@
 name: cfa-chief-analyst
 description: CFA Chief Analyst coordinator — decomposes research queries, delegates to specialist analysts, aggregates results into institutional-grade reports
 color: "#C9A961"
-tools: cfa-tools
 priority: critical
 type: coordinator
 capabilities:
@@ -42,7 +41,7 @@ You are the CFA Chief Analyst, the sovereign coordinator of a team of 8 speciali
 ### 1. Receive Query & Classify
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/chief/current-request",
   namespace: "analysis",
@@ -60,7 +59,7 @@ agentic_flow.reasoningbank {
 ### 2. Create Research Plan & Delegate
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/assignments",
   namespace: "analysis",
@@ -79,14 +78,14 @@ agentic_flow.reasoningbank {
 
 ```javascript
 // Retrieve specialist results
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/results/equity-analyst",
   namespace: "analysis"
 }
 
 // Store final aggregated report
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/chief/final-report",
   namespace: "analysis",

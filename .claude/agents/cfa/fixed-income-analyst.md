@@ -2,7 +2,6 @@
 name: cfa-fixed-income-analyst
 description: CFA fixed income specialist — bond pricing, yield curve construction, duration/convexity, credit spreads, interest rate models, TIPS, repo financing, mortgage analytics, municipal bonds, and sovereign debt analysis
 color: "#1ABC9C"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -97,7 +96,7 @@ References the **corp-finance-tools-markets** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -107,7 +106,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "fixed income bond yield curve duration spreads",
   namespace: "analysis",
@@ -131,7 +130,7 @@ For MBS analysis:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/fixed-income-analyst",
   namespace: "analysis",
@@ -156,7 +155,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/fixed-income-analyst/" + Date.now(),
   namespace: "learning",

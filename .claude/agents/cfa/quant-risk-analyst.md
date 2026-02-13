@@ -2,7 +2,6 @@
 name: cfa-quant-risk-analyst
 description: CFA quantitative risk specialist — factor models, Black-Litterman, risk parity, stress testing, portfolio optimization, risk budgeting, tail risk VaR/CVaR, market microstructure, performance attribution, capital allocation, and index construction
 color: "#E67E22"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -106,7 +105,7 @@ References the **corp-finance-analyst-risk** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -116,7 +115,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "risk portfolio VaR factor attribution optimization",
   namespace: "analysis",
@@ -141,7 +140,7 @@ For portfolio construction:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/quant-risk-analyst",
   namespace: "analysis",
@@ -166,7 +165,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/quant-risk-analyst/" + Date.now(),
   namespace: "learning",
