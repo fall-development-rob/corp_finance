@@ -97,7 +97,7 @@ References the **corp-finance-tools-markets** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -107,7 +107,7 @@ mcp__claude-flow__memory_usage {
 ### 2. Search Prior Analyses
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "search",
   query: "macro FX rates commodities emerging markets monetary policy",
   namespace: "analysis",
@@ -133,7 +133,7 @@ For commodity analysis:
 ### 4. Store Results
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/results/macro-analyst",
   namespace: "analysis",
@@ -159,7 +159,7 @@ mcp__claude-flow__memory_usage {
 ### 5. Store Learning
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/learning/macro-analyst/" + Date.now(),
   namespace: "learning",

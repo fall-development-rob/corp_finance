@@ -3,7 +3,7 @@
 
 import { randomUUID, createHash } from 'node:crypto';
 import { computeEmbedding } from 'agentic-flow/reasoningbank';
-import { getPool, float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
+import { getPool, float32ToVectorLiteral } from '../db/pg-client.js';
 import type { ReasoningBank } from './reasoning-bank.js';
 import type {
   LearningPattern, ReasoningTrace, QualityFeedback, TaskType,
@@ -133,14 +133,14 @@ export class PgReasoningBank implements ReasoningBank {
   }
 
   async searchPatterns(taskType: TaskType, limit = 10): Promise<LearningPattern[]> {
+    const pool = await getPool();
     const domain = this.domainForTaskType(taskType);
 
     // Generate query embedding
     const embedding = await computeEmbedding(`${taskType} analysis pattern`);
     const vecLiteral = float32ToVectorLiteral(embedding);
 
-    // Use queryWithRetry to survive ruvector HNSW segfault → recovery cycle
-    const { rows } = await queryWithRetry<{
+    const { rows } = await pool.query<{
       id: string;
       content: string;
       confidence: number;
@@ -174,8 +174,9 @@ export class PgReasoningBank implements ReasoningBank {
   }
 
   async getPattern(patternId: string): Promise<LearningPattern | null> {
-    // Use queryWithRetry in case Postgres is recovering from ruvector segfault
-    const { rows } = await queryWithRetry<{
+    const pool = await getPool();
+
+    const { rows } = await pool.query<{
       id: string;
       content: string;
       confidence: number;

@@ -41,7 +41,7 @@ You are the CFA Chief Analyst, the sovereign coordinator of a team of 8 speciali
 ### 1. Receive Query & Classify
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/chief/current-request",
   namespace: "analysis",
@@ -59,7 +59,7 @@ mcp__claude-flow__memory_usage {
 ### 2. Create Research Plan & Delegate
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/assignments",
   namespace: "analysis",
@@ -78,14 +78,14 @@ mcp__claude-flow__memory_usage {
 
 ```javascript
 // Retrieve specialist results
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "retrieve",
   key: "cfa/results/equity-analyst",
   namespace: "analysis"
 }
 
 // Store final aggregated report
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/chief/final-report",
   namespace: "analysis",

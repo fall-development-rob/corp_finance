@@ -5,7 +5,6 @@
 import { randomUUID, createHash } from 'node:crypto';
 import {
   initialize as initReasoningBank,
-  runTask,
   retrieveMemories,
   judgeTrajectory,
   distillMemories,

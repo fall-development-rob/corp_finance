@@ -137,51 +137,6 @@ export async function closePool(): Promise<void> {
 }
 
 /**
- * Reset the pool — used after ruvector segfault recovery.
- * Silently ends the existing pool and nulls it so getPool() creates a fresh one.
- */
-export async function resetPool(): Promise<void> {
-  if (_pool) {
-    try { await _pool.end(); } catch { /* pool already broken */ }
-    _pool = null;
-  }
-}
-
-/**
- * Execute a query with automatic retry on connection/recovery errors.
- * Handles ruvector HNSW segfault → Postgres recovery → retry pattern.
- */
-export async function queryWithRetry<T extends import('pg').QueryResultRow>(
-  queryText: string,
-  params: unknown[],
-  maxRetries = 2,
-  retryDelayMs = 3000,
-): Promise<import('pg').QueryResult<T>> {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const pool = await getPool();
-      return await pool.query<T>(queryText, params);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      const isRecoverable =
-        msg.includes('Connection terminated') ||
-        msg.includes('recovery mode') ||
-        msg.includes('the database system is starting up') ||
-        msg.includes('connection refused') ||
-        msg.includes('terminating connection');
-
-      if (attempt < maxRetries && isRecoverable) {
-        await resetPool();
-        await new Promise(r => setTimeout(r, retryDelayMs));
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw new Error('queryWithRetry: exhausted retries');
-}
-
-/**
  * Convert a Float32Array to a ruvector literal string: `[0.1,0.2,...]`
  */
 export function float32ToVectorLiteral(vec: Float32Array): string {

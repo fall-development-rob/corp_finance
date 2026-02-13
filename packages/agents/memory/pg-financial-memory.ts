@@ -3,7 +3,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { computeEmbedding } from 'agentic-flow/reasoningbank';
-import { getPool, float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
+import { getPool, float32ToVectorLiteral } from '../db/pg-client.js';
 import type { FinancialMemory } from './financial-memory.js';
 import type { MemoryEntry, MemoryMetadata, RetrievalContext } from '../types/memory.js';
 
@@ -65,11 +65,12 @@ export class PgFinancialMemory implements FinancialMemory {
   }
 
   async search(query: string, limit = 10): Promise<RetrievalContext> {
+    const pool = await getPool();
+
     const embedding = await computeEmbedding(query);
     const vecLiteral = float32ToVectorLiteral(embedding);
 
-    // Use queryWithRetry to survive ruvector HNSW segfault → recovery cycle
-    const { rows } = await queryWithRetry<{
+    const { rows } = await pool.query<{
       id: string;
       title: string;
       content: string;
@@ -144,12 +145,13 @@ export class PgFinancialMemory implements FinancialMemory {
   }
 
   async getByTicker(ticker: string, limit = 10): Promise<MemoryEntry[]> {
+    const pool = await getPool();
+
     // Use embedding similarity to find ticker-related entries
     const embedding = await computeEmbedding(ticker);
     const vecLiteral = float32ToVectorLiteral(embedding);
 
-    // Use queryWithRetry to survive ruvector HNSW segfault → recovery cycle
-    const { rows } = await queryWithRetry<{
+    const { rows } = await pool.query<{
       id: string;
       content: string;
       domain: string;
