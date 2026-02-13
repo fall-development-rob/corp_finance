@@ -2,6 +2,7 @@
 name: cfa-equity-analyst
 description: CFA equity research specialist — DCF valuation, trading comps, earnings quality screening, dividend policy analysis, financial forensics, and target price derivation using corp-finance-mcp tools
 color: "#2E86C1"
+tools: cfa-tools
 priority: high
 type: analyst
 capabilities:

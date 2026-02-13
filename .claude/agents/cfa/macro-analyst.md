@@ -2,6 +2,7 @@
 name: cfa-macro-analyst
 description: CFA macro strategist — FX forwards and cross rates, commodity forwards and term structure, emerging markets analysis, monetary policy modelling, international finance, sovereign risk, inflation-linked instruments, and trade finance
 color: "#3498DB"
+tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
