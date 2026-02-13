@@ -106,7 +106,7 @@ References the **corp-finance-analyst-regulatory** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -116,7 +116,7 @@ mcp__claude-flow__memory_usage {
 ### 2. Search Prior Analyses
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "search",
   query: "ESG regulatory compliance AML FATCA substance Basel",
   namespace: "analysis",
@@ -147,7 +147,7 @@ For cross-border structuring:
 ### 4. Store Results
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/results/esg-regulatory-analyst",
   namespace: "analysis",
@@ -173,7 +173,7 @@ mcp__claude-flow__memory_usage {
 ### 5. Store Learning
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/learning/esg-regulatory-analyst/" + Date.now(),
   namespace: "learning",

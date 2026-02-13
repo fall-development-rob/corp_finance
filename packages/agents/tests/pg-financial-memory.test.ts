@@ -12,7 +12,6 @@ vi.mock('../db/pg-client.js', () => ({
     for (let i = 0; i < vec.length; i++) parts.push(String(vec[i]));
     return `[${parts.join(',')}]`;
   }),
-  queryWithRetry: vi.fn((...args: unknown[]) => mockQuery(...args)),
 }));
 
 vi.mock('agentic-flow/reasoningbank', () => ({

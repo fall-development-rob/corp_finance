@@ -12,14 +12,18 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "agentic-flow": "^2.0.6",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "pg": "^8.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.4.0"
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.4"
   }
 }
