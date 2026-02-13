@@ -5,12 +5,17 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "cfa": "./dist/src/cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/fall-development-rob/corp_finance.git",
     "directory": "packages/agents"
   },
   "scripts": {
+    "start": "node dist/src/cli.js analyze -i",
+    "dev": "npx tsx src/cli.ts analyze -i",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

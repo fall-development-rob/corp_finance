@@ -2,6 +2,7 @@
 name: cfa-esg-regulatory-analyst
 description: CFA ESG and regulatory specialist — ESG scoring, carbon markets, regulatory capital (Basel III), compliance reporting (MiFID II, GIPS), AML/KYC, FATCA/CRS, economic substance, fund structuring, transfer pricing, tax treaty optimisation, and regulatory reporting (AIFMD, Form PF)
 color: "#27AE60"
+tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
