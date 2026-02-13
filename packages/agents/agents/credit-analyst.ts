@@ -4,7 +4,6 @@
 
 import type { Finding } from '../types/agents.js';
 import { BaseAnalyst, type AnalystContext, type ReasoningState } from './base-analyst.js';
-import { buildToolParams } from '../utils/param-builder.js';
 
 export class CreditAnalyst extends BaseAnalyst {
   constructor() {
@@ -18,41 +17,41 @@ export class CreditAnalyst extends BaseAnalyst {
     if (state.iteration === 1) {
       // Core credit analysis tools
       if (task.includes('score') || task.includes('rating') || task.includes('credit')) {
-        tools.push({ toolName: 'credit_scoring_corporate', params: buildToolParams('credit_scoring_corporate', state.metrics) });
+        tools.push({ toolName: 'credit_scoring_corporate', params: { query: ctx.task } });
       }
       if (task.includes('spread') || task.includes('premium') || task.includes('oas')) {
-        tools.push({ toolName: 'credit_spread_analysis', params: buildToolParams('credit_spread_analysis', state.metrics) });
+        tools.push({ toolName: 'credit_spread_analysis', params: { query: ctx.task } });
       }
       if (task.includes('default') || task.includes('probability') || task.includes('pd')) {
-        tools.push({ toolName: 'credit_default_probability', params: buildToolParams('credit_default_probability', state.metrics) });
+        tools.push({ toolName: 'credit_default_probability', params: { query: ctx.task } });
       }
       if (task.includes('portfolio') || task.includes('concentration')) {
-        tools.push({ toolName: 'credit_portfolio_var', params: buildToolParams('credit_portfolio_var', state.metrics) });
+        tools.push({ toolName: 'credit_portfolio_var', params: { query: ctx.task } });
       }
       if (task.includes('cds') || task.includes('derivative') || task.includes('swap')) {
-        tools.push({ toolName: 'credit_derivatives_cds_pricing', params: buildToolParams('credit_derivatives_cds_pricing', state.metrics) });
+        tools.push({ toolName: 'credit_derivatives_cds_pricing', params: { query: ctx.task } });
       }
       // Default: at least run corporate scoring and spread analysis
       if (tools.length === 0) {
-        tools.push({ toolName: 'credit_scoring_corporate', params: buildToolParams('credit_scoring_corporate', state.metrics) });
-        tools.push({ toolName: 'credit_spread_analysis', params: buildToolParams('credit_spread_analysis', state.metrics) });
+        tools.push({ toolName: 'credit_scoring_corporate', params: { query: ctx.task } });
+        tools.push({ toolName: 'credit_spread_analysis', params: { query: ctx.task } });
       }
     } else {
       // Deeper dives on subsequent iterations
       if (task.includes('restructur') || task.includes('distress') || task.includes('recovery')) {
-        tools.push({ toolName: 'restructuring_distressed_valuation', params: buildToolParams('restructuring_distressed_valuation', state.metrics) });
+        tools.push({ toolName: 'restructuring_distressed_valuation', params: { query: ctx.task } });
       }
       if (task.includes('forensic') || task.includes('fraud') || task.includes('manipulation')) {
-        tools.push({ toolName: 'financial_forensics_beneish', params: buildToolParams('financial_forensics_beneish', state.metrics) });
+        tools.push({ toolName: 'financial_forensics_beneish', params: { query: ctx.task } });
       }
       if (task.includes('bank') || task.includes('capital adequacy') || task.includes('tier')) {
-        tools.push({ toolName: 'bank_analytics_capital_adequacy', params: buildToolParams('bank_analytics_capital_adequacy', state.metrics) });
+        tools.push({ toolName: 'bank_analytics_capital_adequacy', params: { query: ctx.task } });
       }
       if (task.includes('covenant') || task.includes('leverage') || task.includes('coverage')) {
-        tools.push({ toolName: 'credit_covenant_analysis', params: buildToolParams('credit_covenant_analysis', state.metrics) });
+        tools.push({ toolName: 'credit_covenant_analysis', params: { query: ctx.task } });
       }
       if (task.includes('financial') || task.includes('statement')) {
-        tools.push({ toolName: 'three_statement_model', params: buildToolParams('three_statement_model', state.metrics) });
+        tools.push({ toolName: 'three_statement_model', params: { query: ctx.task } });
       }
     }
 

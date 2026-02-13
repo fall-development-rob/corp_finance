@@ -16,14 +16,10 @@ export { MacroAnalyst } from './agents/macro-analyst.js';
 export { EsgRegulatoryAnalyst } from './agents/esg-regulatory-analyst.js';
 export { PrivateMarketsAnalyst } from './agents/private-markets-analyst.js';
 
-export { AgentDbFinancialMemory, LocalFinancialMemory, PgFinancialMemory } from './memory/index.js';
+export { LocalFinancialMemory } from './memory/index.js';
 export type { FinancialMemory } from './memory/index.js';
-export { LocalReasoningBank, SonaReasoningBank, PgReasoningBank } from './learning/index.js';
+export { LocalReasoningBank } from './learning/index.js';
 export type { ReasoningBank } from './learning/index.js';
-
-// Database factory — auto-selects backend from CFA_MEMORY_BACKEND env var
-export { createFinancialMemory, createReasoningBank } from './config/database.js';
-export type { MemoryBackend } from './config/database.js';
 
 export * from './types/index.js';
 

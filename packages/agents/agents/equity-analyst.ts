@@ -4,7 +4,6 @@
 
 import type { Finding } from '../types/agents.js';
 import { BaseAnalyst, type AnalystContext, type ReasoningState } from './base-analyst.js';
-import { buildToolParams } from '../utils/param-builder.js';
 
 export class EquityAnalyst extends BaseAnalyst {
   constructor() {
@@ -18,33 +17,33 @@ export class EquityAnalyst extends BaseAnalyst {
     if (state.iteration === 1) {
       // Core valuation tools
       if (task.includes('dcf') || task.includes('valuation') || task.includes('fair value')) {
-        tools.push({ toolName: 'valuation_dcf_model', params: buildToolParams('valuation_dcf_model', state.metrics) });
-        tools.push({ toolName: 'valuation_wacc_calculation', params: buildToolParams('valuation_wacc_calculation', state.metrics) });
+        tools.push({ toolName: 'valuation_dcf_model', params: { query: ctx.task } });
+        tools.push({ toolName: 'valuation_wacc_calculation', params: { query: ctx.task } });
       }
       if (task.includes('comp') || task.includes('multiple') || task.includes('peer')) {
-        tools.push({ toolName: 'valuation_comparable_companies', params: buildToolParams('valuation_comparable_companies', state.metrics) });
+        tools.push({ toolName: 'valuation_comparable_companies', params: { query: ctx.task } });
       }
       if (task.includes('equity') || task.includes('stock') || task.includes('research')) {
-        tools.push({ toolName: 'equity_research_fundamental_analysis', params: buildToolParams('equity_research_fundamental_analysis', state.metrics) });
+        tools.push({ toolName: 'equity_research_fundamental_analysis', params: { query: ctx.task } });
       }
       // Default: at least run fundamental analysis
       if (tools.length === 0) {
-        tools.push({ toolName: 'equity_research_fundamental_analysis', params: buildToolParams('equity_research_fundamental_analysis', state.metrics) });
-        tools.push({ toolName: 'valuation_dcf_model', params: buildToolParams('valuation_dcf_model', state.metrics) });
+        tools.push({ toolName: 'equity_research_fundamental_analysis', params: { query: ctx.task } });
+        tools.push({ toolName: 'valuation_dcf_model', params: { query: ctx.task } });
       }
     } else {
       // Deeper dives on subsequent iterations
       if (task.includes('earning') || task.includes('quality')) {
-        tools.push({ toolName: 'earnings_quality_accruals_analysis', params: buildToolParams('earnings_quality_accruals_analysis', state.metrics) });
+        tools.push({ toolName: 'earnings_quality_accruals_analysis', params: { query: ctx.task } });
       }
       if (task.includes('dividend')) {
-        tools.push({ toolName: 'dividend_policy_sustainability', params: buildToolParams('dividend_policy_sustainability', state.metrics) });
+        tools.push({ toolName: 'dividend_policy_sustainability', params: { query: ctx.task } });
       }
       if (task.includes('attribution') || task.includes('performance')) {
-        tools.push({ toolName: 'performance_attribution_brinson', params: buildToolParams('performance_attribution_brinson', state.metrics) });
+        tools.push({ toolName: 'performance_attribution_brinson', params: { query: ctx.task } });
       }
       if (task.includes('financial') || task.includes('statement')) {
-        tools.push({ toolName: 'three_statement_model', params: buildToolParams('three_statement_model', state.metrics) });
+        tools.push({ toolName: 'three_statement_model', params: { query: ctx.task } });
       }
     }
 
