@@ -16,9 +16,9 @@ export { MacroAnalyst } from './agents/macro-analyst.js';
 export { EsgRegulatoryAnalyst } from './agents/esg-regulatory-analyst.js';
 export { PrivateMarketsAnalyst } from './agents/private-markets-analyst.js';
 
-export { LocalFinancialMemory } from './memory/index.js';
+export { AgentDbFinancialMemory, LocalFinancialMemory } from './memory/index.js';
 export type { FinancialMemory } from './memory/index.js';
-export { LocalReasoningBank } from './learning/index.js';
+export { LocalReasoningBank, SonaReasoningBank } from './learning/index.js';
 export type { ReasoningBank } from './learning/index.js';
 
 export * from './types/index.js';
