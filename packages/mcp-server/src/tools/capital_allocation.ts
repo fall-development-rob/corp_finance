@@ -5,7 +5,7 @@ import {
   calculateEulerAllocation,
   calculateShapleyAllocation,
   evaluateLimits,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   EconomicCapitalSchema,
   RarocSchema,

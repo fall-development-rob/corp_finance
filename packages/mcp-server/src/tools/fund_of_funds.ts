@@ -5,7 +5,7 @@ import {
   analyzeManagerSelection,
   calculateSecondariesPricing,
   analyzeFofPortfolio,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   JCurveSchema,
   CommitmentPacingSchema,

@@ -4,7 +4,7 @@ import {
   analyzeCarbonFootprint,
   analyzeGreenBond,
   testSllCovenants,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   EsgScoreSchema,
   CarbonFootprintSchema,

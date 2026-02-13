@@ -5,7 +5,7 @@ import {
   analyzeWealthTransfer,
   analyzeDirectIndexing,
   evaluateFamilyGovernance,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   ConcentratedStockSchema,
   PhilanthropicVehiclesSchema,

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzePrepayment,
   analyzeMbs,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   PrepaymentSchema,
   MbsAnalyticsSchema,

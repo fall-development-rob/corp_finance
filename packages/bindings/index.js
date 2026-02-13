@@ -37,7 +37,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.android-arm64.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-android-arm64')
+            nativeBinding = require('@robotixai/corp-finance-bindings-android-arm64')
           }
         } catch (e) {
           loadError = e
@@ -49,7 +49,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.android-arm-eabi.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-android-arm-eabi')
+            nativeBinding = require('@robotixai/corp-finance-bindings-android-arm-eabi')
           }
         } catch (e) {
           loadError = e
@@ -69,7 +69,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.win32-x64-msvc.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-win32-x64-msvc')
+            nativeBinding = require('@robotixai/corp-finance-bindings-win32-x64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -83,7 +83,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.win32-ia32-msvc.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-win32-ia32-msvc')
+            nativeBinding = require('@robotixai/corp-finance-bindings-win32-ia32-msvc')
           }
         } catch (e) {
           loadError = e
@@ -97,7 +97,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.win32-arm64-msvc.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-win32-arm64-msvc')
+            nativeBinding = require('@robotixai/corp-finance-bindings-win32-arm64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -113,7 +113,7 @@ switch (platform) {
       if (localFileExisted) {
         nativeBinding = require('./corp-finance.darwin-universal.node')
       } else {
-        nativeBinding = require('corp-finance-bindings-darwin-universal')
+        nativeBinding = require('@robotixai/corp-finance-bindings-darwin-universal')
       }
       break
     } catch {}
@@ -124,7 +124,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.darwin-x64.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-darwin-x64')
+            nativeBinding = require('@robotixai/corp-finance-bindings-darwin-x64')
           }
         } catch (e) {
           loadError = e
@@ -138,7 +138,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.darwin-arm64.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-darwin-arm64')
+            nativeBinding = require('@robotixai/corp-finance-bindings-darwin-arm64')
           }
         } catch (e) {
           loadError = e
@@ -157,7 +157,7 @@ switch (platform) {
       if (localFileExisted) {
         nativeBinding = require('./corp-finance.freebsd-x64.node')
       } else {
-        nativeBinding = require('corp-finance-bindings-freebsd-x64')
+        nativeBinding = require('@robotixai/corp-finance-bindings-freebsd-x64')
       }
     } catch (e) {
       loadError = e
@@ -174,7 +174,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-x64-musl.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-x64-musl')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-x64-musl')
             }
           } catch (e) {
             loadError = e
@@ -187,7 +187,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-x64-gnu.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-x64-gnu')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-x64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -203,7 +203,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-arm64-musl.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-arm64-musl')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-arm64-musl')
             }
           } catch (e) {
             loadError = e
@@ -216,7 +216,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-arm64-gnu.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-arm64-gnu')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-arm64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -232,7 +232,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-arm-musleabihf.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-arm-musleabihf')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-arm-musleabihf')
             }
           } catch (e) {
             loadError = e
@@ -245,7 +245,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-arm-gnueabihf.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-arm-gnueabihf')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-arm-gnueabihf')
             }
           } catch (e) {
             loadError = e
@@ -261,7 +261,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-riscv64-musl.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-riscv64-musl')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-riscv64-musl')
             }
           } catch (e) {
             loadError = e
@@ -274,7 +274,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./corp-finance.linux-riscv64-gnu.node')
             } else {
-              nativeBinding = require('corp-finance-bindings-linux-riscv64-gnu')
+              nativeBinding = require('@robotixai/corp-finance-bindings-linux-riscv64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -289,7 +289,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./corp-finance.linux-s390x-gnu.node')
           } else {
-            nativeBinding = require('corp-finance-bindings-linux-s390x-gnu')
+            nativeBinding = require('@robotixai/corp-finance-bindings-linux-s390x-gnu')
           }
         } catch (e) {
           loadError = e
@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate, buildImpliedVolSurface, calibrateSabr, optimizeMeanVariance, optimizeBlackLittermanPortfolio, analyzeFactorRiskBudget, analyzeTailRisk, analyzeSpreads, optimizeExecution, analyzeShortRate, fitTermStructure, analyzePrepayment, analyzeMbs, analyzeTips, analyzeInflationDerivatives, analyzeRepo, analyzeCollateral, calculateScorecard, calculateMerton, calculateIntensityModel, calculateCalibration, calculateScoringValidation, calculateEconomicCapital, calculateRaroc, calculateEulerAllocation, calculateShapleyAllocation, evaluateLimits, calculateCloWaterfall, calculateCoverageTests, calculateReinvestment, calculateTrancheAnalytics, calculateCloScenario, calculateJCurve, calculateCommitmentPacing, analyzeManagerSelection, calculateSecondariesPricing, analyzeFofPortfolio, calculateBeneishMscore, calculatePiotroskiFscore, calculateAccrualQuality, calculateRevenueQuality, calculateEarningsQualityComposite, analyzeNim, calculateCamelsRating, calculateCeclProvision, analyzeDepositBeta, analyzeLoanBook, calculateHModelDdm, calculateMultistageDdm, analyzeBuyback, analyzePayoutSustainability, calculateTotalShareholderReturn, priceCarbonCredit, analyzeEtsCompliance, analyzeCbam, valueCarbonOffset, calculateShadowCarbonPrice, analyzeConcentratedStock, comparePhilanthropicVehicles, analyzeWealthTransfer, analyzeDirectIndexing, evaluateFamilyGovernance, calculateCountryRiskPremium, assessPoliticalRisk, analyseCapitalControls, analyseEmBonds, calculateEmEquityPremium, calculateWeighting, calculateRebalancing, calculateTrackingError, calculateSmartBeta, calculateReconstitution, analyzeBenfordsLaw, calculateDupont, calculateZscoreModels, calculatePeerBenchmarking, calculateRedFlagScoring } = nativeBinding
+const { calculateWacc, buildDcf, compsAnalysis, creditMetrics, debtCapacity, covenantCompliance, calculateReturns, buildDebtSchedule, sourcesAndUses, buildLbo, calculateWaterfall, analyzeMerger, altmanZscore, calculateFundFees, reconcileAccounting, calculateWht, calculatePortfolioWht, calculateNav, calculateGpEconomics, calculateInvestorNetReturns, screenUbtiEci, priceBond, calculateBondYield, bootstrapSpotCurve, fitNelsonSiegel, calculateDuration, calculateCreditSpreads, priceOption, impliedVolatility, priceForward, valueForwardPosition, futuresBasisAnalysis, valueInterestRateSwap, valueCurrencySwap, analyzeStrategy, riskAdjustedReturns, riskMetrics, kellySizing, buildSensitivityGrid, buildThreeStatement, runMonteCarlo, runMcDcf, runFactorModel, runBlackLitterman, calculateRiskParity, runStressTest, analyzeRecovery, analyzeDistressedDebt, valueProperty, modelProjectFinance, priceFxForward, calculateCrossRate, priceCommodityForward, analyzeCommodityCurve, scenarioAnalysis, modelAbsCashflows, analyzeTranching, modelFundingRound, analyzeDilution, convertNote, convertSafe, modelVentureFund, calculateEsgScore, analyzeCarbonFootprint, analyzeGreenBond, testSllCovenants, calculateRegulatoryCapital, calculateLcr, calculateNsfr, analyzeAlm, priceUnitranche, modelDirectLoan, analyzeSyndication, estimateReserves, pricePremium, analyzeCombinedRatio, calculateScr, analyzeVariance, analyzeBreakeven, analyzeWorkingCapital, buildRollingForecast, planRetirement, simulateTaxLossHarvesting, planEstate, valueToken, analyzeDefi, priceMuniBond, analyzeMunicipal, priceStructuredNote, priceExotic, priceLetterOfCredit, analyzeSupplyChainFinance, priceCds, calculateCva, priceConvertible, analyzeConvertible, classifyLease, analyzeSaleLeaseback, analyzePensionFunding, designLdiStrategy, analyzeSovereignBond, assessCountryRisk, valueRealOption, analyzeDecisionTree, calculateSotp, calculateTargetPrice, analyzeCommoditySpread, analyzeStorageEconomics, analyzePairsTrading, analyzeMomentum, analyzeCashManagement, analyzeHedging, modelPpp, valueConcession, analyzeProspectTheory, analyzeSentiment, brinsonAttribution, factorAttribution, calculatePortfolioCreditRisk, calculateMigration, analyzeMonetaryPolicy, analyzeInternational, analyzeBestExecution, generateGipsReport, analyzeUsFundStructure, analyzeUkEuFund, analyzeCaymanStructure, analyzeLuxStructure, analyzeBepsCompliance, analyzeIntercompany, analyzeTreatyNetwork, optimizeTreatyStructure, analyzeFatcaCrsReporting, classifyEntity, analyzeEconomicSubstance, runJurisdictionSubstanceTest, generateAifmdReport, generateSecCftcReport, assessKycRisk, screenSanctions, buildImpliedVolSurface, calibrateSabr, optimizeMeanVariance, optimizeBlackLittermanPortfolio, analyzeFactorRiskBudget, analyzeTailRisk, analyzeSpreads, optimizeExecution, analyzeShortRate, fitTermStructure, analyzePrepayment, analyzeMbs, analyzeTips, analyzeInflationDerivatives, analyzeRepo, analyzeCollateral, calculateScorecard, calculateMerton, calculateIntensityModel, calculateCalibration, calculateScoringValidation, calculateEconomicCapital, calculateRaroc, calculateEulerAllocation, calculateShapleyAllocation, evaluateLimits, calculateCloWaterfall, calculateCoverageTests, calculateReinvestment, calculateTrancheAnalytics, calculateCloScenario, calculateJCurve, calculateCommitmentPacing, analyzeManagerSelection, calculateSecondariesPricing, analyzeFofPortfolio, calculateBeneishMscore, calculatePiotroskiFscore, calculateAccrualQuality, calculateRevenueQuality, calculateEarningsQualityComposite, analyzeNim, calculateCamelsRating, calculateCeclProvision, analyzeDepositBeta, analyzeLoanBook, calculateHModelDdm, calculateMultistageDdm, analyzeBuyback, analyzePayoutSustainability, calculateTotalShareholderReturn, priceCarbonCredit, analyzeEtsCompliance, analyzeCbam, valueCarbonOffset, calculateShadowCarbonPrice, analyzeConcentratedStock, comparePhilanthropicVehicles, analyzeWealthTransfer, analyzeDirectIndexing, evaluateFamilyGovernance, calculateCountryRiskPremium, assessPoliticalRisk, analyseCapitalControls, analyseEmBonds, calculateEmEquityPremium, calculateWeighting, calculateRebalancing, calculateTrackingError, calculateSmartBeta, calculateReconstitution, analyzeBenfordsLaw, calculateDupont, calculateZscoreModels, calculatePeerBenchmarking, calculateRedFlagScoring } = nativeBinding
 
 module.exports.calculateWacc = calculateWacc
 module.exports.buildDcf = buildDcf
@@ -396,6 +396,62 @@ module.exports.buildRollingForecast = buildRollingForecast
 module.exports.planRetirement = planRetirement
 module.exports.simulateTaxLossHarvesting = simulateTaxLossHarvesting
 module.exports.planEstate = planEstate
+module.exports.valueToken = valueToken
+module.exports.analyzeDefi = analyzeDefi
+module.exports.priceMuniBond = priceMuniBond
+module.exports.analyzeMunicipal = analyzeMunicipal
+module.exports.priceStructuredNote = priceStructuredNote
+module.exports.priceExotic = priceExotic
+module.exports.priceLetterOfCredit = priceLetterOfCredit
+module.exports.analyzeSupplyChainFinance = analyzeSupplyChainFinance
+module.exports.priceCds = priceCds
+module.exports.calculateCva = calculateCva
+module.exports.priceConvertible = priceConvertible
+module.exports.analyzeConvertible = analyzeConvertible
+module.exports.classifyLease = classifyLease
+module.exports.analyzeSaleLeaseback = analyzeSaleLeaseback
+module.exports.analyzePensionFunding = analyzePensionFunding
+module.exports.designLdiStrategy = designLdiStrategy
+module.exports.analyzeSovereignBond = analyzeSovereignBond
+module.exports.assessCountryRisk = assessCountryRisk
+module.exports.valueRealOption = valueRealOption
+module.exports.analyzeDecisionTree = analyzeDecisionTree
+module.exports.calculateSotp = calculateSotp
+module.exports.calculateTargetPrice = calculateTargetPrice
+module.exports.analyzeCommoditySpread = analyzeCommoditySpread
+module.exports.analyzeStorageEconomics = analyzeStorageEconomics
+module.exports.analyzePairsTrading = analyzePairsTrading
+module.exports.analyzeMomentum = analyzeMomentum
+module.exports.analyzeCashManagement = analyzeCashManagement
+module.exports.analyzeHedging = analyzeHedging
+module.exports.modelPpp = modelPpp
+module.exports.valueConcession = valueConcession
+module.exports.analyzeProspectTheory = analyzeProspectTheory
+module.exports.analyzeSentiment = analyzeSentiment
+module.exports.brinsonAttribution = brinsonAttribution
+module.exports.factorAttribution = factorAttribution
+module.exports.calculatePortfolioCreditRisk = calculatePortfolioCreditRisk
+module.exports.calculateMigration = calculateMigration
+module.exports.analyzeMonetaryPolicy = analyzeMonetaryPolicy
+module.exports.analyzeInternational = analyzeInternational
+module.exports.analyzeBestExecution = analyzeBestExecution
+module.exports.generateGipsReport = generateGipsReport
+module.exports.analyzeUsFundStructure = analyzeUsFundStructure
+module.exports.analyzeUkEuFund = analyzeUkEuFund
+module.exports.analyzeCaymanStructure = analyzeCaymanStructure
+module.exports.analyzeLuxStructure = analyzeLuxStructure
+module.exports.analyzeBepsCompliance = analyzeBepsCompliance
+module.exports.analyzeIntercompany = analyzeIntercompany
+module.exports.analyzeTreatyNetwork = analyzeTreatyNetwork
+module.exports.optimizeTreatyStructure = optimizeTreatyStructure
+module.exports.analyzeFatcaCrsReporting = analyzeFatcaCrsReporting
+module.exports.classifyEntity = classifyEntity
+module.exports.analyzeEconomicSubstance = analyzeEconomicSubstance
+module.exports.runJurisdictionSubstanceTest = runJurisdictionSubstanceTest
+module.exports.generateAifmdReport = generateAifmdReport
+module.exports.generateSecCftcReport = generateSecCftcReport
+module.exports.assessKycRisk = assessKycRisk
+module.exports.screenSanctions = screenSanctions
 module.exports.buildImpliedVolSurface = buildImpliedVolSurface
 module.exports.calibrateSabr = calibrateSabr
 module.exports.optimizeMeanVariance = optimizeMeanVariance

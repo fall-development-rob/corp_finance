@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   generateAifmdReport,
   generateSecCftcReport,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   AifmdReportingSchema,
   SecCftcReportingSchema,

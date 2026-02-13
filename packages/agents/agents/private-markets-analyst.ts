@@ -5,6 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Finding } from '../types/agents.js';
 import { BaseAnalyst, type AnalystContext, type ReasoningState } from './base-analyst.js';
+import { buildToolParams } from '../utils/param-builder.js';
 
 export class PrivateMarketsAnalyst extends BaseAnalyst {
   constructor() {
@@ -17,46 +18,46 @@ export class PrivateMarketsAnalyst extends BaseAnalyst {
 
     if (state.iteration === 1) {
       if (task.includes('lbo') || task.includes('buyout') || task.includes('leveraged')) {
-        tools.push({ toolName: 'pe_lbo_model', params: { query: ctx.task } });
-        tools.push({ toolName: 'pe_returns_analysis', params: { query: ctx.task } });
+        tools.push({ toolName: 'pe_lbo_model', params: buildToolParams('pe_lbo_model', state.metrics) });
+        tools.push({ toolName: 'pe_returns_analysis', params: buildToolParams('pe_returns_analysis', state.metrics) });
       }
       if (task.includes('venture') || task.includes('startup') || task.includes('vc')) {
-        tools.push({ toolName: 'venture_valuation', params: { query: ctx.task } });
-        tools.push({ toolName: 'venture_dilution_analysis', params: { query: ctx.task } });
+        tools.push({ toolName: 'venture_valuation', params: buildToolParams('venture_valuation', state.metrics) });
+        tools.push({ toolName: 'venture_dilution_analysis', params: buildToolParams('venture_dilution_analysis', state.metrics) });
       }
       if (task.includes('m&a') || task.includes('merger') || task.includes('acquisition')) {
-        tools.push({ toolName: 'ma_accretion_dilution', params: { query: ctx.task } });
-        tools.push({ toolName: 'ma_synergy_analysis', params: { query: ctx.task } });
+        tools.push({ toolName: 'ma_accretion_dilution', params: buildToolParams('ma_accretion_dilution', state.metrics) });
+        tools.push({ toolName: 'ma_synergy_analysis', params: buildToolParams('ma_synergy_analysis', state.metrics) });
       }
       if (task.includes('infrastructure') || task.includes('project')) {
-        tools.push({ toolName: 'infrastructure_project_finance', params: { query: ctx.task } });
-        tools.push({ toolName: 'infrastructure_concession_valuation', params: { query: ctx.task } });
+        tools.push({ toolName: 'infrastructure_project_finance', params: buildToolParams('infrastructure_project_finance', state.metrics) });
+        tools.push({ toolName: 'infrastructure_concession_valuation', params: buildToolParams('infrastructure_concession_valuation', state.metrics) });
       }
       if (task.includes('real estate') || task.includes('reit') || task.includes('property')) {
-        tools.push({ toolName: 'real_assets_property_valuation', params: { query: ctx.task } });
-        tools.push({ toolName: 'real_assets_cap_rate', params: { query: ctx.task } });
+        tools.push({ toolName: 'real_assets_property_valuation', params: buildToolParams('real_assets_property_valuation', state.metrics) });
+        tools.push({ toolName: 'real_assets_cap_rate', params: buildToolParams('real_assets_cap_rate', state.metrics) });
       }
       if (task.includes('clo') || task.includes('securitiz')) {
-        tools.push({ toolName: 'clo_analytics_tranche_analysis', params: { query: ctx.task } });
-        tools.push({ toolName: 'securitization_waterfall', params: { query: ctx.task } });
+        tools.push({ toolName: 'clo_analytics_tranche_analysis', params: buildToolParams('clo_analytics_tranche_analysis', state.metrics) });
+        tools.push({ toolName: 'securitization_waterfall', params: buildToolParams('securitization_waterfall', state.metrics) });
       }
       if (task.includes('restructur') || task.includes('distress')) {
-        tools.push({ toolName: 'restructuring_recovery_analysis', params: { query: ctx.task } });
-        tools.push({ toolName: 'restructuring_waterfall', params: { query: ctx.task } });
+        tools.push({ toolName: 'restructuring_recovery_analysis', params: buildToolParams('restructuring_recovery_analysis', state.metrics) });
+        tools.push({ toolName: 'restructuring_waterfall', params: buildToolParams('restructuring_waterfall', state.metrics) });
       }
       // Default: PE + M&A overview
       if (tools.length === 0) {
-        tools.push({ toolName: 'pe_lbo_model', params: { query: ctx.task } });
-        tools.push({ toolName: 'ma_accretion_dilution', params: { query: ctx.task } });
+        tools.push({ toolName: 'pe_lbo_model', params: buildToolParams('pe_lbo_model', state.metrics) });
+        tools.push({ toolName: 'ma_accretion_dilution', params: buildToolParams('ma_accretion_dilution', state.metrics) });
       }
     } else {
       // Iteration 2+: fund-of-funds, capital allocation, private wealth
       if (task.includes('fund') || task.includes('fof') || task.includes('allocation')) {
-        tools.push({ toolName: 'fund_of_funds_portfolio_construction', params: { query: ctx.task } });
-        tools.push({ toolName: 'capital_allocation_optimization', params: { query: ctx.task } });
+        tools.push({ toolName: 'fund_of_funds_portfolio_construction', params: buildToolParams('fund_of_funds_portfolio_construction', state.metrics) });
+        tools.push({ toolName: 'capital_allocation_optimization', params: buildToolParams('capital_allocation_optimization', state.metrics) });
       }
       if (task.includes('wealth') || task.includes('family') || task.includes('estate')) {
-        tools.push({ toolName: 'private_wealth_planning', params: { query: ctx.task } });
+        tools.push({ toolName: 'private_wealth_planning', params: buildToolParams('private_wealth_planning', state.metrics) });
       }
     }
 

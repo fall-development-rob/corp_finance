@@ -5,7 +5,7 @@ import {
   calculateIntensityModel,
   calculateCalibration,
   calculateScoringValidation,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   CreditScorecardSchema,
   MertonPdSchema,

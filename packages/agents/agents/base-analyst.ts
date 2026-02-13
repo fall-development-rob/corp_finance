@@ -8,6 +8,7 @@ import type {
 } from '../types/agents.js';
 import type { DomainEvent, EventBus } from '../types/events.js';
 import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS } from '../config/tool-mappings.js';
+import { parseFinancialData, type ExtractedMetrics } from '../utils/financial-parser.js';
 
 export interface AnalystContext {
   assignmentId: string;
@@ -26,6 +27,8 @@ export interface ReasoningState {
   iteration: number;
   maxIterations: number;
   shouldContinue: boolean;
+  /** Financial metrics extracted from the task text */
+  metrics: ExtractedMetrics;
 }
 
 export abstract class BaseAnalyst {
@@ -54,6 +57,7 @@ export abstract class BaseAnalyst {
       iteration: 0,
       maxIterations: 5,
       shouldContinue: true,
+      metrics: parseFinancialData(ctx.task),
     };
 
     // Phase 1: Observe

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   analyzeEconomicSubstance,
   runJurisdictionSubstanceTest,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   EconomicSubstanceSchema,
   JurisdictionSubstanceTestSchema,

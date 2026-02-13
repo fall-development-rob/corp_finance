@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   valueRealOption,
   analyzeDecisionTree,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   RealOptionSchema,
   DecisionTreeSchema,

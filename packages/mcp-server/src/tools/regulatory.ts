@@ -4,7 +4,7 @@ import {
   calculateLcr,
   calculateNsfr,
   analyzeAlm,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   RegulatoryCapitalSchema,
   LcrSchema,

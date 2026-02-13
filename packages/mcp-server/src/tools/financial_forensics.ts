@@ -5,7 +5,7 @@ import {
   calculateZscoreModels,
   calculatePeerBenchmarking,
   calculateRedFlagScoring,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   BenfordsLawSchema,
   DupontSchema,

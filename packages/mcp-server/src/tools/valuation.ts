@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { calculateWacc, buildDcf, compsAnalysis } from "@robotixai/corp-finance-bindings";
+import { calculateWacc, buildDcf, compsAnalysis } from "../bindings.js";
 import { WaccSchema, DcfSchema, CompsSchema } from "../schemas/valuation.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

@@ -4,7 +4,7 @@ import {
   runBlackLitterman,
   calculateRiskParity,
   runStressTest,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   FactorModelSchema,
   BlackLittermanSchema,

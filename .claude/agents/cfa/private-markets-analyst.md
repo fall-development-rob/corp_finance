@@ -112,7 +112,7 @@ References the **corp-finance-analyst-core** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -122,7 +122,7 @@ mcp__claude-flow__memory_usage {
 ### 2. Search Prior Analyses
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "search",
   query: "LBO PE M&A venture CLO infrastructure private markets",
   namespace: "analysis",
@@ -153,7 +153,7 @@ For fund of funds:
 ### 4. Store Results
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/results/private-markets-analyst",
   namespace: "analysis",
@@ -178,7 +178,7 @@ mcp__claude-flow__memory_usage {
 ### 5. Store Learning
 
 ```javascript
-mcp__claude-flow__memory_usage {
+agentic_flow.reasoningbank {
   action: "store",
   key: "cfa/learning/private-markets-analyst/" + Date.now(),
   namespace: "learning",

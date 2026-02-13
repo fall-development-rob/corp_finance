@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { analyzeRecovery, analyzeDistressedDebt } from "@robotixai/corp-finance-bindings";
+import { analyzeRecovery, analyzeDistressedDebt } from "../bindings.js";
 import { RecoverySchema, DistressedDebtSchema } from "../schemas/restructuring.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

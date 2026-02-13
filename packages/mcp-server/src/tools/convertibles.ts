@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   priceConvertible,
   analyzeConvertible,
-} from "@robotixai/corp-finance-bindings";
+} from "../bindings.js";
 import {
   ConvertiblePricingSchema,
   ConvertibleAnalysisSchema,
