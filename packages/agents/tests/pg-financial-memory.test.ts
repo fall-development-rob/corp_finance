@@ -104,6 +104,7 @@ describe('PgFinancialMemory', () => {
 
     const [sql, params] = mockQuery.mock.calls[0];
     expect(sql).toContain('search_reasoning_memories');
+    expect(sql).toContain('0.3'); // min_similarity threshold (ADR-002 Decision 4c)
     expect(params[1]).toBe('cfa-analysis');
     expect(params[2]).toBe(5);
   });
@@ -148,17 +149,16 @@ describe('PgFinancialMemory', () => {
     expect(entry).toBeNull();
   });
 
-  it('getByTicker() uses embedding search with domain filter', async () => {
+  it('getByTicker() uses GIN index for exact tag match', async () => {
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
           id: 'r1',
           content: 'AAPL analysis',
           domain: 'cfa-analysis',
-          tags: ['equity'],
+          tags: ['equity', 'AAPL'],
           confidence: 0.8,
           usage_count: 1,
-          similarity: 0.85,
         },
       ],
     });
@@ -170,7 +170,8 @@ describe('PgFinancialMemory', () => {
     expect(entries[0].metadata.tickers).toContain('AAPL');
 
     const [sql, params] = mockQuery.mock.calls[0];
-    expect(sql).toContain('search_reasoning_memories');
+    expect(sql).toContain('ANY(tags)');
+    expect(params[0]).toBe('AAPL');
     expect(params[1]).toBe('cfa-analysis');
     expect(params[2]).toBe(5);
   });

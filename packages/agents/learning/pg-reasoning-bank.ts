@@ -3,7 +3,7 @@
 
 import { randomUUID, createHash } from 'node:crypto';
 import { computeEmbedding } from 'agentic-flow/reasoningbank';
-import { getPool, float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
+import { float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
 import type { ReasoningBank } from './reasoning-bank.js';
 import type {
   LearningPattern, ReasoningTrace, QualityFeedback, TaskType,
@@ -15,7 +15,6 @@ export class PgReasoningBank implements ReasoningBank {
   private totalReward = 0;
 
   async recordTrace(trace: ReasoningTrace): Promise<void> {
-    const pool = await getPool();
     this.traceCount++;
 
     const trajectory = {
@@ -32,8 +31,8 @@ export class PgReasoningBank implements ReasoningBank {
       },
     };
 
-    // Store trajectory
-    await pool.query(
+    // Store trajectory (use queryWithRetry for consistency)
+    await queryWithRetry(
       `INSERT INTO task_trajectories
         (task_id, agent_id, query, trajectory_json, judge_label, judge_conf, started_at, ended_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -80,10 +79,16 @@ export class PgReasoningBank implements ReasoningBank {
         );
         const vecLiteral = float32ToVectorLiteral(embedding);
 
-        await pool.query(
+        // Upsert: deduplicate on fingerprint (Decision 5 — ADR-002)
+        await queryWithRetry(
           `INSERT INTO reasoning_memories
-            (id, type, title, description, content, domain, tags, source_json, confidence, usage_count, embedding)
-           VALUES ($1, 'reasoning_memory', $2, $3, $4, $5, $6, $7, 0.5, 1, $8::ruvector)`,
+            (id, type, title, description, content, domain, tags, source_json, confidence, usage_count, embedding, fingerprint)
+           VALUES ($1, 'reasoning_memory', $2, $3, $4, $5, $6, $7, 0.5, 1, $8::ruvector, $9)
+           ON CONFLICT (fingerprint) WHERE fingerprint IS NOT NULL DO UPDATE SET
+             confidence = (reasoning_memories.confidence * reasoning_memories.usage_count + 0.5)
+                          / (reasoning_memories.usage_count + 1),
+             usage_count = reasoning_memories.usage_count + 1,
+             last_used_at = now()`,
           [
             patternId,
             `${taskType}-pattern`,
@@ -98,6 +103,7 @@ export class PgReasoningBank implements ReasoningBank {
               evidence: toolCalls,
             }),
             vecLiteral,
+            fingerprint,
           ],
         );
 
@@ -108,11 +114,10 @@ export class PgReasoningBank implements ReasoningBank {
   }
 
   async recordFeedback(feedback: QualityFeedback): Promise<void> {
-    const pool = await getPool();
-
     // Store feedback as a reasoning memory for reward signal
     // Use gen_random_uuid() since feedbackId may not be a valid UUID
-    await pool.query(
+    // Use queryWithRetry for consistency
+    await queryWithRetry(
       `INSERT INTO reasoning_memories
         (id, type, title, description, content, domain, tags, source_json, confidence, usage_count)
        VALUES (gen_random_uuid(), 'reasoning_memory', 'quality-feedback', $1, $2, 'cfa-learning', $3, $4, $5, 0)`,
@@ -209,12 +214,29 @@ export class PgReasoningBank implements ReasoningBank {
     }
   }
 
-  getStats() {
-    return {
-      totalPatterns: this.patternCount,
-      totalTraces: this.traceCount,
-      avgReward: this.patternCount > 0 ? this.totalReward / this.patternCount : 0,
-    };
+  // Decision 6 (ADR-002): Persistent stats from database with in-memory fallback
+  async getStats(): Promise<{ totalPatterns: number; totalTraces: number; avgReward: number }> {
+    try {
+      const { rows } = await queryWithRetry<{ patterns: string; traces: string; avg_reward: number }>(
+        `SELECT
+           (SELECT count(*) FROM reasoning_memories WHERE type = 'reasoning_memory' AND fingerprint IS NOT NULL) AS patterns,
+           (SELECT count(*) FROM task_trajectories) AS traces,
+           (SELECT coalesce(avg(confidence), 0) FROM reasoning_memories WHERE fingerprint IS NOT NULL) AS avg_reward`,
+        [],
+      );
+      return {
+        totalPatterns: Number(rows[0].patterns),
+        totalTraces: Number(rows[0].traces),
+        avgReward: Number(rows[0].avg_reward),
+      };
+    } catch {
+      // Fallback to in-memory counters if DB is unavailable
+      return {
+        totalPatterns: this.patternCount,
+        totalTraces: this.traceCount,
+        avgReward: this.patternCount > 0 ? this.totalReward / this.patternCount : 0,
+      };
+    }
   }
 
   private inferTaskType(trace: ReasoningTrace): TaskType {

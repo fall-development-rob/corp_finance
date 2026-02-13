@@ -21,7 +21,7 @@ export interface ReasoningBank {
   recordFeedback(feedback: QualityFeedback): Promise<void>;
   searchPatterns(taskType: TaskType, limit?: number): Promise<LearningPattern[]>;
   getPattern(patternId: string): Promise<LearningPattern | null>;
-  getStats(): { totalPatterns: number; totalTraces: number; avgReward: number };
+  getStats(): Promise<{ totalPatterns: number; totalTraces: number; avgReward: number }>;
 }
 
 // agentic-flow ReasoningBank implementation
@@ -238,7 +238,7 @@ export class SonaReasoningBank implements ReasoningBank {
     }
   }
 
-  getStats() {
+  async getStats() {
     return {
       totalPatterns: this.patternCount,
       totalTraces: this.traceCount,
@@ -338,7 +338,7 @@ export class LocalReasoningBank implements ReasoningBank {
     return this.patterns.get(patternId) ?? null;
   }
 
-  getStats() {
+  async getStats() {
     const patterns = [...this.patterns.values()];
     const avgReward = patterns.length > 0
       ? patterns.reduce((s, p) => s + p.rewardScore, 0) / patterns.length

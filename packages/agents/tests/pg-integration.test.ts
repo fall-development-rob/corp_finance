@@ -48,7 +48,7 @@ function makeTrace(overrides: Partial<ReasoningTrace> = {}): ReasoningTrace {
       {
         phase: 'act',
         content: 'Running DCF',
-        toolCalls: ['wacc_calculator', 'dcf_model'],
+        toolCalls: [`wacc_calculator_${Date.now()}`, `dcf_model_${Date.now()}`],
         timestamp: new Date(),
       },
       { phase: 'reflect', content: 'Valuation complete', timestamp: new Date() },
@@ -153,18 +153,18 @@ describe.skipIf(!canConnect)('PG Integration — ruvector-postgres', () => {
     const bank = new PgReasoningBank();
 
     it('records a successful trace with trajectory + pattern', async () => {
-      const statsBefore = bank.getStats();
+      const statsBefore = await bank.getStats();
       await bank.recordTrace(makeTrace());
-      const statsAfter = bank.getStats();
+      const statsAfter = await bank.getStats();
 
       expect(statsAfter.totalTraces).toBe(statsBefore.totalTraces + 1);
       expect(statsAfter.totalPatterns).toBe(statsBefore.totalPatterns + 1);
     });
 
     it('records a failed trace without creating a pattern', async () => {
-      const statsBefore = bank.getStats();
+      const statsBefore = await bank.getStats();
       await bank.recordTrace(makeTrace({ outcome: 'failure' }));
-      const statsAfter = bank.getStats();
+      const statsAfter = await bank.getStats();
 
       expect(statsAfter.totalTraces).toBe(statsBefore.totalTraces + 1);
       expect(statsAfter.totalPatterns).toBe(statsBefore.totalPatterns);
