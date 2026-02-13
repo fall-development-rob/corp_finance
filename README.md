@@ -1,6 +1,6 @@
 # corp-finance-mcp
 
-Institutional-grade corporate finance calculations exposed as an MCP (Model Context Protocol) server (v1.0.0). All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings and a TypeScript MCP interface for AI-assisted financial analysis. 71 domain modules, 215 MCP tools, 71 CLI subcommands, 5,879 tests across ~201,000 lines of Rust.
+Institutional-grade corporate finance calculations exposed as an MCP (Model Context Protocol) server, with a multi-agent AI analyst system for CFA-level financial analysis. All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings, a TypeScript MCP interface, and 9 specialist AI agents that route, coordinate, and synthesize across 215 tools. 71 domain modules, 215 MCP tools, 71 CLI subcommands, 5,879 Rust tests + 155 agent tests, ~201,000 lines of Rust.
 
 ## Architecture
 
@@ -9,9 +9,74 @@ crates/corp-finance-core    Rust library — all financial math (Decimal, no f64
 crates/corp-finance-cli     Rust CLI — command-line interface
 packages/bindings           napi-rs — Node.js native bindings (JSON string boundary)
 packages/mcp-server         TypeScript — MCP server with Zod schema validation
+packages/agents             Multi-agent CFA analyst system (pipeline, routing, coordination)
 ```
 
 \* Monte Carlo simulation uses f64 for performance with `rand`/`statrs`.
+
+## Multi-Agent Pipeline
+
+The `packages/agents` module provides a 6-stage AI analysis pipeline powered by [agentic-flow](https://github.com/ruvnet/agentic-flow):
+
+```
+User Query → SemanticRouter → Memory Search → Agent Spawning → Attention Coordination → Synthesis → Response
+                (HNSW)         (vector DB)     (parallel)       (flash attention)        (chief)
+```
+
+### 9 Specialist Analysts
+
+| Agent | Domain | Example Queries |
+|-------|--------|-----------------|
+| Chief Analyst | Orchestration & synthesis | Complex multi-domain requests |
+| Equity Analyst | DCF, comps, earnings quality | "Value AAPL using a 3-stage DCF" |
+| Credit Analyst | Ratings, spreads, default risk | "Assess credit quality: D/E 0.6, ICR 5x" |
+| Fixed Income Analyst | Bonds, curves, duration | "Bootstrap a spot curve from par rates" |
+| Derivatives Analyst | Options, Greeks, vol surface | "Price a 6M call, strike 110, vol 25%" |
+| Quant Risk Analyst | VaR, factor models, portfolio opt | "Run mean-variance optimization" |
+| Macro Analyst | Monetary policy, FX, sovereign | "Taylor Rule rate for 3% inflation" |
+| ESG Analyst | ESG scoring, carbon, green bonds | "Score ESG for a mining company" |
+| Private Markets Analyst | PE, VC, real assets, restructuring | "Model a 5-year LBO with 4x leverage" |
+
+### Pipeline Features
+
+- **HNSW intent routing** — SemanticRouter with all-MiniLM-L6-v2 embeddings (384-dim, local ONNX, no API calls) matches queries to the best specialist(s)
+- **Multi-intent detection** — Cross-domain queries automatically spawn multiple agents in parallel
+- **Attention-based coordination** — Flash attention (8 heads) with 4 swarm topologies (mesh, hierarchical, ring, star) for multi-agent consensus
+- **Vector memory** — Prior analyses and successful tool sequences stored via SONA learning for pattern retrieval
+- **3 memory backends** — `CFA_MEMORY_BACKEND=postgres` (ruvector-postgres with pgvector HNSW), `sqlite` (default, AgentDB), or `local` (in-memory)
+- **Skill injection** — Each agent receives domain-specific CFA skills (valuation, markets, risk, regulatory) as system prompt context
+
+### Agent CLI
+
+```bash
+# Pipeline mode (default) — routes to best agent(s), coordinates, synthesizes
+cfa analyze "Calculate WACC for beta 1.2, risk-free 4%, ERP 6%"
+
+# Single-agent mode — bypass routing, use specific analyst
+cfa analyze --agent cfa-equity-analyst "Run a 3-stage DCF"
+
+# Choose swarm topology
+cfa analyze --topology mesh "Credit assessment and VaR for a BB-rated issuer"
+
+# Interactive REPL
+cfa analyze -i
+
+# List available agents
+cfa list-agents
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ANTHROPIC_API_KEY` | (required) | Anthropic API key for Claude |
+| `CFA_MODEL` | `claude-haiku-4-5-20251001` | Model for agent inference |
+| `CFA_MEMORY_BACKEND` | `sqlite` | Memory backend: `postgres`, `sqlite`, `local` |
+| `PG_HOST` | `localhost` | Postgres host (when backend=postgres) |
+| `PG_PORT` | `5433` | Postgres port |
+| `PG_USER` | `cfa` | Postgres user |
+| `PG_PASSWORD` | `cfa_dev_pass` | Postgres password |
+| `PG_DATABASE` | `cfa_agents` | Postgres database |
 
 ## Modules (71 features, 215 MCP tools)
 
@@ -106,6 +171,27 @@ Add to your MCP client configuration:
 }
 ```
 
+### Multi-Agent Analyst
+
+```bash
+# Install and build
+cd packages/agents && npm install && npm run build
+
+# Set API key
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Run analysis (pipeline mode)
+node dist/src/cli.js analyze "Calculate WACC for beta 1.2, risk-free 4%, ERP 6%"
+
+# Interactive REPL
+node dist/src/cli.js analyze -i
+
+# With Postgres memory (optional — requires Docker)
+cd docker && docker compose up -d
+export CFA_MEMORY_BACKEND=postgres
+node dist/src/cli.js analyze "Credit assessment: D/E 0.6, ICR 5x"
+```
+
 ### Build from Source
 
 ```bash
@@ -118,6 +204,9 @@ cd packages/bindings && npm install && npm run build
 # Build MCP server
 cd packages/mcp-server && npm install && npm run build
 
+# Build agent system
+cd packages/agents && npm install && npm run build
+
 # Start MCP server
 cd packages/mcp-server && npm start
 ```
@@ -127,6 +216,9 @@ cd packages/mcp-server && npm start
 ```bash
 # All Rust tests (5,879 tests)
 cargo test --workspace --all-features
+
+# Agent tests (155 tests)
+cd packages/agents && npm test
 
 # Clippy lint
 cargo clippy --workspace --all-features -- -D warnings
@@ -203,10 +295,21 @@ cargo run -p corp-finance-cli -- wacc \
 │   └── corp-finance-cli/         # CLI binary
 ├── packages/
 │   ├── bindings/                 # napi-rs Node.js bindings
-│   └── mcp-server/              # TypeScript MCP server
-│       └── src/
-│           ├── tools/            # One file per domain
-│           └── schemas/          # Zod validation schemas
+│   ├── mcp-server/              # TypeScript MCP server
+│   │   └── src/
+│   │       ├── tools/            # One file per domain
+│   │       └── schemas/          # Zod validation schemas
+│   └── agents/                   # Multi-agent CFA analyst system
+│       ├── src/
+│       │   ├── pipeline.ts       # 6-stage pipeline (routing → coordination → synthesis)
+│       │   └── cli.ts            # Agent CLI with REPL
+│       ├── agents/               # 9 specialist agent implementations
+│       ├── learning/             # SONA reasoning bank (sqlite + postgres)
+│       ├── memory/               # Financial memory (vector search)
+│       ├── db/                   # Postgres client + migrations
+│       ├── config/               # Tool mappings + name resolver
+│       └── tests/                # 155 tests (unit + integration + e2e)
+├── .claude/agents/cfa/           # Agent definition files (9 analysts)
 └── .github/workflows/            # CI, publish, release
 ```
 
