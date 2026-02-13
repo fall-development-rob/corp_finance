@@ -24,6 +24,9 @@ files-cfa.zip
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/corp-finance-*/
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/cfa/
 .claude-flow/
 docs/Excel Trading Diary SS.xlsx
 .mcp.json
