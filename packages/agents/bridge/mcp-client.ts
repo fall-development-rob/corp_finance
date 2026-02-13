@@ -3,7 +3,6 @@
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { resolveToolName } from '../config/tool-name-resolver.js';
 
 export interface McpBridgeConfig {
   /** Path to the MCP server entry point (default: packages/mcp-server/dist/index.js) */
@@ -16,7 +15,6 @@ export class McpBridge {
   private client: Client;
   private transport: StdioClientTransport | null = null;
   private connected = false;
-  private availableTools = new Set<string>();
 
   constructor() {
     this.client = new Client(
@@ -38,14 +36,6 @@ export class McpBridge {
 
     await this.client.connect(this.transport);
     this.connected = true;
-
-    // Cache available tool names for the resolver
-    try {
-      const result = await this.client.listTools();
-      this.availableTools = new Set(result.tools.map(t => t.name));
-    } catch {
-      // Non-fatal: resolver falls back to static map
-    }
   }
 
   async disconnect(): Promise<void> {
@@ -65,10 +55,7 @@ export class McpBridge {
   async callTool(toolName: string, params: Record<string, unknown>): Promise<unknown> {
     if (!this.connected) throw new Error('MCP bridge not connected');
 
-    // Resolve agent-constructed name to MCP-registered name
-    const resolvedName = resolveToolName(toolName, this.availableTools);
-
-    const result = await this.client.callTool({ name: resolvedName, arguments: params });
+    const result = await this.client.callTool({ name: toolName, arguments: params });
 
     // MCP tool results come as content array; extract the text
     if (result.content && Array.isArray(result.content)) {
