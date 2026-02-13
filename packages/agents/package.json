@@ -15,10 +15,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "agentic-flow": "^2.0.6",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
   }
 }
