@@ -31,8 +31,8 @@ describe('LocalReasoningBank', () => {
     bank = new LocalReasoningBank();
   });
 
-  it('starts with empty stats', () => {
-    const stats = bank.getStats();
+  it('starts with empty stats', async () => {
+    const stats = await bank.getStats();
     expect(stats.totalPatterns).toBe(0);
     expect(stats.totalTraces).toBe(0);
     expect(stats.avgReward).toBe(0);
@@ -41,7 +41,7 @@ describe('LocalReasoningBank', () => {
   it('records a successful trace and creates a pattern', async () => {
     await bank.recordTrace(makeTrace());
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(1);
     expect(stats.totalPatterns).toBe(1);
   });
@@ -49,7 +49,7 @@ describe('LocalReasoningBank', () => {
   it('does not create a pattern for failed traces', async () => {
     await bank.recordTrace(makeTrace({ outcome: 'failure' }));
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(1);
     expect(stats.totalPatterns).toBe(0);
   });
@@ -63,14 +63,14 @@ describe('LocalReasoningBank', () => {
     });
 
     await bank.recordTrace(trace);
-    expect(bank.getStats().totalPatterns).toBe(0);
+    expect((await bank.getStats()).totalPatterns).toBe(0);
   });
 
   it('deduplicates patterns with the same tool fingerprint', async () => {
     await bank.recordTrace(makeTrace({ traceId: 'trace-1' }));
     await bank.recordTrace(makeTrace({ traceId: 'trace-2' }));
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(2);
     expect(stats.totalPatterns).toBe(1);
   });

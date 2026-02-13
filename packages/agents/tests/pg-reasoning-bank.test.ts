@@ -50,8 +50,8 @@ describe('PgReasoningBank', () => {
     bank = new PgReasoningBank();
   });
 
-  it('starts with empty stats', () => {
-    const stats = bank.getStats();
+  it('starts with empty stats', async () => {
+    const stats = await bank.getStats();
     expect(stats.totalPatterns).toBe(0);
     expect(stats.totalTraces).toBe(0);
     expect(stats.avgReward).toBe(0);
@@ -62,19 +62,21 @@ describe('PgReasoningBank', () => {
 
     await bank.recordTrace(makeTrace());
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(1);
     expect(stats.totalPatterns).toBe(1);
 
-    // First call: trajectory insert, second: pattern insert
-    expect(mockQuery).toHaveBeenCalledTimes(2);
+    // Calls: trajectory insert, pattern upsert, getStats query (falls back to in-memory)
+    expect(mockQuery).toHaveBeenCalledTimes(3);
 
     const [trajSql] = mockQuery.mock.calls[0];
     expect(trajSql).toContain('INSERT INTO task_trajectories');
 
     const [patternSql, patternParams] = mockQuery.mock.calls[1];
     expect(patternSql).toContain('INSERT INTO reasoning_memories');
+    expect(patternSql).toContain('ON CONFLICT (fingerprint)');
     expect(patternParams[1]).toBe('valuation-pattern');
+    expect(patternParams[8]).toBeTruthy(); // fingerprint param
   });
 
   it('recordTrace() inserts trajectory but no pattern for failed traces', async () => {
@@ -82,11 +84,12 @@ describe('PgReasoningBank', () => {
 
     await bank.recordTrace(makeTrace({ outcome: 'failure' }));
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(1);
     expect(stats.totalPatterns).toBe(0);
 
-    expect(mockQuery).toHaveBeenCalledTimes(1);
+    // Calls: trajectory insert + getStats query (falls back to in-memory)
+    expect(mockQuery).toHaveBeenCalledTimes(2);
     const [sql] = mockQuery.mock.calls[0];
     expect(sql).toContain('INSERT INTO task_trajectories');
   });
@@ -101,8 +104,9 @@ describe('PgReasoningBank', () => {
       ],
     }));
 
-    expect(bank.getStats().totalPatterns).toBe(0);
-    expect(mockQuery).toHaveBeenCalledTimes(1); // Only trajectory insert
+    expect((await bank.getStats()).totalPatterns).toBe(0);
+    // Calls: trajectory insert + getStats query (falls back to in-memory)
+    expect(mockQuery).toHaveBeenCalledTimes(2);
   });
 
   it('recordFeedback() inserts feedback as reasoning memory', async () => {
@@ -259,7 +263,7 @@ describe('PgReasoningBank', () => {
     await bank.recordTrace(makeTrace({ traceId: 't2' }));
     await bank.recordTrace(makeTrace({ traceId: 't3', outcome: 'failure' }));
 
-    const stats = bank.getStats();
+    const stats = await bank.getStats();
     expect(stats.totalTraces).toBe(3);
     expect(stats.totalPatterns).toBe(2);
     expect(stats.avgReward).toBe(0.5); // 0.5 * 2 / 2

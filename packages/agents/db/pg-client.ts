@@ -61,6 +61,21 @@ export async function getPool(config?: PgConfig): Promise<import('pg').Pool> {
     max: c.poolMax,
     idleTimeoutMillis: c.idleTimeoutMs,
     connectionTimeoutMillis: c.connectionTimeoutMs,
+    statement_timeout: 30_000,
+    application_name: 'cfa-agents',
+  });
+
+  // Resilience: never crash the process on idle-client errors
+  _pool.on('error', (err) => {
+    console.warn('[pg-client] pool background error, resetting pool:', err.message);
+    resetPool();
+  });
+
+  // Set ruvector ef_search on every new connection for improved recall
+  _pool.on('connect', (client) => {
+    client.query('SET ruvector.ef_search = 100').catch((err: Error) => {
+      console.warn('[pg-client] failed to SET ruvector.ef_search:', err.message);
+    });
   });
 
   return _pool;
@@ -81,6 +96,7 @@ export async function healthCheck(): Promise<boolean> {
 
 /**
  * Run all pending SQL migrations from db/migrations/ in version order.
+ * Each migration is wrapped in a transaction with its version recording.
  */
 export async function runMigrations(): Promise<string[]> {
   const pool = await getPool();
@@ -119,7 +135,23 @@ export async function runMigrations(): Promise<string[]> {
     if (appliedSet.has(version)) continue;
 
     const sql = readFileSync(join(migrationsDir, file), 'utf-8');
-    await pool.query(sql);
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(sql);
+      await client.query(
+        'INSERT INTO schema_migrations (version) VALUES ($1)',
+        [version],
+      );
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+
     ran.push(version);
   }
 
@@ -150,12 +182,13 @@ export async function resetPool(): Promise<void> {
 /**
  * Execute a query with automatic retry on connection/recovery errors.
  * Handles ruvector HNSW segfault → Postgres recovery → retry pattern.
+ * Uses exponential backoff: base delay * 3^attempt (1s → 3s → 9s by default).
  */
 export async function queryWithRetry<T extends import('pg').QueryResultRow>(
   queryText: string,
   params: unknown[],
-  maxRetries = 2,
-  retryDelayMs = 3000,
+  maxRetries = Number(process.env.PG_RETRY_MAX ?? 2),
+  retryDelayMs = Number(process.env.PG_RETRY_DELAY_MS ?? 1000),
 ): Promise<import('pg').QueryResult<T>> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -171,10 +204,19 @@ export async function queryWithRetry<T extends import('pg').QueryResultRow>(
         msg.includes('terminating connection');
 
       if (attempt < maxRetries && isRecoverable) {
+        const delay = retryDelayMs * Math.pow(3, attempt);
+        console.warn(
+          `[pg-client] queryWithRetry attempt ${attempt + 1}/${maxRetries} failed: ${msg}. ` +
+          `Retrying in ${delay}ms...`,
+        );
         await resetPool();
-        await new Promise(r => setTimeout(r, retryDelayMs));
+        await new Promise(r => setTimeout(r, delay));
         continue;
       }
+
+      console.error(
+        `[pg-client] queryWithRetry failed after ${attempt + 1} attempt(s): ${msg}`,
+      );
       throw err;
     }
   }
@@ -183,11 +225,12 @@ export async function queryWithRetry<T extends import('pg').QueryResultRow>(
 
 /**
  * Convert a Float32Array to a ruvector literal string: `[0.1,0.2,...]`
+ * Uses toFixed(6) to reduce literal size while preserving sufficient precision.
  */
 export function float32ToVectorLiteral(vec: Float32Array): string {
   const parts: string[] = [];
   for (let i = 0; i < vec.length; i++) {
-    parts.push(String(vec[i]));
+    parts.push(vec[i].toFixed(6));
   }
   return `[${parts.join(',')}]`;
 }

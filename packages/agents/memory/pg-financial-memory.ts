@@ -3,7 +3,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { computeEmbedding } from 'agentic-flow/reasoningbank';
-import { getPool, float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
+import { float32ToVectorLiteral, queryWithRetry } from '../db/pg-client.js';
 import type { FinancialMemory } from './financial-memory.js';
 import type { MemoryEntry, MemoryMetadata, RetrievalContext } from '../types/memory.js';
 
@@ -15,7 +15,6 @@ export class PgFinancialMemory implements FinancialMemory {
   }
 
   async store(content: string, metadata: MemoryMetadata): Promise<MemoryEntry> {
-    const pool = await getPool();
     const entryId = randomUUID();
 
     const tags = [
@@ -30,7 +29,7 @@ export class PgFinancialMemory implements FinancialMemory {
     const embedding = await computeEmbedding(content);
     const vecLiteral = float32ToVectorLiteral(embedding);
 
-    await pool.query(
+    await queryWithRetry(
       `INSERT INTO reasoning_memories
         (id, type, title, description, content, domain, tags, source_json, confidence, usage_count, embedding)
        VALUES ($1, 'reasoning_memory', $2, $3, $4, $5, $6, $7, 0.8, 0, $8::ruvector)`,
@@ -69,6 +68,7 @@ export class PgFinancialMemory implements FinancialMemory {
     const vecLiteral = float32ToVectorLiteral(embedding);
 
     // Use queryWithRetry to survive ruvector HNSW segfault → recovery cycle
+    // Decision 4c: pass min_similarity = 0.3 to filter low-quality matches at DB level
     const { rows } = await queryWithRetry<{
       id: string;
       title: string;
@@ -79,7 +79,7 @@ export class PgFinancialMemory implements FinancialMemory {
       usage_count: number;
       similarity: number;
     }>(
-      `SELECT * FROM search_reasoning_memories($1::ruvector, $2, $3)`,
+      `SELECT * FROM search_reasoning_memories($1::ruvector, $2, $3, 0.3)`,
       [vecLiteral, this.domain, limit],
     );
 
@@ -105,9 +105,7 @@ export class PgFinancialMemory implements FinancialMemory {
   }
 
   async retrieve(entryId: string): Promise<MemoryEntry | null> {
-    const pool = await getPool();
-
-    const { rows } = await pool.query<{
+    const { rows } = await queryWithRetry<{
       id: string;
       content: string;
       domain: string;
@@ -143,12 +141,9 @@ export class PgFinancialMemory implements FinancialMemory {
     };
   }
 
+  // Decision 4a: Use GIN index (idx_rm_tags) for O(1) ticker lookups
+  // instead of O(log n) HNSW vector search — no embedding computation needed
   async getByTicker(ticker: string, limit = 10): Promise<MemoryEntry[]> {
-    // Use embedding similarity to find ticker-related entries
-    const embedding = await computeEmbedding(ticker);
-    const vecLiteral = float32ToVectorLiteral(embedding);
-
-    // Use queryWithRetry to survive ruvector HNSW segfault → recovery cycle
     const { rows } = await queryWithRetry<{
       id: string;
       content: string;
@@ -156,10 +151,13 @@ export class PgFinancialMemory implements FinancialMemory {
       tags: string[];
       confidence: number;
       usage_count: number;
-      similarity: number;
     }>(
-      `SELECT * FROM search_reasoning_memories($1::ruvector, $2, $3)`,
-      [vecLiteral, this.domain, limit],
+      `SELECT id, content, domain, tags, confidence, usage_count
+       FROM reasoning_memories
+       WHERE $1 = ANY(tags) AND domain = $2
+       ORDER BY confidence DESC, created_at DESC
+       LIMIT $3`,
+      [ticker, this.domain, limit],
     );
 
     return rows.map(r => ({
