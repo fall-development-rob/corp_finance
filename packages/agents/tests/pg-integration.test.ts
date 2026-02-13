@@ -2,7 +2,7 @@
 // Skips automatically when the database is unreachable
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getPool, healthCheck, closePool, float32ToVectorLiteral } from '../db/pg-client.js';
+import { getPool, healthCheck, closePool, resetPool, float32ToVectorLiteral } from '../db/pg-client.js';
 import { PgFinancialMemory } from '../memory/pg-financial-memory.js';
 import { PgReasoningBank } from '../learning/pg-reasoning-bank.js';
 import type { MemoryMetadata } from '../types/memory.js';
@@ -61,10 +61,15 @@ function makeTrace(overrides: Partial<ReasoningTrace> = {}): ReasoningTrace {
 
 describe.skipIf(!canConnect)('PG Integration — ruvector-postgres', () => {
   afterAll(async () => {
-    // Clean up test data
-    const pool = await getPool();
-    await pool.query("DELETE FROM reasoning_memories WHERE domain = 'test-integration'");
-    await pool.query("DELETE FROM task_trajectories WHERE agent_id LIKE '%-analyst'");
+    // Clean up test data — reset pool first in case it's broken from a ruvector segfault
+    await resetPool();
+    try {
+      const pool = await getPool();
+      await pool.query("DELETE FROM reasoning_memories WHERE domain = 'test-integration'");
+      await pool.query("DELETE FROM task_trajectories WHERE agent_id LIKE '%-analyst'");
+    } catch {
+      // DB may still be recovering — cleanup is best-effort
+    }
     await closePool();
   });
 
