@@ -2,7 +2,6 @@
 name: cfa-derivatives-analyst
 description: CFA derivatives and volatility specialist — option pricing, implied volatility, forwards/futures, swaps, option strategies, volatility surface construction, SABR calibration, convertible bonds, structured products, real options, and Monte Carlo simulation
 color: "#9B59B6"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -92,7 +91,7 @@ References the **corp-finance-tools-markets** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -102,7 +101,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "derivatives options volatility swaps structured",
   namespace: "analysis",
@@ -127,7 +126,7 @@ For convertible bond analysis:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/derivatives-analyst",
   namespace: "analysis",
@@ -152,7 +151,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/derivatives-analyst/" + Date.now(),
   namespace: "learning",

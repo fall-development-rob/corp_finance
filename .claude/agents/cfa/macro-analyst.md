@@ -2,7 +2,6 @@
 name: cfa-macro-analyst
 description: CFA macro strategist — FX forwards and cross rates, commodity forwards and term structure, emerging markets analysis, monetary policy modelling, international finance, sovereign risk, inflation-linked instruments, and trade finance
 color: "#3498DB"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -98,7 +97,7 @@ References the **corp-finance-tools-markets** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -108,7 +107,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "macro FX rates commodities emerging markets monetary policy",
   namespace: "analysis",
@@ -134,7 +133,7 @@ For commodity analysis:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/macro-analyst",
   namespace: "analysis",
@@ -160,7 +159,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/macro-analyst/" + Date.now(),
   namespace: "learning",

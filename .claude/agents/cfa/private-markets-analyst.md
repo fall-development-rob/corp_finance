@@ -2,7 +2,6 @@
 name: cfa-private-markets-analyst
 description: CFA private markets specialist — LBO modelling, PE returns, sources and uses, debt schedules, waterfall distributions, merger analysis, venture capital, infrastructure finance, real assets, CLO analytics, securitization, and fund of funds
 color: "#8E44AD"
-tools: cfa-tools
 priority: high
 type: analyst
 capabilities:
@@ -113,7 +112,7 @@ References the **corp-finance-analyst-core** skill.
 ### 1. Retrieve Assignment
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "retrieve",
   key: "cfa/assignments",
   namespace: "analysis"
@@ -123,7 +122,7 @@ agentic_flow.reasoningbank {
 ### 2. Search Prior Analyses
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "search",
   query: "LBO PE M&A venture CLO infrastructure private markets",
   namespace: "analysis",
@@ -154,7 +153,7 @@ For fund of funds:
 ### 4. Store Results
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/results/private-markets-analyst",
   namespace: "analysis",
@@ -179,7 +178,7 @@ agentic_flow.reasoningbank {
 ### 5. Store Learning
 
 ```javascript
-agentic_flow.reasoningbank {
+mcp__claude-flow__memory_usage {
   action: "store",
   key: "cfa/learning/private-markets-analyst/" + Date.now(),
   namespace: "learning",
