@@ -1,0 +1,24 @@
+{
+  "name": "@robotixai/cfa-agents",
+  "version": "1.0.0",
+  "description": "Multi-agent CFA analyst system — specialist financial analysts powered by corp-finance-mcp tools",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/corp_finance.git",
+    "directory": "packages/agents"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}
