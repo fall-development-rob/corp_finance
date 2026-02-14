@@ -5,6 +5,14 @@ import type { ExtractedMetrics } from './financial-parser.js';
 
 type FmpCaller = (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
 
+/** Common abbreviations that look like tickers but aren't */
+const COMMON_ABBREVIATIONS = new Set([
+  'A', 'I', 'THE', 'FOR', 'AND', 'WITH', 'HAS', 'EPS', 'DCF', 'IRR',
+  'WACC', 'EBITDA', 'EBIT', 'IPO', 'LBO', 'MBS', 'CLO', 'CDS', 'FMP',
+  'VAR', 'CVAR', 'PE', 'PB', 'ROE', 'ROA', 'EV', 'ESG', 'AML', 'KYC',
+  'FX', 'GDP', 'CPI', 'ETF', 'NAV', 'YTM', 'OAS', 'DPS', 'BPS',
+]);
+
 /**
  * Resolve a company name to a ticker symbol via FMP search.
  * Returns null if no match found.
@@ -204,13 +212,11 @@ export async function enrichMetrics(
   if (!companyName) return { ...textMetrics, _dataSource: 'text-only' };
 
   try {
-    // Check if user already provided a ticker-like string (all caps, 1-5 chars)
-    const tickerMatch = textMetrics._raw.match(/\b([A-Z]{1,5})\b/);
     let symbol: string | null = null;
 
-    // Try direct symbol first if it looks like a ticker
-    if (tickerMatch && tickerMatch[1].length <= 5) {
-      symbol = tickerMatch[1];
+    // Check if _company is already a ticker (all uppercase, 1-5 chars, no spaces)
+    if (/^[A-Z]{1,5}$/.test(companyName) && !COMMON_ABBREVIATIONS.has(companyName)) {
+      symbol = companyName;
     }
 
     // Fall back to name search
