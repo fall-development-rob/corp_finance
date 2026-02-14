@@ -21,6 +21,7 @@ import { createToolCaller } from '../bridge/mcp-client.js';
 import { FmpBridge, createFmpToolCaller } from '../bridge/fmp-bridge.js';
 import { CfaPipeline, injectSkills, type Topology } from './pipeline.js';
 import type { McpBridge } from '../bridge/mcp-client.js';
+import { BatchAnalyzer } from '../orchestrator/batch-analyzer.js';
 
 // Resolve agentic-flow deep imports via file path (bypasses exports map)
 const _require = createRequire(import.meta.url);
@@ -184,6 +185,7 @@ class CfaCli {
   private async handleAnalyze(args: string[]): Promise<void> {
     let interactive = false;
     let agentName: string | undefined;
+    let batchCompanies: string | undefined;
     let topology: Topology = 'hierarchical';
     const queryParts: string[] = [];
 
@@ -193,6 +195,8 @@ class CfaCli {
         interactive = true;
       } else if (arg === '--agent' && args[i + 1]) {
         agentName = args[++i];
+      } else if (arg === '--batch' && args[i + 1]) {
+        batchCompanies = args[++i];
       } else if (arg === '--topology' && args[i + 1]) {
         const val = args[++i];
         if (!isValidTopology(val)) {
@@ -226,7 +230,10 @@ class CfaCli {
         process.exit(1);
       }
 
-      if (agentName) {
+      if (batchCompanies) {
+        // --batch mode: analyze multiple companies
+        await this.runBatch(batchCompanies, query);
+      } else if (agentName) {
         // Explicit --agent → single-agent mode
         await this.runSingleAgent(query, agentName);
       } else {
@@ -276,6 +283,74 @@ class CfaCli {
       console.log(`  ${c('dim', `Coordination: ${result.coordination.mechanism} | top: ${result.coordination.topAgents.join(', ')}`)}`);
     }
     console.log();
+  }
+
+  // ── Batch mode (ADR-006: multi-company portfolio analysis) ─────
+
+  private async runBatch(companiesArg: string, query: string): Promise<void> {
+    setupEnv();
+
+    // Parse companies: comma-separated or @file.txt
+    let companies: string[];
+    if (companiesArg.startsWith('@')) {
+      const filePath = companiesArg.slice(1);
+      const { readFileSync: readFile } = await import('node:fs');
+      companies = readFile(filePath, 'utf-8')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+    } else {
+      companies = companiesArg.split(',').map(c => c.trim()).filter(Boolean);
+    }
+
+    if (companies.length === 0) {
+      console.error(`  ${c('red', 'Error:')} No companies specified.\n`);
+      process.exit(1);
+    }
+
+    console.log(`\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', '— batch portfolio analysis')}`);
+    console.log(`  ${c('dim', `Companies: ${companies.join(', ')} | Query: ${query}`)}\n`);
+
+    const startTime = Date.now();
+
+    const { callTool, callFmpTool } = await this.connect();
+
+    const analyzer = new BatchAnalyzer({
+      callTool,
+      callFmpTool,
+    });
+
+    const result = await analyzer.analyze(companies, query, {
+      concurrency: 3,
+      onProgress: (progress) => {
+        const pct = Math.round((progress.completed / progress.total) * 100);
+        const statusIcon = progress.status === 'completed' ? c('green', '✓')
+          : progress.status === 'failed' ? c('red', '✗')
+          : c('yellow', '⟳');
+        process.stderr.write(`  ${statusIcon} [${pct}%] ${progress.current} — ${progress.status}\n`);
+      },
+    });
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    // Print individual reports
+    for (const company of result.companies) {
+      console.log(`\n${c('bold', `═══ ${company.company} ═══`)}\n`);
+      if (company.error) {
+        console.log(`  ${c('red', 'Error:')} ${company.error}\n`);
+      } else {
+        console.log(company.report);
+      }
+    }
+
+    // Print comparative summary
+    console.log(`\n${c('bold', '═══ Comparative Summary ═══')}\n`);
+    console.log(result.comparative);
+
+    console.log(`\n  ${c('green', '✓')} ${c('bold', 'Batch Complete')} ${c('dim', `— ${duration}s | ${companies.length} companies`)}\n`);
+
+    await this.bridge?.disconnect().catch(() => {});
+    if (this.fmpBridge) await this.fmpBridge.disconnect().catch(() => {});
   }
 
   // ── Single-agent mode (direct claudeAgent) ─────────────────────
@@ -398,6 +473,58 @@ class CfaCli {
         } else {
           topology = val;
           console.log(`  ${c('green', '✓')} Topology set to ${c('cyan', topology)}\n`);
+        }
+        rl.prompt();
+        return;
+      }
+
+      if (input.startsWith('/batch ')) {
+        const parts = input.slice(7).trim();
+        const firstSpace = parts.indexOf(' ');
+        if (firstSpace === -1) {
+          console.error(`  ${c('red', 'Usage:')} /batch AAPL,MSFT,TSLA "query"\n`);
+        } else {
+          const companiesStr = parts.slice(0, firstSpace);
+          const batchQuery = parts.slice(firstSpace + 1).trim().replace(/^["']|["']$/g, '');
+          const batchCompanies = companiesStr.split(',').map(s => s.trim()).filter(Boolean);
+
+          if (batchCompanies.length === 0 || !batchQuery) {
+            console.error(`  ${c('red', 'Usage:')} /batch AAPL,MSFT,TSLA "query"\n`);
+          } else {
+            try {
+              const { callTool, callFmpTool } = await this.connect();
+              const analyzer = new BatchAnalyzer({ callTool, callFmpTool });
+
+              console.log(`  ${c('dim', `Batch: ${batchCompanies.join(', ')} | Query: ${batchQuery}`)}\n`);
+
+              const batchStart = Date.now();
+              const result = await analyzer.analyze(batchCompanies, batchQuery, {
+                concurrency: 3,
+                onProgress: (p) => {
+                  const statusIcon = p.status === 'completed' ? c('green', '✓')
+                    : p.status === 'failed' ? c('red', '✗')
+                    : c('yellow', '⟳');
+                  process.stderr.write(`  ${statusIcon} ${p.current} — ${p.status}\n`);
+                },
+              });
+
+              for (const company of result.companies) {
+                console.log(`\n${c('bold', `═══ ${company.company} ═══`)}\n`);
+                if (company.error) {
+                  console.log(`  ${c('red', 'Error:')} ${company.error}\n`);
+                } else {
+                  console.log(company.report);
+                }
+              }
+              console.log(`\n${c('bold', '═══ Comparative Summary ═══')}\n`);
+              console.log(result.comparative);
+
+              const batchDuration = ((Date.now() - batchStart) / 1000).toFixed(1);
+              console.log(`\n  ${c('green', '✓')} ${c('bold', 'Batch Complete')} ${c('dim', `— ${batchDuration}s`)}\n`);
+            } catch (err) {
+              console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
+            }
+          }
         }
         rl.prompt();
         return;
@@ -572,6 +699,7 @@ class CfaCli {
   ${c('bold', 'Usage:')}
     cfa analyze "<query>"           Run multi-agent pipeline analysis
     cfa analyze --agent <name> ...  Run single-agent analysis
+    cfa analyze --batch <cos> ...   Batch portfolio analysis (comma-separated or @file)
     cfa analyze --topology <type>   Set swarm topology (default: hierarchical)
     cfa analyze -i                  Start interactive REPL
     cfa list                        List available agents
@@ -581,6 +709,8 @@ class CfaCli {
   ${c('bold', 'Examples:')}
     cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%, ERP 6%"
     cfa analyze --agent cfa-equity-analyst "Run DCF for revenue \\$500M"
+    cfa analyze --batch "AAPL,MSFT,TSLA,JPM" "Compare credit risk"
+    cfa analyze --batch @portfolio.txt "Full analysis"
     cfa analyze --topology mesh "Assess credit quality: D/E 0.6, coverage 5x"
     cfa analyze -i
 `);
@@ -597,6 +727,7 @@ class CfaCli {
   ${c('bold', 'Options:')}
     -i, --interactive             Start interactive REPL mode
     --agent <name>                Single-agent mode (skip pipeline)
+    --batch <companies>           Batch mode: comma-separated tickers or @file.txt
     --topology <type>             Swarm topology: mesh, hierarchical, ring, star
     --max-turns <n>               Max agent turns (default: 25)
     -h, --help                    Show this help
@@ -604,6 +735,7 @@ class CfaCli {
   ${c('bold', 'Modes:')}
     ${c('cyan', 'Pipeline (default)')}     Multi-agent: routing → agents → coordination → synthesis
     ${c('cyan', 'Single-agent')}           Direct agent call (use --agent to select)
+    ${c('cyan', 'Batch')}                  Parallel portfolio analysis across N companies
 
   ${c('bold', 'Environment:')}
     ANTHROPIC_API_KEY             Required. Your Anthropic API key.
@@ -625,6 +757,7 @@ class CfaCli {
     /agents            List available agents
     /agent <name>      Switch to single-agent mode with <name>
     /pipeline          Toggle pipeline mode (multi-agent routing)
+    /batch <cos> <q>   Batch portfolio analysis (e.g. /batch AAPL,MSFT "credit risk")
     /topology <type>   Set swarm topology (mesh/hierarchical/ring/star)
     /tools             List MCP tools
     /clear             Clear screen

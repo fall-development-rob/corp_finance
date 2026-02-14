@@ -10,6 +10,7 @@ import type { DomainEvent, EventBus } from '../types/events.js';
 import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS } from '../config/tool-mappings.js';
 import { parseFinancialData, type ExtractedMetrics } from '../utils/financial-parser.js';
 import { enrichMetrics } from '../utils/fmp-data-fetcher.js';
+import type { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface AnalystContext {
   assignmentId: string;
@@ -19,6 +20,8 @@ export interface AnalystContext {
   eventBus: EventBus;
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
   callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+  /** ADR-006: Cross-specialist collaboration bus */
+  insightBus?: InsightBus;
 }
 
 export interface ReasoningState {
@@ -79,8 +82,25 @@ export abstract class BaseAnalyst {
       ...(ctx.priorContext ? [`Prior context: ${ctx.priorContext}`] : []),
     );
 
+    // ADR-006: Subscribe to peer insights if InsightBus is available
+    if (ctx.insightBus) {
+      ctx.insightBus.subscribe(this.agentId, (insight) => {
+        state.observations.push(
+          `[Peer insight from ${insight.sourceAgent}] ${insight.content}`,
+        );
+      });
+    }
+
     while (state.shouldContinue && state.iteration < state.maxIterations) {
       state.iteration++;
+
+      // ADR-006: Inject peer insights into observations before thinking
+      if (ctx.insightBus && state.iteration > 1) {
+        const peerContext = ctx.insightBus.formatPeerContext(this.agentId, 0.6);
+        if (peerContext) {
+          state.observations.push(`Peer findings:\n${peerContext}`);
+        }
+      }
 
       // Phase 2: Think — plan which tools to call
       const toolPlan = await this.think(ctx, state);
@@ -135,6 +155,16 @@ export abstract class BaseAnalyst {
       const reflection = await this.reflect(ctx, state);
       state.reflections.push(reflection.summary);
       state.shouldContinue = reflection.shouldIterate;
+
+      // ADR-006: Broadcast top findings to peers after each iteration
+      if (ctx.insightBus) {
+        this.broadcastFindings(ctx, state);
+      }
+    }
+
+    // ADR-006: Unsubscribe from insight bus
+    if (ctx.insightBus) {
+      ctx.insightBus.unsubscribe(this.agentId);
     }
 
     // Phase 5: Report — produce structured findings
@@ -185,6 +215,47 @@ export abstract class BaseAnalyst {
     return this.capability.toolDomains.some(domain =>
       toolName.startsWith(domain) || toolName.includes(domain),
     );
+  }
+
+  /**
+   * ADR-006: Broadcast key findings from the current iteration to peers.
+   * Extracts the most significant tool results and broadcasts them.
+   */
+  private broadcastFindings(ctx: AnalystContext, state: ReasoningState): void {
+    if (!ctx.insightBus) return;
+
+    // Broadcast successful tool results from the latest iteration
+    const recentResults = state.toolResults
+      .filter(t => !t.error && t.result)
+      .slice(-3); // Last 3 results from this iteration
+
+    for (const tool of recentResults) {
+      const resultStr = typeof tool.result === 'string'
+        ? tool.result.slice(0, 200)
+        : JSON.stringify(tool.result).slice(0, 200);
+
+      ctx.insightBus.broadcast({
+        sourceAgent: this.agentType,
+        sourceAgentId: this.agentId,
+        insightType: 'finding',
+        content: `${tool.toolName}: ${resultStr}`,
+        data: { toolName: tool.toolName, result: tool.result },
+        confidence: this.calculateConfidence(state),
+      });
+    }
+
+    // Broadcast reflections as higher-level insights
+    if (state.reflections.length > 0) {
+      const latestReflection = state.reflections[state.reflections.length - 1];
+      ctx.insightBus.broadcast({
+        sourceAgent: this.agentType,
+        sourceAgentId: this.agentId,
+        insightType: 'finding',
+        content: latestReflection,
+        data: { iteration: state.iteration },
+        confidence: this.calculateConfidence(state),
+      });
+    }
   }
 
   private calculateConfidence(state: ReasoningState): number {
