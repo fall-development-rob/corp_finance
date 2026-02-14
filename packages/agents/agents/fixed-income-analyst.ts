@@ -32,6 +32,18 @@ export class FixedIncomeAnalyst extends BaseAnalyst {
       if (task.includes('repo') || task.includes('financing') || task.includes('collateral')) {
         tools.push({ toolName: 'repo_financing_haircut_analysis', params: buildToolParams('repo_financing_haircut_analysis', state.metrics) });
       }
+      if (task.includes('yield') || task.includes('ytm')) {
+        tools.push({ toolName: 'fixed_income_bond_yield', params: buildToolParams('fixed_income_bond_yield', state.metrics) });
+      }
+      if (task.includes('duration') || task.includes('convexity') || task.includes('dv01')) {
+        tools.push({ toolName: 'fixed_income_duration', params: buildToolParams('fixed_income_duration', state.metrics) });
+      }
+      if (task.includes('nelson') || task.includes('siegel') || task.includes('curve fitting')) {
+        tools.push({ toolName: 'fixed_income_nelson_siegel', params: buildToolParams('fixed_income_nelson_siegel', state.metrics) });
+      }
+      if (task.includes('term structure') || task.includes('hull-white')) {
+        tools.push({ toolName: 'interest_rate_models_term_structure', params: buildToolParams('interest_rate_models_term_structure', state.metrics) });
+      }
       // Default: at least run bond pricing and yield curve
       if (tools.length === 0) {
         tools.push({ toolName: 'fixed_income_bond_pricing', params: buildToolParams('fixed_income_bond_pricing', state.metrics) });
@@ -53,6 +65,18 @@ export class FixedIncomeAnalyst extends BaseAnalyst {
       }
       if (task.includes('financial') || task.includes('statement')) {
         tools.push({ toolName: 'three_statement_model', params: buildToolParams('three_statement_model', state.metrics) });
+      }
+      if (task.includes('mbs') || task.includes('pass-through') || task.includes('oas')) {
+        tools.push({ toolName: 'mortgage_analytics_mbs', params: buildToolParams('mortgage_analytics_mbs', state.metrics) });
+      }
+      if (task.includes('inflation swap') || task.includes('inflation cap')) {
+        tools.push({ toolName: 'inflation_linked_derivatives', params: buildToolParams('inflation_linked_derivatives', state.metrics) });
+      }
+      if (task.includes('collateral') || task.includes('haircut') || task.includes('rehypothecation')) {
+        tools.push({ toolName: 'repo_financing_collateral', params: buildToolParams('repo_financing_collateral', state.metrics) });
+      }
+      if (task.includes('muni') || task.includes('municipal') || task.includes('tax-exempt')) {
+        tools.push({ toolName: 'municipal_bond_pricing', params: buildToolParams('municipal_bond_pricing', state.metrics) });
       }
     }
 

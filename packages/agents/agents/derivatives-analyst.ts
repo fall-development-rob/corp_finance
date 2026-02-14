@@ -47,6 +47,27 @@ export class DerivativesAnalyst extends BaseAnalyst {
         plan.push({ toolName: 'structured_products_analysis', params: buildToolParams('structured_products_analysis', state.metrics) });
       }
 
+
+      if (task.includes('forward value') || task.includes('position value')) {
+        plan.push({ toolName: 'derivatives_forward_value', params: buildToolParams('derivatives_forward_value', state.metrics) });
+      }
+
+      if (task.includes('futures') || task.includes('basis')) {
+        plan.push({ toolName: 'derivatives_futures_basis', params: buildToolParams('derivatives_futures_basis', state.metrics) });
+      }
+
+      if (task.includes('interest rate swap') || task.includes('irs') || task.includes('swap rate')) {
+        plan.push({ toolName: 'derivatives_irs', params: buildToolParams('derivatives_irs', state.metrics) });
+      }
+
+      if (task.includes('currency swap') || task.includes('cross-currency')) {
+        plan.push({ toolName: 'derivatives_currency_swap', params: buildToolParams('derivatives_currency_swap', state.metrics) });
+      }
+
+      if (task.includes('strategy') || task.includes('straddle') || task.includes('strangle') || task.includes('spread')) {
+        plan.push({ toolName: 'derivatives_strategy', params: buildToolParams('derivatives_strategy', state.metrics) });
+      }
+
       // Default fallback when no keywords matched
       if (plan.length === 0) {
         plan.push(
@@ -64,6 +85,19 @@ export class DerivativesAnalyst extends BaseAnalyst {
 
       if (!priorTools.has('credit_derivatives_cds_pricing') && (task.includes('credit') || task.includes('cds'))) {
         plan.push({ toolName: 'credit_derivatives_cds_pricing', params: buildToolParams('credit_derivatives_cds_pricing', state.metrics) });
+      }
+
+
+      if (!priorTools.has('convertibles_analysis') && (task.includes('convertible analysis') || task.includes('conversion premium'))) {
+        plan.push({ toolName: 'convertibles_analysis', params: buildToolParams('convertibles_analysis', state.metrics) });
+      }
+
+      if (!priorTools.has('structured_products_exotic') && (task.includes('exotic') || task.includes('barrier') || task.includes('autocall') || task.includes('digital'))) {
+        plan.push({ toolName: 'structured_products_exotic', params: buildToolParams('structured_products_exotic', state.metrics) });
+      }
+
+      if (!priorTools.has('real_options_decision_tree') && (task.includes('decision tree') || task.includes('binomial') || task.includes('real option'))) {
+        plan.push({ toolName: 'real_options_decision_tree', params: buildToolParams('real_options_decision_tree', state.metrics) });
       }
 
       if (!priorTools.has('monte_carlo_simulation') && plan.length === 0) {

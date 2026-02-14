@@ -32,6 +32,24 @@ export class CreditAnalyst extends BaseAnalyst {
       if (task.includes('cds') || task.includes('derivative') || task.includes('swap')) {
         tools.push({ toolName: 'credit_derivatives_cds_pricing', params: buildToolParams('credit_derivatives_cds_pricing', state.metrics) });
       }
+      if (task.includes('capacity') || task.includes('leverage')) {
+        tools.push({ toolName: 'credit_debt_capacity', params: buildToolParams('credit_debt_capacity', state.metrics) });
+      }
+      if (task.includes('metric') || task.includes('ratio')) {
+        tools.push({ toolName: 'credit_metrics_analysis', params: buildToolParams('credit_metrics_analysis', state.metrics) });
+      }
+      if (task.includes('intensity') || task.includes('hazard')) {
+        tools.push({ toolName: 'credit_scoring_intensity', params: buildToolParams('credit_scoring_intensity', state.metrics) });
+      }
+      if (task.includes('calibrat') || task.includes('validation')) {
+        tools.push({ toolName: 'credit_scoring_pd_calibration', params: buildToolParams('credit_scoring_pd_calibration', state.metrics) });
+      }
+      if (task.includes('validation') || task.includes('accuracy')) {
+        tools.push({ toolName: 'credit_scoring_validation', params: buildToolParams('credit_scoring_validation', state.metrics) });
+      }
+      if (task.includes('altman') || task.includes('z-score') || task.includes('zscore')) {
+        tools.push({ toolName: 'pe_altman_zscore', params: buildToolParams('pe_altman_zscore', state.metrics) });
+      }
       // Default: at least run corporate scoring and spread analysis
       if (tools.length === 0) {
         tools.push({ toolName: 'credit_scoring_corporate', params: buildToolParams('credit_scoring_corporate', state.metrics) });
@@ -53,6 +71,30 @@ export class CreditAnalyst extends BaseAnalyst {
       }
       if (task.includes('financial') || task.includes('statement')) {
         tools.push({ toolName: 'three_statement_model', params: buildToolParams('three_statement_model', state.metrics) });
+      }
+      if (task.includes('migration') || task.includes('transition')) {
+        tools.push({ toolName: 'credit_portfolio_migration', params: buildToolParams('credit_portfolio_migration', state.metrics) });
+      }
+      if (task.includes('cva') || task.includes('counterparty')) {
+        tools.push({ toolName: 'credit_derivatives_cva', params: buildToolParams('credit_derivatives_cva', state.metrics) });
+      }
+      if (task.includes('cecl') || task.includes('provision') || task.includes('expected loss')) {
+        tools.push({ toolName: 'bank_analytics_cecl', params: buildToolParams('bank_analytics_cecl', state.metrics) });
+      }
+      if (task.includes('nim') || task.includes('net interest')) {
+        tools.push({ toolName: 'bank_analytics_nim', params: buildToolParams('bank_analytics_nim', state.metrics) });
+      }
+      if (task.includes('deposit') || task.includes('beta')) {
+        tools.push({ toolName: 'bank_analytics_deposit_beta', params: buildToolParams('bank_analytics_deposit_beta', state.metrics) });
+      }
+      if (task.includes('loan book') || task.includes('loan portfolio')) {
+        tools.push({ toolName: 'bank_analytics_loan_book', params: buildToolParams('bank_analytics_loan_book', state.metrics) });
+      }
+      if (task.includes('z-score model') || task.includes('bankruptcy')) {
+        tools.push({ toolName: 'financial_forensics_zscore', params: buildToolParams('financial_forensics_zscore', state.metrics) });
+      }
+      if (task.includes('peer') || task.includes('benchmark')) {
+        tools.push({ toolName: 'financial_forensics_peer_benchmarking', params: buildToolParams('financial_forensics_peer_benchmarking', state.metrics) });
       }
     }
 

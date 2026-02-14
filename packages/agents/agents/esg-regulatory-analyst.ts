@@ -40,6 +40,21 @@ export class EsgRegulatoryAnalyst extends BaseAnalyst {
       if (task.includes('transfer pricing')) {
         tools.push({ toolName: 'transfer_pricing_arm_length_test', params: buildToolParams('transfer_pricing_arm_length_test', state.metrics) });
       }
+      if (task.includes('green bond') || task.includes('sustainable bond')) {
+        tools.push({ toolName: 'esg_green_bond', params: buildToolParams('esg_green_bond', state.metrics) });
+      }
+      if (task.includes('sll') || task.includes('sustainability-linked')) {
+        tools.push({ toolName: 'esg_sll_covenants', params: buildToolParams('esg_sll_covenants', state.metrics) });
+      }
+      if (task.includes('lcr') || task.includes('liquidity coverage')) {
+        tools.push({ toolName: 'regulatory_lcr', params: buildToolParams('regulatory_lcr', state.metrics) });
+      }
+      if (task.includes('nsfr') || task.includes('stable funding')) {
+        tools.push({ toolName: 'regulatory_nsfr', params: buildToolParams('regulatory_nsfr', state.metrics) });
+      }
+      if (task.includes('alm') || task.includes('asset liability')) {
+        tools.push({ toolName: 'regulatory_alm', params: buildToolParams('regulatory_alm', state.metrics) });
+      }
       // Default: ESG + compliance overview
       if (tools.length === 0) {
         tools.push({ toolName: 'esg_score_calculation', params: buildToolParams('esg_score_calculation', state.metrics) });
@@ -52,6 +67,36 @@ export class EsgRegulatoryAnalyst extends BaseAnalyst {
       }
       if (task.includes('report') || task.includes('filing') || task.includes('disclosure')) {
         tools.push({ toolName: 'regulatory_reporting_requirement', params: buildToolParams('regulatory_reporting_requirement', state.metrics) });
+      }
+      if (task.includes('gips') || task.includes('performance standard')) {
+        tools.push({ toolName: 'compliance_gips', params: buildToolParams('compliance_gips', state.metrics) });
+      }
+      if (task.includes('fatca report') || task.includes('crs report')) {
+        tools.push({ toolName: 'fatca_crs_reporting_requirement', params: buildToolParams('fatca_crs_reporting_requirement', state.metrics) });
+      }
+      if (task.includes('treaty optim') || task.includes('holding structure')) {
+        tools.push({ toolName: 'tax_treaty_structure_optimization', params: buildToolParams('tax_treaty_structure_optimization', state.metrics) });
+      }
+      if (task.includes('beps') || task.includes('pillar two') || task.includes('country-by-country')) {
+        tools.push({ toolName: 'transfer_pricing_beps', params: buildToolParams('transfer_pricing_beps', state.metrics) });
+      }
+      if (task.includes('substance test') || task.includes('jurisdiction')) {
+        tools.push({ toolName: 'substance_requirements_jurisdiction', params: buildToolParams('substance_requirements_jurisdiction', state.metrics) });
+      }
+      if (task.includes('sec report') || task.includes('cftc') || task.includes('form pf')) {
+        tools.push({ toolName: 'regulatory_reporting_sec_cftc', params: buildToolParams('regulatory_reporting_sec_cftc', state.metrics) });
+      }
+      if (task.includes('us fund') || task.includes('delaware') || task.includes('reit')) {
+        tools.push({ toolName: 'jurisdiction_us_fund', params: buildToolParams('jurisdiction_us_fund', state.metrics) });
+      }
+      if (task.includes('uk fund') || task.includes('ucits') || task.includes('sicav')) {
+        tools.push({ toolName: 'jurisdiction_uk_eu_fund', params: buildToolParams('jurisdiction_uk_eu_fund', state.metrics) });
+      }
+      if (task.includes('cayman') || task.includes('offshore fund') || task.includes('spc')) {
+        tools.push({ toolName: 'jurisdiction_cayman_fund', params: buildToolParams('jurisdiction_cayman_fund', state.metrics) });
+      }
+      if (task.includes('luxembourg') || task.includes('ireland') || task.includes('raif') || task.includes('icav')) {
+        tools.push({ toolName: 'jurisdiction_lux_ireland_fund', params: buildToolParams('jurisdiction_lux_ireland_fund', state.metrics) });
       }
     }
 

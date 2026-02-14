@@ -45,6 +45,33 @@ export class PrivateMarketsAnalyst extends BaseAnalyst {
         tools.push({ toolName: 'restructuring_recovery_analysis', params: buildToolParams('restructuring_recovery_analysis', state.metrics) });
         tools.push({ toolName: 'restructuring_waterfall', params: buildToolParams('restructuring_waterfall', state.metrics) });
       }
+      if (task.includes('debt schedule') || task.includes('amortization')) {
+        tools.push({ toolName: 'pe_debt_schedule', params: buildToolParams('pe_debt_schedule', state.metrics) });
+      }
+      if (task.includes('sources') || task.includes('uses of funds')) {
+        tools.push({ toolName: 'pe_sources_uses', params: buildToolParams('pe_sources_uses', state.metrics) });
+      }
+      if (task.includes('waterfall') || task.includes('distribution') || task.includes('carry')) {
+        tools.push({ toolName: 'pe_waterfall', params: buildToolParams('pe_waterfall', state.metrics) });
+      }
+      if (task.includes('altman') || task.includes('z-score')) {
+        tools.push({ toolName: 'pe_altman_zscore', params: buildToolParams('pe_altman_zscore', state.metrics) });
+      }
+      if (task.includes('convertible note') || task.includes('cap')) {
+        tools.push({ toolName: 'venture_convertible_note', params: buildToolParams('venture_convertible_note', state.metrics) });
+      }
+      if (task.includes('safe') || task.includes('post-money')) {
+        tools.push({ toolName: 'venture_safe_conversion', params: buildToolParams('venture_safe_conversion', state.metrics) });
+      }
+      if (task.includes('unitranche') || task.includes('folo')) {
+        tools.push({ toolName: 'private_credit_unitranche', params: buildToolParams('private_credit_unitranche', state.metrics) });
+      }
+      if (task.includes('direct lend') || task.includes('pik')) {
+        tools.push({ toolName: 'private_credit_direct_loan', params: buildToolParams('private_credit_direct_loan', state.metrics) });
+      }
+      if (task.includes('syndicat')) {
+        tools.push({ toolName: 'private_credit_syndication', params: buildToolParams('private_credit_syndication', state.metrics) });
+      }
       // Default: PE + M&A overview
       if (tools.length === 0) {
         tools.push({ toolName: 'pe_lbo_model', params: buildToolParams('pe_lbo_model', state.metrics) });
@@ -58,6 +85,66 @@ export class PrivateMarketsAnalyst extends BaseAnalyst {
       }
       if (task.includes('wealth') || task.includes('family') || task.includes('estate')) {
         tools.push({ toolName: 'private_wealth_planning', params: buildToolParams('private_wealth_planning', state.metrics) });
+      }
+      if (task.includes('abs') || task.includes('asset-backed') || task.includes('securitiz')) {
+        tools.push({ toolName: 'securitization_abs_cashflow', params: buildToolParams('securitization_abs_cashflow', state.metrics) });
+      }
+      if (task.includes('clo waterfall') || task.includes('payment priority')) {
+        tools.push({ toolName: 'clo_analytics_waterfall', params: buildToolParams('clo_analytics_waterfall', state.metrics) });
+      }
+      if (task.includes('coverage test') || task.includes('oc test') || task.includes('ic test')) {
+        tools.push({ toolName: 'clo_analytics_coverage', params: buildToolParams('clo_analytics_coverage', state.metrics) });
+      }
+      if (task.includes('reinvestment') || task.includes('ramp')) {
+        tools.push({ toolName: 'clo_analytics_reinvestment', params: buildToolParams('clo_analytics_reinvestment', state.metrics) });
+      }
+      if (task.includes('clo scenario') || task.includes('clo stress')) {
+        tools.push({ toolName: 'clo_analytics_scenario', params: buildToolParams('clo_analytics_scenario', state.metrics) });
+      }
+      if (task.includes('economic capital')) {
+        tools.push({ toolName: 'capital_allocation_economic', params: buildToolParams('capital_allocation_economic', state.metrics) });
+      }
+      if (task.includes('raroc') || task.includes('rorac')) {
+        tools.push({ toolName: 'capital_allocation_raroc', params: buildToolParams('capital_allocation_raroc', state.metrics) });
+      }
+      if (task.includes('shapley') || task.includes('marginal contribution')) {
+        tools.push({ toolName: 'capital_allocation_shapley', params: buildToolParams('capital_allocation_shapley', state.metrics) });
+      }
+      if (task.includes('limit') || task.includes('exposure limit')) {
+        tools.push({ toolName: 'capital_allocation_limit', params: buildToolParams('capital_allocation_limit', state.metrics) });
+      }
+      if (task.includes('j-curve') || task.includes('j curve')) {
+        tools.push({ toolName: 'fund_of_funds_j_curve', params: buildToolParams('fund_of_funds_j_curve', state.metrics) });
+      }
+      if (task.includes('commitment') || task.includes('pacing')) {
+        tools.push({ toolName: 'fund_of_funds_commitment_pacing', params: buildToolParams('fund_of_funds_commitment_pacing', state.metrics) });
+      }
+      if (task.includes('manager selection') || task.includes('due diligence')) {
+        tools.push({ toolName: 'fund_of_funds_manager_selection', params: buildToolParams('fund_of_funds_manager_selection', state.metrics) });
+      }
+      if (task.includes('secondar') || task.includes('discount')) {
+        tools.push({ toolName: 'fund_of_funds_secondaries', params: buildToolParams('fund_of_funds_secondaries', state.metrics) });
+      }
+      if (task.includes('concentrated') || task.includes('single stock')) {
+        tools.push({ toolName: 'private_wealth_concentrated_stock', params: buildToolParams('private_wealth_concentrated_stock', state.metrics) });
+      }
+      if (task.includes('philanthropi') || task.includes('foundation') || task.includes('daf')) {
+        tools.push({ toolName: 'private_wealth_philanthropic', params: buildToolParams('private_wealth_philanthropic', state.metrics) });
+      }
+      if (task.includes('direct index') || task.includes('tax alpha')) {
+        tools.push({ toolName: 'private_wealth_direct_indexing', params: buildToolParams('private_wealth_direct_indexing', state.metrics) });
+      }
+      if (task.includes('family') || task.includes('succession') || task.includes('governance')) {
+        tools.push({ toolName: 'private_wealth_family_governance', params: buildToolParams('private_wealth_family_governance', state.metrics) });
+      }
+      if (task.includes('lease classif') || task.includes('rou') || task.includes('right of use')) {
+        tools.push({ toolName: 'lease_accounting_classification', params: buildToolParams('lease_accounting_classification', state.metrics) });
+      }
+      if (task.includes('sale-leaseback') || task.includes('sale leaseback')) {
+        tools.push({ toolName: 'lease_accounting_sale_leaseback', params: buildToolParams('lease_accounting_sale_leaseback', state.metrics) });
+      }
+      if (task.includes('decision tree') || task.includes('expand option')) {
+        tools.push({ toolName: 'real_options_decision_tree', params: buildToolParams('real_options_decision_tree', state.metrics) });
       }
     }
 
