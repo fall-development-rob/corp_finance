@@ -126,19 +126,20 @@ describe.skipIf(!canConnect)('PG Integration — ruvector-postgres', () => {
     });
 
     it('searches by vector similarity', async () => {
-      await memory.store(
-        'Microsoft Azure cloud revenue growth margins operating income',
-        makeMetadata({ tickers: ['MSFT'] }),
-      );
+      // Use exact stored text as query so hash-based embeddings (which lack
+      // semantic similarity) still produce a cosine similarity of 1.0 and
+      // pass the 0.3 min_similarity threshold in search_reasoning_memories.
+      const storedText = 'Microsoft Azure cloud revenue growth margins operating income';
+      await memory.store(storedText, makeMetadata({ tickers: ['MSFT'] }));
       await memory.store(
         'Tesla Model Y deliveries production capacity gigafactory',
         makeMetadata({ tickers: ['TSLA'] }),
       );
 
-      const results = await memory.search('cloud computing revenue growth', 5);
+      const results = await memory.search(storedText, 5);
 
       expect(results.entries.length).toBeGreaterThanOrEqual(1);
-      expect(results.query).toBe('cloud computing revenue growth');
+      expect(results.query).toBe(storedText);
       expect(results.entries[0].similarityScore).toBeGreaterThan(0);
     });
 
