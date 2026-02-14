@@ -24,6 +24,7 @@ files-cfa.zip
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/corp-finance-*/
+!.claude/skills/fmp-*/
 !.claude/agents/
 .claude/agents/*
 !.claude/agents/cfa/
