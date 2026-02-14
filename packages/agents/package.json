@@ -18,7 +18,8 @@
     "dev": "npx tsx src/cli.ts analyze -i",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node scripts/patch-agentic-flow.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
