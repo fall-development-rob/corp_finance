@@ -14,6 +14,7 @@ import { SimpleEventBus } from '../types/events.js';
 import { ChiefAnalyst } from '../agents/chief-analyst.js';
 import { createSpecialist } from './specialist-factory.js';
 import type { AnalystContext } from '../agents/base-analyst.js';
+import { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface OrchestratorConfig {
   confidenceThreshold?: number;
@@ -102,6 +103,9 @@ export class Orchestrator {
     // 4. Create assignments
     const assignments = this.chief.createAssignments(request);
 
+    // ADR-006: Create shared InsightBus for cross-specialist collaboration
+    const insightBus = new InsightBus();
+
     // 5. Execute specialist agents in parallel
     const results = await Promise.all(
       assignments.map(async (assignment) => {
@@ -121,6 +125,7 @@ export class Orchestrator {
           eventBus: this.eventBus,
           callTool: this.callTool,
           callFmpTool: this.callFmpTool,
+          insightBus,
         };
 
         // Search ReasoningBank for relevant prior analyses
