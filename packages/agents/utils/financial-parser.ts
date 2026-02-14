@@ -167,10 +167,42 @@ const METRIC_PATTERNS: PatternDef[] = [
 export function parseFinancialData(text: string): ExtractedMetrics {
   const metrics: ExtractedMetrics = { _raw: text };
 
-  // Try to extract company name (first capitalized word sequence before a colon or comma)
-  const companyMatch = text.match(/^(?:analyze|assess|evaluate|value|review)?\s*([A-Z][A-Za-z\s.&]+?)(?:\s*[,:—-]|\s+(?:revenue|ebitda|with|has))/i);
-  if (companyMatch) {
-    metrics._company = companyMatch[1].trim();
+  // Try to extract company name from multiple patterns
+  let companyName: string | undefined;
+
+  // Pattern 1: "Analyze Apple: ..." or "Assess Microsoft, ..." (verb + company + delimiter)
+  const p1 = text.match(/^(?:analyze|assess|evaluate|value|review|compare)\s+([A-Z][A-Za-z\s.&']+?)(?:\s*[,:—-]|\s+(?:revenue|ebitda|with|has))/i);
+  if (p1) companyName = p1[1].trim();
+
+  // Pattern 2: "... for Apple" or "... for Apple Inc." (company after "for" at end)
+  if (!companyName) {
+    const p2 = text.match(/\bfor\s+([A-Z][A-Za-z.&']+(?:\s+(?:Inc|Corp|Ltd|LLC|Co|Group|Holdings|Technologies|Microsystems|Motors|Platforms|Entertainment)\.?)?)\s*$/i);
+    if (p2) companyName = p2[1].trim();
+  }
+
+  // Pattern 3: "... for Apple's credit risk" (company after "for" mid-sentence)
+  if (!companyName) {
+    const p3 = text.match(/\bfor\s+([A-Z][A-Za-z.&']+(?:\s+(?:Inc|Corp|Ltd|LLC|Co)\.?)?)\s*(?:'s\b|\s+(?:credit|equity|risk|valuation|analysis|stock|bond|debt))/i);
+    if (p3) companyName = p3[1].trim();
+  }
+
+  // Pattern 4: Known ticker symbol (1-5 uppercase letters that aren't common words)
+  if (!companyName) {
+    const EXCLUDED_TICKERS = new Set([
+      'A', 'I', 'THE', 'FOR', 'AND', 'WITH', 'HAS', 'EPS', 'DCF', 'IRR',
+      'WACC', 'EBITDA', 'EBIT', 'IPO', 'LBO', 'MBS', 'CLO', 'CDS', 'FMP',
+      'VAR', 'CVAR', 'PE', 'PB', 'ROE', 'ROA', 'EV', 'ESG', 'AML', 'KYC',
+      'FX', 'GDP', 'CPI', 'ETF', 'NAV', 'YTM', 'OAS', 'DPS', 'BPS',
+    ]);
+    const p4 = text.match(/\b([A-Z]{2,5})\b/g);
+    if (p4) {
+      const ticker = p4.find(t => !EXCLUDED_TICKERS.has(t));
+      if (ticker) companyName = ticker;
+    }
+  }
+
+  if (companyName) {
+    metrics._company = companyName;
   }
 
   // Apply metric patterns
