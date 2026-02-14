@@ -71,6 +71,12 @@ export interface ExtractedMetrics {
   recovery_rate?: number;
   default_probability?: number;
 
+  // Data source tracking
+  _symbol?: string;
+  _sector?: string;
+  _industry?: string;
+  _dataSource?: 'text-only' | 'fmp-enriched';
+
   // Raw text for context
   _raw: string;
   _company?: string;
