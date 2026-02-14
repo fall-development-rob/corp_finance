@@ -1,6 +1,6 @@
 {
   "name": "@robotixai/fmp-mcp-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Financial Modeling Prep market data as MCP tools",
   "repository": {
     "type": "git",

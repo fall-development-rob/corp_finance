@@ -1,6 +1,6 @@
 {
   "name": "@robotixai/cfa-agents",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Multi-agent CFA analyst system — specialist financial analysts powered by corp-finance-mcp tools",
   "type": "module",
   "main": "dist/index.js",
