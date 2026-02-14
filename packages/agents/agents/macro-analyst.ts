@@ -41,6 +41,18 @@ export class MacroAnalyst extends BaseAnalyst {
         tools.push({ toolName: 'sovereign_debt_sustainability', params: buildToolParams('sovereign_debt_sustainability', state.metrics) });
         tools.push({ toolName: 'sovereign_credit_analysis', params: buildToolParams('sovereign_credit_analysis', state.metrics) });
       }
+      if (task.includes('political') || task.includes('geopolitical')) {
+        tools.push({ toolName: 'emerging_markets_political_risk', params: buildToolParams('emerging_markets_political_risk', state.metrics) });
+      }
+      if (task.includes('capital control') || task.includes('repatriation')) {
+        tools.push({ toolName: 'emerging_markets_capital_controls', params: buildToolParams('emerging_markets_capital_controls', state.metrics) });
+      }
+      if (task.includes('equity premium') || task.includes('em premium')) {
+        tools.push({ toolName: 'emerging_markets_equity_premium', params: buildToolParams('emerging_markets_equity_premium', state.metrics) });
+      }
+      if (task.includes('term structure') || task.includes('contango') || task.includes('backwardation')) {
+        tools.push({ toolName: 'fx_commodities_commodity_curve', params: buildToolParams('fx_commodities_commodity_curve', state.metrics) });
+      }
       // Default: broad macro overview
       if (tools.length === 0) {
         tools.push({ toolName: 'macro_economics_rate_analysis', params: buildToolParams('macro_economics_rate_analysis', state.metrics) });
@@ -53,6 +65,21 @@ export class MacroAnalyst extends BaseAnalyst {
       }
       if (task.includes('carbon') || task.includes('emission') || task.includes('climate')) {
         tools.push({ toolName: 'carbon_markets_emission_pricing', params: buildToolParams('carbon_markets_emission_pricing', state.metrics) });
+      }
+      if (task.includes('storage') || task.includes('carry cost') || task.includes('convenience yield')) {
+        tools.push({ toolName: 'commodity_trading_storage', params: buildToolParams('commodity_trading_storage', state.metrics) });
+      }
+      if (task.includes('ets') || task.includes('emission trading')) {
+        tools.push({ toolName: 'carbon_markets_ets_compliance', params: buildToolParams('carbon_markets_ets_compliance', state.metrics) });
+      }
+      if (task.includes('cbam') || task.includes('carbon border')) {
+        tools.push({ toolName: 'carbon_markets_cbam', params: buildToolParams('carbon_markets_cbam', state.metrics) });
+      }
+      if (task.includes('shadow carbon') || task.includes('internal carbon')) {
+        tools.push({ toolName: 'carbon_markets_shadow_price', params: buildToolParams('carbon_markets_shadow_price', state.metrics) });
+      }
+      if (task.includes('supply chain') || task.includes('factoring') || task.includes('forfaiting')) {
+        tools.push({ toolName: 'trade_finance_supply_chain', params: buildToolParams('trade_finance_supply_chain', state.metrics) });
       }
     }
 

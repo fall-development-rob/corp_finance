@@ -46,6 +46,35 @@ export class QuantRiskAnalyst extends BaseAnalyst {
         plan.push({ toolName: 'performance_attribution_factor_based', params: buildToolParams('performance_attribution_factor_based', state.metrics) });
       }
 
+
+      if (task.includes('black-litterman') || task.includes('investor views')) {
+        plan.push({ toolName: 'portfolio_optimization_black_litterman', params: buildToolParams('portfolio_optimization_black_litterman', state.metrics) });
+      }
+
+      if (task.includes('factor risk') || task.includes('risk budget')) {
+        plan.push({ toolName: 'risk_budgeting_factor', params: buildToolParams('risk_budgeting_factor', state.metrics) });
+      }
+
+      if (task.includes('bayesian') || task.includes('prior') || task.includes('posterior')) {
+        plan.push({ toolName: 'quant_risk_black_litterman', params: buildToolParams('quant_risk_black_litterman', state.metrics) });
+      }
+
+      if (task.includes('prospect') || task.includes('loss aversion') || task.includes('behavioral')) {
+        plan.push({ toolName: 'behavioral_prospect_theory', params: buildToolParams('behavioral_prospect_theory', state.metrics) });
+      }
+
+      if (task.includes('sentiment') || task.includes('fear') || task.includes('greed')) {
+        plan.push({ toolName: 'behavioral_sentiment', params: buildToolParams('behavioral_sentiment', state.metrics) });
+      }
+
+      if (task.includes('sensitivity') || task.includes('tornado')) {
+        plan.push({ toolName: 'scenarios_sensitivity', params: buildToolParams('scenarios_sensitivity', state.metrics) });
+      }
+
+      if (task.includes('scenario') && !task.includes('stress')) {
+        plan.push({ toolName: 'scenarios_analysis', params: buildToolParams('scenarios_analysis', state.metrics) });
+      }
+
       // Default fallback when no keywords matched
       if (plan.length === 0) {
         plan.push(
@@ -67,6 +96,43 @@ export class QuantRiskAnalyst extends BaseAnalyst {
 
       if (!priorTools.has('market_microstructure_liquidity') && (task.includes('liquidity') || task.includes('microstructure'))) {
         plan.push({ toolName: 'market_microstructure_liquidity', params: buildToolParams('market_microstructure_liquidity', state.metrics) });
+      }
+
+
+      if (!priorTools.has('quant_strategies_pairs') && (task.includes('pairs') || task.includes('cointegration') || task.includes('mean reversion'))) {
+        plan.push({ toolName: 'quant_strategies_pairs', params: buildToolParams('quant_strategies_pairs', state.metrics) });
+      }
+
+      if (!priorTools.has('index_construction_rebalancing') && task.includes('rebalanc')) {
+        plan.push({ toolName: 'index_construction_rebalancing', params: buildToolParams('index_construction_rebalancing', state.metrics) });
+      }
+
+      if (!priorTools.has('index_construction_tracking_error') && task.includes('tracking error')) {
+        plan.push({ toolName: 'index_construction_tracking_error', params: buildToolParams('index_construction_tracking_error', state.metrics) });
+      }
+
+      if (!priorTools.has('index_construction_smart_beta') && (task.includes('smart beta') || task.includes('factor tilt'))) {
+        plan.push({ toolName: 'index_construction_smart_beta', params: buildToolParams('index_construction_smart_beta', state.metrics) });
+      }
+
+      if (!priorTools.has('index_construction_reconstitution') && (task.includes('reconstitution') || task.includes('additions'))) {
+        plan.push({ toolName: 'index_construction_reconstitution', params: buildToolParams('index_construction_reconstitution', state.metrics) });
+      }
+
+      if (!priorTools.has('market_microstructure_execution') && (task.includes('execution') || task.includes('impact') || task.includes('slippage'))) {
+        plan.push({ toolName: 'market_microstructure_execution', params: buildToolParams('market_microstructure_execution', state.metrics) });
+      }
+
+      if (!priorTools.has('portfolio_risk_adjusted_returns') && (task.includes('sharpe') || task.includes('sortino') || task.includes('risk-adjusted'))) {
+        plan.push({ toolName: 'portfolio_risk_adjusted_returns', params: buildToolParams('portfolio_risk_adjusted_returns', state.metrics) });
+      }
+
+      if (!priorTools.has('portfolio_risk_metrics') && (task.includes('var') || task.includes('cvar') || task.includes('risk metric'))) {
+        plan.push({ toolName: 'portfolio_risk_metrics', params: buildToolParams('portfolio_risk_metrics', state.metrics) });
+      }
+
+      if (!priorTools.has('portfolio_kelly_sizing') && (task.includes('kelly') || task.includes('position size'))) {
+        plan.push({ toolName: 'portfolio_kelly_sizing', params: buildToolParams('portfolio_kelly_sizing', state.metrics) });
       }
 
       // Fallback deeper tool if nothing else matched in iteration 2+

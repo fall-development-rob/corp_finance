@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { resolveToolName, reverseResolve } from '../config/tool-name-resolver.js';
 
 describe('Tool name resolver', () => {
-  // All MCP-registered tool names (from the 71 tool files)
+  // All 215 MCP-registered tool names
   const mcpTools = new Set([
     'wacc_calculator', 'dcf_model', 'comps_analysis', 'sotp_valuation', 'target_price',
-    'credit_metrics', 'debt_capacity', 'covenant_compliance',
-    'credit_scorecard', 'merton_pd', 'intensity_model', 'pd_calibration', 'scoring_validation',
-    'bond_pricer', 'bond_yield', 'bootstrap_spot_curve', 'nelson_siegel_fit', 'bond_duration', 'credit_spreads',
+    'credit_metrics', 'debt_capacity', 'covenant_compliance', 'credit_scorecard',
+    'merton_pd', 'intensity_model', 'pd_calibration', 'scoring_validation',
+    'bond_pricer', 'bond_yield', 'bootstrap_spot_curve', 'nelson_siegel_fit',
+    'bond_duration', 'credit_spreads',
     'option_pricer', 'implied_volatility', 'forward_pricer', 'forward_position_value',
     'futures_basis_analysis', 'interest_rate_swap', 'currency_swap', 'option_strategy',
     'three_statement_model', 'monte_carlo_simulation', 'monte_carlo_dcf',
@@ -17,7 +18,8 @@ describe('Tool name resolver', () => {
     'property_valuation', 'project_finance_model',
     'fx_forward', 'cross_rate', 'commodity_forward', 'commodity_curve',
     'abs_cashflow_model', 'tranching_analysis',
-    'funding_round', 'dilution_analysis', 'convertible_note', 'safe_conversion', 'venture_fund_model',
+    'funding_round', 'dilution_analysis', 'convertible_note', 'safe_conversion',
+    'venture_fund_model',
     'esg_score', 'carbon_footprint', 'green_bond', 'sll_covenants',
     'regulatory_capital', 'lcr', 'nsfr', 'alm_analysis',
     'unitranche_pricing', 'direct_loan', 'syndication_analysis',
@@ -32,9 +34,11 @@ describe('Tool name resolver', () => {
     'pension_funding', 'ldi_strategy',
     'sovereign_bond_analysis', 'country_risk_assessment',
     'real_option_valuation', 'decision_tree_analysis',
-    'beneish_mscore', 'piotroski_fscore', 'accrual_quality', 'revenue_quality', 'earnings_quality_composite',
+    'beneish_mscore', 'piotroski_fscore', 'accrual_quality', 'revenue_quality',
+    'earnings_quality_composite',
     'commodity_spread', 'storage_economics',
-    'returns_calculator', 'debt_schedule', 'sources_uses', 'lbo_model', 'waterfall_calculator', 'altman_zscore',
+    'returns_calculator', 'debt_schedule', 'sources_uses', 'lbo_model',
+    'waterfall_calculator', 'altman_zscore',
     'ppp_model', 'concession_valuation',
     'merger_model',
     'mean_variance_optimization', 'black_litterman_portfolio',
@@ -45,36 +49,46 @@ describe('Tool name resolver', () => {
     'prepayment_analysis', 'mbs_analytics',
     'tips_analytics', 'inflation_derivatives',
     'repo_analytics', 'collateral_analytics',
-    'h_model_ddm', 'multistage_ddm', 'buyback_analysis', 'payout_sustainability', 'total_shareholder_return',
+    'h_model_ddm', 'multistage_ddm', 'buyback_analysis', 'payout_sustainability',
+    'total_shareholder_return',
     'portfolio_credit_risk', 'credit_migration',
-    'benfords_law', 'dupont_analysis', 'zscore_models', 'peer_benchmarking', 'red_flag_scoring',
-    'nim_analysis', 'camels_rating', 'cecl_provisioning', 'deposit_beta', 'loan_book_analysis',
+    'benfords_law', 'dupont_analysis', 'zscore_models', 'peer_benchmarking',
+    'red_flag_scoring',
+    'nim_analysis', 'camels_rating', 'cecl_provisioning', 'deposit_beta',
+    'loan_book_analysis',
     'pairs_trading', 'momentum_analysis',
-    'index_weighting', 'index_rebalancing', 'tracking_error', 'smart_beta', 'index_reconstitution',
+    'index_weighting', 'index_rebalancing', 'tracking_error', 'smart_beta',
+    'index_reconstitution',
     'spread_analysis', 'optimal_execution',
     'prospect_theory', 'market_sentiment',
     'monetary_policy', 'international_economics',
-    'country_risk_premium', 'political_risk', 'capital_controls', 'em_bond_analysis', 'em_equity_premium',
+    'country_risk_premium', 'political_risk', 'capital_controls',
+    'em_bond_analysis', 'em_equity_premium',
     'risk_adjusted_returns', 'risk_metrics', 'kelly_sizing',
     'variance_analysis', 'breakeven_analysis', 'working_capital', 'rolling_forecast',
     'cash_management', 'hedge_effectiveness',
     'loss_reserving', 'premium_pricing', 'combined_ratio', 'solvency_scr',
     'fund_fee_calculator', 'gaap_ifrs_reconcile', 'withholding_tax', 'nav_calculator',
     'gp_economics', 'investor_net_returns', 'ubti_screening',
-    'economic_capital', 'raroc_calculation', 'euler_allocation', 'shapley_allocation', 'limit_management',
-    'carbon_credit_pricing', 'ets_compliance', 'cbam_analysis', 'offset_valuation', 'shadow_carbon_price',
-    'j_curve_model', 'commitment_pacing', 'manager_selection', 'secondaries_pricing', 'fof_portfolio',
-    'concentrated_stock', 'philanthropic_vehicles', 'wealth_transfer', 'direct_indexing', 'family_governance',
+    'economic_capital', 'raroc_calculation', 'euler_allocation', 'shapley_allocation',
+    'limit_management',
+    'carbon_credit_pricing', 'ets_compliance', 'cbam_analysis', 'offset_valuation',
+    'shadow_carbon_price',
+    'j_curve_model', 'commitment_pacing', 'manager_selection', 'secondaries_pricing',
+    'fof_portfolio',
+    'concentrated_stock', 'philanthropic_vehicles', 'wealth_transfer',
+    'direct_indexing', 'family_governance',
     'best_execution', 'gips_report',
     'kyc_risk_assessment', 'sanctions_screening',
     'fatca_crs_reporting', 'entity_classification',
     'treaty_network', 'treaty_structure_optimization',
-    'beps_compliance', 'intercompany_pricing',
+    'intercompany_pricing', 'beps_compliance',
     'economic_substance', 'jurisdiction_substance_test',
     'aifmd_reporting', 'sec_cftc_reporting',
     'us_fund_structure', 'uk_eu_fund_structure',
     'cayman_fund_structure', 'lux_ireland_fund_structure',
-    'clo_waterfall', 'clo_coverage_tests', 'clo_reinvestment', 'clo_tranche_analytics', 'clo_scenario',
+    'clo_waterfall', 'clo_coverage_tests', 'clo_reinvestment',
+    'clo_tranche_analytics', 'clo_scenario',
   ]);
 
   describe('exact matches pass through', () => {
@@ -96,6 +110,19 @@ describe('Tool name resolver', () => {
       ['earnings_quality_accruals_analysis', 'accrual_quality'],
       ['dividend_policy_sustainability', 'payout_sustainability'],
       ['performance_attribution_brinson', 'brinson_attribution'],
+      ['valuation_sotp_valuation', 'sotp_valuation'],
+      ['valuation_target_price', 'target_price'],
+      ['dividend_policy_h_model', 'h_model_ddm'],
+      ['dividend_policy_buyback', 'buyback_analysis'],
+      ['dividend_policy_total_shareholder_return', 'total_shareholder_return'],
+      ['earnings_quality_piotroski', 'piotroski_fscore'],
+      ['earnings_quality_revenue', 'revenue_quality'],
+      ['earnings_quality_composite', 'earnings_quality_composite'],
+      ['financial_forensics_dupont', 'dupont_analysis'],
+      ['financial_forensics_peer_benchmarking', 'peer_benchmarking'],
+      ['financial_forensics_red_flags', 'red_flag_scoring'],
+      ['financial_forensics_benfords_law', 'benfords_law'],
+      ['financial_forensics_zscore', 'zscore_models'],
     ];
     it.each(cases)('%s → %s', (agent, mcp) => {
       expect(resolveToolName(agent, mcpTools)).toBe(mcp);
@@ -236,28 +263,56 @@ describe('Tool name resolver', () => {
     });
   });
 
-  describe('all mapped MCP names are valid', () => {
-    it('every resolved name exists in MCP tool set', () => {
-      // All the agent names from above tests
+  describe('prefix stripping fallback', () => {
+    it('strips known prefix when no static mapping exists', () => {
+      const tools = new Set(['some_new_tool']);
+      expect(resolveToolName('valuation_some_new_tool', tools)).toBe('some_new_tool');
+    });
+
+    it('prefers static map over prefix stripping', () => {
+      expect(resolveToolName('valuation_dcf_model', mcpTools)).toBe('dcf_model');
+    });
+
+    it('returns original if prefix strip yields no match', () => {
+      const tools = new Set(['bond_pricer']);
+      expect(resolveToolName('valuation_nonexistent', tools)).toBe('valuation_nonexistent');
+    });
+  });
+
+  describe('complete coverage', () => {
+    it('all AGENT_TO_MCP targets exist in MCP tools', () => {
       const allAgentNames = [
+        // Equity analyst
         'valuation_dcf_model', 'valuation_wacc_calculation', 'valuation_comparable_companies',
         'equity_research_fundamental_analysis', 'earnings_quality_accruals_analysis',
         'dividend_policy_sustainability', 'performance_attribution_brinson',
+        'valuation_sotp_valuation', 'valuation_target_price',
+        'dividend_policy_h_model', 'dividend_policy_buyback',
+        'dividend_policy_total_shareholder_return',
+        'earnings_quality_piotroski', 'earnings_quality_revenue', 'earnings_quality_composite',
+        'financial_forensics_dupont', 'financial_forensics_peer_benchmarking',
+        'financial_forensics_red_flags', 'financial_forensics_benfords_law',
+        'financial_forensics_zscore',
+        // Credit analyst
         'credit_scoring_corporate', 'credit_spread_analysis', 'credit_default_probability',
         'credit_portfolio_var', 'credit_derivatives_cds_pricing', 'restructuring_distressed_valuation',
         'financial_forensics_beneish', 'bank_analytics_capital_adequacy', 'credit_covenant_analysis',
+        // Fixed income analyst
         'fixed_income_bond_pricing', 'fixed_income_yield_curve', 'interest_rate_models_vasicek',
         'inflation_linked_tips_analysis', 'repo_financing_haircut_analysis',
         'mortgage_analytics_prepayment_model', 'municipal_credit_analysis',
         'sovereign_debt_sustainability', 'fixed_income_spread_analysis',
+        // Derivatives analyst
         'derivatives_option_pricing', 'derivatives_greeks_calculation',
         'volatility_surface_interpolation', 'volatility_surface_smile_analysis',
         'convertibles_pricing', 'structured_products_analysis', 'real_options_valuation',
+        // Quant-risk analyst
         'quant_risk_var_calculation', 'quant_risk_expected_shortfall',
         'portfolio_optimization_mean_variance', 'risk_budgeting_risk_parity',
         'quant_risk_factor_analysis', 'scenarios_stress_test',
         'performance_attribution_factor_based', 'quant_strategies_momentum',
         'index_construction_methodology', 'market_microstructure_liquidity',
+        // Macro analyst
         'macro_economics_rate_analysis', 'macro_economics_yield_curve',
         'fx_commodities_currency_analysis', 'fx_commodities_cross_rate',
         'commodity_trading_price_analysis', 'fx_commodities_commodity_valuation',
@@ -265,12 +320,14 @@ describe('Tool name resolver', () => {
         'inflation_linked_breakeven_rate', 'macro_economics_inflation_analysis',
         'sovereign_credit_analysis', 'macro_economics_economic_indicators',
         'trade_finance_letter_of_credit', 'carbon_markets_emission_pricing',
+        // ESG & regulatory analyst
         'esg_score_calculation', 'esg_materiality_assessment',
         'carbon_markets_offset_valuation', 'compliance_check',
         'regulatory_capital_requirement', 'aml_compliance_risk_assessment',
         'aml_compliance_transaction_screening', 'fatca_crs_classification',
         'tax_treaty_withholding_rate', 'transfer_pricing_arm_length_test',
         'substance_requirements_assessment', 'regulatory_reporting_requirement',
+        // Private markets analyst
         'pe_lbo_model', 'pe_returns_analysis', 'venture_valuation',
         'venture_dilution_analysis', 'ma_accretion_dilution', 'ma_synergy_analysis',
         'infrastructure_project_finance', 'infrastructure_concession_valuation',

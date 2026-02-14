@@ -8,7 +8,7 @@ import type {
 } from '../types/analysis.js';
 import type { AnalysisResult } from '../types/agents.js';
 import type { EventBus } from '../types/events.js';
-import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS, suggestAgents } from '../config/tool-mappings.js';
+import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS, CROSS_CUTTING_MODULES, suggestAgents } from '../config/tool-mappings.js';
 
 export interface ChiefAnalystConfig {
   confidenceThreshold: number;     // below this, escalate for human review (default 0.6)
@@ -204,6 +204,18 @@ export class ChiefAnalyst {
       pe: ['lbo', 'buyout', 'private equity', 'leverage'],
       ma: ['m&a', 'merger', 'acquisition', 'accretion', 'dilution'],
       restructuring: ['restructuring', 'distressed', 'bankruptcy', 'workout'],
+
+      // Cross-cutting domains — insurance, pension, wealth, crypto, jurisdiction, treasury
+      insurance: ['insurance', 'reserv', 'loss triangle', 'premium', 'combined ratio', 'loss ratio', 'solvency', 'scr'],
+      pension: ['pension', 'defined benefit', 'ldi', 'liability driven'],
+      wealth: ['retirement', 'withdrawal', 'tax loss', 'harvesting', 'estate', 'trust', 'inheritance'],
+      crypto: ['crypto', 'token', 'defi', 'yield farm', 'staking'],
+      jurisdiction: ['fee', 'management fee', 'gaap', 'ifrs', 'reconcil', 'withholding', 'wht',
+                      'nav', 'net asset value', 'gp economics', 'carry', 'investor return', 'net return',
+                      'ubti', 'eci', 'tax-exempt investor'],
+      treasury: ['cash management', 'liquidity', 'hedge effective', 'ias 39'],
+      three_statement: ['three statement', 'financial model', '3-statement'],
+      monte_carlo: ['monte carlo', 'simulation', 'stochastic dcf', 'monte carlo dcf'],
     };
 
     for (const [domain, patterns] of Object.entries(domainPatterns)) {
@@ -221,6 +233,10 @@ export class ChiefAnalyst {
     else if (domains.includes('macro_economics')) type = 'macro_research';
     else if (domains.includes('esg')) type = 'esg_review';
     else if (domains.includes('regulatory')) type = 'regulatory_check';
+    else if (domains.includes('insurance')) type = 'comprehensive';
+    else if (domains.includes('pension') || domains.includes('wealth')) type = 'comprehensive';
+    else if (domains.includes('crypto')) type = 'comprehensive';
+    else if (domains.includes('jurisdiction') || domains.includes('treasury')) type = 'comprehensive';
 
     // If no specific domains detected, default to comprehensive
     if (domains.length === 0) {
@@ -255,5 +271,101 @@ export class ChiefAnalyst {
       }
     }
     return bestMatch;
+  }
+
+  // ── Cross-cutting tool references ──────────────────────────────────────────
+  // Returns specific cross-cutting tool names relevant to a given task.
+  // These tools span multiple specialist domains and may be invoked during
+  // aggregation or forwarded to specialists alongside their primary tool set.
+  getCrossCuttingTools(task: string): string[] {
+    const t = task.toLowerCase();
+    const tools: string[] = [];
+
+    // Three-statement / financial modelling
+    if (t.includes('three statement') || t.includes('financial model') || t.includes('3-statement')) {
+      tools.push('three_statement_model');
+    }
+
+    // Monte Carlo & stochastic simulation
+    if (t.includes('monte carlo') || t.includes('simulation')) {
+      tools.push('monte_carlo_simulation');
+    }
+    if (t.includes('stochastic dcf') || t.includes('monte carlo dcf')) {
+      tools.push('monte_carlo_dcf');
+    }
+
+    // Insurance
+    if (t.includes('reserv') || t.includes('loss triangle')) {
+      tools.push('insurance_loss_reserving');
+    }
+    if (t.includes('premium') || t.includes('insurance pric')) {
+      tools.push('insurance_premium_pricing');
+    }
+    if (t.includes('combined ratio') || t.includes('loss ratio')) {
+      tools.push('insurance_combined_ratio');
+    }
+    if (t.includes('solvency') || t.includes('scr')) {
+      tools.push('insurance_solvency_scr');
+    }
+
+    // Pension
+    if (t.includes('pension') || t.includes('defined benefit')) {
+      tools.push('pension_funding_analysis');
+    }
+    if (t.includes('ldi') || t.includes('liability driven')) {
+      tools.push('pension_ldi_strategy');
+    }
+
+    // Wealth management
+    if (t.includes('retirement') || t.includes('withdrawal')) {
+      tools.push('wealth_retirement_planning');
+    }
+    if (t.includes('tax loss') || t.includes('harvesting')) {
+      tools.push('wealth_tax_loss_harvesting');
+    }
+    if (t.includes('estate') || t.includes('trust') || t.includes('inheritance')) {
+      tools.push('wealth_estate_planning');
+    }
+
+    // Crypto & DeFi
+    if (t.includes('crypto') || t.includes('token') || t.includes('defi')) {
+      tools.push('crypto_token_valuation');
+    }
+    if (t.includes('defi') || t.includes('yield farm') || t.includes('staking')) {
+      tools.push('crypto_defi_analysis');
+    }
+
+    // Jurisdiction & fund structuring
+    if (t.includes('fee') || t.includes('management fee')) {
+      tools.push('jurisdiction_fee_calculator');
+    }
+    if (t.includes('gaap') || t.includes('ifrs') || t.includes('reconcil')) {
+      tools.push('jurisdiction_gaap_ifrs');
+    }
+    if (t.includes('withholding') || t.includes('wht')) {
+      tools.push('jurisdiction_withholding_tax');
+    }
+    if (t.includes('nav') || t.includes('net asset value')) {
+      tools.push('jurisdiction_nav');
+    }
+    if (t.includes('gp economics') || t.includes('carry')) {
+      tools.push('jurisdiction_gp_economics');
+    }
+    if (t.includes('investor return') || t.includes('net return')) {
+      tools.push('jurisdiction_investor_returns');
+    }
+    if (t.includes('ubti') || t.includes('eci') || t.includes('tax-exempt investor')) {
+      tools.push('jurisdiction_ubti');
+    }
+
+    // Treasury
+    if (t.includes('cash management') || t.includes('liquidity')) {
+      tools.push('treasury_cash_management');
+    }
+    if (t.includes('hedge effective') || t.includes('ias 39')) {
+      tools.push('treasury_hedge_effectiveness');
+    }
+
+    return tools;
   }
 }
