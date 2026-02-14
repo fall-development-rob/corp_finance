@@ -18,6 +18,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { createRequire } from 'node:module';
 import { createToolCaller } from '../bridge/mcp-client.js';
+import { FmpBridge, createFmpToolCaller } from '../bridge/fmp-bridge.js';
 import { CfaPipeline, injectSkills, type Topology } from './pipeline.js';
 import type { McpBridge } from '../bridge/mcp-client.js';
 
@@ -144,6 +145,7 @@ function setupEnv(): void {
 
 class CfaCli {
   private bridge: McpBridge | null = null;
+  private fmpBridge: FmpBridge | null = null;
 
   async start(): Promise<void> {
     const rawArgs = process.argv.slice(2);
@@ -453,7 +455,9 @@ class CfaCli {
       rl.prompt();
     });
 
-    rl.on('close', () => {
+    rl.on('close', async () => {
+      if (this.fmpBridge) await this.fmpBridge.disconnect().catch(() => {});
+      if (this.bridge) await this.bridge.disconnect().catch(() => {});
       process.exit(0);
     });
 
@@ -490,6 +494,7 @@ class CfaCli {
     await this.connect();
     await this.listToolsInner();
     await this.bridge!.disconnect();
+    if (this.fmpBridge) await this.fmpBridge.disconnect();
   }
 
   private async listToolsInner(): Promise<void> {
@@ -522,9 +527,14 @@ class CfaCli {
 
   // ── MCP connection (for `cfa tools` command) ──────────────────
 
-  private async connect(): Promise<{ callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>; bridge: McpBridge }> {
+  private async connect(): Promise<{
+    callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+    callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+    bridge: McpBridge;
+  }> {
     if (this.bridge) {
-      return { callTool: this.bridge.callTool.bind(this.bridge), bridge: this.bridge };
+      const callFmpTool = this.fmpBridge ? (name: string, params: Record<string, unknown>) => this.fmpBridge!.callTool(name, params) : undefined;
+      return { callTool: this.bridge.callTool.bind(this.bridge), callFmpTool, bridge: this.bridge };
     }
 
     const mcpServerPath = join(__cliDir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
@@ -533,10 +543,24 @@ class CfaCli {
     const { callTool, bridge } = await createToolCaller({ serverPath: mcpServerPath });
     this.bridge = bridge;
 
+    // Connect FMP bridge if FMP_API_KEY is available
+    let callFmpTool: ((toolName: string, params: Record<string, unknown>) => Promise<unknown>) | undefined;
+    if (process.env.FMP_API_KEY) {
+      try {
+        process.stderr.write(`  ${c('dim', 'Connecting to FMP MCP server...')}\r`);
+        const fmpServerPath = join(__cliDir, '..', '..', '..', 'fmp-mcp-server', 'dist', 'index.js');
+        const fmpResult = await createFmpToolCaller({ serverPath: fmpServerPath });
+        this.fmpBridge = fmpResult.bridge;
+        callFmpTool = fmpResult.callFmpTool;
+      } catch (err) {
+        process.stderr.write(`  ${c('yellow', 'FMP bridge unavailable:')} ${err instanceof Error ? err.message : String(err)}\n`);
+      }
+    }
+
     // Clear the "Connecting..." line
     process.stderr.write('                                        \r');
 
-    return { callTool, bridge };
+    return { callTool, callFmpTool, bridge };
   }
 
   // ── Help screens ────────────────────────────────────────────────

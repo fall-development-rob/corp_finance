@@ -5,37 +5,45 @@ export const TOOL_MAPPINGS: Record<string, string[]> = {
   'equity-analyst': [
     'equity_research', 'valuation', 'earnings_quality', 'dividend_policy',
     'behavioral', 'performance_attribution', 'three_statement', 'fpa',
+    'fmp',
   ],
   'credit-analyst': [
     'credit', 'credit_scoring', 'credit_portfolio', 'credit_derivatives',
     'restructuring', 'financial_forensics', 'three_statement', 'bank_analytics',
+    'fmp',
   ],
   'fixed-income-analyst': [
     'fixed_income', 'interest_rate_models', 'inflation_linked', 'mortgage_analytics',
     'repo_financing', 'municipal', 'sovereign', 'three_statement',
+    'fmp',
   ],
   'derivatives-analyst': [
     'derivatives', 'volatility_surface', 'convertibles', 'structured_products',
     'real_options', 'monte_carlo', 'credit_derivatives',
+    'fmp',
   ],
   'quant-risk-analyst': [
     'quant_risk', 'quant_strategies', 'portfolio_optimization', 'risk_budgeting',
     'market_microstructure', 'index_construction', 'scenarios', 'monte_carlo',
     'portfolio', 'performance_attribution',
+    'fmp',
   ],
   'macro-analyst': [
     'macro_economics', 'fx_commodities', 'commodity_trading', 'emerging_markets',
     'trade_finance', 'carbon_markets', 'sovereign', 'inflation_linked',
+    'fmp',
   ],
   'esg-regulatory-analyst': [
     'esg', 'regulatory', 'compliance', 'aml_compliance', 'regulatory_reporting',
     'fatca_crs', 'substance_requirements', 'tax_treaty', 'transfer_pricing',
     'carbon_markets',
+    'fmp',
   ],
   'private-markets-analyst': [
     'pe', 'venture', 'private_credit', 'private_wealth', 'infrastructure',
     'real_assets', 'fund_of_funds', 'clo_analytics', 'securitization',
     'ma', 'capital_allocation', 'lease_accounting',
+    'fmp',
   ],
 };
 

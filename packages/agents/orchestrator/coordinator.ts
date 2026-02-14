@@ -19,6 +19,7 @@ export interface OrchestratorConfig {
   confidenceThreshold?: number;
   maxSpecialists?: number;
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+  callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
   onEvent?: (event: { type: string; payload: unknown }) => void;
 }
 
@@ -26,11 +27,13 @@ export class Orchestrator {
   private chief: ChiefAnalyst;
   private eventBus: EventBus;
   private callTool: OrchestratorConfig['callTool'];
+  private callFmpTool?: OrchestratorConfig['callFmpTool'];
   private initialized = false;
 
   constructor(config: OrchestratorConfig) {
     this.eventBus = new SimpleEventBus();
     this.callTool = config.callTool;
+    this.callFmpTool = config.callFmpTool;
 
     this.chief = new ChiefAnalyst({
       confidenceThreshold: config.confidenceThreshold ?? 0.6,
@@ -117,6 +120,7 @@ export class Orchestrator {
           task: request.plan!.steps.find(s => s.id === assignment.stepRef)?.description ?? query,
           eventBus: this.eventBus,
           callTool: this.callTool,
+          callFmpTool: this.callFmpTool,
         };
 
         // Search ReasoningBank for relevant prior analyses

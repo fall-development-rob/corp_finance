@@ -9,6 +9,7 @@ import type {
 import type { DomainEvent, EventBus } from '../types/events.js';
 import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS } from '../config/tool-mappings.js';
 import { parseFinancialData, type ExtractedMetrics } from '../utils/financial-parser.js';
+import { enrichMetrics } from '../utils/fmp-data-fetcher.js';
 
 export interface AnalystContext {
   assignmentId: string;
@@ -17,6 +18,7 @@ export interface AnalystContext {
   priorContext?: string;       // relevant memory from prior analyses
   eventBus: EventBus;
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+  callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
 }
 
 export interface ReasoningState {
@@ -49,6 +51,8 @@ export abstract class BaseAnalyst {
 
   // The Dexter-style iterative reasoning loop
   async execute(ctx: AnalystContext): Promise<AnalysisResult> {
+    const textMetrics = parseFinancialData(ctx.task);
+
     const state: ReasoningState = {
       observations: [],
       thoughts: [],
@@ -57,8 +61,17 @@ export abstract class BaseAnalyst {
       iteration: 0,
       maxIterations: 5,
       shouldContinue: true,
-      metrics: parseFinancialData(ctx.task),
+      metrics: textMetrics,
     };
+
+    // Enrich with live FMP data if available
+    if (ctx.callFmpTool && textMetrics._company) {
+      try {
+        state.metrics = await enrichMetrics(textMetrics, ctx.callFmpTool);
+      } catch {
+        // Graceful degradation — continue with text-only metrics
+      }
+    }
 
     // Phase 1: Observe
     state.observations.push(
