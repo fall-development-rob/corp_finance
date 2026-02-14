@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-14
+
+### Added
+- **FMP MCP Server** (`packages/fmp-mcp-server`) — new package providing 181 Financial Modeling Prep market data tools via MCP
+  - 15 tool modules: quotes, profiles, financials, earnings, market, ETFs, news, technical indicators, SEC filings, insider trading, institutional ownership, dividends/splits/IPOs, extended financials, extended market, extended company/analyst data
+  - Rate-limited API client with tiered caching (30s realtime to 7-day static) and 300 req/min rate limiter
+  - Zod-validated schemas for all tool inputs with shared `SymbolSchema`, `PaginationSchema`, `DateRangeSchema`
+  - 43 unit tests covering client, schemas, and tool registration
+- **FMP CLI** (`fmp`) with 19 commands: `quote`, `profile`, `financials`, `earnings`, `screen`, `search`, `news`, `technicals`, `etf`, `insider`, `sec`, `institutional`, `dividends`, `macro`, `treasury`, `gainers`, `losers`, `active`, `tools`
+- **6 FMP agent skills** mapping all 181 tools for pipeline injection
+  - `fmp-market-data` (85 tools): quotes, profiles, financials, earnings, dividends, splits, IPOs
+  - `fmp-research` (38 tools): screening, sector/industry, economic data, indexes, market hours
+  - `fmp-news-intelligence` (10 tools): general/stock/crypto/forex/press release news
+  - `fmp-technicals` (9 tools): SMA, EMA, RSI, MACD, Williams %R, ADX, standard deviation
+  - `fmp-etf-funds` (9 tools): ETF holdings, sector weights, country exposure, performance
+  - `fmp-sec-compliance` (26 tools): SEC filings, insider trades, institutional 13F holdings
+- **Pipeline AGENT_SKILLS expansion** — each CFA specialist agent now receives relevant FMP skills (e.g., equity analyst gets `fmp-technicals` + `fmp-news-intelligence`, quant-risk gets `fmp-etf-funds`)
+- **ADR-003**: FMP MCP Server architecture decision record
+- **ADR-002**: ruvector graph mincut + neural spiking architecture decision record
+- **ruvector graph + neural spiking** (`db/ruvector-graph.ts`, `db/ruvector-spiking.ts`)
+  - Graph operations: `buildPatternEdges`, `computeMincut`, `partitionPatterns`, `detectNovelPattern`, `computePatternPageRank`
+  - Neural spiking: Leaky Integrate-and-Fire (LIF) neuron model in SQL, `fireSpike` with propagation, `detectAnomalies`, `getNetworkState`, `buildLinksFromTrajectories`
+  - 25 unit tests + 15 PG integration tests covering graph partitioning, spike propagation, and membrane potential accumulation
+
+### Fixed
+- PG integration vector similarity test failing with hash-based embeddings — search now uses exact stored text so cosine similarity is 1.0 regardless of embedding backend
+- ruvector HNSW segfault recovery with `queryWithRetry()` automatic pool reset
+
+### Changed
+- FMP MCP server version bumped to 2.0.0 (181 tools, up from initial 31)
+- `.gitignore` updated to track `.claude/skills/fmp-*/` directories
+
 ## [1.1.0] - 2026-02-13
 
 ### Added
