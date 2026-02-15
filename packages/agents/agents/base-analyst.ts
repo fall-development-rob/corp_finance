@@ -10,21 +10,18 @@ import type { DomainEvent, EventBus } from '../types/events.js';
 import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS } from '../config/tool-mappings.js';
 import { parseFinancialData, type ExtractedMetrics } from '../utils/financial-parser.js';
 import { enrichMetrics } from '../utils/fmp-data-fetcher.js';
-import { applyEntities, type EntityExtractor } from '../utils/llm-extractor.js';
 import type { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface AnalystContext {
   assignmentId: string;
   requestId: string;
   task: string;
-  /** Explicit company name — bypasses regex/LLM extraction when set */
+  /** Company name resolved by orchestrator — bypasses regex extraction */
   company?: string;
   priorContext?: string;       // relevant memory from prior analyses
   eventBus: EventBus;
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
   callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
-  /** LLM-based entity extraction (replaces regex for company/ticker) */
-  extractEntities?: EntityExtractor;
   /** ADR-006: Cross-specialist collaboration bus */
   insightBus?: InsightBus;
 }
@@ -61,14 +58,9 @@ export abstract class BaseAnalyst {
   async execute(ctx: AnalystContext): Promise<AnalysisResult> {
     const textMetrics = parseFinancialData(ctx.task);
 
-    // Company resolution priority: explicit > LLM > regex (already applied above)
+    // Orchestrator-resolved company takes priority over regex extraction
     if (ctx.company) {
       textMetrics._company = ctx.company;
-    } else if (ctx.extractEntities && !textMetrics._company) {
-      try {
-        const entities = await ctx.extractEntities(ctx.task);
-        applyEntities(textMetrics, entities);
-      } catch { /* fall back to regex result */ }
     }
 
     const state: ReasoningState = {

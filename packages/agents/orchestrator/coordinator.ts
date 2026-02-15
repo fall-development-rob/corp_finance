@@ -14,7 +14,8 @@ import { SimpleEventBus } from '../types/events.js';
 import { ChiefAnalyst } from '../agents/chief-analyst.js';
 import { createSpecialist } from './specialist-factory.js';
 import type { AnalystContext } from '../agents/base-analyst.js';
-import { createEntityExtractor } from '../utils/llm-extractor.js';
+import { parseFinancialData } from '../utils/financial-parser.js';
+import { resolveSymbol } from '../utils/fmp-data-fetcher.js';
 import { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface OrchestratorConfig {
@@ -30,14 +31,12 @@ export class Orchestrator {
   private eventBus: EventBus;
   private callTool: OrchestratorConfig['callTool'];
   private callFmpTool?: OrchestratorConfig['callFmpTool'];
-  private extractEntities: ReturnType<typeof createEntityExtractor>;
   private initialized = false;
 
   constructor(config: OrchestratorConfig) {
     this.eventBus = new SimpleEventBus();
     this.callTool = config.callTool;
     this.callFmpTool = config.callFmpTool;
-    this.extractEntities = createEntityExtractor();
 
     this.chief = new ChiefAnalyst({
       confidenceThreshold: config.confidenceThreshold ?? 0.6,
@@ -100,10 +99,25 @@ export class Orchestrator {
       });
     } catch { /* best-effort */ }
 
-    // 3. Plan
+    // 3. Resolve company name once for all specialists
+    //    Priority: explicit > regex extraction > FMP search
+    let company = options?.company;
+    if (!company) {
+      const parsed = parseFinancialData(query);
+      company = parsed._company ?? undefined;
+    }
+    if (!company && this.callFmpTool) {
+      // Last resort: try FMP search with the raw query
+      try {
+        const symbol = await resolveSymbol(query, this.callFmpTool);
+        if (symbol) company = symbol;
+      } catch { /* best-effort */ }
+    }
+
+    // 4. Plan
     this.chief.createPlan(request);
 
-    // 4. Create assignments
+    // 5. Create assignments
     const assignments = this.chief.createAssignments(request);
 
     // ADR-006: Create shared InsightBus for cross-specialist collaboration
@@ -125,11 +139,10 @@ export class Orchestrator {
           assignmentId: assignment.assignmentId,
           requestId: request.requestId,
           task: request.plan!.steps.find(s => s.id === assignment.stepRef)?.description ?? query,
-          company: options?.company,
+          company,
           eventBus: this.eventBus,
           callTool: this.callTool,
           callFmpTool: this.callFmpTool,
-          extractEntities: this.extractEntities ?? undefined,
           insightBus,
         };
 
