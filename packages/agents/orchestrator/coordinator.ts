@@ -14,6 +14,7 @@ import { SimpleEventBus } from '../types/events.js';
 import { ChiefAnalyst } from '../agents/chief-analyst.js';
 import { createSpecialist } from './specialist-factory.js';
 import type { AnalystContext } from '../agents/base-analyst.js';
+import { createEntityExtractor } from '../utils/llm-extractor.js';
 import { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface OrchestratorConfig {
@@ -29,12 +30,14 @@ export class Orchestrator {
   private eventBus: EventBus;
   private callTool: OrchestratorConfig['callTool'];
   private callFmpTool?: OrchestratorConfig['callFmpTool'];
+  private extractEntities: ReturnType<typeof createEntityExtractor>;
   private initialized = false;
 
   constructor(config: OrchestratorConfig) {
     this.eventBus = new SimpleEventBus();
     this.callTool = config.callTool;
     this.callFmpTool = config.callFmpTool;
+    this.extractEntities = createEntityExtractor();
 
     this.chief = new ChiefAnalyst({
       confidenceThreshold: config.confidenceThreshold ?? 0.6,
@@ -126,6 +129,7 @@ export class Orchestrator {
           eventBus: this.eventBus,
           callTool: this.callTool,
           callFmpTool: this.callFmpTool,
+          extractEntities: this.extractEntities ?? undefined,
           insightBus,
         };
 
