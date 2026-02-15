@@ -15,7 +15,7 @@ import { ChiefAnalyst } from '../agents/chief-analyst.js';
 import { createSpecialist } from './specialist-factory.js';
 import type { AnalystContext } from '../agents/base-analyst.js';
 import { parseFinancialData } from '../utils/financial-parser.js';
-import { resolveSymbol } from '../utils/fmp-data-fetcher.js';
+import { resolveCompany } from '../utils/company-resolver.js';
 import { InsightBus } from '../collaboration/insight-bus.js';
 
 export interface OrchestratorConfig {
@@ -100,17 +100,23 @@ export class Orchestrator {
     } catch { /* best-effort */ }
 
     // 3. Resolve company name once for all specialists
-    //    Priority: explicit > regex extraction > FMP search
+    //    Priority: explicit > regex > semantic (local embeddings, no API call)
     let company = options?.company;
     if (!company) {
       const parsed = parseFinancialData(query);
       company = parsed._company ?? undefined;
     }
-    if (!company && this.callFmpTool) {
-      // Last resort: try FMP search with the raw query
+    // If regex found a name, validate/enrich it via semantic matching
+    // If regex missed, try semantic search on the full query
+    if (company) {
       try {
-        const symbol = await resolveSymbol(query, this.callFmpTool);
-        if (symbol) company = symbol;
+        const match = await resolveCompany(company);
+        if (match) company = match.name; // normalise to canonical name
+      } catch { /* best-effort — keep regex result */ }
+    } else {
+      try {
+        const match = await resolveCompany(query);
+        if (match) company = match.name;
       } catch { /* best-effort */ }
     }
 
