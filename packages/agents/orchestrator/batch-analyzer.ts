@@ -74,7 +74,7 @@ export class BatchAnalyzer {
         });
 
         try {
-          const result = await this.orchestrator.analyze(query, priority);
+          const result = await this.orchestrator.analyze(query, priority, { company });
           const companyResult: CompanyResult = {
             company,
             report: result.report,

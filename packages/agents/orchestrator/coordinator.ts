@@ -61,7 +61,7 @@ export class Orchestrator {
     this.initialized = true;
   }
 
-  async analyze(query: string, priority: Priority = 'STANDARD'): Promise<{
+  async analyze(query: string, priority: Priority = 'STANDARD', options?: { company?: string }): Promise<{
     request: AnalysisRequest;
     report: string;
     results: AnalysisResult[];
@@ -122,6 +122,7 @@ export class Orchestrator {
           assignmentId: assignment.assignmentId,
           requestId: request.requestId,
           task: request.plan!.steps.find(s => s.id === assignment.stepRef)?.description ?? query,
+          company: options?.company,
           eventBus: this.eventBus,
           callTool: this.callTool,
           callFmpTool: this.callFmpTool,

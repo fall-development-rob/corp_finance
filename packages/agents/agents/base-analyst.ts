@@ -16,6 +16,8 @@ export interface AnalystContext {
   assignmentId: string;
   requestId: string;
   task: string;
+  /** Explicit company name — bypasses regex extraction when set */
+  company?: string;
   priorContext?: string;       // relevant memory from prior analyses
   eventBus: EventBus;
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
@@ -55,6 +57,11 @@ export abstract class BaseAnalyst {
   // The Dexter-style iterative reasoning loop
   async execute(ctx: AnalystContext): Promise<AnalysisResult> {
     const textMetrics = parseFinancialData(ctx.task);
+
+    // Explicit company from structured input takes priority over regex extraction
+    if (ctx.company) {
+      textMetrics._company = ctx.company;
+    }
 
     const state: ReasoningState = {
       observations: [],

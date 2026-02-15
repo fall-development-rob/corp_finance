@@ -154,6 +154,7 @@ describe('BatchAnalyzer', () => {
       expect(mockAnalyze).toHaveBeenCalledWith(
         'Analyze credit risk for Apple Inc.',
         'STANDARD',
+        { company: 'Apple' },
       );
     });
 
@@ -175,6 +176,7 @@ describe('BatchAnalyzer', () => {
       expect(mockAnalyze).toHaveBeenCalledWith(
         'Compare credit risk for Apple',
         'STANDARD',
+        { company: 'Apple' },
       );
     });
   });
