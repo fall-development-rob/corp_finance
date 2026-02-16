@@ -137,6 +137,7 @@ async function handleSearch() {
   const query = args[1];
   if (!query) { console.error(`${c('red', 'Error:')} <query> is required`); process.exit(1); }
   const limit = Number(getFlag('--limit') ?? 10);
+  const jsonMode = args.includes('--json');
   const [bySymbol, byName] = await Promise.all([
     fmpFetch<any[]>('search-symbol', { query, limit }, { cacheTtl: CacheTTL.LONG }),
     fmpFetch<any[]>('search-name', { query, limit }, { cacheTtl: CacheTTL.LONG }),
@@ -146,7 +147,19 @@ async function handleSearch() {
   for (const r of [...(bySymbol ?? []), ...(byName ?? [])]) {
     if (r.symbol && !seen.has(r.symbol)) { seen.add(r.symbol); results.push(r); }
   }
-  if (!results.length) { console.log('No results found'); return; }
+  if (!results.length) {
+    if (jsonMode) { console.log(JSON.stringify([])); } else { console.log('No results found'); }
+    return;
+  }
+  if (jsonMode) {
+    console.log(JSON.stringify(results.slice(0, limit).map(r => ({
+      symbol: r.symbol,
+      name: r.name ?? r.companyName ?? '',
+      exchange: r.exchangeShortName ?? r.exchange ?? r.stockExchange ?? '',
+      currency: r.currency ?? '',
+    }))));
+    return;
+  }
   console.log(`\n  ${c('bold', 'Search Results')} ${c('dim', `for "${query}"`)}\n`);
   for (const r of results.slice(0, limit))
     console.log(`  ${c('cyan', padR(r.symbol, 10))} ${r.name ?? r.companyName ?? '-'}  ${c('dim', r.exchangeShortName ?? r.stockExchange ?? '')}`);
