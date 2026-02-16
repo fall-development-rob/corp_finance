@@ -340,7 +340,143 @@ const QUERY_TRIGGERS: [RegExp, string[]][] = [
   [/profile|sector|industry|employee/i,                       ['profile']],
 ];
 
-function buildAgentPreamble(agentType: string, query: string): string {
+// ── Pre-flight ticker resolution via FMP search-name ────────────────
+// Resolves company names to tickers BEFORE spawning agents so they get
+// exact commands like `fmp-cli quote AIR.V` instead of `fmp-cli quote SYMBOL`.
+
+/** Preferred exchanges in priority order (primary listings over OTC) */
+const PREFERRED_EXCHANGES = new Set([
+  'NASDAQ', 'NYSE', 'AMEX', 'TSX', 'TSXV', 'LSE', 'ASX', 'HKSE',
+  'EURONEXT', 'XETRA', 'SIX', 'SGX', 'JSE', 'NSE', 'BSE',
+]);
+
+/**
+ * Extract an explicit ticker from the query, e.g. "(AAPL)" or "(AIR.V)".
+ * Returns null if none found.
+ */
+function extractExplicitTicker(query: string): string | null {
+  // Match ticker in parens: (AAPL), (AIR.V), (BRK-B), (TSLA)
+  const parenMatch = query.match(/\(([A-Z][A-Z0-9]{0,5}(?:[.\-][A-Z0-9]{1,3})?)\)/);
+  if (parenMatch) return parenMatch[1];
+
+  // Match "ticker: AAPL" or "ticker AAPL" or "symbol: AIR.V"
+  const labelMatch = query.match(/(?:ticker|symbol)[:\s]+([A-Z][A-Z0-9]{0,5}(?:[.\-][A-Z0-9]{1,3})?)/i);
+  if (labelMatch) return labelMatch[1].toUpperCase();
+
+  return null;
+}
+
+/**
+ * Extract a company name from the query for FMP search.
+ * Looks for patterns like "Analyze Clean Air Metals Inc" or "for Clean Air Metals".
+ */
+function extractCompanyName(query: string): string | null {
+  // Remove any explicit ticker in parens first
+  const cleaned = query.replace(/\([A-Z][A-Z0-9.]{0,7}\)/g, '').trim();
+
+  // Pattern: verb + company name (up to 6 words before a dash, comma, or end)
+  const verbMatch = cleaned.match(
+    /(?:analyze|analyse|assess|evaluate|review|research|rate|value|cover)\s+(.+?)(?:\s*[-–—,;:|]|\s+(?:for|with|using|and|focusing|including|on the))/i,
+  );
+  if (verbMatch) {
+    const name = verbMatch[1].trim();
+    // Filter out generic phrases that aren't company names
+    if (name.length > 2 && !/^(the|this|that|these|those|its|my|our|their)$/i.test(name)) {
+      return name;
+    }
+  }
+
+  // Pattern: "for <Company>" at the end
+  const forMatch = cleaned.match(/for\s+(.+?)$/i);
+  if (forMatch) {
+    const name = forMatch[1].replace(/\s*[-–—,;:|].*/g, '').trim();
+    if (name.length > 2) return name;
+  }
+
+  // Fallback: Look for capitalised multi-word names (e.g. "Clean Air Metals Inc")
+  const capMatch = cleaned.match(/\b([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|Inc\.?|Corp\.?|Ltd\.?|PLC|SA|AG|NV|SE))+)/);
+  if (capMatch) return capMatch[1].trim();
+
+  return null;
+}
+
+/**
+ * Resolve a company name to a ticker using the FMP CLI `search --json` command.
+ * Uses the same FMP infrastructure (MCP client, caching, rate limiting) as agents.
+ * Prefers primary exchange listings over OTC via fuzzy name matching.
+ */
+async function resolveTickerViaFmp(companyName: string): Promise<{ symbol: string; name: string; exchange: string } | null> {
+  const cliPath = join(__pipelineDir, '..', '..', 'fmp-mcp-server', 'src', 'fmp-cli.ts');
+
+  try {
+    const { exec } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execAsync = promisify(exec);
+
+    const escapedName = companyName.replace(/"/g, '\\"');
+    const { stdout } = await execAsync(
+      `npx tsx "${cliPath}" search "${escapedName}" --json --limit 10`,
+      { timeout: 10_000, env: { ...process.env } },
+    );
+
+    const results = JSON.parse(stdout.trim()) as Array<{
+      symbol: string; name: string; exchange: string; currency: string;
+    }>;
+
+    if (!Array.isArray(results) || results.length === 0) return null;
+
+    const queryLower = companyName.toLowerCase();
+
+    // Score each result: name similarity + exchange preference
+    const scored = results.map(r => {
+      let score = 0;
+      const nameLower = (r.name || '').toLowerCase();
+
+      if (nameLower === queryLower) score += 100;
+      else if (nameLower.startsWith(queryLower)) score += 80;
+      else if (nameLower.includes(queryLower)) score += 60;
+      else if (queryLower.includes(nameLower)) score += 40;
+      else if (nameLower.split(' ')[0] === queryLower.split(' ')[0]) score += 20;
+
+      if (PREFERRED_EXCHANGES.has(r.exchange)) score += 30;
+      if (r.exchange === 'OTC' || r.exchange === 'Other OTC') score -= 20;
+
+      return { ...r, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+
+    if (best.score > 0) {
+      return { symbol: best.symbol, name: best.name, exchange: best.exchange };
+    }
+
+    const preferred = results.find(r => PREFERRED_EXCHANGES.has(r.exchange));
+    const fallback = preferred || results[0];
+    return { symbol: fallback.symbol, name: fallback.name, exchange: fallback.exchange };
+  } catch {
+    return null; // graceful fallback — agents will handle resolution
+  }
+}
+
+/**
+ * Resolve the ticker from the query. Tries explicit ticker first,
+ * then FMP search-name API with fuzzy matching.
+ */
+async function resolveTickerFromQuery(query: string): Promise<string | null> {
+  // 1. Check for explicit ticker in query: "(AAPL)", "(AIR.V)"
+  const explicit = extractExplicitTicker(query);
+  if (explicit) return explicit;
+
+  // 2. Extract company name and search FMP
+  const companyName = extractCompanyName(query);
+  if (!companyName) return null;
+
+  const match = await resolveTickerViaFmp(companyName);
+  return match?.symbol ?? null;
+}
+
+function buildAgentPreamble(agentType: string, query: string, resolvedTicker?: string | null): string {
   // Start with agent's base commands
   const cmds = new Set(AGENT_FMP_COMMANDS[agentType] ?? AGENT_FMP_COMMANDS['cfa-chief-analyst']);
 
@@ -352,16 +488,25 @@ function buildAgentPreamble(agentType: string, query: string): string {
   }
 
   // Build the CLI command block
-  const apiKey = process.env.FMP_API_KEY || 'HonZ5PK6XG9eoakP05AcY0eJTLgpqu0P';
-  const cliPath = join(__pipelineDir, '..', '..', 'fmp-mcp-server', 'dist', 'fmp-cli.js');
+  const apiKey = process.env.FMP_API_KEY;
+  if (!apiKey) throw new Error('FMP_API_KEY environment variable is required');
+  const cliPath = join(__pipelineDir, '..', '..', 'fmp-mcp-server', 'src', 'fmp-cli.ts');
   const cliBase = `FMP_API_KEY=${apiKey} npx tsx ${cliPath}`;
+  // Replace SYMBOL with the resolved ticker if available
+  const ticker = resolvedTicker ?? 'SYMBOL';
   const cmdLines = [...cmds].map(key => {
     const c = FMP_COMMANDS[key];
-    return c ? `# ${c.desc}\n${cliBase} ${key} ${c.args}` : '';
+    if (!c) return '';
+    const args = c.args.replace(/SYMBOL/g, ticker);
+    return `# ${c.desc}\n${cliBase} ${key} ${args}`;
   }).filter(Boolean).join('\n\n');
 
   const cmdCount = cmds.size;
   const maxTurns = Math.min(cmdCount + 4, 12);
+
+  const tickerNote = resolvedTicker
+    ? `The ticker **${resolvedTicker}** has been pre-resolved. Use it exactly as shown above.`
+    : 'Replace SYMBOL with the actual ticker symbol (e.g., AAPL).';
 
   return `
 ## CRITICAL INSTRUCTIONS — Read Before Starting
@@ -374,7 +519,7 @@ function buildAgentPreamble(agentType: string, query: string): string {
 ${cmdLines}
 \`\`\`
 
-Replace SYMBOL with the actual ticker symbol (e.g., AAPL).
+${tickerNote}
 
 3. **TURN BUDGET**: You have ${maxTurns} tool calls max. Run all ${cmdCount} data commands in parallel, then analyze and write your report.
    - Do NOT explore the codebase, read source files, or search for code
@@ -771,6 +916,12 @@ export class CfaPipeline {
 
     timings.memoryMs = Date.now() - memoryStart;
 
+    // ── Stage 2b: Pre-flight ticker resolution ─────────────────────
+    const resolvedTicker = await resolveTickerFromQuery(query);
+    if (resolvedTicker) {
+      this.status('routing', `Ticker resolved: ${resolvedTicker}`);
+    }
+
     // ── Stage 3: Spawn Agents ─────────────────────────────────────
     this.status('agents', `Spawning ${routedAgentTypes.length} agent(s)...`);
     const agentsStart = Date.now();
@@ -800,7 +951,7 @@ export class CfaPipeline {
         const agent = injectSkills(agentDef);
 
         // Prepend runtime instructions to the query
-        const agentPrompt = buildAgentPreamble(agentType, query) + augmentedQuery;
+        const agentPrompt = buildAgentPreamble(agentType, query, resolvedTicker) + augmentedQuery;
 
         // Run with AbortController — on timeout the SDK subprocess is killed
         // immediately, preventing orphaned agents from burning tokens.
