@@ -17,6 +17,17 @@ import type { AnalystContext } from '../agents/base-analyst.js';
 import { parseFinancialData } from '../utils/financial-parser.js';
 import { resolveCompany } from '../utils/company-resolver.js';
 import { InsightBus } from '../collaboration/insight-bus.js';
+import { ExpertRouter } from '../config/expert-router.js';
+
+/** Simple structured logger for orchestrator diagnostics */
+function log(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>): void {
+  const prefix = `[Orchestrator:${level.toUpperCase()}]`;
+  if (data) {
+    console.error(`${prefix} ${message}`, JSON.stringify(data));
+  } else {
+    console.error(`${prefix} ${message}`);
+  }
+}
 
 export interface OrchestratorConfig {
   confidenceThreshold?: number;
@@ -24,6 +35,8 @@ export interface OrchestratorConfig {
   callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
   callFmpTool?: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
   onEvent?: (event: { type: string; payload: unknown }) => void;
+  /** Disable semantic MoE routing (forces static keyword fallback). Default: false */
+  disableSemanticRouting?: boolean;
 }
 
 export class Orchestrator {
@@ -38,10 +51,14 @@ export class Orchestrator {
     this.callTool = config.callTool;
     this.callFmpTool = config.callFmpTool;
 
+    const expertRouter = config.disableSemanticRouting
+      ? undefined
+      : new ExpertRouter({ maxResults: config.maxSpecialists ?? 6 });
     this.chief = new ChiefAnalyst({
       confidenceThreshold: config.confidenceThreshold ?? 0.6,
       maxSpecialists: config.maxSpecialists ?? 6,
       eventBus: this.eventBus,
+      expertRouter,
     });
 
     if (config.onEvent) {
@@ -59,7 +76,13 @@ export class Orchestrator {
 
   private async ensureInit(): Promise<void> {
     if (this.initialized) return;
-    try { await initReasoningBank(); } catch { /* best-effort */ }
+    try {
+      await initReasoningBank();
+    } catch (err) {
+      log('warn', 'ReasoningBank initialization failed — continuing without memory', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     this.initialized = true;
   }
 
@@ -70,7 +93,10 @@ export class Orchestrator {
   }> {
     await this.ensureInit();
 
-    // 1. Create request
+    // 1. Route query (semantic MoE first, static keyword fallback)
+    const { intent, agents: routedAgents } = await this.chief.routeQuery(query);
+
+    // 2. Create request
     const request = this.chief.createRequest(query, priority);
 
     // 2. Store request in ReasoningBank for swarm visibility
@@ -97,7 +123,12 @@ export class Orchestrator {
         confidence: 1.0,
         usage_count: 0,
       });
-    } catch { /* best-effort */ }
+    } catch (err) {
+      log('warn', 'Failed to store analysis request in ReasoningBank', {
+        requestId: request.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     // 3. Resolve company name once for all specialists
     //    Priority: explicit > regex > semantic (local embeddings, no API call)
@@ -112,19 +143,35 @@ export class Orchestrator {
       try {
         const match = await resolveCompany(company);
         if (match) company = match.name; // normalise to canonical name
-      } catch { /* best-effort — keep regex result */ }
+      } catch (err) {
+        log('warn', 'Company resolution failed', {
+          company,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
     } else {
       try {
         const match = await resolveCompany(query);
         if (match) company = match.name;
-      } catch { /* best-effort */ }
+      } catch (err) {
+        log('warn', 'Company resolution failed', {
+          company: query,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
     }
 
-    // 4. Plan
-    this.chief.createPlan(request);
+    // 4. Plan (using routed agents if available)
+    this.chief.createPlan(request, routedAgents);
 
     // 5. Create assignments
     const assignments = this.chief.createAssignments(request);
+
+    // Propagate routing scores to assignments for observability
+    const scoreMap = new Map(routedAgents.map(a => [a.agentType, a.score]));
+    for (const assignment of assignments) {
+      assignment.routingScore = scoreMap.get(assignment.agentType) ?? 0;
+    }
 
     // ADR-006: Create shared InsightBus for cross-specialist collaboration
     const insightBus = new InsightBus();
@@ -161,7 +208,12 @@ export class Orchestrator {
           if (priorMemories.length > 0) {
             ctx.priorContext = priorMemories.map(m => m.content).join('\n---\n');
           }
-        } catch { /* best-effort */ }
+        } catch (err) {
+          log('info', 'ReasoningBank memory retrieval failed', {
+            task: ctx.task.slice(0, 100),
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
 
         try {
           const result = await specialist.execute(ctx);
@@ -199,12 +251,22 @@ export class Orchestrator {
               confidence: result.confidence,
               usage_count: 0,
             });
-          } catch { /* best-effort */ }
+          } catch (err) {
+            log('warn', 'Failed to store specialist result in ReasoningBank', {
+              agentType: assignment.agentType,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
 
           return result;
-        } catch {
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
           assignment.status = 'failed';
           assignment.completedAt = new Date();
+          log('error', `Specialist ${assignment.agentType} failed`, {
+            assignmentId: assignment.assignmentId,
+            error: errorMsg,
+          });
           return null;
         }
       }),
@@ -216,6 +278,8 @@ export class Orchestrator {
     const report = this.chief.aggregate(request, validResults);
 
     // 7. Store final report in ReasoningBank for learning
+    const failedCount = assignments.filter(a => a.status === 'failed').length;
+    const outcome: 'Success' | 'Failure' = failedCount === 0 ? 'Success' : 'Failure';
     try {
       db.upsertMemory({
         id: `report-${request.requestId}`,
@@ -228,15 +292,16 @@ export class Orchestrator {
             query,
             confidence: request.confidence?.value,
             specialistsUsed: validResults.map(r => r.agentType),
+            failedSpecialists: assignments.filter(a => a.status === 'failed').map(a => a.agentType),
             completedAt: new Date().toISOString(),
           }),
           source: {
             task_id: request.requestId,
             agent_id: 'orchestrator',
-            outcome: 'Success',
+            outcome,
             evidence: validResults.map(r => r.summary),
           },
-          tags: ['cfa-report', 'completed'],
+          tags: ['cfa-report', outcome === 'Success' ? 'completed' : validResults.length > 0 ? 'partial' : 'failed'],
           domain: 'cfa-orchestration',
           created_at: new Date().toISOString(),
           confidence: request.confidence?.value ?? 0.5,
@@ -245,7 +310,12 @@ export class Orchestrator {
         confidence: request.confidence?.value ?? 0.5,
         usage_count: 0,
       });
-    } catch { /* best-effort */ }
+    } catch (err) {
+      log('warn', 'Failed to store final report in ReasoningBank', {
+        requestId: request.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     return { request, report, results: validResults };
   }

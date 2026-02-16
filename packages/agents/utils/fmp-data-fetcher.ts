@@ -5,6 +5,16 @@ import type { ExtractedMetrics } from './financial-parser.js';
 
 type FmpCaller = (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
 
+/** Structured logger for FMP data pipeline diagnostics */
+function fmpLog(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>): void {
+  const prefix = `[FMP:${level.toUpperCase()}]`;
+  if (data) {
+    console.error(`${prefix} ${message}`, JSON.stringify(data));
+  } else {
+    console.error(`${prefix} ${message}`);
+  }
+}
+
 /** Common abbreviations that look like tickers but aren't */
 const COMMON_ABBREVIATIONS = new Set([
   'A', 'I', 'THE', 'FOR', 'AND', 'WITH', 'HAS', 'EPS', 'DCF', 'IRR',
@@ -31,7 +41,11 @@ export async function resolveSymbol(
       (r: any) => majorExchanges.has(r.exchangeShortName) && r.name?.toLowerCase().includes(companyName.toLowerCase().split(' ')[0]),
     );
     return (preferred?.symbol ?? results[0]?.symbol) || null;
-  } catch {
+  } catch (err) {
+    fmpLog('warn', 'Symbol resolution failed', {
+      companyName,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return null;
   }
 }
@@ -62,6 +76,20 @@ export async function fetchMarketData(
     callFmp('fmp_company_profile', { symbol }),
     callFmp('fmp_quote', { symbol }),
   ]);
+
+  const endpoints = ['income', 'balanceSheet', 'cashFlow', 'keyMetrics', 'profile', 'quote'];
+  const results = [income, balanceSheet, cashFlow, keyMetrics, profile, quote];
+
+  // Log any failed fetches
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      fmpLog('warn', `FMP fetch failed for ${endpoints[i]}`, {
+        symbol,
+        endpoint: endpoints[i],
+        error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+      });
+    }
+  });
 
   const extract = (result: PromiseSettledResult<unknown>): Record<string, unknown> | undefined => {
     if (result.status !== 'fulfilled') return undefined;
@@ -228,8 +256,23 @@ export async function enrichMetrics(
 
     const fmpData = await fetchMarketData(symbol, callFmp);
     const fmpMetrics = mapFmpToMetrics(fmpData, symbol);
+
+    // Log what we got from FMP
+    const fieldsPopulated = Object.entries(fmpMetrics).filter(([k, v]) => v !== undefined && !k.startsWith('_')).length;
+    fmpLog('info', `Enriched ${companyName} (${symbol})`, {
+      fieldsPopulated,
+      hasIncome: !!fmpData.income,
+      hasBalanceSheet: !!fmpData.balanceSheet,
+      hasCashFlow: !!fmpData.cashFlow,
+      hasQuote: !!fmpData.quote,
+    });
+
     return mergeMetrics(textMetrics, fmpMetrics);
-  } catch {
+  } catch (err) {
+    fmpLog('error', 'FMP enrichment pipeline failed', {
+      company: companyName,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return { ...textMetrics, _dataSource: 'text-only' };
   }
 }

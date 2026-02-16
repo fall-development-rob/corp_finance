@@ -74,7 +74,9 @@ export class PipelineError extends Error {
 // ── Directories ─────────────────────────────────────────────────────
 
 const __pipelineDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(__pipelineDir, '..', '..', '..', '..');
+// From src/pipeline.ts: ../../../ = cfa_agent (packages/agents/src → packages/agents → packages → cfa_agent)
+// From dist/pipeline.js: ../../../ = cfa_agent (packages/agents/dist → packages/agents → packages → cfa_agent)
+const repoRoot = join(__pipelineDir, '..', '..', '..');
 const cfaAgentsDir = join(repoRoot, '.claude', 'agents', 'cfa');
 const skillsDir = join(repoRoot, '.claude', 'skills');
 
@@ -238,7 +240,7 @@ const CFA_INTENTS: AgentIntent[] = [
 // ── Agent name normalization ────────────────────────────────────────
 
 function agentNameFromType(agentType: string): string {
-  // CFA intents already use the full name like 'cfa-equity-analyst'
+  // Agent types match the frontmatter 'name' field (e.g. 'cfa-equity-analyst')
   return agentType;
 }
 
@@ -276,14 +278,251 @@ function createRouterEmbedder(realEmbedder: any): any {
 
 const DEFAULT_CONFIG: PipelineConfig = {
   topology: 'hierarchical',
-  confidenceThreshold: 0.4,
+  confidenceThreshold: 0.3,
   maxAgents: 6,
   attentionMechanism: 'flash',
   enableLearning: true,
 };
 
-const AGENT_TIMEOUT_MS = 120_000;
+const AGENT_TIMEOUT_MS = 180_000;
+const AGENT_MAX_TURNS = 12;
 const DEFAULT_AGENT = 'cfa-chief-analyst';
+
+// ── Intelligent FMP tool selection per agent type ────────────────────
+// Instead of listing all 7+ FMP commands in every prompt, we select only
+// the commands relevant to the agent's domain + query keywords.
+
+const FMP_COMMANDS: Record<string, { args: string; desc: string }> = {
+  quote:               { args: 'SYMBOL',                          desc: 'Price, market cap, PE, volume' },
+  financials:          { args: 'SYMBOL --period annual --limit 3', desc: 'Income statement (revenue, EBITDA, net income)' },
+  'balance-sheet':     { args: 'SYMBOL --period annual --limit 3', desc: 'Balance sheet (assets, liabilities, equity)' },
+  'cash-flow':         { args: 'SYMBOL --period annual --limit 3', desc: 'Cash flow (operating CF, capex, FCF)' },
+  'key-metrics':       { args: 'SYMBOL --limit 1',                desc: 'EV/EBITDA, P/E, P/B, ROE, etc.' },
+  ratios:              { args: 'SYMBOL --limit 1',                desc: 'Ratios (margins, turnover, coverage)' },
+  earnings:            { args: 'SYMBOL',                          desc: 'Historical earnings surprises' },
+  'analyst-estimates': { args: 'SYMBOL --limit 1',                desc: 'Consensus analyst estimates' },
+  dividends:           { args: 'SYMBOL',                          desc: 'Dividend history' },
+  profile:             { args: 'SYMBOL',                          desc: 'Company profile, sector, employees' },
+  insider:             { args: 'SYMBOL',                          desc: 'Insider trading activity' },
+  institutional:       { args: 'SYMBOL',                          desc: '13F institutional ownership' },
+  sec:                 { args: 'SYMBOL',                          desc: 'SEC filings' },
+  macro:               { args: 'GDP',                             desc: 'Economic indicators (GDP, CPI, etc.)' },
+  treasury:            { args: '',                                desc: 'US Treasury rates' },
+};
+
+// Base FMP commands per agent type — the minimum data each specialist needs
+const AGENT_FMP_COMMANDS: Record<string, string[]> = {
+  'cfa-equity-analyst':          ['quote', 'financials', 'cash-flow', 'earnings'],
+  'cfa-credit-analyst':          ['quote', 'financials', 'balance-sheet', 'ratios'],
+  'cfa-fixed-income-analyst':    ['quote', 'key-metrics', 'treasury'],
+  'cfa-derivatives-analyst':     ['quote', 'key-metrics'],
+  'cfa-quant-risk-analyst':      ['quote', 'key-metrics'],
+  'cfa-macro-analyst':           ['quote', 'macro', 'treasury'],
+  'cfa-esg-regulatory-analyst':  ['quote', 'profile', 'sec'],
+  'cfa-private-markets-analyst': ['quote', 'financials', 'balance-sheet', 'cash-flow'],
+  'cfa-chief-analyst':           ['quote', 'financials', 'cash-flow', 'key-metrics'],
+};
+
+// Query keywords that trigger additional FMP commands beyond the base set
+const QUERY_TRIGGERS: [RegExp, string[]][] = [
+  [/balance.?sheet|assets|liabilities|leverage|debt.to/i,     ['balance-sheet']],
+  [/cash.?flow|fcf|free cash|capex|operating cash/i,          ['cash-flow']],
+  [/dividend|payout|yield|buyback/i,                          ['dividends', 'cash-flow']],
+  [/earnings|eps|surprise|beat|miss|guidance/i,               ['earnings']],
+  [/estimate|forecast|consensus|forward/i,                    ['analyst-estimates']],
+  [/valuation|dcf|wacc|multiple|pe.ratio/i,                   ['financials', 'key-metrics']],
+  [/margin|profitability|revenue|income|ebitda/i,             ['financials']],
+  [/ratio|roe|roa|current.ratio|coverage/i,                   ['ratios']],
+  [/macro|gdp|cpi|inflation|interest.rate|fed/i,              ['macro', 'treasury']],
+  [/insider|director.deal/i,                                  ['insider']],
+  [/institutional|13f|ownership/i,                            ['institutional']],
+  [/sec|filing|10-k|10-q|proxy/i,                             ['sec']],
+  [/profile|sector|industry|employee/i,                       ['profile']],
+];
+
+function buildAgentPreamble(agentType: string, query: string): string {
+  // Start with agent's base commands
+  const cmds = new Set(AGENT_FMP_COMMANDS[agentType] ?? AGENT_FMP_COMMANDS['cfa-chief-analyst']);
+
+  // Add query-triggered commands
+  for (const [pattern, extraCmds] of QUERY_TRIGGERS) {
+    if (pattern.test(query)) {
+      for (const c of extraCmds) cmds.add(c);
+    }
+  }
+
+  // Build the CLI command block
+  const apiKey = process.env.FMP_API_KEY || 'HonZ5PK6XG9eoakP05AcY0eJTLgpqu0P';
+  const cliPath = join(__pipelineDir, '..', '..', 'fmp-mcp-server', 'dist', 'fmp-cli.js');
+  const cliBase = `FMP_API_KEY=${apiKey} npx tsx ${cliPath}`;
+  const cmdLines = [...cmds].map(key => {
+    const c = FMP_COMMANDS[key];
+    return c ? `# ${c.desc}\n${cliBase} ${key} ${c.args}` : '';
+  }).filter(Boolean).join('\n\n');
+
+  const cmdCount = cmds.size;
+  const maxTurns = Math.min(cmdCount + 4, 12);
+
+  return `
+## CRITICAL INSTRUCTIONS — Read Before Starting
+
+1. **OUTPUT FORMAT**: Return your complete analysis as TEXT in your final message. Do NOT write files. Your text output IS the deliverable.
+
+2. **DATA SOURCE**: Get financial data by running these FMP CLI commands via Bash. Run them IN PARALLEL:
+
+\`\`\`bash
+${cmdLines}
+\`\`\`
+
+Replace SYMBOL with the actual ticker symbol (e.g., AAPL).
+
+3. **TURN BUDGET**: You have ${maxTurns} tool calls max. Run all ${cmdCount} data commands in parallel, then analyze and write your report.
+   - Do NOT explore the codebase, read source files, or search for code
+   - Do NOT use Read, Write, Edit, Glob, Grep, or WebSearch
+
+4. **ACCURACY**: Every number must come from tool output. Do NOT use numbers from memory. If data is missing, say so.
+
+---
+
+`;
+}
+
+
+// ── Dedup helper ────────────────────────────────────────────────────
+// The SDK sometimes emits the same analysis text across multiple assistant
+// turns, causing the final output to contain the report duplicated. This
+// detects and removes the duplicate by finding a repeated heading anchor.
+function deduplicateOutput(text: string): string {
+  if (text.length < 1500) return text;
+  // Find the first markdown heading (e.g., "# APPLE INC (AAPL)")
+  const headingMatch = text.match(/^(#{1,3}\s+.{5,})/m);
+  if (!headingMatch) return text;
+  const anchor = headingMatch[1];
+  const firstIdx = text.indexOf(anchor);
+  const secondIdx = text.indexOf(anchor, firstIdx + anchor.length);
+  if (secondIdx > firstIdx) {
+    // Anchor appears twice — keep whichever half is longer (more complete)
+    const firstHalf = text.slice(firstIdx, secondIdx).trim();
+    const secondHalf = text.slice(secondIdx).trim();
+    return secondHalf.length >= firstHalf.length ? secondHalf : firstHalf;
+  }
+  // Fallback: check if the second half is a near-duplicate of the first half
+  // by comparing the middle region of text
+  const mid = Math.floor(text.length / 2);
+  const probe = text.slice(mid, mid + 200);
+  const probeIdx = text.indexOf(probe);
+  if (probeIdx >= 0 && probeIdx < mid - 200) {
+    // The probe from the middle also appears in the first half — likely a full dupe
+    return text.slice(0, mid).trim();
+  }
+  return text;
+}
+
+// ── Agent runner with abort support ─────────────────────────────────
+// Calls the Claude Agent SDK directly with maxTurns and AbortController
+// so timed-out agents stop immediately instead of burning tokens.
+
+async function runAgentWithAbort(
+  agent: AgentDefinition,
+  input: string,
+  opts: { timeoutMs: number; maxTurns: number; onToolCall?: (name: string, count: number) => void },
+): Promise<{ output: string; agent: string }> {
+  const { query } = await import('@anthropic-ai/claude-agent-sdk');
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), opts.timeoutMs);
+
+  // Load MCP servers from user config
+  const mcpServers: Record<string, any> = {};
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const os = await import('os');
+    const configPath = path.join(os.homedir(), '.agentic-flow', 'mcp-config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      for (const [name, server] of Object.entries(config.servers || {})) {
+        const s = server as any;
+        if (s.enabled) {
+          mcpServers[name] = { type: 'stdio', command: s.command, args: s.args || [], env: { ...process.env, ...s.env } };
+        }
+      }
+    }
+  } catch { /* no config */ }
+
+  const assistantChunks: string[] = [];
+  let resultOutput = '';
+  let toolCallCount = 0;
+  const toolResults: string[] = [];
+
+  try {
+    const hasMcp = Object.keys(mcpServers).length > 0;
+    const stream = query({
+      prompt: input,
+      options: {
+        systemPrompt: agent.systemPrompt,
+        model: process.env.CFA_MODEL || process.env.COMPLETION_MODEL || 'claude-haiku-4-5-20251001',
+        permissionMode: 'bypassPermissions',
+        allowDangerouslySkipPermissions: true,
+        maxTurns: opts.maxTurns,
+        abortController: ac,
+        // Only allow Bash (for FMP CLI) — no file tools, no web search
+        tools: ['Bash'],
+        disallowedTools: ['WebSearch', 'WebFetch', 'Write', 'Edit', 'Read', 'Glob', 'Grep', 'NotebookEdit', 'Task'],
+        mcpServers: hasMcp ? mcpServers : undefined,
+      } as any,
+    });
+    for await (const msg of stream) {
+      if (ac.signal.aborted) break;
+      const msgType = (msg as any).type;
+      if (msgType === 'assistant') {
+        const chunk = (msg as any).message?.content?.map((c: any) => c.type === 'text' ? c.text : '').join('') || '';
+        if (chunk.length > 0) assistantChunks.push(chunk);
+        const toolBlocks = (msg as any).message?.content?.filter((c: any) => c.type === 'tool_use') || [];
+        for (const tb of toolBlocks) {
+          toolCallCount++;
+          opts.onToolCall?.(tb.name || 'unknown', toolCallCount);
+        }
+      } else if (msgType === 'user') {
+        // Capture tool results — these contain the actual data/analysis
+        const toolResult = (msg as any).tool_use_result;
+        if (toolResult && typeof toolResult === 'string' && toolResult.length > 50) {
+          toolResults.push(toolResult.slice(0, 4000));
+        } else if (toolResult && typeof toolResult === 'object') {
+          const s = JSON.stringify(toolResult).slice(0, 4000);
+          if (s.length > 50) toolResults.push(s);
+        }
+      } else if (msgType === 'result') {
+        // SDK final result message — contains the authoritative output
+        resultOutput = (msg as any).result || '';
+      }
+    }
+
+    clearTimeout(timer);
+    // Pick the longest assistant chunk — that's the actual analysis.
+    // Short chunks are "thinking" narration before/between tool calls.
+    const longestChunk = assistantChunks.reduce((a, b) => b.length > a.length ? b : a, '');
+    // Prefer the longest chunk if substantial, else fall back to SDK result
+    const raw = (longestChunk.length > 500 ? longestChunk : resultOutput) || assistantChunks.join('\n');
+    return { output: deduplicateOutput(raw), agent: agent.name };
+  } catch (err) {
+    clearTimeout(timer);
+    if (ac.signal.aborted) {
+      // On timeout, return whatever we accumulated instead of throwing
+      const longestPartial = assistantChunks.reduce((a, b) => b.length > a.length ? b : a, '');
+      const partial = resultOutput || longestPartial || assistantChunks.join('\n');
+      if (partial.length > 100) {
+        return { output: `[Partial — timed out after ${opts.timeoutMs / 1000}s]\n\n${partial}`, agent: agent.name };
+      }
+      // If no text output but we have tool results, synthesize from those
+      if (toolResults.length > 0) {
+        const synthesized = toolResults.slice(-5).join('\n\n---\n\n');
+        return { output: `[Partial — timed out after ${opts.timeoutMs / 1000}s, ${toolCallCount} tool calls]\n\nTool results:\n${synthesized}`, agent: agent.name };
+      }
+      throw new Error(`Agent ${agent.name} timed out after ${opts.timeoutMs / 1000}s`);
+    }
+    throw err;
+  }
+}
 
 // ── Pipeline class ──────────────────────────────────────────────────
 
@@ -560,13 +799,19 @@ export class CfaPipeline {
 
         const agent = injectSkills(agentDef);
 
-        // No streaming for individual agents — only synthesis streams
-        const result = await Promise.race([
-          this.claudeAgent(agent, augmentedQuery),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`Agent ${agentName} timed out after ${AGENT_TIMEOUT_MS / 1000}s`)), AGENT_TIMEOUT_MS),
-          ),
-        ]);
+        // Prepend runtime instructions to the query
+        const agentPrompt = buildAgentPreamble(agentType, query) + augmentedQuery;
+
+        // Run with AbortController — on timeout the SDK subprocess is killed
+        // immediately, preventing orphaned agents from burning tokens.
+        const result = await runAgentWithAbort(agent, agentPrompt, {
+          timeoutMs: AGENT_TIMEOUT_MS,
+          maxTurns: AGENT_MAX_TURNS,
+          onToolCall: (name, count) => {
+            const ts = new Date().toISOString().split('T')[1].split('.')[0];
+            process.stderr.write(`\n[${ts}] 🔍 Tool call #${count}: ${name}\n`);
+          },
+        });
 
         this.status('agents', `${agentName} complete (${result.output.length} chars)`);
         return { agentName, agentType, output: result.output };
@@ -661,8 +906,12 @@ export class CfaPipeline {
 
         const synthesisPrompt = this.buildSynthesisPrompt(query, indexed, coordResult);
 
-        const result = await this.claudeAgent(chiefAgent, synthesisPrompt, onStream);
+        const result = await runAgentWithAbort(chiefAgent, synthesisPrompt, {
+          timeoutMs: AGENT_TIMEOUT_MS,
+          maxTurns: AGENT_MAX_TURNS,
+        });
         synthesis = result.output;
+        if (onStream) onStream(synthesis);
       } catch (err) {
         // Fallback: concatenate raw outputs
         this.status('synthesis', `Synthesis agent failed: ${err instanceof Error ? err.message : String(err)} — concatenating raw outputs`);

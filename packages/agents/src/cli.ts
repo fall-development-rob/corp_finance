@@ -261,17 +261,19 @@ class CfaCli {
       },
     });
 
+    let streamed = false;
     const result = await pipeline.execute(
       userQuery,
       (chunk: string) => {
+        streamed = true;
         process.stdout.write(chunk);
       },
     );
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    // If nothing was streamed and single-agent, print the synthesis
-    if (result.synthesis && !process.stdout.isTTY && result.agentResults.length === 1) {
+    // Print synthesis only if onStream wasn't invoked (avoids duplication)
+    if (!streamed && result.synthesis) {
       console.log(result.synthesis);
     }
 
@@ -283,6 +285,10 @@ class CfaCli {
       console.log(`  ${c('dim', `Coordination: ${result.coordination.mechanism} | top: ${result.coordination.topAgents.join(', ')}`)}`);
     }
     console.log();
+
+    // Force exit to kill any orphaned agent SDK processes (timed-out agents
+    // keep running because claudeAgent doesn't support AbortSignal)
+    process.exit(0);
   }
 
   // ── Batch mode (ADR-006: multi-company portfolio analysis) ─────
