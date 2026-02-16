@@ -34,6 +34,7 @@ export interface AnalystAssignment {
   resultRef?: string;        // AnalysisResult.resultId when complete
   startedAt?: Date;
   completedAt?: Date;
+  routingScore?: number;   // 0-1 semantic routing score, 0 = static fallback
 }
 
 export interface ConfidenceScore {

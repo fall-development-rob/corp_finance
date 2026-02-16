@@ -72,10 +72,14 @@ export async function getPool(config?: PgConfig): Promise<import('pg').Pool> {
   });
 
   // Set ruvector ef_search on every new connection for improved recall
+  // Also disable index-only scans — ruvector HNSW has a bug where count(*)
+  // and other index-only scan queries fail with "no data returned"
   _pool.on('connect', (client) => {
-    client.query('SET ruvector.ef_search = 100').catch((err: Error) => {
-      console.warn('[pg-client] failed to SET ruvector.ef_search:', err.message);
-    });
+    client
+      .query('SET ruvector.ef_search = 100; SET enable_indexonlyscan = off')
+      .catch((err: Error) => {
+        console.warn('[pg-client] failed to SET ruvector params:', err.message);
+      });
   });
 
   return _pool;
@@ -201,7 +205,8 @@ export async function queryWithRetry<T extends import('pg').QueryResultRow>(
         msg.includes('recovery mode') ||
         msg.includes('the database system is starting up') ||
         msg.includes('connection refused') ||
-        msg.includes('terminating connection');
+        msg.includes('terminating connection') ||
+        msg.includes('no data returned for index-only scan');
 
       if (attempt < maxRetries && isRecoverable) {
         const delay = retryDelayMs * Math.pow(3, attempt);

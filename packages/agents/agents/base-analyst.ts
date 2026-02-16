@@ -78,8 +78,16 @@ export abstract class BaseAnalyst {
     if (ctx.callFmpTool && textMetrics._company) {
       try {
         state.metrics = await enrichMetrics(textMetrics, ctx.callFmpTool);
-      } catch {
-        // Graceful degradation — continue with text-only metrics
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        state.observations.push(`[FMP enrichment failed: ${errorMsg}] Continuing with text-only metrics`);
+        ctx.eventBus.emit({
+          eventId: randomUUID(),
+          type: 'ToolFailed',
+          timestamp: new Date(),
+          sourceContext: 'SpecialistAnalysts',
+          payload: { invocationId: 'fmp-enrichment', errorType: `FMP enrichment: ${errorMsg}` },
+        });
       }
     }
 
@@ -184,7 +192,7 @@ export abstract class BaseAnalyst {
       agentType: this.agentType,
       assignmentId: ctx.assignmentId,
       findings,
-      summary: findings.map(f => f.statement).join('\n'),
+      summary: this.buildSummary(findings, state),
       confidence,
       toolInvocations: state.toolResults,
       completedAt: new Date(),
@@ -269,6 +277,45 @@ export abstract class BaseAnalyst {
     const successfulTools = state.toolResults.filter(t => !t.error).length;
     const totalTools = state.toolResults.length;
     if (totalTools === 0) return 0;
-    return Math.min(1, successfulTools / totalTools * (state.iteration > 1 ? 1.1 : 1.0));
+
+    // Base confidence from tool success ratio
+    let confidence = successfulTools / totalTools;
+
+    // Boost for multiple iterations (more thorough analysis)
+    if (state.iteration > 1) confidence = Math.min(1, confidence * 1.05);
+
+    // Boost for FMP-enriched data (real market data vs text-only)
+    if (state.metrics._dataSource === 'fmp-enriched') {
+      confidence = Math.min(1, confidence * 1.1);
+    } else if (state.metrics._dataSource === 'text-only') {
+      confidence *= 0.85; // Penalize text-only analyses slightly
+    }
+
+    // Penalize if very few tools were called (insufficient analysis)
+    if (successfulTools < 2) {
+      confidence *= 0.8;
+    }
+
+    return Math.round(confidence * 100) / 100; // Round to 2 decimal places
+  }
+
+  private buildSummary(findings: Finding[], state: ReasoningState): string {
+    if (findings.length === 0) return 'No findings produced.';
+
+    const dataSource = state.metrics._dataSource === 'fmp-enriched'
+      ? 'live market data' : 'text-extracted metrics';
+    const company = state.metrics._company ?? 'the subject';
+    const successCount = state.toolResults.filter(t => !t.error).length;
+    const totalCount = state.toolResults.length;
+
+    const header = `Analysis of ${company} using ${dataSource} (${successCount}/${totalCount} tools succeeded across ${state.iteration} iteration(s)):`;
+
+    // Group findings by methodology and extract key statements
+    const findingLines = findings
+      .filter(f => f.confidence > 0)
+      .map(f => `- [${f.methodology}] ${f.statement.slice(0, 200)}`)
+      .join('\n');
+
+    return `${header}\n${findingLines}`;
   }
 }

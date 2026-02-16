@@ -166,42 +166,92 @@ export class QuantRiskAnalyst extends BaseAnalyst {
     state: ReasoningState,
   ): Promise<Finding[]> {
     const findings: Finding[] = [];
+    const successful = state.toolResults.filter(t => !t.error && t.result);
 
-    for (const invocation of state.toolResults) {
-      if (invocation.error) continue;
-
-      const output = typeof invocation.result === 'string'
-        ? invocation.result
-        : JSON.stringify(invocation.result);
-
-      const snippet = output.length > 300 ? output.slice(0, 300) + '...' : output;
+    for (const invocation of successful) {
+      const statement = this.extractStatement(invocation.toolName, invocation.result);
+      const confidence = this.assessFindingConfidence(invocation, state);
 
       findings.push({
-        statement: `[${invocation.toolName}] ${snippet}`,
-        supportingData: { raw: invocation.result },
-        confidence: invocation.duration !== undefined && invocation.duration < 10000 ? 0.85 : 0.7,
+        statement,
+        supportingData: invocation.result as Record<string, unknown>,
+        confidence,
         methodology: invocation.toolName.replace(/_/g, ' '),
-        citations: [
-          {
-            invocationId: invocation.invocationId,
-            toolName: invocation.toolName,
-            relevantOutput: snippet,
-          },
-        ],
+        citations: [{
+          invocationId: invocation.invocationId,
+          toolName: invocation.toolName,
+          relevantOutput: statement.slice(0, 200),
+        }],
       });
     }
 
-    // If no tools succeeded, produce a fallback finding
     if (findings.length === 0) {
       findings.push({
-        statement: 'Quantitative risk analysis could not be completed: no tool calls succeeded.',
+        statement: `Unable to complete ${this.agentType.replace(/-/g, ' ')} — no tool results available`,
         supportingData: {},
         confidence: 0,
-        methodology: 'fallback',
+        methodology: 'N/A',
         citations: [],
       });
     }
 
     return findings;
+  }
+
+  /** Extract a human-readable statement from tool output */
+  private extractStatement(toolName: string, result: unknown): string {
+    if (!result || typeof result !== 'object') {
+      return `${toolName}: ${String(result).slice(0, 300)}`;
+    }
+
+    const data = result as Record<string, unknown>;
+
+    // Try to find the most meaningful fields in the result
+    const keyMetrics: string[] = [];
+
+    // Extract numeric results with labels
+    for (const [key, val] of Object.entries(data)) {
+      if (typeof val === 'number' && !isNaN(val)) {
+        const label = key.replace(/_/g, ' ');
+        if (Math.abs(val) >= 1e6) {
+          keyMetrics.push(`${label}: $${(val / 1e6).toFixed(1)}M`);
+        } else if (Math.abs(val) < 1 && val !== 0) {
+          keyMetrics.push(`${label}: ${(val * 100).toFixed(2)}%`);
+        } else {
+          keyMetrics.push(`${label}: ${val.toFixed(2)}`);
+        }
+      } else if (typeof val === 'string' && val.length < 100) {
+        keyMetrics.push(`${key.replace(/_/g, ' ')}: ${val}`);
+      }
+      if (keyMetrics.length >= 6) break; // Limit output
+    }
+
+    const methodLabel = toolName.replace(/_/g, ' ');
+    if (keyMetrics.length > 0) {
+      return `${methodLabel}: ${keyMetrics.join(', ')}`;
+    }
+    return `${methodLabel}: ${JSON.stringify(data).slice(0, 300)}`;
+  }
+
+  /** Assess confidence for a single finding based on data quality */
+  private assessFindingConfidence(invocation: { duration?: number; error?: string }, state: ReasoningState): number {
+    let confidence = 0.75; // base confidence for any successful tool call
+
+    // Boost for fast responses (likely cached or complete data)
+    if (invocation.duration !== undefined && invocation.duration < 5000) {
+      confidence += 0.1;
+    }
+
+    // Boost for FMP-enriched data
+    if (state.metrics._dataSource === 'fmp-enriched') {
+      confidence += 0.1;
+    }
+
+    // Slight penalty for text-only data
+    if (!state.metrics._dataSource || state.metrics._dataSource === 'text-only') {
+      confidence -= 0.1;
+    }
+
+    return Math.min(1, Math.max(0, Math.round(confidence * 100) / 100));
   }
 }

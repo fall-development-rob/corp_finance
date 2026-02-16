@@ -67,6 +67,34 @@ export const AGENT_DESCRIPTIONS: Record<string, string> = {
   'private-markets-analyst': 'Private markets specialist: PE, venture, LBO, M&A, infrastructure, real assets, CLO/securitization',
 };
 
+
+/** Domain keyword patterns — shared between static classifier and semantic router */
+export const DOMAIN_PATTERNS: Record<string, string[]> = {
+  valuation: ['dcf', 'valuation', 'fair value', 'intrinsic value', 'comps', 'multiples', 'sum of parts'],
+  equity_research: ['equity', 'stock', 'earnings', 'eps', 'revenue growth', 'margin'],
+  credit: ['credit', 'default', 'spread', 'covenant', 'rating', 'leverage'],
+  fixed_income: ['bond', 'yield', 'duration', 'convexity', 'coupon', 'fixed income'],
+  derivatives: ['option', 'derivative', 'swap', 'futures', 'greeks', 'volatility'],
+  quant_risk: ['var', 'risk', 'sharpe', 'drawdown', 'factor', 'beta'],
+  portfolio_optimization: ['portfolio', 'allocation', 'rebalance', 'efficient frontier'],
+  macro_economics: ['macro', 'gdp', 'inflation', 'rates', 'central bank'],
+  esg: ['esg', 'sustainability', 'carbon', 'governance', 'social'],
+  regulatory: ['regulatory', 'compliance', 'aml', 'fatca', 'basel'],
+  pe: ['lbo', 'buyout', 'private equity', 'leverage'],
+  ma: ['m&a', 'merger', 'acquisition', 'accretion', 'dilution'],
+  restructuring: ['restructuring', 'distressed', 'bankruptcy', 'workout'],
+  insurance: ['insurance', 'reserv', 'loss triangle', 'premium', 'combined ratio', 'loss ratio', 'solvency', 'scr'],
+  pension: ['pension', 'defined benefit', 'ldi', 'liability driven'],
+  wealth: ['retirement', 'withdrawal', 'tax loss', 'harvesting', 'estate', 'trust', 'inheritance'],
+  crypto: ['crypto', 'token', 'defi', 'yield farm', 'staking'],
+  jurisdiction: ['fee', 'management fee', 'gaap', 'ifrs', 'reconcil', 'withholding', 'wht',
+                  'nav', 'net asset value', 'gp economics', 'carry', 'investor return', 'net return',
+                  'ubti', 'eci', 'tax-exempt investor'],
+  treasury: ['cash management', 'liquidity', 'hedge effective', 'ias 39'],
+  three_statement: ['three statement', 'financial model', '3-statement'],
+  monte_carlo: ['monte carlo', 'simulation', 'stochastic dcf', 'monte carlo dcf'],
+};
+
 // Given a query, suggest which agent types are needed
 export function suggestAgents(queryDomains: string[]): string[] {
   const agents = new Set<string>();

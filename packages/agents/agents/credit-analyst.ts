@@ -103,13 +103,19 @@ export class CreditAnalyst extends BaseAnalyst {
 
   protected async reflect(_ctx: AnalystContext, state: ReasoningState) {
     const successCount = state.toolResults.filter(t => !t.error).length;
+    const failCount = state.toolResults.filter(t => !!t.error).length;
     const hasResults = successCount > 0;
-    const shouldIterate = state.iteration === 1 && hasResults && state.toolResults.length < 4;
 
-    return {
-      summary: `Iteration ${state.iteration}: ${successCount}/${state.toolResults.length} tools succeeded`,
-      shouldIterate,
-    };
+    // Iterate if: first pass, got some results, and either had failures or few successes
+    const shouldIterate = state.iteration === 1
+      && hasResults
+      && (failCount > 0 || successCount < 3);
+
+    const summary = failCount > 0
+      ? `Iteration ${state.iteration}: ${successCount} succeeded, ${failCount} failed — will retry with alternatives`
+      : `Iteration ${state.iteration}: ${successCount} tools succeeded`;
+
+    return { summary, shouldIterate };
   }
 
   protected async synthesize(_ctx: AnalystContext, state: ReasoningState): Promise<Finding[]> {
@@ -117,22 +123,25 @@ export class CreditAnalyst extends BaseAnalyst {
     const successful = state.toolResults.filter(t => !t.error && t.result);
 
     for (const invocation of successful) {
+      const statement = this.extractStatement(invocation.toolName, invocation.result);
+      const confidence = this.assessFindingConfidence(invocation, state);
+
       findings.push({
-        statement: `${invocation.toolName}: ${JSON.stringify(invocation.result).slice(0, 500)}`,
+        statement,
         supportingData: invocation.result as Record<string, unknown>,
-        confidence: 0.8,
+        confidence,
         methodology: invocation.toolName.replace(/_/g, ' '),
         citations: [{
           invocationId: invocation.invocationId,
           toolName: invocation.toolName,
-          relevantOutput: JSON.stringify(invocation.result).slice(0, 200),
+          relevantOutput: statement.slice(0, 200),
         }],
       });
     }
 
     if (findings.length === 0) {
       findings.push({
-        statement: 'Unable to complete credit analysis — no tool results available',
+        statement: `Unable to complete ${this.agentType.replace(/-/g, ' ')} — no tool results available`,
         supportingData: {},
         confidence: 0,
         methodology: 'N/A',
@@ -141,5 +150,62 @@ export class CreditAnalyst extends BaseAnalyst {
     }
 
     return findings;
+  }
+
+  /** Extract a human-readable statement from tool output */
+  private extractStatement(toolName: string, result: unknown): string {
+    if (!result || typeof result !== 'object') {
+      return `${toolName}: ${String(result).slice(0, 300)}`;
+    }
+
+    const data = result as Record<string, unknown>;
+
+    // Try to find the most meaningful fields in the result
+    const keyMetrics: string[] = [];
+
+    // Extract numeric results with labels
+    for (const [key, val] of Object.entries(data)) {
+      if (typeof val === 'number' && !isNaN(val)) {
+        const label = key.replace(/_/g, ' ');
+        if (Math.abs(val) >= 1e6) {
+          keyMetrics.push(`${label}: $${(val / 1e6).toFixed(1)}M`);
+        } else if (Math.abs(val) < 1 && val !== 0) {
+          keyMetrics.push(`${label}: ${(val * 100).toFixed(2)}%`);
+        } else {
+          keyMetrics.push(`${label}: ${val.toFixed(2)}`);
+        }
+      } else if (typeof val === 'string' && val.length < 100) {
+        keyMetrics.push(`${key.replace(/_/g, ' ')}: ${val}`);
+      }
+      if (keyMetrics.length >= 6) break; // Limit output
+    }
+
+    const methodLabel = toolName.replace(/_/g, ' ');
+    if (keyMetrics.length > 0) {
+      return `${methodLabel}: ${keyMetrics.join(', ')}`;
+    }
+    return `${methodLabel}: ${JSON.stringify(data).slice(0, 300)}`;
+  }
+
+  /** Assess confidence for a single finding based on data quality */
+  private assessFindingConfidence(invocation: { duration?: number; error?: string }, state: ReasoningState): number {
+    let confidence = 0.75; // base confidence for any successful tool call
+
+    // Boost for fast responses (likely cached or complete data)
+    if (invocation.duration !== undefined && invocation.duration < 5000) {
+      confidence += 0.1;
+    }
+
+    // Boost for FMP-enriched data
+    if (state.metrics._dataSource === 'fmp-enriched') {
+      confidence += 0.1;
+    }
+
+    // Slight penalty for text-only data
+    if (!state.metrics._dataSource || state.metrics._dataSource === 'text-only') {
+      confidence -= 0.1;
+    }
+
+    return Math.min(1, Math.max(0, Math.round(confidence * 100) / 100));
   }
 }

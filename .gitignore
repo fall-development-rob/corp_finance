@@ -34,3 +34,8 @@ docs/Excel Trading Diary SS.xlsx
 CLAUDE.md
 .env
 packages/agents/docker/.env
+packages/agents/vectors.db
+docs/FMP-QUICK-START.md
+docs/FMP-TOOLS-USAGE.md
+docs/MCP-TOOLS-AVAILABILITY.md
+docs/QUICK-REFERENCE-AAPL.md

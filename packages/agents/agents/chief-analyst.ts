@@ -8,21 +8,87 @@ import type {
 } from '../types/analysis.js';
 import type { AnalysisResult } from '../types/agents.js';
 import type { EventBus } from '../types/events.js';
-import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS, CROSS_CUTTING_MODULES, suggestAgents } from '../config/tool-mappings.js';
+import { TOOL_MAPPINGS, AGENT_DESCRIPTIONS, CROSS_CUTTING_MODULES, suggestAgents, DOMAIN_PATTERNS } from '../config/tool-mappings.js';
+import type { ExpertRouter, RoutingResult } from '../config/expert-router.js';
 
 export interface ChiefAnalystConfig {
   confidenceThreshold: number;     // below this, escalate for human review (default 0.6)
   maxSpecialists: number;          // max concurrent specialists (default 6)
   eventBus: EventBus;
+  expertRouter?: ExpertRouter;
 }
 
 export class ChiefAnalyst {
   private config: ChiefAnalystConfig;
   private eventBus: EventBus;
+  private expertRouter: ExpertRouter | null;
 
   constructor(config: ChiefAnalystConfig) {
     this.config = config;
     this.eventBus = config.eventBus;
+    this.expertRouter = config.expertRouter ?? null;
+  }
+
+  /**
+   * Semantic-first routing: attempts MoE routing via ExpertRouter,
+   * falls back to static classifyIntent + suggestAgents.
+   */
+  async routeQuery(query: string, maxK?: number): Promise<{
+    intent: QueryIntent;
+    agents: Array<{ agentType: string; score: number }>;
+  }> {
+    const k = maxK ?? this.config.maxSpecialists;
+
+    // Try semantic routing first
+    if (this.expertRouter) {
+      const results = await this.expertRouter.route(query, k);
+      if (results.length > 0) {
+        const intent = this.deriveIntent(results[0].agentType, query, results);
+        return {
+          intent,
+          agents: results.map(r => ({ agentType: r.agentType, score: r.score })),
+        };
+      }
+    }
+
+    // Fallback to static routing
+    const intent = this.classifyIntent(query);
+    const agentTypes = suggestAgents(intent.domains);
+    return {
+      intent,
+      agents: agentTypes.map(a => ({ agentType: a, score: 0 })),
+    };
+  }
+
+  private deriveIntent(
+    topAgent: string,
+    query: string,
+    allResults: Array<{ agentType: string; score: number }>,
+  ): QueryIntent {
+    const typeMap: Record<string, QueryIntent['type']> = {
+      'equity-analyst': 'valuation',
+      'credit-analyst': 'credit_assessment',
+      'fixed-income-analyst': 'credit_assessment',
+      'derivatives-analyst': 'risk_analysis',
+      'quant-risk-analyst': 'risk_analysis',
+      'macro-analyst': 'macro_research',
+      'esg-regulatory-analyst': 'esg_review',
+      'private-markets-analyst': 'deal_analysis',
+    };
+
+    // Also extract domains from TOOL_MAPPINGS for the selected agents
+    const domains: string[] = [];
+    for (const r of allResults) {
+      const tools = TOOL_MAPPINGS[r.agentType];
+      if (tools) domains.push(...tools);
+    }
+    const uniqueDomains = [...new Set(domains)];
+
+    return {
+      type: typeMap[topAgent] ?? 'comprehensive',
+      domains: uniqueDomains,
+      complexity: Math.min(1, allResults.length / 5),
+    };
   }
 
   // Step 1: Create an AnalysisRequest from a user query
@@ -51,8 +117,10 @@ export class ChiefAnalyst {
   }
 
   // Step 2: Decompose query into a research plan
-  createPlan(request: AnalysisRequest): ResearchPlan {
-    const agentTypes = suggestAgents(request.intent.domains);
+  createPlan(request: AnalysisRequest, routedAgents?: Array<{ agentType: string; score: number }>): ResearchPlan {
+    const agentTypes = routedAgents && routedAgents.length > 0
+      ? routedAgents.map(r => r.agentType)
+      : suggestAgents(request.intent.domains);
     const steps: PlanStep[] = agentTypes.map((agentType, idx) => ({
       id: `step-${idx + 1}`,
       description: `${AGENT_DESCRIPTIONS[agentType] ?? agentType}: Analyze relevant aspects of "${request.query}"`,
@@ -190,35 +258,7 @@ export class ChiefAnalyst {
     let type: QueryIntent['type'] = 'comprehensive';
 
     // Pattern matching for domain detection
-    const domainPatterns: Record<string, string[]> = {
-      valuation: ['dcf', 'valuation', 'fair value', 'intrinsic value', 'comps', 'multiples', 'sum of parts'],
-      equity_research: ['equity', 'stock', 'earnings', 'eps', 'revenue growth', 'margin'],
-      credit: ['credit', 'default', 'spread', 'covenant', 'rating', 'leverage'],
-      fixed_income: ['bond', 'yield', 'duration', 'convexity', 'coupon', 'fixed income'],
-      derivatives: ['option', 'derivative', 'swap', 'futures', 'greeks', 'volatility'],
-      quant_risk: ['var', 'risk', 'sharpe', 'drawdown', 'factor', 'beta'],
-      portfolio_optimization: ['portfolio', 'allocation', 'rebalance', 'efficient frontier'],
-      macro_economics: ['macro', 'gdp', 'inflation', 'rates', 'central bank'],
-      esg: ['esg', 'sustainability', 'carbon', 'governance', 'social'],
-      regulatory: ['regulatory', 'compliance', 'aml', 'fatca', 'basel'],
-      pe: ['lbo', 'buyout', 'private equity', 'leverage'],
-      ma: ['m&a', 'merger', 'acquisition', 'accretion', 'dilution'],
-      restructuring: ['restructuring', 'distressed', 'bankruptcy', 'workout'],
-
-      // Cross-cutting domains — insurance, pension, wealth, crypto, jurisdiction, treasury
-      insurance: ['insurance', 'reserv', 'loss triangle', 'premium', 'combined ratio', 'loss ratio', 'solvency', 'scr'],
-      pension: ['pension', 'defined benefit', 'ldi', 'liability driven'],
-      wealth: ['retirement', 'withdrawal', 'tax loss', 'harvesting', 'estate', 'trust', 'inheritance'],
-      crypto: ['crypto', 'token', 'defi', 'yield farm', 'staking'],
-      jurisdiction: ['fee', 'management fee', 'gaap', 'ifrs', 'reconcil', 'withholding', 'wht',
-                      'nav', 'net asset value', 'gp economics', 'carry', 'investor return', 'net return',
-                      'ubti', 'eci', 'tax-exempt investor'],
-      treasury: ['cash management', 'liquidity', 'hedge effective', 'ias 39'],
-      three_statement: ['three statement', 'financial model', '3-statement'],
-      monte_carlo: ['monte carlo', 'simulation', 'stochastic dcf', 'monte carlo dcf'],
-    };
-
-    for (const [domain, patterns] of Object.entries(domainPatterns)) {
+    for (const [domain, patterns] of Object.entries(DOMAIN_PATTERNS)) {
       if (patterns.some(p => q.includes(p))) {
         domains.push(domain);
       }

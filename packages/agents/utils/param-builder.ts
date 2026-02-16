@@ -6,22 +6,60 @@ import { resolveToolName } from '../config/tool-name-resolver.js';
 
 type ParamBuilder = (m: ExtractedMetrics) => Record<string, unknown>;
 
+/** Track which param values are real data vs estimates */
+export interface ParamQuality {
+  realFields: string[];
+  estimatedFields: string[];
+  missingCriticalFields: string[];
+}
+
+export function trackQuality(m: ExtractedMetrics, required: string[], optional: string[]): ParamQuality {
+  const quality: ParamQuality = { realFields: [], estimatedFields: [], missingCriticalFields: [] };
+
+  const mRec = m as unknown as Record<string, unknown>;
+
+  for (const field of required) {
+    const val = mRec[field];
+    if (val !== undefined && val !== null) {
+      quality.realFields.push(field);
+    } else {
+      quality.missingCriticalFields.push(field);
+    }
+  }
+
+  for (const field of optional) {
+    const val = mRec[field];
+    if (val !== undefined && val !== null) {
+      quality.realFields.push(field);
+    } else {
+      quality.estimatedFields.push(field);
+    }
+  }
+
+  return quality;
+}
+
 // ─── Valuation ───────────────────────────────────────────────────────────────
 
-const dcf_model: ParamBuilder = (m) => ({
-  base_revenue: m.revenue ?? 1e9,
-  revenue_growth_rates: [0.08, 0.07, 0.06, 0.05, 0.04],
-  ebitda_margin: m.ebitda_margin ?? 0.20,
-  capex_as_pct_revenue: 0.05,
-  nwc_as_pct_revenue: 0.02,
-  tax_rate: m.tax_rate ?? 0.21,
-  wacc: m.wacc ?? 0.10,
-  terminal_method: 'GordonGrowth',
-  terminal_growth_rate: m.terminal_growth ?? 0.025,
-  currency: 'USD',
-  net_debt: m.net_debt,
-  shares_outstanding: m.shares_outstanding,
-});
+const dcf_model: ParamBuilder = (m) => {
+  const revenue = m.revenue ?? (m.ebitda ? (m.ebitda / (m.ebitda_margin ?? 0.15)) : undefined);
+  return {
+    base_revenue: revenue ?? 1e9, // estimate: no FMP data
+    revenue_growth_rates: m.growth_rate
+      ? [m.growth_rate, m.growth_rate * 0.9, m.growth_rate * 0.8, m.growth_rate * 0.7, m.growth_rate * 0.6]
+      : [0.08, 0.07, 0.06, 0.05, 0.04], // estimate: no FMP data
+    ebitda_margin: m.ebitda_margin ?? (m.ebitda && m.revenue ? m.ebitda / m.revenue : 0.20), // estimate: no FMP data
+    capex_as_pct_revenue: m.capex && m.revenue ? m.capex / m.revenue : 0.05, // estimate: no FMP data
+    nwc_as_pct_revenue: 0.02,
+    tax_rate: m.tax_rate ?? 0.21, // estimate: no FMP data
+    wacc: m.wacc ?? 0.10, // estimate: no FMP data
+    terminal_method: 'GordonGrowth',
+    terminal_growth_rate: m.terminal_growth ?? 0.025, // estimate: no FMP data
+    currency: 'USD',
+    net_debt: m.net_debt,
+    shares_outstanding: m.shares_outstanding,
+  };
+};
 
 const wacc_calculator: ParamBuilder = (m) => ({
   risk_free_rate: m.risk_free_rate ?? 0.04,
@@ -36,18 +74,16 @@ const wacc_calculator: ParamBuilder = (m) => ({
 const comps_analysis: ParamBuilder = (m) => ({
   target_name: m._company ?? 'Target Company',
   target_metrics: {
-    revenue: m.revenue ?? 1e9,
-    ebitda: m.ebitda ?? 2e8,
-    net_income: m.net_income ?? 1e8,
+    revenue: m.revenue,
+    ebitda: m.ebitda,
+    net_income: m.net_income,
     share_price: m.share_price,
     market_cap: m.market_cap,
     enterprise_value: m.enterprise_value,
   },
-  comparables: [
-    { name: 'Peer A', metrics: { revenue: (m.revenue ?? 1e9) * 1.1, ebitda: (m.ebitda ?? 2e8) * 1.2, net_income: (m.net_income ?? 1e8) * 1.1, market_cap: (m.market_cap ?? 2e9) * 1.1, enterprise_value: (m.enterprise_value ?? 2.5e9) * 1.1, share_price: 50 }, include: true },
-    { name: 'Peer B', metrics: { revenue: (m.revenue ?? 1e9) * 0.9, ebitda: (m.ebitda ?? 2e8) * 0.85, net_income: (m.net_income ?? 1e8) * 0.9, market_cap: (m.market_cap ?? 2e9) * 0.9, enterprise_value: (m.enterprise_value ?? 2.5e9) * 0.9, share_price: 35 }, include: true },
-    { name: 'Peer C', metrics: { revenue: (m.revenue ?? 1e9) * 1.3, ebitda: (m.ebitda ?? 2e8) * 1.4, net_income: (m.net_income ?? 1e8) * 1.2, market_cap: (m.market_cap ?? 2e9) * 1.3, enterprise_value: (m.enterprise_value ?? 2.5e9) * 1.3, share_price: 65 }, include: true },
-  ],
+  // No fake peers — the MCP tool will handle peer discovery
+  // or the orchestrator should provide real peer data
+  comparables: [],
   multiples: ['EvEbitda', 'EvRevenue', 'PriceEarnings'],
   currency: 'USD',
 });
@@ -55,145 +91,139 @@ const comps_analysis: ParamBuilder = (m) => ({
 const sotp_valuation: ParamBuilder = (m) => ({
   company_name: m._company ?? 'Target Company',
   segments: [
-    { name: 'Core Business', revenue: m.revenue ?? 1e9, ebitda: m.ebitda ?? 2e8, ebit: m.ebit ?? 1.5e8, method: 'EvEbitda', multiple: 10 },
+    { name: 'Core Business', revenue: m.revenue, ebitda: m.ebitda, ebit: m.ebit, method: 'EvEbitda', multiple: 10 },
   ],
-  net_debt: m.net_debt ?? 0,
-  shares_outstanding: m.shares_outstanding ?? 1e8,
+  net_debt: m.net_debt,
+  shares_outstanding: m.shares_outstanding,
 });
 
 // ─── Credit ──────────────────────────────────────────────────────────────────
 
 const credit_metrics: ParamBuilder = (m) => ({
-  revenue: m.revenue ?? 1e9,
-  ebitda: m.ebitda ?? 2e8,
-  ebit: m.ebit ?? m.ebitda ? (m.ebitda ?? 2e8) * 0.8 : 1.6e8,
-  interest_expense: m.interest_expense ?? 3e7,
-  depreciation_amortisation: m.depreciation ?? 3e7,
-  total_debt: m.total_debt ?? 5e8,
-  cash: m.cash ?? 1e8,
-  total_assets: m.total_assets ?? 2e9,
-  current_assets: m.current_assets ?? 4e8,
-  current_liabilities: m.current_liabilities ?? (m.current_ratio ? (m.current_assets ?? 4e8) / m.current_ratio : 2.2e8),
-  total_equity: m.total_equity ?? 8e8,
-  retained_earnings: 5e8,
-  working_capital: (m.current_assets ?? 4e8) - (m.current_liabilities ?? 2.2e8),
-  operating_cash_flow: m.operating_cash_flow ?? (m.ebitda ?? 2e8) * 0.7,
-  capex: m.capex ?? 5e7,
+  revenue: m.revenue,
+  ebitda: m.ebitda,
+  ebit: m.ebit ?? (m.ebitda && m.depreciation ? m.ebitda - m.depreciation : undefined),
+  interest_expense: m.interest_expense,
+  depreciation_amortisation: m.depreciation,
+  total_debt: m.total_debt,
+  cash: m.cash,
+  total_assets: m.total_assets,
+  current_assets: m.current_assets,
+  current_liabilities: m.current_liabilities ?? (m.current_ratio && m.current_assets ? m.current_assets / m.current_ratio : undefined),
+  total_equity: m.total_equity,
+  retained_earnings: undefined, // requires historical data
+  working_capital: m.current_assets && m.current_liabilities ? m.current_assets - m.current_liabilities : undefined,
+  operating_cash_flow: m.operating_cash_flow,
+  capex: m.capex,
 });
 
-const credit_scorecard: ParamBuilder = () => ({
-  bins: [
-    { lower: 0, upper: 300, good_count: 50, bad_count: 200 },
-    { lower: 300, upper: 500, good_count: 200, bad_count: 150 },
-    { lower: 500, upper: 700, good_count: 500, bad_count: 50 },
-    { lower: 700, upper: 850, good_count: 800, bad_count: 10 },
-  ],
+const credit_scorecard: ParamBuilder = (_m) => ({
+  // These bins require real historical data — pass empty to signal the tool
+  // should use its internal defaults rather than fabricated data
+  bins: [],
   target_score: 600,
   target_odds: 50,
   pdo: 20,
 });
 
 const credit_spreads: ParamBuilder = (m) => ({
-  face_value: m.face_value ?? 1000,
-  coupon_rate: m.coupon_rate ?? 0.05,
+  face_value: m.face_value ?? 1000, // estimate: no FMP data
+  coupon_rate: m.coupon_rate ?? 0.05, // estimate: no FMP data
   coupon_frequency: 2,
-  market_price: 980,
-  years_to_maturity: m.maturity_years ?? 5,
-  benchmark_curve: [
-    { maturity: 1, rate: 0.04 },
-    { maturity: 2, rate: 0.042 },
-    { maturity: 5, rate: 0.045 },
-    { maturity: 10, rate: 0.048 },
-  ],
-  recovery_rate: m.recovery_rate ?? 0.4,
+  market_price: undefined, // requires real market data
+  years_to_maturity: m.maturity_years ?? 5, // estimate: no FMP data
+  // Benchmark curve requires real market data — pass empty to signal the tool
+  // should fetch current rates
+  benchmark_curve: [],
+  recovery_rate: m.recovery_rate ?? 0.4, // estimate: no FMP data
 });
 
 const merton_pd: ParamBuilder = (m) => ({
-  equity_value: m.market_cap ?? 1e9,
-  equity_vol: m.volatility ?? 0.30,
-  debt_face: m.total_debt ?? 5e8,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
-  maturity: m.maturity_years ?? 1,
-  growth_rate: m.growth_rate ?? 0.03,
+  equity_value: m.market_cap,
+  equity_vol: m.volatility ?? 0.30, // estimate: no FMP data
+  debt_face: m.total_debt,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  maturity: m.maturity_years ?? 1, // estimate: no FMP data
+  growth_rate: m.growth_rate,
 });
 
-const portfolio_credit_risk: ParamBuilder = () => ({
-  exposures: [
-    { name: 'Corp A', exposure: 1e7, pd: 0.02, lgd: 0.45, rating: 'BBB' },
-    { name: 'Corp B', exposure: 5e6, pd: 0.01, lgd: 0.40, rating: 'A' },
-    { name: 'Corp C', exposure: 8e6, pd: 0.05, lgd: 0.60, rating: 'BB' },
-  ],
+const portfolio_credit_risk: ParamBuilder = (_m) => ({
+  exposures: [],
   default_correlation: 0.20,
   confidence_level: 0.99,
   num_simulations: 10000,
 });
 
 const cds_pricing: ParamBuilder = (m) => ({
-  notional: m.total_debt ?? 1e7,
-  spread_bps: 200,
-  recovery_rate: m.recovery_rate ?? 0.4,
-  maturity_years: m.maturity_years ?? 5,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
+  notional: m.total_debt,
+  spread_bps: undefined, // requires real market data
+  recovery_rate: m.recovery_rate ?? 0.4, // estimate: no FMP data
+  maturity_years: m.maturity_years ?? 5, // estimate: no FMP data
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
   payment_frequency: 4,
 });
 
 const distressed_debt_analysis: ParamBuilder = (m) => ({
-  enterprise_value: m.enterprise_value ?? 1e9,
-  exit_enterprise_value: (m.enterprise_value ?? 1e9) * 1.2,
+  enterprise_value: m.enterprise_value,
+  exit_enterprise_value: undefined, // requires projection assumptions
   exit_timeline_years: 2,
-  capital_structure: [
-    { name: 'First Lien', face_value: 3e8, market_price: 0.85, coupon_rate: 0.06, maturity_years: 3, seniority: 'FirstLien', is_secured: true },
-    { name: 'Second Lien', face_value: 2e8, market_price: 0.50, coupon_rate: 0.09, maturity_years: 5, seniority: 'SecondLien', is_secured: true },
-    { name: 'Unsecured', face_value: 1.5e8, market_price: 0.25, coupon_rate: 0.08, maturity_years: 7, seniority: 'Senior', is_secured: false },
-  ],
-  proposed_treatment: [
-    { tranche_name: 'First Lien', treatment_type: 'Reinstate' },
-    { tranche_name: 'Second Lien', treatment_type: 'Exchange', new_face_value: 1.5e8, new_coupon: 0.07 },
-    { tranche_name: 'Unsecured', treatment_type: 'EquityConversion', equity_conversion_pct: 0.60 },
-  ],
+  // Capital structure requires real deal data — pass empty
+  capital_structure: [],
+  proposed_treatment: [],
   operating_assumptions: {
-    annual_ebitda: m.ebitda ?? 1.5e8,
-    maintenance_capex: 2e7,
-    working_capital_change: 5e6,
-    restructuring_costs: 1e7,
+    annual_ebitda: m.ebitda,
+    maintenance_capex: m.capex,
+    working_capital_change: undefined, // requires historical data
+    restructuring_costs: undefined, // requires deal-specific data
   },
 });
 
 const beneish_mscore: ParamBuilder = (m) => {
-  const rev = m.revenue ?? 1e9;
+  // Beneish M-Score requires two years of data
+  // Only populate fields we actually have; pass undefined for missing
   return {
-    current_receivables: rev * 0.12, prior_receivables: rev * 0.11,
-    current_revenue: rev, prior_revenue: rev * 0.95,
-    current_cogs: rev * 0.6, prior_cogs: rev * 0.58,
-    current_total_assets: m.total_assets ?? 2e9, prior_total_assets: (m.total_assets ?? 2e9) * 0.95,
-    current_ppe: (m.total_assets ?? 2e9) * 0.3, prior_ppe: (m.total_assets ?? 2e9) * 0.29,
-    current_depreciation: m.depreciation ?? 3e7, prior_depreciation: (m.depreciation ?? 3e7) * 0.95,
-    current_sga: rev * 0.15, prior_sga: rev * 0.14,
-    current_total_debt: m.total_debt ?? 5e8, prior_total_debt: (m.total_debt ?? 5e8) * 0.98,
-    current_net_income: m.net_income ?? rev * 0.1,
-    current_cfo: m.operating_cash_flow ?? rev * 0.12,
+    current_receivables: m.receivables,
+    prior_receivables: undefined, // requires historical data
+    current_revenue: m.revenue,
+    prior_revenue: undefined, // requires historical data
+    current_cogs: m.cogs,
+    prior_cogs: undefined, // requires historical data
+    current_total_assets: m.total_assets,
+    prior_total_assets: undefined, // requires historical data
+    current_ppe: m.ppe,
+    prior_ppe: undefined, // requires historical data
+    current_depreciation: m.depreciation,
+    prior_depreciation: undefined, // requires historical data
+    current_sga: m.sga,
+    prior_sga: undefined, // requires historical data
+    current_total_debt: m.total_debt,
+    prior_total_debt: undefined, // requires historical data
+    current_net_income: m.net_income,
+    current_cfo: m.operating_cash_flow,
   };
 };
 
 const camels_rating: ParamBuilder = (m) => ({
-  tier1_capital: (m.total_equity ?? 8e8) * 0.8,
-  total_capital: m.total_equity ?? 8e8,
-  risk_weighted_assets: (m.total_assets ?? 2e9) * 0.7,
-  npl_ratio: 0.025,
-  provision_coverage: 1.2,
-  management_score: 3,
-  roa: (m.net_income ?? 1e8) / (m.total_assets ?? 2e9),
-  roe: (m.net_income ?? 1e8) / (m.total_equity ?? 8e8),
-  nim: 0.03,
-  liquid_assets: m.cash ?? 1e8,
-  total_deposits: (m.total_assets ?? 2e9) * 0.6,
-  rate_sensitivity_gap: 0.05,
+  tier1_capital: m.total_equity, // estimate: using total_equity as proxy
+  total_capital: m.total_equity,
+  risk_weighted_assets: m.total_assets, // estimate: using total_assets as proxy
+  npl_ratio: undefined, // requires bank-specific data
+  provision_coverage: undefined, // requires bank-specific data
+  management_score: undefined, // requires qualitative assessment
+  roa: m.net_income && m.total_assets ? m.net_income / m.total_assets : undefined,
+  roe: m.net_income && m.total_equity ? m.net_income / m.total_equity : undefined,
+  nim: undefined, // requires bank-specific data
+  liquid_assets: m.cash,
+  total_deposits: undefined, // requires bank-specific data
+  rate_sensitivity_gap: undefined, // requires bank-specific data
 });
 
 const covenant_compliance: ParamBuilder = (m) => {
-  const ebitda = m.ebitda ?? 2e8;
-  const debt = m.total_debt ?? 5e8;
-  const interest = m.interest_expense ?? 3e7;
+  const ebitda = m.ebitda;
+  const debt = m.total_debt;
+  const interest = m.interest_expense;
+  const ocf = m.operating_cash_flow;
+  const capex = m.capex;
   return {
     covenants: [
       { name: 'Max Leverage', metric: 'NetDebtToEbitda', threshold: 4.0, direction: 'MaxOf' },
@@ -201,23 +231,23 @@ const covenant_compliance: ParamBuilder = (m) => {
       { name: 'Min DSCR', metric: 'Dscr', threshold: 1.2, direction: 'MinOf' },
     ],
     actuals: {
-      net_debt: m.net_debt ?? debt * 0.9,
-      net_debt_to_ebitda: (m.net_debt ?? debt * 0.9) / ebitda,
-      total_debt_to_ebitda: debt / ebitda,
-      debt_to_equity: m.debt_to_equity ?? 0.6,
-      debt_to_assets: debt / (m.total_assets ?? 2e9),
-      interest_coverage: m.interest_coverage ?? ebitda / interest,
-      ebit_coverage: (ebitda * 0.8) / interest,
-      dscr: ebitda / (interest + debt * 0.05),
-      ocf_to_debt: (m.operating_cash_flow ?? ebitda * 0.7) / debt,
-      fcf_to_debt: ((m.operating_cash_flow ?? ebitda * 0.7) - (m.capex ?? 5e7)) / debt,
-      fcf: (m.operating_cash_flow ?? ebitda * 0.7) - (m.capex ?? 5e7),
-      cash_conversion: (m.operating_cash_flow ?? ebitda * 0.7) / ebitda,
-      current_ratio: m.current_ratio ?? 1.5,
-      quick_ratio: (m.current_ratio ?? 1.5) * 0.8,
-      cash_to_debt: (m.cash ?? 1e8) / debt,
-      implied_rating: 'BBB',
-      rating_rationale: ['Adequate coverage', 'Moderate leverage'],
+      net_debt: m.net_debt,
+      net_debt_to_ebitda: m.net_debt && ebitda ? m.net_debt / ebitda : undefined,
+      total_debt_to_ebitda: debt && ebitda ? debt / ebitda : undefined,
+      debt_to_equity: m.debt_to_equity,
+      debt_to_assets: debt && m.total_assets ? debt / m.total_assets : undefined,
+      interest_coverage: m.interest_coverage ?? (ebitda && interest ? ebitda / interest : undefined),
+      ebit_coverage: m.ebit && interest ? m.ebit / interest : undefined,
+      dscr: ebitda && interest && debt ? ebitda / (interest + debt * 0.05) : undefined,
+      ocf_to_debt: ocf && debt ? ocf / debt : undefined,
+      fcf_to_debt: ocf && capex && debt ? (ocf - capex) / debt : undefined,
+      fcf: ocf && capex ? ocf - capex : undefined,
+      cash_conversion: ocf && ebitda ? ocf / ebitda : undefined,
+      current_ratio: m.current_ratio,
+      quick_ratio: undefined, // requires detailed current asset breakdown
+      cash_to_debt: m.cash && debt ? m.cash / debt : undefined,
+      implied_rating: undefined, // requires credit model output
+      rating_rationale: [],
     },
   };
 };
@@ -225,29 +255,24 @@ const covenant_compliance: ParamBuilder = (m) => {
 // ─── Fixed Income ────────────────────────────────────────────────────────────
 
 const bond_pricer: ParamBuilder = (m) => ({
-  face_value: m.face_value ?? 1000,
-  coupon_rate: m.coupon_rate ?? 0.05,
+  face_value: m.face_value ?? 1000, // estimate: no FMP data
+  coupon_rate: m.coupon_rate ?? 0.05, // estimate: no FMP data
   coupon_frequency: 2,
-  ytm: m.ytm ?? m.yield ?? 0.045,
-  settlement_date: '2025-01-15',
-  maturity_date: '2030-01-15',
+  ytm: m.ytm ?? m.yield,
+  settlement_date: undefined, // requires real settlement date
+  maturity_date: undefined, // requires real maturity date
   day_count: 'Thirty360',
 });
 
-const bootstrap_spot_curve: ParamBuilder = () => ({
-  par_instruments: [
-    { maturity_years: 0.5, par_rate: 0.04, coupon_frequency: 2 },
-    { maturity_years: 1, par_rate: 0.042, coupon_frequency: 2 },
-    { maturity_years: 2, par_rate: 0.044, coupon_frequency: 2 },
-    { maturity_years: 5, par_rate: 0.046, coupon_frequency: 2 },
-    { maturity_years: 10, par_rate: 0.048, coupon_frequency: 2 },
-    { maturity_years: 30, par_rate: 0.05, coupon_frequency: 2 },
-  ],
+const bootstrap_spot_curve: ParamBuilder = (_m) => ({
+  // Par instruments require real market data — pass empty to signal the tool
+  // should fetch current rates
+  par_instruments: [],
 });
 
 const short_rate_model: ParamBuilder = (m) => ({
   model_type: 'Vasicek',
-  current_rate: m.risk_free_rate ?? 0.04,
+  current_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
   mean_reversion_speed: 0.3,
   long_term_mean: 0.045,
   volatility: 0.015,
@@ -256,7 +281,7 @@ const short_rate_model: ParamBuilder = (m) => ({
   num_paths: 1000,
 });
 
-const tips_analytics: ParamBuilder = () => ({
+const tips_analytics: ParamBuilder = (_m) => ({
   face_value: 1000,
   real_coupon_rate: 0.0125,
   coupon_frequency: 2,
@@ -267,7 +292,7 @@ const tips_analytics: ParamBuilder = () => ({
   real_yield: 0.015,
 });
 
-const repo_analytics: ParamBuilder = () => ({
+const repo_analytics: ParamBuilder = (_m) => ({
   collateral_value: 1e7,
   repo_rate: 0.04,
   haircut: 0.02,
@@ -275,7 +300,7 @@ const repo_analytics: ParamBuilder = () => ({
   collateral_type: 'Treasury',
 });
 
-const prepayment_analysis: ParamBuilder = () => ({
+const prepayment_analysis: ParamBuilder = (_m) => ({
   original_balance: 1e6,
   coupon_rate: 0.055,
   wac: 0.055,
@@ -286,7 +311,7 @@ const prepayment_analysis: ParamBuilder = () => ({
   psa_speed: 150,
 });
 
-const municipal_analysis: ParamBuilder = () => ({
+const municipal_analysis: ParamBuilder = (_m) => ({
   par_value: 1e6,
   coupon_rate: 0.04,
   yield: 0.035,
@@ -297,7 +322,7 @@ const municipal_analysis: ParamBuilder = () => ({
   insurance_premium_bps: 10,
 });
 
-const sovereign_bond_analysis: ParamBuilder = () => ({
+const sovereign_bond_analysis: ParamBuilder = (_m) => ({
   country: 'US',
   face_value: 1000,
   coupon_rate: 0.04,
@@ -314,150 +339,121 @@ const sovereign_bond_analysis: ParamBuilder = () => ({
 // ─── Derivatives ─────────────────────────────────────────────────────────────
 
 const option_pricer: ParamBuilder = (m) => ({
-  spot_price: m.share_price ?? 100,
-  strike_price: (m.share_price ?? 100) * 1.05,
+  spot_price: m.share_price,
+  strike_price: m.share_price ? m.share_price * 1.05 : undefined,
   time_to_expiry: 0.5,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
-  volatility: m.volatility ?? 0.25,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  volatility: m.volatility ?? 0.25, // estimate: no FMP data
   option_type: 'Call',
   model: 'BlackScholes',
-  dividend_yield: 0.015,
+  dividend_yield: undefined, // requires real dividend data
 });
 
 const implied_vol_surface: ParamBuilder = (m) => ({
-  spot_price: m.share_price ?? 100,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
-  option_data: [
-    { strike: 90, expiry: 0.25, market_price: 12.5, option_type: 'Call' },
-    { strike: 100, expiry: 0.25, market_price: 5.8, option_type: 'Call' },
-    { strike: 110, expiry: 0.25, market_price: 2.1, option_type: 'Call' },
-    { strike: 90, expiry: 0.5, market_price: 14.2, option_type: 'Call' },
-    { strike: 100, expiry: 0.5, market_price: 7.9, option_type: 'Call' },
-    { strike: 110, expiry: 0.5, market_price: 3.8, option_type: 'Call' },
-  ],
+  spot_price: m.share_price,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  // Option data requires real market quotes — pass empty to signal the tool
+  // should fetch or the orchestrator should provide real option chain data
+  option_data: [],
 });
 
 const sabr_calibration: ParamBuilder = (m) => ({
-  forward: m.share_price ?? 100,
+  forward: m.share_price,
   expiry: 0.5,
-  market_vols: [
-    { strike: 85, vol: 0.30 },
-    { strike: 90, vol: 0.27 },
-    { strike: 95, vol: 0.25 },
-    { strike: 100, vol: 0.24 },
-    { strike: 105, vol: 0.245 },
-    { strike: 110, vol: 0.255 },
-  ],
+  // Market vols require real option market data — pass empty
+  market_vols: [],
   beta: 0.5,
 });
 
 const monte_carlo_simulation: ParamBuilder = (m) => ({
-  initial_value: m.share_price ?? m.enterprise_value ?? 100,
-  drift: m.growth_rate ?? 0.05,
-  volatility: m.volatility ?? 0.25,
+  initial_value: m.share_price ?? m.enterprise_value,
+  drift: m.growth_rate ?? 0.05, // estimate: no FMP data
+  volatility: m.volatility ?? 0.25, // estimate: no FMP data
   time_horizon: 1.0,
   num_paths: 10000,
   num_steps: 252,
 });
 
 const convertible_bond_pricing: ParamBuilder = (m) => ({
-  face_value: 1000,
-  coupon_rate: 0.02,
-  maturity_years: 5,
-  conversion_ratio: 20,
-  stock_price: m.share_price ?? 45,
-  stock_volatility: m.volatility ?? 0.30,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
-  credit_spread: 0.02,
-  dividend_yield: 0.01,
+  face_value: m.face_value ?? 1000, // estimate: no FMP data
+  coupon_rate: m.coupon_rate,
+  maturity_years: m.maturity_years,
+  conversion_ratio: undefined, // requires bond-specific data
+  stock_price: m.share_price,
+  stock_volatility: m.volatility ?? 0.30, // estimate: no FMP data
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  credit_spread: undefined, // requires real market data
+  dividend_yield: undefined, // requires real dividend data
 });
 
-const structured_note_pricing: ParamBuilder = () => ({
-  face_value: 1000,
-  maturity_years: 3,
-  coupon_rate: 0.06,
-  underlying_price: 100,
-  underlying_volatility: 0.25,
-  risk_free_rate: 0.04,
+const structured_note_pricing: ParamBuilder = (m) => ({
+  face_value: m.face_value ?? 1000, // estimate: no FMP data
+  maturity_years: m.maturity_years,
+  coupon_rate: m.coupon_rate,
+  underlying_price: m.share_price,
+  underlying_volatility: m.volatility ?? 0.25, // estimate: no FMP data
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
   barrier_level: 0.7,
   participation_rate: 1.5,
   product_type: 'ReverseConvertible',
 });
 
 const real_option_valuation: ParamBuilder = (m) => ({
-  underlying_value: m.enterprise_value ?? 1e8,
-  strike_price: (m.enterprise_value ?? 1e8) * 0.9,
+  underlying_value: m.enterprise_value,
+  strike_price: m.enterprise_value ? m.enterprise_value * 0.9 : undefined,
   time_to_expiry: 3,
-  risk_free_rate: m.risk_free_rate ?? 0.04,
-  volatility: m.volatility ?? 0.30,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  volatility: m.volatility ?? 0.30, // estimate: no FMP data
   option_type: 'DeferralOption',
   steps: 100,
 });
 
 // ─── Quant Risk ──────────────────────────────────────────────────────────────
 
-const tail_risk_analysis: ParamBuilder = () => ({
-  asset_names: ['Equities', 'Bonds', 'Alternatives'],
-  weights: [0.6, 0.3, 0.1],
-  expected_returns: [0.08, 0.04, 0.06],
-  covariance_matrix: [
-    [0.04, 0.01, 0.015],
-    [0.01, 0.0064, 0.005],
-    [0.015, 0.005, 0.025],
-  ],
+const tail_risk_analysis: ParamBuilder = (_m) => ({
+  // Portfolio data requires real holdings — pass empty to signal the tool
+  // should use provided portfolio or fetch data
+  asset_names: [],
+  weights: [],
+  expected_returns: [],
+  covariance_matrix: [],
   confidence_level: 0.95,
   time_horizon: 1 / 252,
   distribution: 'Normal',
-  portfolio_value: 1e7,
+  portfolio_value: undefined, // requires real portfolio value
 });
 
-const mean_variance_optimization: ParamBuilder = () => ({
-  asset_names: ['Equities', 'Bonds', 'Alternatives'],
-  expected_returns: [0.08, 0.04, 0.06],
-  covariance_matrix: [
-    [0.04, 0.01, 0.015],
-    [0.01, 0.0064, 0.005],
-    [0.015, 0.005, 0.025],
-  ],
-  risk_free_rate: 0.04,
-  target_return: 0.07,
+const mean_variance_optimization: ParamBuilder = (m) => ({
+  // Portfolio optimization requires real asset data — pass empty
+  asset_names: [],
+  expected_returns: [],
+  covariance_matrix: [],
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
+  target_return: undefined, // requires investor-specified target
   constraints: { long_only: true },
 });
 
-const risk_parity: ParamBuilder = () => ({
-  assets: [
-    { name: 'Equities', expected_return: 0.08, volatility: 0.20 },
-    { name: 'Bonds', expected_return: 0.04, volatility: 0.08 },
-    { name: 'Commodities', expected_return: 0.05, volatility: 0.18 },
-  ],
-  covariance_matrix: [
-    [0.04, 0.005, 0.01],
-    [0.005, 0.0064, 0.002],
-    [0.01, 0.002, 0.0324],
-  ],
+const risk_parity: ParamBuilder = (m) => ({
+  // Asset data requires real portfolio holdings
+  assets: [],
+  covariance_matrix: [],
   method: 'EqualRiskContribution',
-  risk_free_rate: 0.04,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
 });
 
-const factor_model: ParamBuilder = () => ({
-  asset_returns: Array.from({ length: 60 }, () => (Math.random() - 0.48) * 0.08),
-  factor_returns: [
-    { name: 'MKT', returns: Array.from({ length: 60 }, () => (Math.random() - 0.48) * 0.06) },
-    { name: 'SMB', returns: Array.from({ length: 60 }, () => (Math.random() - 0.5) * 0.03) },
-    { name: 'HML', returns: Array.from({ length: 60 }, () => (Math.random() - 0.5) * 0.03) },
-  ],
+const factor_model: ParamBuilder = (m) => ({
+  // Real factor analysis requires historical returns data
+  // Pass empty arrays — the tool should fetch or signal missing data
+  asset_returns: [],
+  factor_returns: [],
   model_type: 'FamaFrench3',
-  risk_free_rate: 0.04,
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
 });
 
-const stress_test: ParamBuilder = () => ({
-  portfolio: [
-    { name: 'US Equity', weight: 0.40, asset_class: 'Equity', beta: 1.0 },
-    { name: 'Int Equity', weight: 0.15, asset_class: 'Equity', beta: 1.1, fx_exposure: 'EUR' },
-    { name: 'Corp Bonds', weight: 0.25, asset_class: 'Credit', duration: 5.0 },
-    { name: 'Treasuries', weight: 0.15, asset_class: 'FixedIncome', duration: 7.0 },
-    { name: 'REITs', weight: 0.05, asset_class: 'RealEstate', beta: 0.8 },
-  ],
+const stress_test: ParamBuilder = (_m) => ({
+  // Portfolio requires real holdings data
+  portfolio: [],
+  // Keep standard stress scenarios as structural config
   scenarios: [
     { name: '2008 GFC', scenario_type: 'Historical', shocks: [
       { factor: 'equity_market', shock_pct: -0.40 },
@@ -472,62 +468,49 @@ const stress_test: ParamBuilder = () => ({
   ],
 });
 
-const factor_attribution: ParamBuilder = () => ({
-  portfolio_name: 'Portfolio',
-  portfolio_return: 0.12,
-  benchmark_return: 0.10,
-  factors: [
-    { factor_name: 'Market', portfolio_exposure: 1.05, benchmark_exposure: 1.0, factor_return: 0.10 },
-    { factor_name: 'Size', portfolio_exposure: 0.3, benchmark_exposure: 0.0, factor_return: 0.02 },
-    { factor_name: 'Value', portfolio_exposure: -0.2, benchmark_exposure: 0.0, factor_return: 0.03 },
-  ],
-  risk_free_rate: 0.04,
+const factor_attribution: ParamBuilder = (m) => ({
+  portfolio_name: m._company ?? 'Portfolio',
+  portfolio_return: undefined, // requires real portfolio return data
+  benchmark_return: undefined, // requires real benchmark data
+  // Factor exposures require real regression analysis
+  factors: [],
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
 });
 
-const brinson_attribution: ParamBuilder = () => ({
-  portfolio_name: 'Portfolio',
-  benchmark_name: 'S&P 500',
-  sectors: [
-    { sector: 'Technology', portfolio_weight: 0.35, benchmark_weight: 0.30, portfolio_return: 0.15, benchmark_return: 0.12 },
-    { sector: 'Healthcare', portfolio_weight: 0.20, benchmark_weight: 0.15, portfolio_return: 0.08, benchmark_return: 0.10 },
-    { sector: 'Financials', portfolio_weight: 0.15, benchmark_weight: 0.20, portfolio_return: 0.11, benchmark_return: 0.09 },
-    { sector: 'Other', portfolio_weight: 0.30, benchmark_weight: 0.35, portfolio_return: 0.07, benchmark_return: 0.08 },
-  ],
-  risk_free_rate: 0.04,
+const brinson_attribution: ParamBuilder = (m) => ({
+  portfolio_name: m._company ?? 'Portfolio',
+  benchmark_name: undefined, // requires real benchmark specification
+  // Sector data requires real portfolio and benchmark holdings
+  sectors: [],
+  risk_free_rate: m.risk_free_rate ?? 0.04, // estimate: no FMP data
 });
 
-const momentum_analysis: ParamBuilder = () => ({
-  asset_returns: [
-    { name: 'Asset A', returns: Array.from({ length: 12 }, () => (Math.random() - 0.45) * 0.08) },
-    { name: 'Asset B', returns: Array.from({ length: 12 }, () => (Math.random() - 0.50) * 0.06) },
-    { name: 'Asset C', returns: Array.from({ length: 12 }, () => (Math.random() - 0.55) * 0.10) },
-  ],
+const momentum_analysis: ParamBuilder = (_m) => ({
+  asset_returns: [],
   lookback_months: 12,
   holding_months: 1,
   skip_months: 1,
 });
 
-const index_weighting: ParamBuilder = () => ({
-  constituents: [
-    { name: 'Stock A', market_cap: 1e11, price: 150, free_float: 0.85, sector: 'Technology' },
-    { name: 'Stock B', market_cap: 8e10, price: 200, free_float: 0.90, sector: 'Healthcare' },
-    { name: 'Stock C', market_cap: 5e10, price: 75, free_float: 0.95, sector: 'Financials' },
-  ],
+const index_weighting: ParamBuilder = (_m) => ({
+  // Constituents require real index/portfolio data
+  constituents: [],
   methodology: 'MarketCapWeighted',
   max_weight: 0.30,
   min_weight: 0.01,
 });
 
-const spread_analysis: ParamBuilder = () => ({
-  bid_prices: [99.5, 99.6, 99.4, 99.7, 99.3],
-  ask_prices: [100.5, 100.4, 100.6, 100.3, 100.7],
-  trade_volumes: [1000, 1500, 800, 2000, 1200],
-  timestamps: ['09:30', '10:00', '10:30', '11:00', '11:30'],
+const spread_analysis: ParamBuilder = (_m) => ({
+  // Spread analysis requires real market microstructure data
+  bid_prices: [],
+  ask_prices: [],
+  trade_volumes: [],
+  timestamps: [],
 });
 
 // ─── Macro ───────────────────────────────────────────────────────────────────
 
-const monetary_policy: ParamBuilder = () => ({
+const monetary_policy: ParamBuilder = (_m) => ({
   policy_rate: 0.0525,
   inflation_rate: 0.032,
   inflation_target: 0.02,
@@ -537,7 +520,7 @@ const monetary_policy: ParamBuilder = () => ({
   gdp_growth: 0.025,
 });
 
-const international_economics: ParamBuilder = () => ({
+const international_economics: ParamBuilder = (_m) => ({
   country: 'US',
   gdp_growth: 0.025,
   inflation: 0.032,
@@ -548,7 +531,7 @@ const international_economics: ParamBuilder = () => ({
   policy_rate: 0.0525,
 });
 
-const fx_forward: ParamBuilder = () => ({
+const fx_forward: ParamBuilder = (_m) => ({
   spot_rate: 1.08,
   domestic_rate: 0.0525,
   foreign_rate: 0.04,
@@ -557,7 +540,7 @@ const fx_forward: ParamBuilder = () => ({
   currency_pair: 'EURUSD',
 });
 
-const cross_rate: ParamBuilder = () => ({
+const cross_rate: ParamBuilder = (_m) => ({
   rate1: 1.08,
   rate2: 149.5,
   pair1: 'EURUSD',
@@ -565,7 +548,7 @@ const cross_rate: ParamBuilder = () => ({
   target_pair: 'EURJPY',
 });
 
-const commodity_spread: ParamBuilder = () => ({
+const commodity_spread: ParamBuilder = (_m) => ({
   front_price: 75.50,
   back_price: 77.20,
   front_expiry_months: 1,
@@ -574,7 +557,7 @@ const commodity_spread: ParamBuilder = () => ({
   contract_size: 1000,
 });
 
-const commodity_forward: ParamBuilder = () => ({
+const commodity_forward: ParamBuilder = (_m) => ({
   spot_price: 75.50,
   risk_free_rate: 0.04,
   storage_cost_rate: 0.02,
@@ -582,7 +565,7 @@ const commodity_forward: ParamBuilder = () => ({
   maturity_years: 0.5,
 });
 
-const country_risk_premium: ParamBuilder = () => ({
+const country_risk_premium: ParamBuilder = (_m) => ({
   country: 'Brazil',
   sovereign_spread_bps: 250,
   equity_market_vol: 0.25,
@@ -591,7 +574,7 @@ const country_risk_premium: ParamBuilder = () => ({
   country_credit_rating: 'BB+',
 });
 
-const em_bond_analysis: ParamBuilder = () => ({
+const em_bond_analysis: ParamBuilder = (_m) => ({
   country: 'Brazil',
   face_value: 1000,
   coupon_rate: 0.065,
@@ -604,7 +587,7 @@ const em_bond_analysis: ParamBuilder = () => ({
   us_inflation: 0.03,
 });
 
-const country_risk_assessment: ParamBuilder = () => ({
+const country_risk_assessment: ParamBuilder = (_m) => ({
   country: 'US',
   gdp_growth: 0.025,
   inflation: 0.032,
@@ -616,7 +599,7 @@ const country_risk_assessment: ParamBuilder = () => ({
   governance_score: 0.85,
 });
 
-const letter_of_credit: ParamBuilder = () => ({
+const letter_of_credit: ParamBuilder = (_m) => ({
   amount: 1e6,
   currency: 'USD',
   tenor_days: 90,
@@ -625,7 +608,7 @@ const letter_of_credit: ParamBuilder = () => ({
   margin_pct: 0.015,
 });
 
-const carbon_credit_pricing: ParamBuilder = () => ({
+const carbon_credit_pricing: ParamBuilder = (_m) => ({
   credit_type: 'EUA',
   volume_tonnes: 10000,
   vintage_year: 2024,
@@ -637,23 +620,23 @@ const carbon_credit_pricing: ParamBuilder = () => ({
 
 // ─── ESG & Regulatory ────────────────────────────────────────────────────────
 
-const esg_score: ParamBuilder = () => ({
+const esg_score: ParamBuilder = (_m) => ({
   environmental: { carbon_intensity: 150, renewable_pct: 0.3, waste_recycled_pct: 0.6, water_intensity: 50 },
   social: { diversity_pct: 0.4, turnover_rate: 0.12, injury_rate: 1.5, community_investment: 5e6 },
   governance: { board_independence: 0.75, women_on_board: 0.35, ceo_pay_ratio: 150, audit_committee_meetings: 8 },
   weights: { environmental: 0.33, social: 0.33, governance: 0.34 },
 });
 
-const carbon_footprint: ParamBuilder = () => ({
-  scope1_emissions: 50000,
-  scope2_emissions: 30000,
-  scope3_emissions: 200000,
-  revenue: 1e9,
-  portfolio_weight: 0.05,
+const carbon_footprint: ParamBuilder = (m) => ({
+  scope1_emissions: undefined, // requires ESG-specific data
+  scope2_emissions: undefined, // requires ESG-specific data
+  scope3_emissions: undefined, // requires ESG-specific data
+  revenue: m.revenue,
+  portfolio_weight: undefined, // requires portfolio context
   carbon_price: 80,
 });
 
-const offset_valuation: ParamBuilder = () => ({
+const offset_valuation: ParamBuilder = (_m) => ({
   project_type: 'ForestConservation',
   volume_tonnes: 5000,
   vintage_year: 2024,
@@ -663,45 +646,43 @@ const offset_valuation: ParamBuilder = () => ({
   co_benefits: ['Biodiversity', 'Community'],
 });
 
-const best_execution: ParamBuilder = () => ({
-  trades: [
-    { symbol: 'AAPL', side: 'Buy', quantity: 10000, benchmark_price: 180, execution_price: 180.05, arrival_price: 179.95, vwap: 180.02 },
-    { symbol: 'MSFT', side: 'Sell', quantity: 5000, benchmark_price: 400, execution_price: 399.90, arrival_price: 400.10, vwap: 399.95 },
-  ],
+const best_execution: ParamBuilder = (_m) => ({
+  // Trade data requires real execution records
+  trades: [],
   market_impact_model: 'SquareRoot',
 });
 
 const regulatory_capital: ParamBuilder = (m) => ({
-  risk_weighted_assets: (m.total_assets ?? 2e9) * 0.7,
-  tier1_capital: (m.total_equity ?? 8e8) * 0.8,
-  tier2_capital: (m.total_equity ?? 8e8) * 0.1,
-  total_capital: (m.total_equity ?? 8e8) * 0.9,
+  risk_weighted_assets: m.total_assets, // estimate: using total_assets as proxy
+  tier1_capital: m.total_equity, // estimate: using total_equity as proxy
+  tier2_capital: undefined, // requires regulatory-specific data
+  total_capital: m.total_equity, // estimate: using total_equity as proxy
   minimum_cet1_ratio: 0.045,
   capital_conservation_buffer: 0.025,
   countercyclical_buffer: 0.01,
   systemic_buffer: 0.0,
 });
 
-const kyc_risk_assessment: ParamBuilder = () => ({
+const kyc_risk_assessment: ParamBuilder = (m) => ({
   entity_type: 'Corporation',
   jurisdiction: 'US',
-  industry: 'Technology',
-  annual_revenue: 1e9,
+  industry: m._industry ?? m._sector,
+  annual_revenue: m.revenue,
   pep_status: false,
   sanctions_match: false,
   adverse_media: false,
-  risk_factors: ['complex_structure', 'high_value_transactions'],
+  risk_factors: [],
 });
 
-const sanctions_screening: ParamBuilder = () => ({
-  entity_name: 'Acme Corp',
-  aliases: ['Acme Corporation', 'ACME LLC'],
+const sanctions_screening: ParamBuilder = (m) => ({
+  entity_name: m._company ?? 'Unknown Entity',
+  aliases: [],
   jurisdiction: 'US',
   screening_lists: ['OFAC_SDN', 'EU_SANCTIONS', 'UN_CONSOLIDATED'],
   fuzzy_threshold: 0.85,
 });
 
-const entity_classification: ParamBuilder = () => ({
+const entity_classification: ParamBuilder = (_m) => ({
   entity_name: 'Investment Fund LP',
   entity_type: 'LimitedPartnership',
   jurisdiction: 'Cayman Islands',
@@ -714,7 +695,7 @@ const entity_classification: ParamBuilder = () => ({
   ],
 });
 
-const treaty_network: ParamBuilder = () => ({
+const treaty_network: ParamBuilder = (_m) => ({
   source_country: 'US',
   recipient_country: 'UK',
   income_type: 'Dividend',
@@ -722,7 +703,7 @@ const treaty_network: ParamBuilder = () => ({
   holding_pct: 0.25,
 });
 
-const intercompany_pricing: ParamBuilder = () => ({
+const intercompany_pricing: ParamBuilder = (_m) => ({
   transaction_type: 'ServiceFee',
   transfer_price: 1e6,
   comparable_prices: [8e5, 9e5, 1.1e6, 1.2e6],
@@ -731,7 +712,7 @@ const intercompany_pricing: ParamBuilder = () => ({
   entity_b_jurisdiction: 'Ireland',
 });
 
-const economic_substance: ParamBuilder = () => ({
+const economic_substance: ParamBuilder = (_m) => ({
   entity_jurisdiction: 'Cayman Islands',
   relevant_activities: ['Holding', 'FinanceLeasing'],
   employees: 5,
@@ -741,7 +722,7 @@ const economic_substance: ParamBuilder = () => ({
   strategic_decisions_local: true,
 });
 
-const aifmd_reporting: ParamBuilder = () => ({
+const aifmd_reporting: ParamBuilder = (_m) => ({
   fund_name: 'CFA Fund',
   fund_type: 'Hedge',
   aum: 5e8,
@@ -756,12 +737,12 @@ const aifmd_reporting: ParamBuilder = () => ({
 // ─── Private Markets ─────────────────────────────────────────────────────────
 
 const lbo_model: ParamBuilder = (m) => ({
-  purchase_ev: m.enterprise_value ?? 1e9,
-  ebitda: m.ebitda ?? 1.5e8,
-  entry_multiple: (m.enterprise_value ?? 1e9) / (m.ebitda ?? 1.5e8),
-  exit_multiple: ((m.enterprise_value ?? 1e9) / (m.ebitda ?? 1.5e8)) + 1,
+  purchase_ev: m.enterprise_value,
+  ebitda: m.ebitda,
+  entry_multiple: m.enterprise_value && m.ebitda ? m.enterprise_value / m.ebitda : undefined,
+  exit_multiple: m.enterprise_value && m.ebitda ? (m.enterprise_value / m.ebitda) + 1 : undefined,
   holding_period: 5,
-  revenue_growth: m.growth_rate ?? 0.05,
+  revenue_growth: m.growth_rate ?? 0.05, // estimate: no FMP data
   margin_expansion: 0.01,
   debt_to_ebitda: 4.0,
   senior_debt_pct: 0.60,
@@ -769,13 +750,13 @@ const lbo_model: ParamBuilder = (m) => ({
   equity_pct: 0.20,
   senior_rate: 0.05,
   sub_rate: 0.08,
-  tax_rate: m.tax_rate ?? 0.21,
-  capex_pct_revenue: 0.03,
+  tax_rate: m.tax_rate ?? 0.21, // estimate: no FMP data
+  capex_pct_revenue: m.capex && m.revenue ? m.capex / m.revenue : 0.03, // estimate: no FMP data
   nwc_pct_revenue: 0.02,
   debt_paydown_pct: 0.10,
 });
 
-const returns_calculator: ParamBuilder = () => ({
+const returns_calculator: ParamBuilder = (_m) => ({
   entry_equity: 2e8,
   exit_equity: 5e8,
   holding_period: 5,
@@ -786,7 +767,7 @@ const returns_calculator: ParamBuilder = () => ({
   hurdle_type: 'European',
 });
 
-const funding_round: ParamBuilder = () => ({
+const funding_round: ParamBuilder = (_m) => ({
   pre_money_valuation: 5e7,
   raise_amount: 1e7,
   round_type: 'SeriesA',
@@ -797,7 +778,7 @@ const funding_round: ParamBuilder = () => ({
   participation_cap: 3.0,
 });
 
-const dilution_analysis: ParamBuilder = () => ({
+const dilution_analysis: ParamBuilder = (_m) => ({
   current_shares: 1e7,
   rounds: [
     { name: 'Series A', shares_issued: 2e6, price_per_share: 5 },
@@ -809,31 +790,32 @@ const dilution_analysis: ParamBuilder = () => ({
 
 const merger_model: ParamBuilder = (m) => ({
   acquirer: {
-    name: 'Acquirer Co',
-    share_price: 50,
-    shares_outstanding: 1e8,
-    eps: 3.0,
-    pe_ratio: 16.7,
-    net_income: 3e8,
-    tax_rate: m.tax_rate ?? 0.21,
+    // Acquirer data must be provided by the orchestrator — not available from target metrics
+    name: undefined,
+    share_price: undefined,
+    shares_outstanding: undefined,
+    eps: undefined,
+    pe_ratio: undefined,
+    net_income: undefined,
+    tax_rate: m.tax_rate ?? 0.21, // estimate: no FMP data
   },
   target: {
     name: m._company ?? 'Target Co',
-    share_price: m.share_price ?? 30,
-    shares_outstanding: m.shares_outstanding ?? 5e7,
-    eps: 2.0,
-    pe_ratio: 15,
-    net_income: m.net_income ?? 1e8,
+    share_price: m.share_price,
+    shares_outstanding: m.shares_outstanding,
+    eps: m.eps,
+    pe_ratio: m.share_price && m.eps ? m.share_price / m.eps : undefined,
+    net_income: m.net_income,
   },
-  offer_price_per_share: (m.share_price ?? 30) * 1.25,
+  offer_price_per_share: m.share_price ? m.share_price * 1.25 : undefined,
   pct_cash: 0.5,
   pct_stock: 0.5,
-  synergies: 5e7,
-  integration_costs: 2e7,
-  cost_of_debt: m.cost_of_debt ?? 0.05,
+  synergies: undefined, // requires deal-specific estimate
+  integration_costs: undefined, // requires deal-specific estimate
+  cost_of_debt: m.cost_of_debt ?? 0.05, // estimate: no FMP data
 });
 
-const ppp_model: ParamBuilder = () => ({
+const ppp_model: ParamBuilder = (_m) => ({
   project_cost: 5e8,
   concession_years: 25,
   construction_years: 3,
@@ -848,7 +830,7 @@ const ppp_model: ParamBuilder = () => ({
   discount_rate: 0.08,
 });
 
-const concession_valuation: ParamBuilder = () => ({
+const concession_valuation: ParamBuilder = (_m) => ({
   concession_years_remaining: 20,
   annual_revenue: 8e7,
   revenue_growth: 0.03,
@@ -858,7 +840,7 @@ const concession_valuation: ParamBuilder = () => ({
   terminal_value: 0,
 });
 
-const property_valuation: ParamBuilder = () => ({
+const property_valuation: ParamBuilder = (_m) => ({
   gross_rental_income: 5e6,
   vacancy_rate: 0.05,
   operating_expenses: 1.5e6,
@@ -870,7 +852,7 @@ const property_valuation: ParamBuilder = () => ({
   holding_period: 10,
 });
 
-const clo_tranche_analytics: ParamBuilder = () => ({
+const clo_tranche_analytics: ParamBuilder = (_m) => ({
   collateral_par: 5e8,
   collateral_spread_bps: 350,
   collateral_default_rate: 0.03,
@@ -886,7 +868,7 @@ const clo_tranche_analytics: ParamBuilder = () => ({
   },
 });
 
-const tranching_analysis: ParamBuilder = () => ({
+const tranching_analysis: ParamBuilder = (_m) => ({
   collateral_pool: 1e9,
   weighted_avg_coupon: 0.055,
   weighted_avg_maturity: 5,
@@ -901,21 +883,16 @@ const tranching_analysis: ParamBuilder = () => ({
 });
 
 const recovery_analysis: ParamBuilder = (m) => ({
-  enterprise_value: m.enterprise_value ?? 8e8,
-  liquidation_value: (m.enterprise_value ?? 8e8) * 0.5,
+  enterprise_value: m.enterprise_value,
+  liquidation_value: undefined, // requires appraisal data
   valuation_type: 'Both',
-  claims: [
-    { name: 'DIP', amount: 5e7, priority: 'SuperPriority', is_secured: true },
-    { name: 'First Lien', amount: 3e8, priority: 'SecuredFirst', is_secured: true, collateral_value: 3.5e8 },
-    { name: 'Senior Unsecured', amount: 2e8, priority: 'Senior', is_secured: false },
-    { name: 'Sub Debt', amount: 1e8, priority: 'Subordinated', is_secured: false },
-    { name: 'Equity', amount: 2e8, priority: 'Equity', is_secured: false },
-  ],
-  administrative_costs: 1e7,
-  cash_on_hand: 5e7,
+  // Claims require real capital structure data
+  claims: [],
+  administrative_costs: undefined, // requires deal-specific estimate
+  cash_on_hand: m.cash,
 });
 
-const fof_portfolio: ParamBuilder = () => ({
+const fof_portfolio: ParamBuilder = (_m) => ({
   funds: [
     { name: 'Buyout Fund I', strategy: 'Buyout', vintage: 2020, commitment: 5e7, called_pct: 0.80, nav: 6e7, distributions: 1e7 },
     { name: 'Growth Fund II', strategy: 'Growth', vintage: 2021, commitment: 3e7, called_pct: 0.60, nav: 2.5e7, distributions: 0 },
@@ -924,7 +901,7 @@ const fof_portfolio: ParamBuilder = () => ({
   total_commitment: 1e8,
 });
 
-const euler_allocation: ParamBuilder = () => ({
+const euler_allocation: ParamBuilder = (_m) => ({
   portfolio_risk: 0.15,
   positions: [
     { name: 'Position A', weight: 0.40, marginal_risk: 0.08 },
@@ -933,7 +910,7 @@ const euler_allocation: ParamBuilder = () => ({
   ],
 });
 
-const wealth_transfer: ParamBuilder = () => ({
+const wealth_transfer: ParamBuilder = (_m) => ({
   estate_value: 5e7,
   annual_income: 2e6,
   tax_bracket: 0.37,
@@ -948,55 +925,57 @@ const wealth_transfer: ParamBuilder = () => ({
 });
 
 const payout_sustainability: ParamBuilder = (m) => ({
-  net_income: m.net_income ?? 1e8,
-  dividends_paid: (m.net_income ?? 1e8) * 0.4,
-  fcf: (m.operating_cash_flow ?? 1.5e8) - (m.capex ?? 5e7),
-  total_debt: m.total_debt ?? 5e8,
-  ebitda: m.ebitda ?? 2e8,
-  historical_payout_ratios: [0.35, 0.38, 0.40, 0.42],
-  growth_rate: m.growth_rate ?? 0.05,
+  net_income: m.net_income,
+  dividends_paid: undefined, // requires real dividend data
+  fcf: m.operating_cash_flow && m.capex ? m.operating_cash_flow - m.capex : undefined,
+  total_debt: m.total_debt,
+  ebitda: m.ebitda,
+  historical_payout_ratios: [], // requires historical data
+  growth_rate: m.growth_rate,
 });
 
 const accrual_quality: ParamBuilder = (m) => {
-  const rev = m.revenue ?? 1e9;
-  const ta = m.total_assets ?? 2e9;
+  // Accrual quality requires two years of data
+  // Only populate fields we actually have; pass undefined for missing
   return {
-    net_income: m.net_income ?? rev * 0.1,
-    cfo: m.operating_cash_flow ?? rev * 0.12,
-    total_assets: ta, prior_total_assets: ta * 0.95,
-    current_assets: ta * 0.25, prior_current_assets: ta * 0.24,
-    current_liabilities: ta * 0.15, prior_current_liabilities: ta * 0.145,
-    depreciation: m.depreciation ?? rev * 0.03,
-    revenue: rev, prior_revenue: rev * 0.95,
-    ppe: ta * 0.3, prior_ppe: ta * 0.29,
+    net_income: m.net_income,
+    cfo: m.operating_cash_flow,
+    total_assets: m.total_assets, prior_total_assets: undefined, // requires historical data
+    current_assets: m.current_assets, prior_current_assets: undefined, // requires historical data
+    current_liabilities: m.current_liabilities, prior_current_liabilities: undefined, // requires historical data
+    depreciation: m.depreciation,
+    revenue: m.revenue, prior_revenue: undefined, // requires historical data
+    ppe: m.ppe, prior_ppe: undefined, // requires historical data
   };
 };
 
 // ─── Three Statement ─────────────────────────────────────────────────────────
 
 const three_statement_model: ParamBuilder = (m) => ({
-  base_revenue: m.revenue ?? 1e9,
-  revenue_growth_rates: [0.08, 0.07, 0.06, 0.05, 0.04],
-  cogs_pct: m.cogs && m.revenue ? m.cogs / m.revenue : 0.60,
-  sga_pct: 0.15,
+  base_revenue: m.revenue,
+  revenue_growth_rates: m.growth_rate
+    ? [m.growth_rate, m.growth_rate * 0.9, m.growth_rate * 0.8, m.growth_rate * 0.7, m.growth_rate * 0.6]
+    : [0.08, 0.07, 0.06, 0.05, 0.04], // estimate: no FMP data
+  cogs_pct: m.cogs && m.revenue ? m.cogs / m.revenue : 0.60, // estimate: no FMP data
+  sga_pct: m.sga && m.revenue ? m.sga / m.revenue : 0.15, // estimate: no FMP data
   rnd_pct: 0.05,
-  da_pct: 0.10,
-  interest_rate: m.cost_of_debt ?? 0.05,
-  tax_rate: m.tax_rate ?? 0.21,
-  base_cash: m.cash ?? 1e8,
-  base_receivables: m.receivables ?? (m.revenue ?? 1e9) * 0.12,
-  base_inventory: m.inventory ?? (m.revenue ?? 1e9) * 0.08,
-  base_payables: m.payables ?? (m.revenue ?? 1e9) * 0.07,
-  base_ppe: m.ppe ?? (m.total_assets ?? 2e9) * 0.3,
-  base_debt: m.total_debt ?? 5e8,
-  base_equity: m.total_equity ?? 8e8,
-  dso_days: 45,
-  dio_days: 30,
-  dpo_days: 35,
-  capex_pct: 0.05,
+  da_pct: m.depreciation && m.revenue ? m.depreciation / m.revenue : 0.10, // estimate: no FMP data
+  interest_rate: m.cost_of_debt ?? 0.05, // estimate: no FMP data
+  tax_rate: m.tax_rate ?? 0.21, // estimate: no FMP data
+  base_cash: m.cash,
+  base_receivables: m.receivables,
+  base_inventory: m.inventory,
+  base_payables: m.payables,
+  base_ppe: m.ppe,
+  base_debt: m.total_debt,
+  base_equity: m.total_equity,
+  dso_days: m.receivables && m.revenue ? (m.receivables / m.revenue) * 365 : 45, // estimate: no FMP data
+  dio_days: m.inventory && m.cogs ? (m.inventory / m.cogs) * 365 : 30, // estimate: no FMP data
+  dpo_days: m.payables && m.cogs ? (m.payables / m.cogs) * 365 : 35, // estimate: no FMP data
+  capex_pct: m.capex && m.revenue ? m.capex / m.revenue : 0.05, // estimate: no FMP data
   debt_repayment_pct: 0.05,
   dividend_payout_ratio: 0.30,
-  min_cash_balance: 5e7,
+  min_cash_balance: undefined, // requires company-specific policy
 });
 
 // ─── Registry ────────────────────────────────────────────────────────────────
@@ -1047,7 +1026,13 @@ export function buildToolParams(
   // Resolve agent name → MCP name
   const mcpName = resolveToolName(toolName);
   const builder = BUILDERS[mcpName];
-  if (builder) return builder(metrics);
+  if (builder) {
+    const params = builder(metrics);
+    // Strip undefined values to avoid sending nulls to MCP tools
+    return Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined)
+    );
+  }
 
   // Fallback: return metrics as-is (will likely fail validation but at least has data)
   const { _raw, _company, ...rest } = metrics;
