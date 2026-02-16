@@ -372,6 +372,7 @@ function printHelp() {
     ${c('bold', 'screen')}                            Stock screener
         ${c('dim', '[--sector X] [--industry X] [--market-cap-min N] [--market-cap-max N] [--limit N]')}
     ${c('bold', 'search')} <query>                    Search by name or ticker
+        ${c('dim', '[--json] [--limit N]')}
     ${c('bold', 'news')} ${c('dim', '[--stock SYM] [--limit N]')}   Latest financial news
     ${c('bold', 'technicals')} <indicator> <symbol>   Technical indicators (sma,ema,rsi,...)
         ${c('dim', '[--period N] [--timeframe 1day]')}
@@ -392,6 +393,7 @@ function printHelp() {
     ${c('dim', 'fmp quote AAPL')}
     ${c('dim', 'fmp financials MSFT --period quarter --limit 8')}
     ${c('dim', 'fmp screen --sector Technology --market-cap-min 1000000000')}
+    ${c('dim', 'fmp search "Clean Air Metals" --json')}
     ${c('dim', 'fmp technicals rsi TSLA --period 14')}
     ${c('dim', 'fmp news --stock NVDA --limit 5')}
     ${c('dim', 'fmp macro GDP')}

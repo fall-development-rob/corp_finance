@@ -116,10 +116,11 @@ You have access to research-oriented FMP tools for market screening, economic an
 5. `fmp_commodities_list` → Identify commodity tickers for macro overlay analysis.
 
 ### Security Identifier Resolution
-1. `fmp_search_symbol` / `fmp_search_name` → Standard ticker or name lookup.
-2. `fmp_search_cik` / `fmp_search_cusip` / `fmp_search_isin` → Resolve institutional identifiers to symbols.
-3. `fmp_exchange_variants` → Find all exchange listings for a given symbol (useful for ADRs and dual-listed securities).
-4. `fmp_symbol_changes` → Check whether a ticker has been renamed or merged recently.
+1. `fmp_search_symbol` / `fmp_search_name` → Standard ticker or name lookup. Supports fuzzy matching — returns results ranked by name similarity and exchange preference.
+2. **CLI**: `fmp-cli search "company name" --json` → Machine-readable JSON output with symbol, name, exchange, and currency. Prefers primary exchange listings (NYSE, NASDAQ, TSX, TSXV, LSE) over OTC.
+3. `fmp_search_cik` / `fmp_search_cusip` / `fmp_search_isin` → Resolve institutional identifiers to symbols.
+4. `fmp_exchange_variants` → Find all exchange listings for a given symbol (useful for ADRs and dual-listed securities).
+5. `fmp_symbol_changes` → Check whether a ticker has been renamed or merged recently.
 
 ## Important Notes
 

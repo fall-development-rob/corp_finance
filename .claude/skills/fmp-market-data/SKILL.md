@@ -1,11 +1,11 @@
 ---
 name: "FMP Market Data"
-description: "Use the fmp-mcp-server's 181 market data MCP tools for real-time and historical data retrieval. Invoke when looking up stock quotes, company profiles, financial statements (income, balance sheet, cash flow), key metrics, financial ratios, earnings data, analyst estimates, price targets, grades, ratings, dividends, splits, IPOs, M&A activity, executive compensation, shares float, and historical prices across 70,000+ securities including equities, ETFs, mutual funds, crypto, forex, indices, and commodities."
+description: "Use the fmp-mcp-server's 180 market data MCP tools for real-time and historical data retrieval. Invoke when looking up stock quotes, company profiles, financial statements (income, balance sheet, cash flow), key metrics, financial ratios, earnings data, analyst estimates, price targets, grades, ratings, dividends, splits, IPOs, M&A activity, executive compensation, shares float, and historical prices across 70,000+ securities including equities, ETFs, mutual funds, crypto, forex, indices, and commodities."
 ---
 
 # FMP Market Data
 
-You have access to 181 market data MCP tools from the FMP (Financial Modeling Prep) server for retrieving real-time and historical financial data. These tools fetch live data from FMP's API — they do NOT perform calculations. Use corp-finance-mcp tools for computation and fmp-mcp-server tools for data retrieval.
+You have access to 180 market data MCP tools from the FMP (Financial Modeling Prep) server for retrieving real-time and historical financial data. These tools fetch live data from FMP's API — they do NOT perform calculations. Use corp-finance-mcp tools for computation and fmp-mcp-server tools for data retrieval.
 
 ## Tool Reference
 
