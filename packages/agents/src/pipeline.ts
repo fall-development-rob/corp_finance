@@ -308,6 +308,7 @@ const FMP_COMMANDS: Record<string, { args: string; desc: string }> = {
   sec:                 { args: 'SYMBOL',                          desc: 'SEC filings' },
   macro:               { args: 'GDP',                             desc: 'Economic indicators (GDP, CPI, etc.)' },
   treasury:            { args: '',                                desc: 'US Treasury rates' },
+  search:              { args: '"QUERY" --json',                  desc: 'Search by company name or ticker' },
 };
 
 // Base FMP commands per agent type — the minimum data each specialist needs
