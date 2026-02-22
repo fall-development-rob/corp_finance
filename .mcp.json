@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sscmfi-bond-mcp": {
+      "command": "npx",
+      "args": ["-y", "github:sscmfi/sscmfi-bond-mcp"]
+    }
+  }
+}
