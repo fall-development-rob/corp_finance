@@ -31,7 +31,6 @@ files-cfa.zip
 !.claude/agents/cfa/
 .claude-flow/
 docs/Excel Trading Diary SS.xlsx
-!.mcp.json
 CLAUDE.md
 .env
 packages/agents/docker/.env
