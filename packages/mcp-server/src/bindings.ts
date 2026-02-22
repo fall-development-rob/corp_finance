@@ -223,4 +223,7 @@ export const valueProperty = b.valueProperty;
 export const valueRealOption = b.valueRealOption;
 export const valueToken = b.valueToken;
 
+// SSCMFI bond math
+export const calculateSscmfiBond = b.calculateSscmfiBond;
+
 export default pkg;

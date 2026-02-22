@@ -54,6 +54,7 @@ use commands::financial_forensics::{
 };
 use commands::fixed_income::{
     BondPricingArgs, BondYieldArgs, BootstrapArgs, CreditSpreadArgs, DurationArgs, NelsonSiegelArgs,
+    SscmfiBondArgs,
 };
 use commands::fpa::{BreakevenArgs, RollingForecastArgs, VarianceArgs, WorkingCapitalArgs};
 use commands::fund_of_funds::{
@@ -197,6 +198,8 @@ enum Commands {
     Duration(DurationArgs),
     /// Credit spread analysis (Z-spread, OAS, I-spread)
     CreditSpread(CreditSpreadArgs),
+    /// SSCMFI bond math — price/yield, analytics, 7 payment types (Periodic, Discount, IAM, Stepped, Multistep, PIK, PartPIK)
+    SscmfiBond(SscmfiBondArgs),
     /// Option pricing (Black-Scholes & binomial)
     OptionPrice(OptionPriceArgs),
     /// Implied volatility solver
@@ -611,6 +614,7 @@ fn main() {
         Commands::NelsonSiegel(args) => commands::fixed_income::run_nelson_siegel(args),
         Commands::Duration(args) => commands::fixed_income::run_duration(args),
         Commands::CreditSpread(args) => commands::fixed_income::run_credit_spreads(args),
+        Commands::SscmfiBond(args) => commands::fixed_income::run_sscmfi_bond(args),
         Commands::OptionPrice(args) => commands::derivatives::run_option_price(args),
         Commands::ImpliedVol(args) => commands::derivatives::run_implied_vol(args),
         Commands::ForwardPrice(args) => commands::derivatives::run_forward_price(args),
