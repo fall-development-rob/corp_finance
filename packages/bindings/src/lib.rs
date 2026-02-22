@@ -282,6 +282,15 @@ pub fn calculate_credit_spreads(input_json: String) -> NapiResult<String> {
     serde_json::to_string(&output).map_err(to_napi_error)
 }
 
+#[napi]
+pub fn calculate_sscmfi_bond(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::fixed_income::sscmfi::SscmfiBondInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::fixed_income::sscmfi::calculate_sscmfi_bond(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
 // ---------------------------------------------------------------------------
 // Derivatives
 // ---------------------------------------------------------------------------

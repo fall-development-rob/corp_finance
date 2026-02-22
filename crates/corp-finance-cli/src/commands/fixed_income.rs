@@ -4,6 +4,7 @@ use serde_json::Value;
 use corp_finance_core::fixed_income::bonds::{self, BondPricingInput};
 use corp_finance_core::fixed_income::duration::{self, DurationInput};
 use corp_finance_core::fixed_income::spreads::{self, CreditSpreadInput};
+use corp_finance_core::fixed_income::sscmfi::{self, SscmfiBondInput};
 use corp_finance_core::fixed_income::yields::{
     self, BondYieldInput, BootstrapInput, NelsonSiegelInput,
 };
@@ -127,5 +128,25 @@ pub fn run_credit_spreads(args: CreditSpreadArgs) -> Result<Value, Box<dyn std::
         return Err("--input <file.json> or stdin required for credit spreads".into());
     };
     let result = spreads::calculate_credit_spreads(&spread_input)?;
+    Ok(serde_json::to_value(result)?)
+}
+
+/// Arguments for SSCMFI bond math (all 7 payment types)
+#[derive(Args)]
+pub struct SscmfiBondArgs {
+    /// Path to JSON input file
+    #[arg(long)]
+    pub input: Option<String>,
+}
+
+pub fn run_sscmfi_bond(args: SscmfiBondArgs) -> Result<Value, Box<dyn std::error::Error>> {
+    let bond_input: SscmfiBondInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
+    } else if let Some(data) = input::stdin::read_stdin()? {
+        serde_json::from_value(data)?
+    } else {
+        return Err("--input <file.json> or stdin required for SSCMFI bond".into());
+    };
+    let result = sscmfi::calculate_sscmfi_bond(&bond_input)?;
     Ok(serde_json::to_value(result)?)
 }

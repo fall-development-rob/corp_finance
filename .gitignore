@@ -25,12 +25,12 @@ files-cfa.zip
 .claude/skills/*
 !.claude/skills/corp-finance-*/
 !.claude/skills/fmp-*/
+!.claude/skills/sscmfi-*/
 !.claude/agents/
 .claude/agents/*
 !.claude/agents/cfa/
 .claude-flow/
 docs/Excel Trading Diary SS.xlsx
-.mcp.json
 CLAUDE.md
 .env
 packages/agents/docker/.env
