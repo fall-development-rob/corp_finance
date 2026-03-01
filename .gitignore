@@ -28,6 +28,7 @@ files-cfa.zip
 !.claude/agents/
 .claude/agents/*
 !.claude/agents/cfa/
+.ruflo/
 .claude-flow/
 docs/Excel Trading Diary SS.xlsx
 .mcp.json

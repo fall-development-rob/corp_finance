@@ -4,6 +4,7 @@
 **Package**: @robotixai/corp-finance-mcp
 **Version**: 1.0 Draft
 **Date**: 2026-02-12
+**Last Updated**: 2026-03-01
 **Author**: RobotixAI Engineering
 
 ---
@@ -11,9 +12,9 @@
 ## 1. Vision
 
 An autonomous CFA analyst platform where specialized AI agents collaborate to produce
-institutional-quality financial research, powered by 215 precision calculation tools
+institutional-quality financial research, powered by 195 precision calculation tools
 built in Rust with 128-bit decimal arithmetic. The platform transforms a library of
-71 domain modules and 5,879 validated tests into a living analytical workforce --
+67 domain modules and 5,417 validated tests into a living analytical workforce --
 agents that reason like senior analysts, compute like terminals, and learn from
 every engagement.
 
@@ -63,7 +64,7 @@ receives a structured, auditable, terminal-grade response from cooperating speci
 
 #### 3.0.1 Hosted MCP Server
 
-Remote access to all 215 tools via HTTP/SSE, removing the need for local Rust builds.
+Remote access to all 195 tools via HTTP/SSE, removing the need for local Rust builds.
 
 - **Transport**: MCP protocol over SSE (Server-Sent Events) and STDIO.
 - **Authentication**: API key-based access with rate limiting.
@@ -83,7 +84,7 @@ General-purpose CFA analyst that decomposes queries into tool call sequences
 and synthesizes results into coherent analysis.
 
 - **Query Decomposition**: Breaks complex questions into sub-tasks mapped to specific tools.
-- **Tool Selection**: Matches analytical needs to the correct tool from 215 available.
+- **Tool Selection**: Matches analytical needs to the correct tool from 195 available.
 - **Result Synthesis**: Combines numerical outputs with narrative explanation.
 - **Citation**: Every number in the output traces back to a specific tool call with inputs.
 
@@ -213,8 +214,8 @@ Persistent reasoning store accumulating institutional knowledge.
 +------------------------------------------------------------+
 |                  Calculation Layer                          |
 |   corp-finance-mcp (Rust, 128-bit decimal)                 |
-|   - 71 domain modules    - 215 MCP tools                   |
-|   - 5,879 tests          - SSE/STDIO transport             |
+|   - 67 domain modules    - 195 MCP tools                   |
+|   - 5,417 tests          - SSE/STDIO transport             |
 +------------------------------------------------------------+
 |                      LLM Layer                             |
 |   Claude Opus (primary reasoning)                          |
@@ -267,7 +268,7 @@ Output: Markdown report + JSON data + audit trail
 | Metric                            | Target       | Measurement                              |
 |-----------------------------------|--------------|------------------------------------------|
 | Numerical precision               | 128-bit exact| Matches Bloomberg/FactSet terminal output|
-| Tool correctness                  | 100%         | All 5,879 tests pass on every release    |
+| Tool correctness                  | 100%         | All 5,417 tests pass on every release    |
 | Formula fidelity                  | CFA-standard | Validated against CFA Institute formulas |
 
 ### 5.2 Analysis Quality
@@ -302,7 +303,7 @@ Output: Markdown report + JSON data + audit trail
 
 | Phase | Milestone                          | Deliverable                                     | Target     |
 |-------|------------------------------------|-------------------------------------------------|------------|
-| P0.1  | Hosted MCP Server                  | All 215 tools accessible via SSE                | Week 2     |
+| P0.1  | Hosted MCP Server                  | All 195 tools accessible via SSE                | Week 2     |
 | P0.2  | Single Agent MVP                   | One CFA agent with agentdb memory, CLI access   | Week 4     |
 | P0.3  | API + Polish                       | REST API, output formats, error handling        | Week 6     |
 | P1.1  | Specialist Agents                  | 6 domain agents with curated tool access        | Week 9     |
@@ -330,7 +331,7 @@ Output: Markdown report + JSON data + audit trail
 
 ## 8. Out of Scope (v1)
 
-- Real-time market data feeds (agents work with user-provided or cached data).
+- ~~Real-time market data feeds~~ -- **Implemented** via FMP integration (ADR-003, ADR-005). 181 market data tools available.
 - Trade execution or order management.
 - Regulatory filing generation (10-K, 10-Q authoring).
 - Multi-language support (English only for v1).
@@ -340,8 +341,8 @@ Output: Markdown report + JSON data + audit trail
 
 ## 9. Open Questions
 
-1. **Data sourcing**: Market data API integration (Alpha Vantage, Polygon, Bloomberg B-PIPE) deferred past v1.
-2. **Model routing**: Route tool-heavy tasks to faster models, reserve Claude Opus for synthesis?
+1. ~~**Data sourcing**~~: **Resolved** -- FMP integration (ADR-003) provides 181 market data tools covering quotes, financials, estimates, and economic data.
+2. ~~**Model routing**~~: **Resolved** -- MoE expert routing via SemanticRouter (ADR-007) with HNSW-backed vector search.
 3. **Compliance**: Audit/explainability requirements for regulated personas may need additional controls.
 4. **Pricing model**: Per-analysis, per-seat, or usage-based (tool calls + LLM tokens)?
 
