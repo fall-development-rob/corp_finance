@@ -172,11 +172,42 @@ describe('WORKFLOW-INV-004: HNSW routing coverage', () => {
   });
 });
 
+describe('DATA-INV-001: Data source skills exist', () => {
+  const expectedDataSkills = [
+    'data-fred',
+    'data-edgar',
+    'data-figi',
+    'data-yf',
+    'data-wb',
+  ];
+
+  it.each(expectedDataSkills)('data skill %s exists', (skillName) => {
+    const skillPath = join(skillsDir, skillName, 'SKILL.md');
+    expect(existsSync(skillPath), `Missing data skill: ${skillPath}`).toBe(true);
+  });
+});
+
+describe('PARTNER-INV-001: Partner skills exist', () => {
+  const expectedPartnerSkills = [
+    'partner-lseg',
+    'partner-sp-global',
+    'partner-factset',
+    'partner-morningstar',
+    'partner-moodys',
+    'partner-pitchbook',
+  ];
+
+  it.each(expectedPartnerSkills)('partner skill %s exists', (skillName) => {
+    const skillPath = join(skillsDir, skillName, 'SKILL.md');
+    expect(existsSync(skillPath), `Missing partner skill: ${skillPath}`).toBe(true);
+  });
+});
+
 describe('ARCH-INV-001: Total skill count', () => {
-  it('exactly 49 skills exist', () => {
+  it('exactly 61 skills exist', () => {
     const allSkills = readdirSync(skillsDir).filter(d => {
       return existsSync(join(skillsDir, d, 'SKILL.md'));
     });
-    expect(allSkills.length).toBe(49);
+    expect(allSkills.length).toBe(61);
   });
 });

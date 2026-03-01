@@ -27,6 +27,8 @@ files-cfa.zip
 !.claude/skills/fmp-*/
 !.claude/skills/specflow/
 !.claude/skills/workflow-*/
+!.claude/skills/data-*/
+!.claude/skills/partner-*/
 !.claude/commands/
 .claude/commands/*
 !.claude/commands/cfa/
