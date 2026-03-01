@@ -1,103 +1,67 @@
-contract_meta:
-  id: cfa_architecture
-  version: 1
-  created_from_spec: "docs/ADR-001.md"
-  covers_reqs:
-    - ARCH-001
-    - ARCH-002
-    - ARCH-003
-    - ARCH-004
-    - ARCH-005
-    - ARCH-006
-  owner: "cfa-agent-team"
+# Feature Contract: Architecture Rules
+# Enforces structural and security rules across the CFA agent codebase
 
-llm_policy:
-  enforce: true
-  llm_may_modify_non_negotiables: false
-  override_phrase: "override_contract: cfa_architecture"
+contracts:
+  - id: ARCH-001
+    name: "No direct math in agents"
+    description: "Agent files must not contain direct mathematical computations. All calculations must be delegated to corp-finance-mcp tools via MCP calls."
+    scope:
+      - "packages/agents/agents/*.md"
+    enforcement: build-time
+    severity: error
 
-rules:
-  non_negotiable:
-    - id: ARCH-001
-      title: "Agents must never perform financial calculations directly"
-      scope:
-        - "packages/agents/agents/*.ts"
-        - "packages/agents/orchestrator/*.ts"
-      behavior:
-        forbidden_patterns:
-          - pattern: /Math\.(pow|sqrt|log|exp)\(/
-            message: "Agents must call MCP tools for calculations, not use Math.*. All financial math lives in the Rust core."
-          - pattern: /parseFloat\(.*\)\s*[\*\/\+\-]\s*parseFloat/
-            message: "Agents must not perform arithmetic on financial values. Use corp-finance-mcp tools."
-        example_violation: |
-          const npv = cashFlows.reduce((sum, cf, t) => sum + cf / Math.pow(1 + rate, t), 0);
-        example_compliant: |
-          const result = await mcpClient.callTool('dcf_model', { cash_flows, discount_rate });
+  - id: ARCH-002
+    name: "No secrets in source"
+    description: "Source files must not contain hardcoded API keys, passwords, tokens, or credentials. Use environment variables."
+    scope:
+      - "packages/agents/src/**/*.ts"
+      - "packages/mcp-server/src/**/*.ts"
+    enforcement: build-time
+    severity: error
 
-    - id: ARCH-002
-      title: "No hardcoded API keys or secrets in source"
-      scope:
-        - "packages/**/*.ts"
-        - "crates/**/*.rs"
-      behavior:
-        forbidden_patterns:
-          - pattern: /['"]sk[-_][a-zA-Z0-9]{20,}['"]/
-            message: "Hardcoded API key detected. Use environment variables."
-          - pattern: /['"][a-f0-9]{32,}['"]/
-            message: "Possible hardcoded secret. Use environment variables."
-          - pattern: /apiKey\s*[:=]\s*['"][^'"]{20,}['"]/
-            message: "API key literal detected. Use process.env."
+  - id: ARCH-003
+    name: "500-line file limit"
+    description: "No single source file may exceed 500 lines. Split into modules if approaching the limit."
+    scope:
+      - "packages/agents/src/**/*.ts"
+    enforcement: build-time
+    severity: error
 
-    - id: ARCH-003
-      title: "Agent files must not exceed 500 lines"
-      scope:
-        - "packages/agents/**/*.ts"
-      behavior:
-        max_file_lines: 500
-        message: "File exceeds 500 lines. Split into smaller modules per CLAUDE.md rules."
+  - id: ARCH-004
+    name: "No direct DB writes from agents"
+    description: "Agent code must not write directly to databases. Use the memory layer (FinancialMemory, ReasoningBank) or MCP tools."
+    scope:
+      - "packages/agents/agents/*.md"
+      - "packages/agents/src/**/*.ts"
+    enforcement: build-time
+    severity: error
 
-    - id: ARCH-004
-      title: "No direct database writes from agent code"
-      scope:
-        - "packages/agents/agents/*.ts"
-      behavior:
-        forbidden_patterns:
-          - pattern: /\.(query|execute)\s*\(\s*['"`](?:INSERT|UPDATE|DELETE)/i
-            message: "Agents must not write directly to databases. Use MCP tools or the memory layer."
+  - id: ARCH-005
+    name: "System prompts required for all agents"
+    description: "Every agent definition must include a systemPrompt field. Agents without system prompts cannot enforce behavioral constraints."
+    scope:
+      - "packages/agents/agents/*.md"
+    enforcement: build-time
+    severity: error
 
-    - id: ARCH-005
-      title: "Rust core must use rust_decimal, never f64 for financial math"
-      scope:
-        - "crates/corp-finance-core/src/**/*.rs"
-      behavior:
-        forbidden_patterns:
-          - pattern: /fn\s+\w+.*->\s*(?:f64|f32)\b/
-            message: "Financial functions must return Decimal, not f64/f32. Exception: Monte Carlo simulation."
-        exceptions:
-          - "crates/corp-finance-core/src/monte_carlo/**"
+  - id: ARCH-006
+    name: "Typed interfaces for public APIs"
+    description: "All exported functions and classes must use TypeScript interfaces or type aliases for parameters and return values. No 'any' in public signatures."
+    scope:
+      - "packages/agents/src/**/*.ts"
+    enforcement: review
+    severity: warning
 
-    - id: ARCH-006
-      title: "No .env files committed"
-      scope:
-        - "**/.env"
-        - "**/.env.*"
-      behavior:
-        forbidden_patterns:
-          - pattern: /.*/
-            message: ".env files must never be committed. Add to .gitignore."
+  - id: ARCH-007
+    name: "Workflow skills follow consolidation pattern"
+    description: "Workflow skills consolidate multiple atomic workflows into domain-level skills (1 skill per domain, not 1 per workflow). Maximum 6 workflow skills."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: review
+    severity: warning
 
-  soft:
-    - id: ARCH-010
-      title: "Prefer typed interfaces for public APIs"
-      scope:
-        - "packages/agents/**/*.ts"
-      behavior:
-        required_patterns:
-          - pattern: /(?:interface|type)\s+\w+(?:Input|Output|Config|Options|Result)/
-            message: "Consider adding typed interfaces for public API surfaces."
-
-  compliance_checklist:
-    - "Does this change introduce any direct financial calculations outside the Rust core?"
-    - "Are all secrets loaded from environment variables?"
-    - "Does any new file exceed 500 lines?"
-    - "Are all public APIs using typed interfaces?"
+invariants:
+  - id: ARCH-INV-001
+    name: "Total skill count"
+    description: "There must be exactly 49 skills (43 existing + 6 workflow)"
+    check: "count(.claude/skills/*/SKILL.md) == 49"
