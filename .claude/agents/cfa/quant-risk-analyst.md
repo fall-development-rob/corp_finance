@@ -16,6 +16,11 @@ capabilities:
   - performance_attribution
   - capital_allocation
   - index_construction
+  - wealth_management
+  - financial_planning
+  - portfolio_rebalancing
+  - tax_loss_harvesting
+  - client_reporting
 ---
 
 # CFA Quant/Risk Analyst — Specialist

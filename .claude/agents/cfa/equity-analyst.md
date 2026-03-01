@@ -14,6 +14,12 @@ capabilities:
   - financial_forensics
   - three_statement_modelling
   - monte_carlo_valuation
+  - initiating_coverage
+  - earnings_analysis
+  - morning_notes
+  - thesis_tracking
+  - idea_generation
+  - sector_overview
 ---
 
 # CFA Equity Analyst — Specialist

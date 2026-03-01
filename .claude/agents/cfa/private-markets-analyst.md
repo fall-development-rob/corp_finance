@@ -18,6 +18,15 @@ capabilities:
   - clo_analytics
   - securitization
   - fund_of_funds
+  - cim_drafting
+  - deal_teaser
+  - buyer_list
+  - pitch_deck
+  - deal_screening
+  - ic_memo
+  - dd_checklist
+  - value_creation_plan
+  - portfolio_monitoring
 ---
 
 # CFA Private Markets Analyst — Specialist

@@ -1,0 +1,81 @@
+# Feature Contract: Financial Workflow Skills
+# Enforces architectural rules for workflow skill integration
+# Source: Anthropic financial-services-plugins adaptation
+
+contracts:
+  - id: WORKFLOW-001
+    name: "Workflow skills must reference existing MCP tools only"
+    description: "Workflow skills (workflow-*.md) must only reference tools that exist in the corp-finance-mcp or fmp-mcp-server registrations. No invented tool names."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: build-time
+    severity: error
+
+  - id: WORKFLOW-002
+    name: "Workflow skills must have YAML frontmatter"
+    description: "Every workflow skill SKILL.md must start with YAML frontmatter containing 'name' and 'description' fields."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: build-time
+    severity: error
+
+  - id: WORKFLOW-003
+    name: "Workflow skills must include workflow selection table"
+    description: "Each workflow skill must contain a markdown table mapping request patterns to specific workflows with output types and key tools."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: review
+    severity: warning
+
+  - id: WORKFLOW-004
+    name: "Workflow skills must include quality standards section"
+    description: "Each workflow skill must end with a Quality Standards section defining validation criteria and guardrails."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: review
+    severity: warning
+
+  - id: WORKFLOW-005
+    name: "Slash commands must map to existing agents"
+    description: "Every slash command in .claude/commands/cfa/ must reference an agent type that exists in CFA_INTENTS in pipeline.ts."
+    scope:
+      - ".claude/commands/cfa/*.md"
+    enforcement: build-time
+    severity: error
+
+  - id: WORKFLOW-006
+    name: "Pipeline AGENT_SKILLS must reference existing skills"
+    description: "Every skill name in AGENT_SKILLS must have a corresponding .claude/skills/{name}/SKILL.md file."
+    scope:
+      - "packages/agents/src/pipeline.ts"
+    enforcement: build-time
+    severity: error
+
+  - id: WORKFLOW-007
+    name: "No computation in workflow skills"
+    description: "Workflow skills must not contain mathematical formulas, numerical constants, or computation logic. They orchestrate MCP tools that perform computation."
+    scope:
+      - ".claude/skills/workflow-*/SKILL.md"
+    enforcement: review
+    severity: warning
+
+invariants:
+  - id: WORKFLOW-INV-001
+    name: "Workflow skill count"
+    description: "There must be exactly 6 workflow skills"
+    check: "count(.claude/skills/workflow-*/SKILL.md) == 6"
+
+  - id: WORKFLOW-INV-002
+    name: "Slash command count"
+    description: "There must be exactly 16 CFA slash commands"
+    check: "count(.claude/commands/cfa/*.md) == 16"
+
+  - id: WORKFLOW-INV-003
+    name: "Agent skill coverage"
+    description: "At least 4 agents must have workflow skills assigned in AGENT_SKILLS"
+    check: "agents_with_workflow_skills >= 4"
+
+  - id: WORKFLOW-INV-004
+    name: "HNSW routing coverage"
+    description: "CFA_INTENTS must contain at least 13 intent entries (9 original + 4 workflow)"
+    check: "count(CFA_INTENTS) >= 13"

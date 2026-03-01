@@ -11,6 +11,10 @@ capabilities:
   - result_aggregation
   - conflict_resolution
   - quality_gating
+  - model_audit
+  - deck_review
+  - competitive_analysis
+  - document_standards
 ---
 
 # CFA Chief Analyst — Coordinator
