@@ -219,3 +219,8 @@ export declare function calculateDupont(inputJson: string): NapiResult
 export declare function calculateZscoreModels(inputJson: string): NapiResult
 export declare function calculatePeerBenchmarking(inputJson: string): NapiResult
 export declare function calculateRedFlagScoring(inputJson: string): NapiResult
+export declare function workflowList(inputJson: string): NapiResult
+export declare function workflowDescribe(inputJson: string): NapiResult
+export declare function workflowValidate(inputJson: string): NapiResult
+export declare function workflowQualityCheck(inputJson: string): NapiResult
+export declare function workflowAudit(inputJson: string): NapiResult

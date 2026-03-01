@@ -48,3 +48,6 @@ docs/FMP-TOOLS-USAGE.md
 docs/MCP-TOOLS-AVAILABILITY.md
 docs/QUICK-REFERENCE-AAPL.md
 .specflow/
+
+# Turborepo
+.turbo/

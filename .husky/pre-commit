@@ -1,5 +1,1 @@
-# Typecheck
-cd packages/agents && npx tsc --noEmit
-
-# Contract tests
-npx vitest run tests/contracts/ --reporter=dot
+npx turbo run typecheck test:contracts --output-logs=errors-only

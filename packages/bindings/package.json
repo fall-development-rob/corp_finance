@@ -20,6 +20,8 @@
   },
   "scripts": {
     "build": "napi build --platform --release",
-    "build:debug": "napi build --platform"
+    "build:debug": "napi build --platform",
+    "typecheck": "echo 'skip — native module'",
+    "test": "echo 'skip — tested via Rust'"
   }
 }

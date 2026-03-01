@@ -18,7 +18,9 @@
     "dev": "npx tsx src/cli.ts analyze -i",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:contracts": "vitest run tests/contracts/ --reporter=dot",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

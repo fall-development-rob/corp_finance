@@ -2,17 +2,28 @@
   "name": "corp-finance-mcp",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "cargo build --workspace --all-features",
+    "build": "turbo run build",
+    "build:ts": "turbo run build",
+    "build:rust": "cargo build --workspace --all-features",
     "build:release": "cargo build --workspace --all-features --release",
-    "test": "cargo test --workspace --all-features",
-    "lint": "cargo clippy --workspace --all-features -- -D warnings",
+    "test": "turbo run test",
+    "test:rust": "cargo test --workspace --all-features",
+    "test:contracts": "turbo run test:contracts",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:rust": "cargo clippy --workspace --all-features -- -D warnings",
     "fmt": "cargo fmt --workspace",
     "fmt:check": "cargo fmt --workspace --check",
     "prepare": "husky"
   },
   "devDependencies": {
     "husky": "^9.1.7",
+    "turbo": "^2.8.12",
     "typescript": "^5.9.3"
   }
 }

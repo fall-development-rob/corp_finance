@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'skip — no tests yet'"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
