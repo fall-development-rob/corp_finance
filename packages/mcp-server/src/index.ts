@@ -72,6 +72,7 @@ import { registerPrivateWealthTools } from "./tools/private_wealth.js";
 import { registerEmergingMarketsTools } from "./tools/emerging_markets.js";
 import { registerIndexConstructionTools } from "./tools/index_construction.js";
 import { registerFinancialForensicsTools } from "./tools/financial_forensics.js";
+import { registerWorkflowTools } from "./tools/workflows.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -149,6 +150,7 @@ registerPrivateWealthTools(server);
 registerEmergingMarketsTools(server);
 registerIndexConstructionTools(server);
 registerFinancialForensicsTools(server);
+registerWorkflowTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

@@ -222,5 +222,10 @@ export const valueInterestRateSwap = b.valueInterestRateSwap;
 export const valueProperty = b.valueProperty;
 export const valueRealOption = b.valueRealOption;
 export const valueToken = b.valueToken;
+export const workflowList = b.workflowList;
+export const workflowDescribe = b.workflowDescribe;
+export const workflowValidate = b.workflowValidate;
+export const workflowQualityCheck = b.workflowQualityCheck;
+export const workflowAudit = b.workflowAudit;
 
 export default pkg;

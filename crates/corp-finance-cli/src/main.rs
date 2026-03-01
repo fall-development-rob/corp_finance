@@ -119,6 +119,10 @@ use commands::venture::{
 };
 use commands::volatility_surface::{ImpliedVolSurfaceArgs, SabrCalibrationArgs};
 use commands::wealth::{EstatePlanArgs, RetirementArgs, TlhArgs};
+use commands::workflows::{
+    WorkflowAuditArgs, WorkflowDescribeArgs, WorkflowListArgs, WorkflowQualityCheckArgs,
+    WorkflowValidateArgs,
+};
 
 /// Institutional-grade corporate finance calculations
 #[derive(Parser)]
@@ -565,6 +569,16 @@ enum Commands {
     PeerBenchmarking(PeerBenchmarkingArgs),
     /// Red flag scoring for financial statement analysis
     RedFlagScoring(RedFlagScoringArgs),
+    /// List available workflows
+    WorkflowList(WorkflowListArgs),
+    /// Describe a workflow in detail
+    WorkflowDescribe(WorkflowDescribeArgs),
+    /// Validate workflow inputs
+    WorkflowValidate(WorkflowValidateArgs),
+    /// Run quality gates on workflow output
+    WorkflowQualityCheck(WorkflowQualityCheckArgs),
+    /// Generate audit trail for workflow execution
+    WorkflowAudit(WorkflowAuditArgs),
     /// Print version information
     Version,
 }
@@ -853,6 +867,13 @@ fn main() {
             commands::financial_forensics::run_peer_benchmarking(args)
         }
         Commands::RedFlagScoring(args) => commands::financial_forensics::run_red_flag_scoring(args),
+        Commands::WorkflowList(args) => commands::workflows::run_workflow_list(args),
+        Commands::WorkflowDescribe(args) => commands::workflows::run_workflow_describe(args),
+        Commands::WorkflowValidate(args) => commands::workflows::run_workflow_validate(args),
+        Commands::WorkflowQualityCheck(args) => {
+            commands::workflows::run_workflow_quality_check(args)
+        }
+        Commands::WorkflowAudit(args) => commands::workflows::run_workflow_audit(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

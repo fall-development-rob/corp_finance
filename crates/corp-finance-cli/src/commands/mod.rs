@@ -69,3 +69,4 @@ pub mod valuation;
 pub mod venture;
 pub mod volatility_surface;
 pub mod wealth;
+pub mod workflows;
