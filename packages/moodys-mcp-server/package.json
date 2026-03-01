@@ -1,0 +1,29 @@
+{
+  "name": "@robotixai/moodys-mcp-server",
+  "version": "1.0.0",
+  "description": "Moody's Analytics credit ratings, default data, and economic forecasts as MCP tools",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/corp_finance.git",
+    "directory": "packages/moodys-mcp-server"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "moodys-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

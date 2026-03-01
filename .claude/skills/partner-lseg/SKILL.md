@@ -5,43 +5,45 @@ description: "LSEG (London Stock Exchange Group) -- bond pricing, yield curve an
 
 # LSEG Financial Analytics (Partner Integration)
 
-LSEG (London Stock Exchange Group), the successor to Refinitiv Eikon, provides institutional-grade financial data and analytics via their Financial Analytics MCP server. This is an OPTIONAL premium integration -- users must have their own LSEG subscription and API credentials.
+LSEG (London Stock Exchange Group) provides institutional-grade financial data and analytics. This is an OPTIONAL premium integration -- users must have their own LSEG subscription and API credentials.
 
-**MCP Endpoint**: `api.analytics.lseg.com/lfa/mcp`
-**Requires**: `LSEG_API_KEY` environment variable
+## MCP Server
 
-## Capabilities
+**Package**: `@corp-finance/partner-lseg`
+**Authentication**: OAuth2 (client credentials flow)
+**Environment Variables**:
+- `LSEG_CLIENT_ID` -- OAuth2 client ID
+- `LSEG_CLIENT_SECRET` -- OAuth2 client secret
 
-| Domain | Description |
-|--------|-------------|
-| Fixed Income | Bond pricing, credit spread analysis, yield-to-maturity calculations, duration/convexity, benchmark spread decomposition |
-| Yield Curves | Government and swap curve construction, curve interpolation, term structure analysis, historical curve comparison |
-| FX Analytics | Carry trade evaluation, forward rate implied yield differentials, cross-currency basis swap analysis, REER modelling |
-| Options | Equity and FX options valuation, implied volatility surfaces, Greeks calculation, strategy payoff analysis |
-| Macro Dashboard | Economic indicator tracking, central bank rate expectations, inflation breakevens, PMI aggregation |
-| Reference Data | Security master, corporate actions, dividend forecasts, index constituents |
+## Tool Catalogue (15 tools)
 
-## Configuration
+| Tool | Purpose |
+|------|---------|
+| `lseg_historical_prices` | Historical end-of-day pricing for equities, bonds, FX, and commodities |
+| `lseg_intraday_prices` | Intraday tick and bar data for real-time market analysis |
+| `lseg_bond_pricing` | Bond pricing, yield-to-maturity, duration, convexity, and spread analytics |
+| `lseg_fx_rates` | Spot and forward FX rates, cross-currency pairs, carry trade inputs |
+| `lseg_company_search` | Search for companies by name, ticker, ISIN, or SEDOL |
+| `lseg_fundamentals` | Standardised financial statements, ratios, and key metrics |
+| `lseg_esg_scores` | ESG scores, carbon metrics, controversy flags, and sustainability ratings |
+| `lseg_news` | Real-time and historical news, filtered by company, sector, or topic |
+| `lseg_options_chain` | Options chains with strikes, expiries, Greeks, and implied volatility |
+| `lseg_economic_indicators` | Macro economic indicators: GDP, CPI, PMI, employment, central bank rates |
+| `lseg_yield_curve` | Government and swap yield curves, term structure construction and interpolation |
+| `lseg_credit_spreads` | Corporate credit spreads by rating, sector, tenor, and benchmark decomposition |
+| `lseg_reference_data` | Security master, instrument identifiers, index constituents, and classifications |
+| `lseg_corporate_actions` | Dividends, splits, mergers, spin-offs, and other corporate event data |
+| `lseg_ownership` | Institutional and insider ownership, 13F holdings, activist positions |
 
-Add to your Claude Code MCP configuration:
+## Key Capabilities
 
-```json
-{
-  "mcpServers": {
-    "lseg": {
-      "url": "https://api.analytics.lseg.com/lfa/mcp",
-      "headers": {
-        "Authorization": "Bearer ${LSEG_API_KEY}"
-      }
-    }
-  }
-}
-```
+- **Fixed Income**: Bond pricing, credit spread analysis, yield-to-maturity calculations, duration/convexity, benchmark spread decomposition via `lseg_bond_pricing`, `lseg_credit_spreads`, and `lseg_yield_curve`
+- **Yield Curves**: Government and swap curve construction, curve interpolation, term structure analysis, historical curve comparison via `lseg_yield_curve`
+- **FX Analytics**: Carry trade evaluation, forward rate implied yield differentials, cross-currency basis swap analysis via `lseg_fx_rates`
+- **Options**: Equity and FX options valuation, implied volatility surfaces, Greeks calculation via `lseg_options_chain`
+- **Macro Dashboard**: Economic indicator tracking, central bank rate expectations, inflation breakevens, PMI aggregation via `lseg_economic_indicators`
+- **Reference Data**: Security master, corporate actions, dividend forecasts, index constituents via `lseg_reference_data` and `lseg_corporate_actions`
 
-## Important Notes
+## Data Note
 
-- This is a **partner integration**. Tools are provided by the LSEG MCP server, not this codebase.
-- You must have an active LSEG subscription to access this data.
-- The LSEG MCP server defines its own tool names and schemas. Refer to LSEG documentation for the full tool catalogue.
-- LSEG data is subject to the terms of your LSEG licence agreement, including redistribution restrictions.
-- For fixed income and FX analytics, LSEG provides institutional-quality pricing that complements the corp-finance-mcp calculation engine.
+LSEG subscription required. Data subject to LSEG license terms, including redistribution and usage restrictions. For fixed income and FX analytics, LSEG provides institutional-quality pricing that complements the corp-finance-mcp calculation engine.
