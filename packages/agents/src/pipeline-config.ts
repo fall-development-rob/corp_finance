@@ -90,14 +90,34 @@ export const AGENT_SKILLS: Record<string, string[]> = {
     'fmp-research',
     'fmp-news-intelligence',
     'fmp-sec-compliance',
+    'workflow-financial-analysis',
+    'workflow-deal-documents',
   ],
-  'cfa-equity-analyst':          ['corp-finance-tools-core', 'fmp-market-data', 'fmp-technicals', 'fmp-news-intelligence'],
+  'cfa-equity-analyst': [
+    'corp-finance-tools-core',
+    'fmp-market-data',
+    'fmp-technicals',
+    'fmp-news-intelligence',
+    'workflow-equity-research',
+  ],
   'cfa-credit-analyst':          ['corp-finance-tools-core', 'fmp-market-data', 'fmp-sec-compliance'],
-  'cfa-private-markets-analyst': ['corp-finance-tools-core', 'fmp-market-data', 'fmp-sec-compliance'],
+  'cfa-private-markets-analyst': [
+    'corp-finance-tools-core',
+    'fmp-market-data',
+    'fmp-sec-compliance',
+    'workflow-investment-banking',
+    'workflow-private-equity',
+  ],
   'cfa-fixed-income-analyst':    ['corp-finance-tools-markets', 'fmp-market-data'],
   'cfa-derivatives-analyst':     ['corp-finance-tools-markets', 'fmp-market-data', 'fmp-technicals'],
   'cfa-macro-analyst':           ['corp-finance-tools-markets', 'fmp-research', 'fmp-news-intelligence'],
-  'cfa-quant-risk-analyst':      ['corp-finance-tools-risk', 'fmp-market-data', 'fmp-technicals', 'fmp-etf-funds'],
+  'cfa-quant-risk-analyst': [
+    'corp-finance-tools-risk',
+    'fmp-market-data',
+    'fmp-technicals',
+    'fmp-etf-funds',
+    'workflow-wealth-management',
+  ],
   'cfa-esg-regulatory-analyst':  ['corp-finance-tools-regulatory', 'fmp-research', 'fmp-sec-compliance'],
 };
 
@@ -233,6 +253,43 @@ export const CFA_INTENTS: AgentIntent[] = [
       'Value this venture deal at Series B',
     ],
     tags: ['pe', 'lbo', 'ma', 'venture', 'private-credit', 'clo', 'infrastructure', 'irr', 'waterfall', 'fund'],
+  },
+  {
+    agentType: 'cfa-equity-analyst',
+    description: 'Initiate coverage reports, earnings analysis, morning notes, thesis tracking, equity screening, sector overviews',
+    examples: [
+      'Initiate coverage on Apple with a buy rating',
+      'Write a morning note on tech sector earnings',
+    ],
+    tags: ['coverage', 'earnings', 'morning-note', 'thesis', 'screening', 'sector', 'research-workflow'],
+  },
+  {
+    agentType: 'cfa-private-markets-analyst',
+    description: 'CIM drafting, deal teasers, buyer lists, pitch decks, deal screening, IC memos, DD checklists, value creation plans',
+    examples: [
+      'Draft a CIM for a $200M SaaS company',
+      'Prepare a buyer list for this healthcare target',
+      'Write an IC memo for this acquisition opportunity',
+    ],
+    tags: ['cim', 'teaser', 'buyer-list', 'pitch-deck', 'ic-memo', 'dd-checklist', 'deal-documents', 'value-creation'],
+  },
+  {
+    agentType: 'cfa-quant-risk-analyst',
+    description: 'Client portfolio reviews, financial planning, rebalancing, tax-loss harvesting, wealth management proposals',
+    examples: [
+      'Prepare a quarterly client review for a $5M portfolio',
+      'Create a retirement financial plan for a 45-year-old',
+    ],
+    tags: ['client-review', 'financial-plan', 'rebalance', 'tax-loss-harvesting', 'wealth', 'retirement'],
+  },
+  {
+    agentType: 'cfa-chief-analyst',
+    description: 'Model audit and quality checks, deck reviews, competitive analysis, document quality standards',
+    examples: [
+      'Audit this financial model for errors and inconsistencies',
+      'Review this pitch deck for institutional quality',
+    ],
+    tags: ['model-audit', 'deck-review', 'competitive-analysis', 'quality', 'document-standards'],
   },
 ];
 
