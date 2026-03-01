@@ -18,7 +18,30 @@ env:
   NODE_VERSION: "20"
 
 jobs:
+  # Specflow contract tests — fail-fast gate, runs BEFORE everything else
+  contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: packages/agents/package-lock.json
+
+      - name: Install agent dependencies
+        working-directory: packages/agents
+        run: npm ci
+
+      - name: Run contract tests (architecture + drift)
+        working-directory: packages/agents
+        run: npx vitest run tests/contracts/ --reporter=verbose
+
   rust-checks:
+    needs: contract-tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

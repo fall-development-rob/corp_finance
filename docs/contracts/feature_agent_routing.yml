@@ -1,0 +1,44 @@
+contract_meta:
+  id: agent_routing
+  version: 1
+  created_from_spec: "docs/ADR-007.md"
+  covers_reqs:
+    - ROUTE-001
+    - ROUTE-002
+    - ROUTE-003
+  owner: "cfa-agent-team"
+
+llm_policy:
+  enforce: true
+  llm_may_modify_non_negotiables: false
+  override_phrase: "override_contract: agent_routing"
+
+rules:
+  non_negotiable:
+    - id: ROUTE-001
+      title: "Specialist agents must have a system prompt file"
+      scope:
+        - "packages/agents/agents/*-analyst.ts"
+      behavior:
+        required_patterns:
+          - pattern: /systemPrompt|getSystemPrompt|\.md/
+            message: "Specialist agents must reference a system prompt (inline or .md file)."
+
+    - id: ROUTE-002
+      title: "No hardcoded agent routing — use SemanticRouter or config"
+      scope:
+        - "packages/agents/orchestrator/*.ts"
+        - "packages/agents/agents/chief-analyst.ts"
+      behavior:
+        forbidden_patterns:
+          - pattern: /if\s*\(.*\.includes\s*\(\s*['"](?:stock|bond|credit|risk)['"]\s*\)/
+            message: "Do not use string matching for agent routing. Use SemanticRouter (ADR-007) or config-driven routing."
+
+    - id: ROUTE-003
+      title: "Agent tool mappings must cover all specialist domains"
+      scope:
+        - "packages/agents/config/tool-mappings.ts"
+      behavior:
+        required_patterns:
+          - pattern: /equity|credit|fixed.?income|derivatives|quant|macro|esg|private/
+            message: "Tool mappings must cover all 8 specialist domains."

@@ -1,0 +1,45 @@
+contract_meta:
+  id: mcp_tools
+  version: 1
+  created_from_spec: "docs/ADR-004.md"
+  covers_reqs:
+    - MCP-001
+    - MCP-002
+    - MCP-003
+  owner: "cfa-agent-team"
+
+llm_policy:
+  enforce: true
+  llm_may_modify_non_negotiables: false
+  override_phrase: "override_contract: mcp_tools"
+
+rules:
+  non_negotiable:
+    - id: MCP-001
+      title: "MCP tool schemas must use Zod validation"
+      scope:
+        - "packages/mcp-server/src/schemas/*.ts"
+      behavior:
+        required_patterns:
+          - pattern: /z\.object\(/
+            message: "MCP tool schemas must define input validation using Zod z.object()."
+
+    - id: MCP-002
+      title: "Every MCP tool must have a corresponding schema"
+      scope:
+        - "packages/mcp-server/src/tools/*.ts"
+      behavior:
+        required_patterns:
+          - pattern: /inputSchema/
+            message: "Every MCP tool registration must reference an inputSchema."
+
+    - id: MCP-003
+      title: "Tool handlers must not swallow errors"
+      scope:
+        - "packages/mcp-server/src/tools/*.ts"
+      behavior:
+        forbidden_patterns:
+          - pattern: /catch\s*\([^)]*\)\s*\{\s*\}/
+            message: "Empty catch blocks swallow errors. Log or rethrow."
+          - pattern: /catch\s*\(_?\)\s*\{\s*\}/
+            message: "Empty catch blocks swallow errors. Log or rethrow."

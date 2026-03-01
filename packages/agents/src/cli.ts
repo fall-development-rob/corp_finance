@@ -11,7 +11,6 @@
 //   cfa --help                                                      # usage
 
 import 'dotenv/config';
-import { createInterface } from 'node:readline';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -22,6 +21,7 @@ import { FmpBridge, createFmpToolCaller } from '../bridge/fmp-bridge.js';
 import { CfaPipeline, injectSkills, type Topology } from './pipeline.js';
 import type { McpBridge } from '../bridge/mcp-client.js';
 import { BatchAnalyzer } from '../orchestrator/batch-analyzer.js';
+import { c, startRepl, printHelp, printAnalyzeHelp } from './cli-repl.js';
 
 // Resolve agentic-flow deep imports via file path (bypasses exports map)
 const _require = createRequire(import.meta.url);
@@ -33,27 +33,7 @@ const { getAgent, listAgents } = await import(pathToFileURL(join(_afDir, 'dist',
 const __cliDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__cliDir, '..', '..', '..', '..');
 const cfaAgentsDir = join(repoRoot, '.claude', 'agents', 'cfa');
-
-// ── ANSI helpers (no chalk dependency) ──────────────────────────────
-
-const isTTY = process.stdout.isTTY ?? false;
-
-const ansi = {
-  reset: isTTY ? '\x1b[0m' : '',
-  bold: isTTY ? '\x1b[1m' : '',
-  dim: isTTY ? '\x1b[2m' : '',
-  cyan: isTTY ? '\x1b[36m' : '',
-  green: isTTY ? '\x1b[32m' : '',
-  yellow: isTTY ? '\x1b[33m' : '',
-  red: isTTY ? '\x1b[31m' : '',
-  magenta: isTTY ? '\x1b[35m' : '',
-  white: isTTY ? '\x1b[37m' : '',
-  gray: isTTY ? '\x1b[90m' : '',
-};
-
-function c(color: keyof typeof ansi, text: string): string {
-  return `${ansi[color]}${text}${ansi.reset}`;
-}
+const skillsDir = join(repoRoot, '.claude', 'skills');
 
 // ── Valid topologies ────────────────────────────────────────────────
 
@@ -76,7 +56,6 @@ function ensureMcpConfig(mcpServerPath: string): void {
     mkdirSync(configDir, { recursive: true });
   }
 
-  // Register/update CFA MCP server
   config.servers['cfa-tools'] = {
     enabled: true,
     command: 'node',
@@ -84,7 +63,6 @@ function ensureMcpConfig(mcpServerPath: string): void {
     env: {},
   };
 
-  // Register FMP market data MCP server (if FMP_API_KEY is set)
   if (process.env.FMP_API_KEY) {
     const fmpServerPath = join(dirname(mcpServerPath), '..', '..', 'fmp-mcp-server', 'dist', 'index.js');
     const fmpEnv: Record<string, string> = {
@@ -107,15 +85,12 @@ function ensureMcpConfig(mcpServerPath: string): void {
 const DEFAULT_AGENT = 'cfa-chief-analyst';
 
 function loadAgent(name: string) {
-  // 1. Search .claude/agents/cfa/ (9 CFA specialist agents)
   const fromCfa = getAgent(name, cfaAgentsDir);
   if (fromCfa) return fromCfa;
 
-  // 2. Search CWD (agentic-flow default)
   const fromCwd = getAgent(name);
   if (fromCwd) return fromCwd;
 
-  // List available agents for the error message
   const available = listAllAgents().map(a => a.name);
   throw new Error(
     `Agent "${name}" not found.\n  Available: ${available.join(', ') || '(none)'}`,
@@ -131,11 +106,9 @@ function listAllAgents() {
 function setupEnv(): void {
   process.env.COMPLETION_MODEL = process.env.CFA_MODEL ?? 'claude-haiku-4-5-20251001';
 
-  // Register CFA MCP server with agentic-flow
   const mcpServerPath = join(__cliDir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
   ensureMcpConfig(mcpServerPath);
 
-  // Disable default agentic-flow MCP servers (not relevant for CFA analysis)
   process.env.ENABLE_CLAUDE_FLOW_MCP = 'false';
   process.env.ENABLE_FLOW_NEXUS_MCP = 'false';
   process.env.ENABLE_AGENTIC_PAYMENTS_MCP = 'false';
@@ -151,9 +124,8 @@ class CfaCli {
   async start(): Promise<void> {
     const rawArgs = process.argv.slice(2);
 
-    // Handle --help / -h at top level
     if (rawArgs.includes('--help') || rawArgs.includes('-h') || rawArgs.length === 0) {
-      this.printHelp();
+      printHelp();
       return;
     }
 
@@ -171,11 +143,11 @@ class CfaCli {
         await this.listTools();
         break;
       case 'help':
-        this.printHelp();
+        printHelp();
         break;
       default:
         console.error(`Unknown command: ${command}\n`);
-        this.printHelp();
+        printHelp();
         process.exit(1);
     }
   }
@@ -207,14 +179,13 @@ class CfaCli {
       } else if (arg === '--max-turns' && args[i + 1]) {
         process.env.MAX_TURNS = args[++i];
       } else if (arg === '--help' || arg === '-h') {
-        this.printAnalyzeHelp();
+        printAnalyzeHelp();
         return;
       } else {
         queryParts.push(arg);
       }
     }
 
-    // Validate API key
     if (!process.env.ANTHROPIC_API_KEY) {
       console.error(`  ${c('red', 'Error:')} ANTHROPIC_API_KEY environment variable is required.\n`);
       console.error(`  Set it with: export ANTHROPIC_API_KEY=your-key-here\n`);
@@ -222,7 +193,20 @@ class CfaCli {
     }
 
     if (interactive) {
-      await this.startRepl(agentName, topology);
+      setupEnv();
+      await startRepl({
+        agentName,
+        initialTopology: topology,
+        model: process.env.COMPLETION_MODEL!,
+        loadAgent,
+        defaultAgent: DEFAULT_AGENT,
+        skillsDir,
+        connectFn: () => this.connect(),
+        listAgentsFn: () => this.listAgents(),
+        listToolsFn: () => this.listToolsInner(),
+        bridge: this.bridge,
+        fmpBridge: this.fmpBridge,
+      });
     } else {
       const query = queryParts.join(' ').trim();
       if (!query) {
@@ -231,13 +215,10 @@ class CfaCli {
       }
 
       if (batchCompanies) {
-        // --batch mode: analyze multiple companies
         await this.runBatch(batchCompanies, query);
       } else if (agentName) {
-        // Explicit --agent → single-agent mode
         await this.runSingleAgent(query, agentName);
       } else {
-        // No --agent → pipeline mode
         await this.runPipeline(query, topology);
       }
     }
@@ -272,12 +253,10 @@ class CfaCli {
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    // Print synthesis only if onStream wasn't invoked (avoids duplication)
     if (!streamed && result.synthesis) {
       console.log(result.synthesis);
     }
 
-    // Summary
     console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}`);
     console.log(`  ${c('dim', `Agents: ${result.routedAgents.join(', ')}`)}`);
     console.log(`  ${c('dim', `Timings: routing ${result.timings.routingMs}ms | memory ${result.timings.memoryMs}ms | agents ${result.timings.agentsMs}ms | coordination ${result.timings.coordinationMs}ms | synthesis ${result.timings.synthesisMs}ms`)}`);
@@ -286,8 +265,6 @@ class CfaCli {
     }
     console.log();
 
-    // Force exit to kill any orphaned agent SDK processes (timed-out agents
-    // keep running because claudeAgent doesn't support AbortSignal)
     process.exit(0);
   }
 
@@ -296,7 +273,6 @@ class CfaCli {
   private async runBatch(companiesArg: string, query: string): Promise<void> {
     setupEnv();
 
-    // Parse companies: comma-separated or @file.txt
     let companies: string[];
     if (companiesArg.startsWith('@')) {
       const filePath = companiesArg.slice(1);
@@ -318,13 +294,8 @@ class CfaCli {
     console.log(`  ${c('dim', `Companies: ${companies.join(', ')} | Query: ${query}`)}\n`);
 
     const startTime = Date.now();
-
     const { callTool, callFmpTool } = await this.connect();
-
-    const analyzer = new BatchAnalyzer({
-      callTool,
-      callFmpTool,
-    });
+    const analyzer = new BatchAnalyzer({ callTool, callFmpTool });
 
     const result = await analyzer.analyze(companies, query, {
       concurrency: 3,
@@ -339,7 +310,6 @@ class CfaCli {
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    // Print individual reports
     for (const company of result.companies) {
       console.log(`\n${c('bold', `═══ ${company.company} ═══`)}\n`);
       if (company.error) {
@@ -349,10 +319,8 @@ class CfaCli {
       }
     }
 
-    // Print comparative summary
     console.log(`\n${c('bold', '═══ Comparative Summary ═══')}\n`);
     console.log(result.comparative);
-
     console.log(`\n  ${c('green', '✓')} ${c('bold', 'Batch Complete')} ${c('dim', `— ${duration}s | ${companies.length} companies`)}\n`);
 
     await this.bridge?.disconnect().catch(() => {});
@@ -362,7 +330,7 @@ class CfaCli {
   // ── Single-agent mode (direct claudeAgent) ─────────────────────
 
   private async runSingleAgent(userQuery: string, agentName: string = DEFAULT_AGENT): Promise<void> {
-    const agent = injectSkills(loadAgent(agentName));
+    const agent = injectSkills(loadAgent(agentName), skillsDir);
 
     setupEnv();
     const model = process.env.COMPLETION_MODEL!;
@@ -375,230 +343,17 @@ class CfaCli {
     const { output } = await claudeAgent(
       agent,
       userQuery,
-      (chunk: string) => {
-        // Stream callback — real-time output to stdout
-        process.stdout.write(chunk);
-      },
+      (chunk: string) => { process.stdout.write(chunk); },
       model,
     );
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    // If nothing was streamed, print the final output
     if (output && !process.stdout.isTTY) {
       console.log(output);
     }
 
     console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}\n`);
-  }
-
-  // ── Interactive REPL ────────────────────────────────────────────
-
-  private async startRepl(agentName?: string, initialTopology: Topology = 'hierarchical'): Promise<void> {
-    let currentAgent = agentName;
-    let usePipeline = !agentName; // pipeline mode unless explicit agent
-    let topology = initialTopology;
-
-    setupEnv();
-    const model = process.env.COMPLETION_MODEL!;
-
-    const modeLabel = () => usePipeline ? 'pipeline' : `single-agent (${currentAgent ?? DEFAULT_AGENT})`;
-
-    console.log(
-      `\n  ${c('bold', 'CFA Agent Analyst')} ${c('dim', `— powered by agentic-flow`)}`,
-    );
-    console.log(`  ${c('dim', `Model: ${model} | Mode: ${modeLabel()} | Topology: ${topology}`)}`);
-    console.log(`  ${c('dim', 'Type a query, or /help for commands.')}\n`);
-
-    const rl = createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: `${c('cyan', 'cfa>')} `,
-    });
-
-    rl.prompt();
-
-    rl.on('line', async (line: string) => {
-      const input = line.trim();
-
-      if (!input) {
-        rl.prompt();
-        return;
-      }
-
-      // REPL commands
-      if (input === 'exit' || input === 'quit') {
-        console.log(`  ${c('dim', 'Goodbye.')}\n`);
-        rl.close();
-        return;
-      }
-
-      if (input === '/help') {
-        this.printReplHelp();
-        rl.prompt();
-        return;
-      }
-
-      if (input === '/agents') {
-        this.listAgents();
-        rl.prompt();
-        return;
-      }
-
-      if (input.startsWith('/agent ')) {
-        const name = input.slice(7).trim();
-        try {
-          loadAgent(name); // validate it exists
-          currentAgent = name;
-          usePipeline = false;
-          console.log(`  ${c('green', '✓')} Switched to single-agent: ${c('cyan', name)}\n`);
-        } catch (err) {
-          console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
-        }
-        rl.prompt();
-        return;
-      }
-
-      if (input === '/pipeline') {
-        usePipeline = !usePipeline;
-        if (usePipeline) {
-          currentAgent = undefined;
-          console.log(`  ${c('green', '✓')} Pipeline mode ${c('bold', 'enabled')} (multi-agent routing + coordination)\n`);
-        } else {
-          currentAgent = currentAgent ?? DEFAULT_AGENT;
-          console.log(`  ${c('yellow', '✓')} Pipeline mode ${c('bold', 'disabled')} — using single-agent: ${c('cyan', currentAgent)}\n`);
-        }
-        rl.prompt();
-        return;
-      }
-
-      if (input.startsWith('/topology ')) {
-        const val = input.slice(10).trim();
-        if (!isValidTopology(val)) {
-          console.error(`  ${c('red', 'Error:')} Invalid topology "${val}". Valid: ${VALID_TOPOLOGIES.join(', ')}\n`);
-        } else {
-          topology = val;
-          console.log(`  ${c('green', '✓')} Topology set to ${c('cyan', topology)}\n`);
-        }
-        rl.prompt();
-        return;
-      }
-
-      if (input.startsWith('/batch ')) {
-        const parts = input.slice(7).trim();
-        const firstSpace = parts.indexOf(' ');
-        if (firstSpace === -1) {
-          console.error(`  ${c('red', 'Usage:')} /batch AAPL,MSFT,TSLA "query"\n`);
-        } else {
-          const companiesStr = parts.slice(0, firstSpace);
-          const batchQuery = parts.slice(firstSpace + 1).trim().replace(/^["']|["']$/g, '');
-          const batchCompanies = companiesStr.split(',').map(s => s.trim()).filter(Boolean);
-
-          if (batchCompanies.length === 0 || !batchQuery) {
-            console.error(`  ${c('red', 'Usage:')} /batch AAPL,MSFT,TSLA "query"\n`);
-          } else {
-            try {
-              const { callTool, callFmpTool } = await this.connect();
-              const analyzer = new BatchAnalyzer({ callTool, callFmpTool });
-
-              console.log(`  ${c('dim', `Batch: ${batchCompanies.join(', ')} | Query: ${batchQuery}`)}\n`);
-
-              const batchStart = Date.now();
-              const result = await analyzer.analyze(batchCompanies, batchQuery, {
-                concurrency: 3,
-                onProgress: (p) => {
-                  const statusIcon = p.status === 'completed' ? c('green', '✓')
-                    : p.status === 'failed' ? c('red', '✗')
-                    : c('yellow', '⟳');
-                  process.stderr.write(`  ${statusIcon} ${p.current} — ${p.status}\n`);
-                },
-              });
-
-              for (const company of result.companies) {
-                console.log(`\n${c('bold', `═══ ${company.company} ═══`)}\n`);
-                if (company.error) {
-                  console.log(`  ${c('red', 'Error:')} ${company.error}\n`);
-                } else {
-                  console.log(company.report);
-                }
-              }
-              console.log(`\n${c('bold', '═══ Comparative Summary ═══')}\n`);
-              console.log(result.comparative);
-
-              const batchDuration = ((Date.now() - batchStart) / 1000).toFixed(1);
-              console.log(`\n  ${c('green', '✓')} ${c('bold', 'Batch Complete')} ${c('dim', `— ${batchDuration}s`)}\n`);
-            } catch (err) {
-              console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
-            }
-          }
-        }
-        rl.prompt();
-        return;
-      }
-
-      if (input === '/tools') {
-        await this.listToolsInner();
-        rl.prompt();
-        return;
-      }
-
-      if (input === '/clear') {
-        console.clear();
-        rl.prompt();
-        return;
-      }
-
-      // Anything else is an analysis query
-      try {
-        if (usePipeline) {
-          const pipeline = new CfaPipeline({
-            topology,
-            onStatus: (stage, message) => {
-              process.stderr.write(`  ${c('magenta', `[${stage}]`)} ${c('dim', message)}\n`);
-            },
-          });
-
-          const startTime = Date.now();
-          const result = await pipeline.execute(input, (chunk: string) => {
-            process.stdout.write(chunk);
-          });
-          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-
-          console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s | agents: ${result.routedAgents.join(', ')}`)}\n`);
-        } else {
-          const agent = injectSkills(loadAgent(currentAgent ?? DEFAULT_AGENT));
-          const startTime = Date.now();
-
-          await claudeAgent(
-            agent,
-            input,
-            (chunk: string) => {
-              process.stdout.write(chunk);
-            },
-            model,
-          );
-
-          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-          console.log(`\n  ${c('green', '✓')} ${c('bold', 'Complete')} ${c('dim', `— ${duration}s`)}\n`);
-        }
-      } catch (err) {
-        console.error(`  ${c('red', 'Error:')} ${err instanceof Error ? err.message : String(err)}\n`);
-      }
-
-      rl.prompt();
-    });
-
-    rl.on('close', async () => {
-      if (this.fmpBridge) await this.fmpBridge.disconnect().catch(() => {});
-      if (this.bridge) await this.bridge.disconnect().catch(() => {});
-      process.exit(0);
-    });
-
-    // Handle Ctrl+C gracefully
-    rl.on('SIGINT', () => {
-      console.log(`\n  ${c('dim', 'Goodbye.')}\n`);
-      rl.close();
-    });
   }
 
   // ── Subcommand: list ────────────────────────────────────────────
@@ -609,7 +364,6 @@ class CfaCli {
     console.log(`\n  ${c('bold', `${agents.length} agents available:`)} ${c('dim', '(use --agent <name> to select)')}\n`);
 
     for (const agent of agents) {
-      // Truncate long descriptions to fit terminal
       const desc = agent.description.length > 80
         ? agent.description.slice(0, 77) + '...'
         : agent.description;
@@ -637,7 +391,6 @@ class CfaCli {
 
     const tools = await this.bridge!.listTools();
 
-    // Group tools by domain prefix (part before first underscore)
     const grouped = new Map<string, string[]>();
     for (const tool of tools) {
       const parts = tool.name.split('_');
@@ -658,7 +411,7 @@ class CfaCli {
     console.log();
   }
 
-  // ── MCP connection (for `cfa tools` command) ──────────────────
+  // ── MCP connection ────────────────────────────────────────────
 
   private async connect(): Promise<{
     callTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
@@ -676,7 +429,6 @@ class CfaCli {
     const { callTool, bridge } = await createToolCaller({ serverPath: mcpServerPath });
     this.bridge = bridge;
 
-    // Connect FMP bridge if FMP_API_KEY is available
     let callFmpTool: ((toolName: string, params: Record<string, unknown>) => Promise<unknown>) | undefined;
     if (process.env.FMP_API_KEY) {
       try {
@@ -690,85 +442,9 @@ class CfaCli {
       }
     }
 
-    // Clear the "Connecting..." line
     process.stderr.write('                                        \r');
 
     return { callTool, callFmpTool, bridge };
-  }
-
-  // ── Help screens ────────────────────────────────────────────────
-
-  printHelp(): void {
-    console.log(`
-  ${c('bold', 'CFA Agent Analyst')} — AI-powered financial analysis
-
-  ${c('bold', 'Usage:')}
-    cfa analyze "<query>"           Run multi-agent pipeline analysis
-    cfa analyze --agent <name> ...  Run single-agent analysis
-    cfa analyze --batch <cos> ...   Batch portfolio analysis (comma-separated or @file)
-    cfa analyze --topology <type>   Set swarm topology (default: hierarchical)
-    cfa analyze -i                  Start interactive REPL
-    cfa list                        List available agents
-    cfa tools                       List available MCP tools
-    cfa --help                      Show this help
-
-  ${c('bold', 'Examples:')}
-    cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%, ERP 6%"
-    cfa analyze --agent cfa-equity-analyst "Run DCF for revenue \\$500M"
-    cfa analyze --batch "AAPL,MSFT,TSLA,JPM" "Compare credit risk"
-    cfa analyze --batch @portfolio.txt "Full analysis"
-    cfa analyze --topology mesh "Assess credit quality: D/E 0.6, coverage 5x"
-    cfa analyze -i
-`);
-  }
-
-  private printAnalyzeHelp(): void {
-    console.log(`
-  ${c('bold', 'cfa analyze')} — Run financial analysis
-
-  ${c('bold', 'Usage:')}
-    cfa analyze [options] "<query>"
-    cfa analyze -i
-
-  ${c('bold', 'Options:')}
-    -i, --interactive             Start interactive REPL mode
-    --agent <name>                Single-agent mode (skip pipeline)
-    --batch <companies>           Batch mode: comma-separated tickers or @file.txt
-    --topology <type>             Swarm topology: mesh, hierarchical, ring, star
-    --max-turns <n>               Max agent turns (default: 25)
-    -h, --help                    Show this help
-
-  ${c('bold', 'Modes:')}
-    ${c('cyan', 'Pipeline (default)')}     Multi-agent: routing → agents → coordination → synthesis
-    ${c('cyan', 'Single-agent')}           Direct agent call (use --agent to select)
-    ${c('cyan', 'Batch')}                  Parallel portfolio analysis across N companies
-
-  ${c('bold', 'Environment:')}
-    ANTHROPIC_API_KEY             Required. Your Anthropic API key.
-    CFA_MODEL                     Default model override.
-    PROVIDER                      Multi-provider routing (default: anthropic).
-
-  ${c('bold', 'Examples:')}
-    cfa analyze "Calculate WACC for beta 1.2, risk-free rate 4%, ERP 6%"
-    cfa analyze --agent cfa-equity-analyst "Run DCF for revenue \\$500M"
-    cfa analyze --topology mesh "Assess credit quality: D/E 0.6, coverage 5x"
-    cfa analyze -i
-`);
-  }
-
-  private printReplHelp(): void {
-    console.log(`
-  ${c('bold', 'REPL commands:')}
-    /help              Show this help
-    /agents            List available agents
-    /agent <name>      Switch to single-agent mode with <name>
-    /pipeline          Toggle pipeline mode (multi-agent routing)
-    /batch <cos> <q>   Batch portfolio analysis (e.g. /batch AAPL,MSFT "credit risk")
-    /topology <type>   Set swarm topology (mesh/hierarchical/ring/star)
-    /tools             List MCP tools
-    /clear             Clear screen
-    exit               Exit REPL
-`);
   }
 }
 
