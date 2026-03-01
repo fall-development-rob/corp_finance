@@ -25,6 +25,7 @@ files-cfa.zip
 .claude/skills/*
 !.claude/skills/corp-finance-*/
 !.claude/skills/fmp-*/
+!.claude/skills/specflow/
 !.claude/agents/
 .claude/agents/*
 !.claude/agents/cfa/
@@ -40,3 +41,4 @@ docs/FMP-QUICK-START.md
 docs/FMP-TOOLS-USAGE.md
 docs/MCP-TOOLS-AVAILABILITY.md
 docs/QUICK-REFERENCE-AAPL.md
+.specflow/
