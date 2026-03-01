@@ -2327,3 +2327,52 @@ pub fn calculate_red_flag_scoring(input_json: String) -> NapiResult<String> {
         .map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Workflows
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn workflow_list(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::workflows::types::WorkflowListInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::workflows::types::list_workflows(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn workflow_describe(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::workflows::types::WorkflowDescribeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::workflows::types::describe_workflow(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn workflow_validate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::workflows::types::WorkflowValidateInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::workflows::types::validate_workflow(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn workflow_quality_check(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::workflows::types::WorkflowQualityCheckInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::workflows::types::quality_check_workflow(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn workflow_audit(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::workflows::audit::WorkflowAuditInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::workflows::audit::generate_audit_trail(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

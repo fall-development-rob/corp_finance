@@ -4,7 +4,7 @@
 Add institutional document workflow capabilities to the CFA agent platform by integrating workflow patterns from Anthropic's financial-services-plugins repository.
 
 ## Problem Statement
-Our platform excels at financial computation (195 MCP tools with 128-bit precision) but lacks structured workflows for producing the professional deliverables that institutional finance requires -- CIMs, IC memos, coverage initiation reports, earnings analyses, pitch decks, and client reports.
+Our platform excels at financial computation (200 MCP tools with 128-bit precision) but lacks structured workflows for producing the professional deliverables that institutional finance requires -- CIMs, IC memos, coverage initiation reports, earnings analyses, pitch decks, and client reports.
 
 ## User Stories
 1. As an equity research analyst, I want to produce an initiating coverage report for a company so that I can distribute institutional-quality first-time coverage to clients.
@@ -45,6 +45,33 @@ Our platform excels at financial computation (195 MCP tools with 128-bit precisi
 - HNSW routing correctly directs workflow requests (>0.7 confidence)
 - No regression in existing tool/agent functionality
 - Contract tests continue to pass
+
+## Phase 2: Rust Auditability (ADR-009)
+
+### User Stories
+7. As a compliance officer, I want deterministic audit trails for every workflow execution
+8. As a developer, I want to validate workflow inputs via CLI before running agents
+9. As a risk manager, I want quality gates enforced in compiled code, not just prompts
+
+### New MCP Tools (5)
+- `workflow_list` — List workflows with domain filtering
+- `workflow_describe` — Full workflow specification
+- `workflow_validate` — Input validation against requirements
+- `workflow_quality_check` — Quality gate enforcement
+- `workflow_audit` — Deterministic audit trail generation
+
+### New CLI Commands (5)
+- `cfa workflow-list [--domain <domain>]`
+- `cfa workflow-describe --workflow-id <id>`
+- `cfa workflow-validate --input <json>`
+- `cfa workflow-quality-check --input <json>`
+- `cfa workflow-audit --input <json>`
+
+### Success Metrics
+- All 44 workflows defined as typed Rust constants
+- 100% input validation coverage (all required fields checked)
+- Deterministic audit hashes (same input → same hash)
+- Quality gate enforcement with scored pass/fail
 
 ## Out of Scope
 - New MCP tools or Rust computation modules

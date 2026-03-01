@@ -60,6 +60,14 @@ contracts:
     enforcement: review
     severity: warning
 
+  - id: ARCH-008
+    name: "Workflow Rust auditability (ADR-009)"
+    description: "All workflow definitions are static Rust constants with compile-time types"
+    scope:
+      - "crates/corp-finance-core/src/workflows/"
+    enforcement: build-time
+    severity: error
+
 invariants:
   - id: ARCH-INV-001
     name: "Total skill count"

@@ -215,6 +215,9 @@ pub mod index_construction;
 #[cfg(feature = "financial_forensics")]
 pub mod financial_forensics;
 
+#[cfg(feature = "workflows")]
+pub mod workflows;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

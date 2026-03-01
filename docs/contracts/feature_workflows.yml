@@ -59,6 +59,15 @@ contracts:
     enforcement: review
     severity: warning
 
+  - id: WORKFLOW-008
+    name: "Rust workflow definitions must match markdown workflow count"
+    description: "Rust workflow definitions must match markdown workflow count"
+    check: "count(workflows::types::get_all_workflows()) >= count(.claude/skills/workflow-*/SKILL.md workflow references)"
+    scope:
+      - "crates/corp-finance-core/src/workflows/"
+    enforcement: build-time
+    severity: error
+
 invariants:
   - id: WORKFLOW-INV-001
     name: "Workflow skill count"
