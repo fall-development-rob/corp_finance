@@ -68,8 +68,24 @@ contracts:
     enforcement: build-time
     severity: error
 
+  - id: ARCH-009
+    name: "Multi-source data integration"
+    description: "Each data source has a separate MCP server package, bridge, and skill file"
+    scope:
+      - "packages/*-mcp-server/**"
+      - ".claude/skills/data-*/**"
+      - ".claude/skills/partner-*/**"
+    enforcement: review
+    severity: warning
+    rules:
+      - "Free data sources get their own packages/xxx-mcp-server/ directory"
+      - "Partner integrations are config-only with skill documentation"
+      - "All data tools use source-prefixed snake_case naming (fred_, edgar_, figi_, yf_, wb_)"
+      - "Data skills follow data-* naming convention"
+      - "Partner skills follow partner-* naming convention"
+
 invariants:
   - id: ARCH-INV-001
     name: "Total skill count"
-    description: "There must be exactly 49 skills (43 existing + 6 workflow)"
-    check: "count(.claude/skills/*/SKILL.md) == 49"
+    description: "There must be exactly 60 skills (43 existing + 6 workflow + 5 data + 6 partner)"
+    check: "count(.claude/skills/*/SKILL.md) == 60"

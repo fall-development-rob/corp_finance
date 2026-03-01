@@ -1,0 +1,32 @@
+{
+  "name": "@robotixai/yf-mcp-server",
+  "version": "1.0.0",
+  "description": "Yahoo Finance market data as MCP tools (unofficial API — no key required)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/corp_finance.git",
+    "directory": "packages/yf-mcp-server"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "yf-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.6.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.0.0"
+  }
+}
