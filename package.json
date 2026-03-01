@@ -8,9 +8,11 @@
     "test": "cargo test --workspace --all-features",
     "lint": "cargo clippy --workspace --all-features -- -D warnings",
     "fmt": "cargo fmt --workspace",
-    "fmt:check": "cargo fmt --workspace --check"
+    "fmt:check": "cargo fmt --workspace --check",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
     "typescript": "^5.9.3"
   }
 }

@@ -1,0 +1,1 @@
+cd packages/agents && npx vitest run tests/contracts/ --reporter=dot
