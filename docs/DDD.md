@@ -4,7 +4,7 @@
 
 The CFA Multi-Agent Analyst System is an institutional-grade corporate finance platform built on three pillars:
 
-- **corp-finance-mcp** -- 71 Rust domain modules exposed as 215 MCP tools via a TypeScript server
+- **corp-finance-mcp** -- 67 Rust domain modules exposed as 195 MCP tools via a TypeScript server
 - **agentic-flow** -- Multi-agent orchestration coordinating specialist CFA analyst agents
 - **ruvector** -- Semantic vector database for financial memory and retrieval-augmented analysis
 
@@ -34,7 +34,7 @@ This document defines the bounded contexts, aggregates, entities, value objects,
 |             v                                                         |
 |  +------------------------------------------------------------------+ |
 |  | Hosted MCP Gateway                                                | |
-|  | (HTTP/SSE transport -- 215 tools from 71 Rust domain modules)     | |
+|  | (HTTP/SSE transport -- 195 tools from 67 Rust domain modules)     | |
 |  +------------------------------------------------------------------+ |
 +-----------------------------------------------------------------------+
 ```
@@ -102,11 +102,11 @@ The root aggregate representing a user's research query through its entire lifec
 
 ## Bounded Context 2: Specialist Analysts
 
-**Responsibility**: Eight domain-specific analyst agents, each with access to a curated subset of the 215 MCP tools. They execute sub-tasks, invoke tools, and return structured analysis results.
+**Responsibility**: Eight domain-specific analyst agents, each with access to a curated subset of the 195 MCP tools. They execute sub-tasks, invoke tools, and return structured analysis results.
 
 ### Specialist Agent Roster and Tool Mappings
 
-| Agent               | Domain Modules (from 71 Rust modules)                                                                                    |
+| Agent               | Domain Modules (from 67 Rust modules)                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------|
 | Equity Analyst      | equity_research, valuation, earnings_quality, dividend_policy, behavioral, performance_attribution                       |
 | Credit Analyst      | credit, credit_scoring, credit_portfolio, credit_derivatives, restructuring, financial_forensics                         |
@@ -240,7 +240,7 @@ Cross-cutting modules used by multiple agents: three_statement, fpa, portfolio, 
 
 ## Bounded Context 5: Hosted MCP Gateway
 
-**Responsibility**: The remote MCP server that exposes all 215 tools from the 71 Rust domain modules over HTTP/SSE transport. Manages sessions, tool registration, rate limiting, and transport-level concerns.
+**Responsibility**: The remote MCP server that exposes all 195 tools from the 67 Rust domain modules over HTTP/SSE transport. Manages sessions, tool registration, rate limiting, and transport-level concerns.
 
 ### Aggregate: McpSession
 
@@ -249,7 +249,7 @@ Cross-cutting modules used by multiple agents: three_statement, fpa, portfolio, 
 | Entity           | Description                                                              |
 |------------------|--------------------------------------------------------------------------|
 | McpSession       | Root entity. Represents an active connection from an agent to the MCP server. Identity: `sessionId`. Tracks connection state, authenticated identity, and invocation count. |
-| ToolRegistry     | Singleton catalog of all 215 registered tools with their schemas, grouped by the 71 domain modules. Serves tool discovery requests. |
+| ToolRegistry     | Singleton catalog of all 195 registered tools with their schemas, grouped by the 67 domain modules. Serves tool discovery requests. |
 | RateLimitPolicy  | Per-session or per-agent rate limiting rules: max RPM, burst allowance, cooldown period. |
 
 **Value Objects**:
@@ -287,7 +287,7 @@ Cross-cutting modules used by multiple agents: three_statement, fpa, portfolio, 
 |-----------------------|-------------------------------------------------------------------------------|
 | Chief Analyst         | The orchestrating agent that decomposes queries and aggregates results        |
 | Specialist Agent      | A domain-focused agent with a curated tool subset                            |
-| Tool Invocation       | A single call to one of the 215 MCP tools                                    |
+| Tool Invocation       | A single call to one of the 195 MCP tools                                    |
 | Finding               | An atomic analytical conclusion supported by data                            |
 | Memory Entry          | A vector-embedded record in the RuVector financial memory store              |
 | Learning Pattern      | A reusable strategy discovered through SONA reinforcement learning           |
