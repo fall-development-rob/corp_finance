@@ -1,15 +1,15 @@
 ---
-name: partner-lseg
+name: vendor-lseg
 description: "LSEG (London Stock Exchange Group) -- bond pricing, yield curve analysis, FX carry trade evaluation, options valuation, macro dashboard via LSEG Financial Analytics MCP"
 ---
 
-# LSEG Financial Analytics (Partner Integration)
+# LSEG Financial Analytics (Vendor Integration)
 
 LSEG (London Stock Exchange Group) provides institutional-grade financial data and analytics. This is an OPTIONAL premium integration -- users must have their own LSEG subscription and API credentials.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-lseg`
+**Package**: `@corp-finance/vendor-lseg`
 **Authentication**: OAuth2 (client credentials flow)
 **Environment Variables**:
 - `LSEG_CLIENT_ID` -- OAuth2 client ID

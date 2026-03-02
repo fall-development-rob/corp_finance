@@ -1,15 +1,15 @@
 ---
-name: partner-moodys
+name: vendor-moodys
 description: "Moody's -- credit ratings, fixed income analytics, structured finance data, and economic research via Moody's GenAI-Ready Data MCP"
 ---
 
-# Moody's GenAI-Ready Data (Partner Integration)
+# Moody's GenAI-Ready Data (Vendor Integration)
 
 Moody's provides credit ratings, fixed income analytics, structured finance data, and economic research. This is an OPTIONAL premium integration -- users must have their own Moody's subscription and API credentials.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-moodys`
+**Package**: `@corp-finance/vendor-moodys`
 **Authentication**: OAuth2 (client credentials flow)
 **Environment Variables**:
 - `MOODYS_CLIENT_ID` -- OAuth2 client ID
