@@ -16,14 +16,25 @@
     "test:contracts": "turbo run test:contracts",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "lint:ts": "eslint packages/",
     "lint:rust": "cargo clippy --workspace --all-features -- -D warnings",
     "fmt": "cargo fmt --workspace",
     "fmt:check": "cargo fmt --workspace --check",
+    "format": "prettier --write 'packages/**/*.ts'",
+    "format:check": "prettier --check 'packages/**/*.ts'",
     "prepare": "husky || true"
   },
+  "overrides": {
+    "tar": ">=7.5.8"
+  },
   "devDependencies": {
+    "@eslint/js": "^9.39.3",
+    "eslint": "^9.39.3",
+    "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
+    "prettier": "^3.8.1",
     "turbo": "^2.8.12",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
   }
 }

@@ -100,13 +100,13 @@ export async function resolveTickerViaFmp(companyName: string, pipelineDir: stri
   const cliPath = join(pipelineDir, '..', '..', 'fmp-mcp-server', 'src', 'fmp-cli.ts');
 
   try {
-    const { exec } = await import('node:child_process');
+    const { execFile } = await import('node:child_process');
     const { promisify } = await import('node:util');
-    const execAsync = promisify(exec);
+    const execFileAsync = promisify(execFile);
 
-    const escapedName = companyName.replace(/"/g, '\\"');
-    const { stdout } = await execAsync(
-      `npx tsx "${cliPath}" search "${escapedName}" --json --limit 10`,
+    const { stdout } = await execFileAsync(
+      'npx',
+      ['tsx', cliPath, 'search', companyName, '--json', '--limit', '10'],
       { timeout: 10_000, env: { ...process.env } },
     );
 
