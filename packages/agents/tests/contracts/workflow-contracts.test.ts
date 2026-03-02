@@ -188,19 +188,19 @@ describe('DATA-INV-001: Data source skills exist', () => {
   });
 });
 
-describe('PARTNER-INV-001: Partner skills exist', () => {
-  const expectedPartnerSkills = [
-    'partner-lseg',
-    'partner-sp-global',
-    'partner-factset',
-    'partner-morningstar',
-    'partner-moodys',
-    'partner-pitchbook',
+describe('VENDOR-INV-001: Vendor skills exist', () => {
+  const expectedVendorSkills = [
+    'vendor-lseg',
+    'vendor-sp-global',
+    'vendor-factset',
+    'vendor-morningstar',
+    'vendor-moodys',
+    'vendor-pitchbook',
   ];
 
-  it.each(expectedPartnerSkills)('partner skill %s exists', (skillName) => {
+  it.each(expectedVendorSkills)('vendor skill %s exists', (skillName) => {
     const skillPath = join(skillsDir, skillName, 'SKILL.md');
-    expect(existsSync(skillPath), `Missing partner skill: ${skillPath}`).toBe(true);
+    expect(existsSync(skillPath), `Missing vendor skill: ${skillPath}`).toBe(true);
   });
 });
 

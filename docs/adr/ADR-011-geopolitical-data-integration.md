@@ -94,8 +94,8 @@ Follows the established pattern from ADR-010 (Multi-Source Financial Data Integr
 
 - Each source has its own `client.ts` with independent cache and rate-limiter (no cross-source interference)
 - Circuit breaker wraps all external HTTP calls with configurable failure thresholds
-- `GeopoliticalBridge` class for agent pipeline integration (same pattern as `DataBridge`, `PartnerBridge`)
-- Bridge exported from `packages/geopolitical-mcp-server/src/index.ts` and registered in the bridge index
+- Geopolitical tools merged into `packages/data-mcp-server/` (same pattern as `DataBridge`, `VendorBridge`)
+- All geopolitical modules live under `data-mcp-server/src/{conflict,environment,trade,alternative}/`
 - Turbo build orchestration (ADR: monorepo turborepo) handles dependency graph
 
 ### Skill Files

@@ -1,15 +1,15 @@
 ---
-name: partner-sp-global
+name: vendor-sp-global
 description: "S&P Global (Kensho) -- Capital IQ financials, earnings call transcripts, company tearsheets, and funding digests via S&P Global MCP"
 ---
 
-# S&P Global / Kensho (Partner Integration)
+# S&P Global / Kensho (Vendor Integration)
 
 S&P Global provides institutional financial data via their Kensho-powered MCP server. Access Capital IQ financials, earnings call transcripts, company tearsheets, and funding digests. This is an OPTIONAL premium integration -- users must have their own S&P Global subscription.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-sp-global`
+**Package**: `@corp-finance/vendor-sp-global`
 **Authentication**: Bearer token
 **Environment Variables**:
 - `SP_GLOBAL_API_KEY` -- API key for Bearer token authentication

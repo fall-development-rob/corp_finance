@@ -1,15 +1,15 @@
 ---
-name: partner-morningstar
+name: vendor-morningstar
 description: "Morningstar -- fund ratings, investment research, ESG data, and portfolio analytics via Morningstar MCP"
 ---
 
-# Morningstar (Partner Integration)
+# Morningstar (Vendor Integration)
 
 Morningstar provides fund ratings, investment research, ESG data, and portfolio analytics. This is an OPTIONAL premium integration -- users must have their own Morningstar subscription and API credentials.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-morningstar`
+**Package**: `@corp-finance/vendor-morningstar`
 **Authentication**: Bearer token
 **Environment Variables**:
 - `MORNINGSTAR_API_KEY` -- API key for Bearer token authentication

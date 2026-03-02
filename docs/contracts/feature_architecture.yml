@@ -74,18 +74,18 @@ contracts:
     scope:
       - "packages/*-mcp-server/**"
       - ".claude/skills/data-*/**"
-      - ".claude/skills/partner-*/**"
+      - ".claude/skills/vendor-*/**"
     enforcement: review
     severity: warning
     rules:
       - "Free data sources get their own packages/xxx-mcp-server/ directory"
-      - "Partner integrations are config-only with skill documentation"
+      - "Vendor integrations are config-only with skill documentation"
       - "All data tools use source-prefixed snake_case naming (fred_, edgar_, figi_, yf_, wb_)"
       - "Data skills follow data-* naming convention"
-      - "Partner skills follow partner-* naming convention"
+      - "Vendor skills follow vendor-* naming convention"
 
 invariants:
   - id: ARCH-INV-001
     name: "Total skill count"
-    description: "There must be exactly 60 skills (43 existing + 6 workflow + 5 data + 6 partner)"
+    description: "There must be exactly 60 skills (43 existing + 6 workflow + 5 data + 6 vendor)"
     check: "count(.claude/skills/*/SKILL.md) == 60"

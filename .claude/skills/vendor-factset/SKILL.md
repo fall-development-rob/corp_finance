@@ -1,15 +1,15 @@
 ---
-name: partner-factset
+name: vendor-factset
 description: "FactSet -- multi-asset financial data, analytics, and portfolio tools via FactSet MCP"
 ---
 
-# FactSet (Partner Integration)
+# FactSet (Vendor Integration)
 
 FactSet provides multi-asset financial data, analytics, and portfolio tools. This is an OPTIONAL premium integration -- users must have their own FactSet subscription and API credentials.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-factset`
+**Package**: `@corp-finance/vendor-factset`
 **Authentication**: Basic auth (username + API key)
 **Environment Variables**:
 - `FACTSET_USERNAME` -- FactSet account username

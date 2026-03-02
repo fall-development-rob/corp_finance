@@ -1,15 +1,15 @@
 ---
-name: partner-pitchbook
+name: vendor-pitchbook
 description: "PitchBook -- private equity deal data, VC transactions, fund performance, and company profiles for private market research via PitchBook MCP"
 ---
 
-# PitchBook (Partner Integration)
+# PitchBook (Vendor Integration)
 
 PitchBook provides private equity deal data, VC transactions, fund performance, and company profiles. This is an OPTIONAL premium integration -- users must have their own PitchBook subscription and API credentials.
 
 ## MCP Server
 
-**Package**: `@corp-finance/partner-pitchbook`
+**Package**: `@corp-finance/vendor-pitchbook`
 **Authentication**: Bearer token
 **Environment Variables**:
 - `PITCHBOOK_API_KEY` -- API key for Bearer token authentication
