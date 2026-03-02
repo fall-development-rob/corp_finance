@@ -25,11 +25,35 @@ import { registerInfoTools } from './yf/tools/info.js';
 import { registerFinancialTools } from './yf/tools/financials.js';
 import { registerOptionsTools } from './yf/tools/options.js';
 
-// World Bank tools (18)
+// World Bank tools (18 + 12 extended)
 import { registerDataTools } from './wb/tools/data.js';
 import { registerIndicatorTools } from './wb/tools/indicators.js';
 import { registerCountryTools } from './wb/tools/countries.js';
 import { registerSourceTools } from './wb/tools/sources.js';
+import { registerGovernanceTools } from './wb/tools/governance.js';
+import { registerDevelopmentTools } from './wb/tools/development.js';
+
+// Conflict tools (9)
+import { registerAcledTools } from './conflict/acled/tools.js';
+import { registerUcdpTools } from './conflict/ucdp/tools.js';
+import { registerGdeltTools } from './conflict/gdelt/tools.js';
+
+// Environment tools (9)
+import { registerGdacsTools } from './environment/gdacs/tools.js';
+import { registerUsgsTools } from './environment/usgs/tools.js';
+import { registerFirmsTools } from './environment/nasa/firms-tools.js';
+import { registerEonetTools } from './environment/nasa/eonet-tools.js';
+
+// Trade tools (8)
+import { registerEiaTools } from './trade/eia/tools.js';
+import { registerWtoTools } from './trade/wto/tools.js';
+import { registerUsaSpendingTools } from './trade/usaspending/tools.js';
+
+// Alternative data tools (8)
+import { registerPolymarketTools } from './alternative/polymarket/tools.js';
+import { registerCoinGeckoTools } from './alternative/coingecko/tools.js';
+import { registerUnhcrTools } from './alternative/unhcr/tools.js';
+import { registerOpenMeteoTools } from './alternative/openmeteo/tools.js';
 
 const server = new McpServer({
   name: 'data-sources',
@@ -59,11 +83,35 @@ registerInfoTools(server);
 registerFinancialTools(server);
 registerOptionsTools(server);
 
-// World Bank (18 tools)
+// World Bank (18 + 12 extended = 30 tools)
 registerDataTools(server);
 registerIndicatorTools(server);
 registerCountryTools(server);
 registerSourceTools(server);
+registerGovernanceTools(server);
+registerDevelopmentTools(server);
+
+// Conflict (9 tools)
+registerAcledTools(server);
+registerUcdpTools(server);
+registerGdeltTools(server);
+
+// Environment (9 tools)
+registerGdacsTools(server);
+registerUsgsTools(server);
+registerFirmsTools(server);
+registerEonetTools(server);
+
+// Trade (8 tools)
+registerEiaTools(server);
+registerWtoTools(server);
+registerUsaSpendingTools(server);
+
+// Alternative data (8 tools)
+registerPolymarketTools(server);
+registerCoinGeckoTools(server);
+registerUnhcrTools(server);
+registerOpenMeteoTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
