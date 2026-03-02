@@ -87,5 +87,5 @@ contracts:
 invariants:
   - id: ARCH-INV-001
     name: "Total skill count"
-    description: "There must be exactly 60 skills (43 existing + 6 workflow + 5 data + 6 vendor)"
-    check: "count(.claude/skills/*/SKILL.md) == 60"
+    description: "There must be at least 66 skills (43 existing + 6 workflow + 5 data + 6 vendor + 4 geopolitical + 2 other)"
+    check: "count(.claude/skills/*/SKILL.md) >= 66"

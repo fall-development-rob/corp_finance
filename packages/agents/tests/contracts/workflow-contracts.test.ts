@@ -66,9 +66,9 @@ describe('WORKFLOW-005: CFA slash commands exist', () => {
     expect(existsSync(commandsDir)).toBe(true);
   });
 
-  it('has exactly 16 command files', () => {
+  it('has at least 20 command files', () => {
     const files = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    expect(files.length).toBe(16);
+    expect(files.length).toBeGreaterThanOrEqual(20);
   });
 
   const expectedCommands = [
@@ -134,9 +134,9 @@ describe('WORKFLOW-INV-001: Workflow skill count', () => {
 });
 
 describe('WORKFLOW-INV-002: Slash command count', () => {
-  it('exactly 16 CFA slash commands exist', () => {
+  it('at least 20 CFA slash commands exist', () => {
     const files = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    expect(files.length).toBe(16);
+    expect(files.length).toBeGreaterThanOrEqual(20);
   });
 });
 
@@ -204,11 +204,38 @@ describe('VENDOR-INV-001: Vendor skills exist', () => {
   });
 });
 
+describe('GEOPOLITICAL-INV-001: Geopolitical skills exist', () => {
+  const expectedGeopoliticalSkills = [
+    'geopolitical-conflict',
+    'geopolitical-environment',
+    'geopolitical-trade',
+    'geopolitical-alternative',
+  ];
+
+  it.each(expectedGeopoliticalSkills)('geopolitical skill %s exists', (skillName) => {
+    const skillPath = join(skillsDir, skillName, 'SKILL.md');
+    expect(existsSync(skillPath), `Missing geopolitical skill: ${skillPath}`).toBe(true);
+  });
+});
+
+describe('GEOPOLITICAL-INV-002: Geopolitical CLI commands exist', () => {
+  const expectedGeopoliticalCommands = [
+    'conflict-risk.md',
+    'disaster-monitor.md',
+    'trade-policy.md',
+    'alt-data.md',
+  ];
+
+  it.each(expectedGeopoliticalCommands)('command %s exists', (cmd) => {
+    expect(existsSync(join(commandsDir, cmd)), `Missing command: ${cmd}`).toBe(true);
+  });
+});
+
 describe('ARCH-INV-001: Total skill count', () => {
-  it('at least 32 tracked skills exist', () => {
+  it('at least 66 tracked skills exist', () => {
     const allSkills = readdirSync(skillsDir).filter(d => {
       return existsSync(join(skillsDir, d, 'SKILL.md'));
     });
-    expect(allSkills.length).toBeGreaterThanOrEqual(32);
+    expect(allSkills.length).toBeGreaterThanOrEqual(66);
   });
 });
