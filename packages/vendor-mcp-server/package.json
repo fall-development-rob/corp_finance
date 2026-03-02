@@ -1,10 +1,10 @@
 {
-  "name": "@robotixai/partner-mcp-server",
+  "name": "@robotixai/vendor-mcp-server",
   "version": "1.0.0",
-  "description": "Unified partner data MCP server — LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook",
+  "description": "Unified vendor data MCP server — LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook",
   "type": "module",
   "main": "dist/index.js",
-  "bin": { "partner-mcp-server": "dist/index.js" },
+  "bin": { "vendor-mcp-server": "dist/index.js" },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

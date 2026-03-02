@@ -42,7 +42,7 @@ import { registerInvestorTools } from './pitchbook/tools/investors.js';
 import { registerMarketTools } from './pitchbook/tools/market.js';
 
 const server = new McpServer({
-  name: 'partner-data',
+  name: 'vendor-data',
   version: '1.0.0',
 });
 
