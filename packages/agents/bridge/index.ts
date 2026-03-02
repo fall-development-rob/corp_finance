@@ -6,5 +6,5 @@ export { FmpBridge, createFmpToolCaller } from './fmp-bridge.js';
 export type { FmpBridgeConfig } from './fmp-bridge.js';
 export { DataBridge, createDataToolCaller } from './data-bridge.js';
 export type { DataBridgeConfig } from './data-bridge.js';
-export { PartnerBridge, createPartnerToolCaller } from './partner-bridge.js';
-export type { PartnerBridgeConfig } from './partner-bridge.js';
+export { VendorBridge, createVendorToolCaller } from './vendor-bridge.js';
+export type { VendorBridgeConfig } from './vendor-bridge.js';

@@ -1,32 +1,32 @@
-// Partner MCP Bridge — connects agents to the unified partner-mcp-server
+// Vendor MCP Bridge — connects agents to the unified vendor-mcp-server
 // Provides access to LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook tools
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-export interface PartnerBridgeConfig {
-  /** Path to the partner MCP server entry point (default: packages/partner-mcp-server/dist/index.js) */
+export interface VendorBridgeConfig {
+  /** Path to the vendor MCP server entry point (default: packages/vendor-mcp-server/dist/index.js) */
   serverPath?: string;
   /** Command to launch the server (default: 'node') */
   command?: string;
 }
 
-export class PartnerBridge {
+export class VendorBridge {
   private client: Client;
   private transport: StdioClientTransport | null = null;
   private connected = false;
 
   constructor() {
     this.client = new Client(
-      { name: 'cfa-agents-partner', version: '1.0.0' },
+      { name: 'cfa-agents-vendor', version: '1.0.0' },
       { capabilities: {} },
     );
   }
 
-  async connect(config: PartnerBridgeConfig = {}): Promise<void> {
+  async connect(config: VendorBridgeConfig = {}): Promise<void> {
     if (this.connected) return;
 
-    const serverPath = config.serverPath ?? new URL('../../partner-mcp-server/dist/index.js', import.meta.url).pathname;
+    const serverPath = config.serverPath ?? new URL('../../vendor-mcp-server/dist/index.js', import.meta.url).pathname;
     const command = config.command ?? 'node';
 
     this.transport = new StdioClientTransport({
@@ -44,9 +44,9 @@ export class PartnerBridge {
     this.connected = false;
   }
 
-  /** Call a partner tool by name */
+  /** Call a vendor tool by name */
   async callTool(toolName: string, params: Record<string, unknown>): Promise<unknown> {
-    if (!this.connected) throw new Error('Partner bridge not connected');
+    if (!this.connected) throw new Error('Vendor bridge not connected');
 
     const result = await this.client.callTool({ name: toolName, arguments: params });
 
@@ -71,16 +71,16 @@ export class PartnerBridge {
 }
 
 /**
- * Create a callPartnerTool function for agent contexts.
+ * Create a callVendorTool function for agent contexts.
  */
-export async function createPartnerToolCaller(config?: PartnerBridgeConfig): Promise<{
-  callPartnerTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
-  bridge: PartnerBridge;
+export async function createVendorToolCaller(config?: VendorBridgeConfig): Promise<{
+  callVendorTool: (toolName: string, params: Record<string, unknown>) => Promise<unknown>;
+  bridge: VendorBridge;
 }> {
-  const bridge = new PartnerBridge();
+  const bridge = new VendorBridge();
   await bridge.connect(config);
   return {
-    callPartnerTool: (name, params) => bridge.callTool(name, params),
+    callVendorTool: (name, params) => bridge.callTool(name, params),
     bridge,
   };
 }
