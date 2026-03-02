@@ -28,7 +28,8 @@ files-cfa.zip
 !.claude/skills/specflow/
 !.claude/skills/workflow-*/
 !.claude/skills/data-*/
-!.claude/skills/partner-*/
+!.claude/skills/vendor-*/
+!.claude/skills/geopolitical-*/
 !.claude/commands/
 .claude/commands/*
 !.claude/commands/cfa/
