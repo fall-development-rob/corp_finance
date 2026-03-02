@@ -18,9 +18,9 @@ describe('DRIFT-001: Tool count consistency', () => {
   const expectedModuleCount = 67;
 
   const docsToCheck = [
-    'docs/ADR-001.md',
-    'docs/PRD.md',
-    'docs/DDD.md',
+    'docs/adr/ADR-001.md',
+    'docs/prd/PRD.md',
+    'docs/ddd/DDD.md',
   ];
 
   for (const doc of docsToCheck) {
@@ -104,8 +104,8 @@ describe('DRIFT-003: Chief analyst references all specialists', () => {
 // ---------------------------------------------------------------------------
 describe('DRIFT-004: ADR numbering consistency', () => {
   it('ADR files follow ADR-NNN.md naming', () => {
-    const adrFiles = getFiles('docs/ADR*.md', REPO_ROOT);
-    const badNames = adrFiles.filter(f => !/ADR-\d{3}\.md$/.test(f));
+    const adrFiles = getFiles('docs/adr/ADR*.md', REPO_ROOT);
+    const badNames = adrFiles.filter(f => !/ADR-\d{3}(?:-[\w-]+)?\.md$/.test(f));
     expect(
       badNames,
       `ADR files with bad naming: ${badNames.join(', ')}. Use ADR-NNN.md format.`
@@ -113,7 +113,7 @@ describe('DRIFT-004: ADR numbering consistency', () => {
   });
 
   it('no gaps in ADR numbering', () => {
-    const adrFiles = getFiles('docs/ADR-*.md', REPO_ROOT);
+    const adrFiles = getFiles('docs/adr/ADR-*.md', REPO_ROOT);
     const numbers = adrFiles
       .map(f => parseInt(f.match(/ADR-(\d+)/)?.[1] ?? '0'))
       .sort((a, b) => a - b);
