@@ -23,6 +23,7 @@
       "dependsOn": [],
       "outputs": []
     },
+    "lint:ts": {},
     "dev": {
       "cache": false,
       "persistent": true

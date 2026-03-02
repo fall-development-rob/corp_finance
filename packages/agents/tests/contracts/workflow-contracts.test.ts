@@ -66,9 +66,9 @@ describe('WORKFLOW-005: CFA slash commands exist', () => {
     expect(existsSync(commandsDir)).toBe(true);
   });
 
-  it('has at least 20 command files', () => {
+  it('has at least 23 command files', () => {
     const files = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    expect(files.length).toBeGreaterThanOrEqual(20);
+    expect(files.length).toBeGreaterThanOrEqual(23);
   });
 
   const expectedCommands = [
@@ -134,9 +134,9 @@ describe('WORKFLOW-INV-001: Workflow skill count', () => {
 });
 
 describe('WORKFLOW-INV-002: Slash command count', () => {
-  it('at least 20 CFA slash commands exist', () => {
+  it('at least 23 CFA slash commands exist', () => {
     const files = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    expect(files.length).toBeGreaterThanOrEqual(20);
+    expect(files.length).toBeGreaterThanOrEqual(23);
   });
 });
 
@@ -237,5 +237,52 @@ describe('ARCH-INV-001: Total skill count', () => {
       return existsSync(join(skillsDir, d, 'SKILL.md'));
     });
     expect(allSkills.length).toBeGreaterThanOrEqual(36);
+  });
+});
+
+describe('ROUTE-INV-001: All agents have data/geopolitical skills', () => {
+  it('at least 5 agents reference data-* or geopolitical-* skills', () => {
+    const config = readFileSync(pipelineConfigPath, 'utf-8');
+    const skillsMatch = config.match(/export const AGENT_SKILLS[^}]+\{([\s\S]*?)\n\};/);
+    expect(skillsMatch).not.toBeNull();
+
+    const skillsBlock = skillsMatch![1];
+    const agentBlocks = skillsBlock.split(/'cfa-[\w-]+':/).slice(1);
+    let agentsWithData = 0;
+    for (const block of agentBlocks) {
+      if (/data-|geopolitical-/.test(block)) {
+        agentsWithData++;
+      }
+    }
+    expect(agentsWithData).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe('ROUTE-INV-002: Slash command count', () => {
+  it('at least 23 CFA slash commands exist', () => {
+    const files = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
+    expect(files.length).toBeGreaterThanOrEqual(23);
+  });
+});
+
+describe('SEC-INV-001: No exec() usage in agent code', () => {
+  it('pipeline-fmp.ts does not use exec()', () => {
+    const fmpPath = join(repoRoot, 'packages', 'agents', 'src', 'pipeline-fmp.ts');
+    const content = readFileSync(fmpPath, 'utf-8');
+    // Should use execFile, not exec
+    expect(content).not.toMatch(/\bexec\b\s*\(/);
+    expect(content).not.toMatch(/promisify\(exec\)/);
+  });
+});
+
+describe('ARCH-INV-002: ESLint configuration exists', () => {
+  it('eslint.config.mjs exists at repo root', () => {
+    expect(existsSync(join(repoRoot, 'eslint.config.mjs'))).toBe(true);
+  });
+});
+
+describe('ARCH-INV-003: Prettier configuration exists', () => {
+  it('.prettierrc exists at repo root', () => {
+    expect(existsSync(join(repoRoot, '.prettierrc'))).toBe(true);
   });
 });

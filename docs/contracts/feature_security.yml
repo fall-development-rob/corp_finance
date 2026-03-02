@@ -1,0 +1,23 @@
+# Feature Contract: Security Rules
+# Enforces security constraints across the CFA agent codebase
+
+contracts:
+  - id: SEC-001
+    name: "No shell injection"
+    description: "Agent code must use execFile() or spawn() with argument arrays, never exec() with template strings containing user input."
+    scope:
+      - "packages/agents/src/**/*.ts"
+    enforcement: build-time
+    severity: error
+
+  - id: SEC-002
+    name: "No high-severity npm vulnerabilities"
+    description: "npm audit must report zero high or critical severity vulnerabilities."
+    enforcement: ci
+    severity: error
+
+invariants:
+  - id: SEC-INV-001
+    name: "Zero exec() usage"
+    description: "No TypeScript file in packages/agents/src/ may import or call child_process.exec()"
+    check: "grep -r 'exec(' packages/agents/src/ returns 0 matches (only execFile allowed)"

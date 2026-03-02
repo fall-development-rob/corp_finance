@@ -25,3 +25,14 @@ contracts:
       - "packages/agents/src/pipeline.ts"
     enforcement: build-time
     severity: error
+
+invariants:
+  - id: ROUTE-INV-001
+    name: "All agents have data skills"
+    description: "At least 5 agents in AGENT_SKILLS reference at least one data-* or geopolitical-* skill"
+    check: "count(AGENT_SKILLS entries with data-*/geopolitical-*) >= 5"
+
+  - id: ROUTE-INV-002
+    name: "Slash command count"
+    description: "At least 23 CFA slash commands exist in .claude/commands/cfa/"
+    check: "count(.claude/commands/cfa/*.md) >= 23"

@@ -89,3 +89,13 @@ invariants:
     name: "Total skill count"
     description: "There must be at least 36 git-tracked skills (8 corp-finance + 5 fmp + 5 data + 4 geopolitical + 6 vendor + 6 workflow + 1 specflow + 1 other)"
     check: "count(.claude/skills/*/SKILL.md) >= 36"
+
+  - id: ARCH-INV-002
+    name: "ESLint configuration exists"
+    description: "Root eslint.config.mjs must exist for TypeScript linting"
+    check: "exists(eslint.config.mjs)"
+
+  - id: ARCH-INV-003
+    name: "Prettier configuration exists"
+    description: "Root .prettierrc must exist for code formatting"
+    check: "exists(.prettierrc)"
