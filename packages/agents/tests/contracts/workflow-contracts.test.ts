@@ -232,10 +232,10 @@ describe('GEOPOLITICAL-INV-002: Geopolitical CLI commands exist', () => {
 });
 
 describe('ARCH-INV-001: Total skill count', () => {
-  it('at least 66 tracked skills exist', () => {
+  it('at least 36 tracked skills exist', () => {
     const allSkills = readdirSync(skillsDir).filter(d => {
       return existsSync(join(skillsDir, d, 'SKILL.md'));
     });
-    expect(allSkills.length).toBeGreaterThanOrEqual(66);
+    expect(allSkills.length).toBeGreaterThanOrEqual(36);
   });
 });
