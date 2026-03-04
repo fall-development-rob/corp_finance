@@ -162,9 +162,9 @@ pub fn ncreif_attribution(
         let appreciation_return = (qr.ending_value - bmv - qr.capex) / bmv;
         let total_return = income_return + appreciation_return;
 
-        chain_total = chain_total * (Decimal::ONE + total_return);
-        chain_income = chain_income * (Decimal::ONE + income_return);
-        chain_appreciation = chain_appreciation * (Decimal::ONE + appreciation_return);
+        chain_total *= Decimal::ONE + total_return;
+        chain_income *= Decimal::ONE + income_return;
+        chain_appreciation *= Decimal::ONE + appreciation_return;
 
         quarterly_attributions.push(QuarterlyAttribution {
             period: qr.period.clone(),
@@ -476,7 +476,7 @@ pub fn property_index(
             });
         }
         let period_return = (ip.ending_value - begin_value - ip.capex + ip.noi) / begin_value;
-        cumulative = cumulative * (Decimal::ONE + period_return);
+        cumulative *= Decimal::ONE + period_return;
         period_returns.push(period_return);
         index_series.push(IndexEntry {
             period: ip.period.clone(),
@@ -513,7 +513,7 @@ pub fn property_index(
     // rebuild cumulative for drawdown (start from base)
     let mut running = base_index;
     for &r in &period_returns {
-        running = running * (Decimal::ONE + r);
+        running *= Decimal::ONE + r;
         if running > peak {
             peak = running;
         }
@@ -530,8 +530,8 @@ pub fn property_index(
         let mut v = Vec::with_capacity(n - 2);
         for i in 2..n {
             let mut chain = Decimal::ONE;
-            for j in (i - 2)..=i {
-                chain = chain * (Decimal::ONE + period_returns[j]);
+            for &pr in &period_returns[(i - 2)..=i] {
+                chain *= Decimal::ONE + pr;
             }
             v.push(chain - Decimal::ONE);
         }
@@ -544,8 +544,8 @@ pub fn property_index(
         let mut v = Vec::with_capacity(n - 4);
         for i in 4..n {
             let mut chain = Decimal::ONE;
-            for j in (i - 4)..=i {
-                chain = chain * (Decimal::ONE + period_returns[j]);
+            for &pr in &period_returns[(i - 4)..=i] {
+                chain *= Decimal::ONE + pr;
             }
             v.push(chain - Decimal::ONE);
         }

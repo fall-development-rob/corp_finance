@@ -575,7 +575,7 @@ pub fn value_add_irr(
     let mut cumulative_equity = input.equity_at_close;
     let mut peak_equity = cumulative_equity;
 
-    for yr in 0..n {
+    for (yr, &noi_yr) in noi_schedule.iter().enumerate().take(n) {
         let capex = if yr < input.renovation_capex.len() && yr > 0 {
             input.renovation_capex[yr]
         } else {
@@ -595,7 +595,7 @@ pub fn value_add_irr(
             None => Decimal::ZERO,
         };
 
-        let cf = noi_schedule[yr] - ds - capex;
+        let cf = noi_yr - ds - capex;
 
         if yr == n - 1 {
             // Exit
