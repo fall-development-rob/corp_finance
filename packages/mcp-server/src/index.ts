@@ -71,6 +71,7 @@ import { registerCarbonMarketsTools } from "./tools/carbon_markets.js";
 import { registerPrivateWealthTools } from "./tools/private_wealth.js";
 import { registerEmergingMarketsTools } from "./tools/emerging_markets.js";
 import { registerIndexConstructionTools } from "./tools/index_construction.js";
+import { registerInstitutionalRealEstateTools } from "./tools/institutional_real_estate.js";
 import { registerFinancialForensicsTools } from "./tools/financial_forensics.js";
 import { registerWorkflowTools } from "./tools/workflows.js";
 
@@ -149,6 +150,7 @@ registerCarbonMarketsTools(server);
 registerPrivateWealthTools(server);
 registerEmergingMarketsTools(server);
 registerIndexConstructionTools(server);
+registerInstitutionalRealEstateTools(server);
 registerFinancialForensicsTools(server);
 registerWorkflowTools(server);
 
