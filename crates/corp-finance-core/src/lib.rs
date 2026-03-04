@@ -218,6 +218,9 @@ pub mod financial_forensics;
 #[cfg(feature = "workflows")]
 pub mod workflows;
 
+#[cfg(feature = "institutional_real_estate")]
+pub mod institutional_real_estate;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 
