@@ -1,9 +1,9 @@
-pub mod rent_roll;
+pub mod acquisition;
+pub mod benchmark;
 pub mod comparable_sales;
 pub mod highest_best_use;
+pub mod rent_roll;
 pub mod replacement_cost;
-pub mod benchmark;
-pub mod acquisition;
 
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};

@@ -386,10 +386,7 @@ pub fn comp_adjustment_grid(
 
     let n = Decimal::from(adjusted_comps.len() as u64);
     let total_price: Decimal = adjusted_comps.iter().map(|c| c.adjusted_price).sum();
-    let total_ppsf: Decimal = adjusted_comps
-        .iter()
-        .map(|c| c.adjusted_price_per_sf)
-        .sum();
+    let total_ppsf: Decimal = adjusted_comps.iter().map(|c| c.adjusted_price_per_sf).sum();
 
     let output = CompAdjustmentOutput {
         subject_address: input.subject_address.clone(),
@@ -431,18 +428,20 @@ pub fn price_per_sf(
     for comp in &input.comparables {
         let area = match input.area_basis {
             AreaBasis::GrossBuildingArea => comp.gross_building_area_sf,
-            AreaBasis::NetRentableArea => comp.net_rentable_area_sf.ok_or_else(|| {
-                CorpFinanceError::InvalidInput {
-                    field: format!("comparable '{}' net_rentable_area_sf", comp.address),
-                    reason: "NRA not provided but NetRentableArea basis selected".into(),
-                }
-            })?,
-            AreaBasis::UsableArea => comp.usable_area_sf.ok_or_else(|| {
-                CorpFinanceError::InvalidInput {
-                    field: format!("comparable '{}' usable_area_sf", comp.address),
-                    reason: "Usable area not provided but UsableArea basis selected".into(),
-                }
-            })?,
+            AreaBasis::NetRentableArea => {
+                comp.net_rentable_area_sf
+                    .ok_or_else(|| CorpFinanceError::InvalidInput {
+                        field: format!("comparable '{}' net_rentable_area_sf", comp.address),
+                        reason: "NRA not provided but NetRentableArea basis selected".into(),
+                    })?
+            }
+            AreaBasis::UsableArea => {
+                comp.usable_area_sf
+                    .ok_or_else(|| CorpFinanceError::InvalidInput {
+                        field: format!("comparable '{}' usable_area_sf", comp.address),
+                        reason: "Usable area not provided but UsableArea basis selected".into(),
+                    })?
+            }
         };
 
         if area <= Decimal::ZERO {
@@ -663,66 +662,63 @@ pub fn reconciliation(
         ));
     }
 
-    let weights: Vec<Decimal> = match &input.method {
-        ReconciliationMethod::EqualWeight => {
-            let w = dec!(1) / Decimal::from(n as u64);
-            vec![w; n]
-        }
-        ReconciliationMethod::QualityScore => {
-            let scores = input.quality_scores.as_ref().ok_or_else(|| {
-                CorpFinanceError::InvalidInput {
-                    field: "quality_scores".into(),
-                    reason: "Quality scores required for QualityScore method".into(),
-                }
-            })?;
-            if scores.len() != n {
-                return Err(CorpFinanceError::InvalidInput {
-                    field: "quality_scores".into(),
-                    reason: "Length must match adjusted_values".into(),
-                });
+    let weights: Vec<Decimal> =
+        match &input.method {
+            ReconciliationMethod::EqualWeight => {
+                let w = dec!(1) / Decimal::from(n as u64);
+                vec![w; n]
             }
-            for &s in scores {
-                if !(1..=5).contains(&s) {
+            ReconciliationMethod::QualityScore => {
+                let scores = input.quality_scores.as_ref().ok_or_else(|| {
+                    CorpFinanceError::InvalidInput {
+                        field: "quality_scores".into(),
+                        reason: "Quality scores required for QualityScore method".into(),
+                    }
+                })?;
+                if scores.len() != n {
                     return Err(CorpFinanceError::InvalidInput {
                         field: "quality_scores".into(),
-                        reason: format!("Score {} outside 1-5 range", s),
+                        reason: "Length must match adjusted_values".into(),
                     });
                 }
-            }
-            let total: Decimal = scores.iter().map(|&s| Decimal::from(s)).sum();
-            scores
-                .iter()
-                .map(|&s| Decimal::from(s) / total)
-                .collect()
-        }
-        ReconciliationMethod::InverseDistance => {
-            let distances = input.distances.as_ref().ok_or_else(|| {
-                CorpFinanceError::InvalidInput {
-                    field: "distances".into(),
-                    reason: "Distances required for InverseDistance method".into(),
+                for &s in scores {
+                    if !(1..=5).contains(&s) {
+                        return Err(CorpFinanceError::InvalidInput {
+                            field: "quality_scores".into(),
+                            reason: format!("Score {} outside 1-5 range", s),
+                        });
+                    }
                 }
-            })?;
-            if distances.len() != n {
-                return Err(CorpFinanceError::InvalidInput {
-                    field: "distances".into(),
-                    reason: "Length must match adjusted_values".into(),
-                });
+                let total: Decimal = scores.iter().map(|&s| Decimal::from(s)).sum();
+                scores.iter().map(|&s| Decimal::from(s) / total).collect()
             }
-            for d in distances {
-                if *d <= Decimal::ZERO {
+            ReconciliationMethod::InverseDistance => {
+                let distances =
+                    input
+                        .distances
+                        .as_ref()
+                        .ok_or_else(|| CorpFinanceError::InvalidInput {
+                            field: "distances".into(),
+                            reason: "Distances required for InverseDistance method".into(),
+                        })?;
+                if distances.len() != n {
                     return Err(CorpFinanceError::InvalidInput {
                         field: "distances".into(),
-                        reason: "All distances must be positive".into(),
+                        reason: "Length must match adjusted_values".into(),
                     });
                 }
+                for d in distances {
+                    if *d <= Decimal::ZERO {
+                        return Err(CorpFinanceError::InvalidInput {
+                            field: "distances".into(),
+                            reason: "All distances must be positive".into(),
+                        });
+                    }
+                }
+                let inv_sum: Decimal = distances.iter().map(|d| dec!(1) / *d).sum();
+                distances.iter().map(|d| (dec!(1) / *d) / inv_sum).collect()
             }
-            let inv_sum: Decimal = distances.iter().map(|d| dec!(1) / *d).sum();
-            distances
-                .iter()
-                .map(|d| (dec!(1) / *d) / inv_sum)
-                .collect()
-        }
-    };
+        };
 
     // Weighted value
     let reconciled_value: Decimal = input
@@ -733,8 +729,7 @@ pub fn reconciliation(
         .sum();
 
     // Mean and std dev for CV and confidence interval
-    let mean = input.adjusted_values.iter().copied().sum::<Decimal>()
-        / Decimal::from(n as u64);
+    let mean = input.adjusted_values.iter().copied().sum::<Decimal>() / Decimal::from(n as u64);
 
     let variance: Decimal = input
         .adjusted_values
@@ -1338,9 +1333,8 @@ mod tests {
         };
         let result = reconciliation(&input).unwrap();
         // Weights: 5/10, 3/10, 2/10
-        let expected = dec!(5_000_000) * dec!(0.5)
-            + dec!(5_500_000) * dec!(0.3)
-            + dec!(5_200_000) * dec!(0.2);
+        let expected =
+            dec!(5_000_000) * dec!(0.5) + dec!(5_500_000) * dec!(0.3) + dec!(5_200_000) * dec!(0.2);
         assert_eq!(result.result.reconciled_value, expected);
     }
 

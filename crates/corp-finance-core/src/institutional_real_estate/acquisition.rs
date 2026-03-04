@@ -32,12 +32,8 @@ pub struct DebtTranche {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GoNoGoDecision {
     Go,
-    Conditional {
-        failed_thresholds: Vec<String>,
-    },
-    NoGo {
-        failed_thresholds: Vec<String>,
-    },
+    Conditional { failed_thresholds: Vec<String> },
+    NoGo { failed_thresholds: Vec<String> },
 }
 
 /// Year-by-year pro forma row.
@@ -227,8 +223,11 @@ pub fn acquisition_model(
     let unlevered_irr = newton_raphson_irr(&unlev_cfs, &mut warnings);
 
     // --- Equity multiple ---
-    let total_distributions: Money =
-        pro_forma.iter().map(|pf| pf.cash_flow_after_debt).sum::<Decimal>() + net_sale_proceeds;
+    let total_distributions: Money = pro_forma
+        .iter()
+        .map(|pf| pf.cash_flow_after_debt)
+        .sum::<Decimal>()
+        + net_sale_proceeds;
     let equity_multiple = if equity_required.is_zero() || equity_required < Decimal::ZERO {
         Decimal::ZERO
     } else {
@@ -248,9 +247,7 @@ pub fn acquisition_model(
     }
     if let Some(target_dscr) = input.target_dscr {
         if dscr_year1 < target_dscr {
-            failed.push(format!(
-                "DSCR {dscr_year1:.2}x < target {target_dscr:.2}x"
-            ));
+            failed.push(format!("DSCR {dscr_year1:.2}x < target {target_dscr:.2}x"));
         }
     }
 
@@ -402,7 +399,10 @@ pub fn hold_sell_analysis(
     let breakeven_exit_cap_rate = find_breakeven_cap_rate(input, sell_npv, &mut warnings);
 
     // --- Optimal hold period ---
-    let max_search = input.max_additional_years.unwrap_or(15).max(input.remaining_hold_years);
+    let max_search = input
+        .max_additional_years
+        .unwrap_or(15)
+        .max(input.remaining_hold_years);
     let mut best_irr = dec!(-1.0);
     let mut best_year = 1u32;
 
@@ -799,8 +799,7 @@ pub fn development_feasibility(
     let stabilised_value = input.stabilised_noi / input.market_cap_rate;
 
     // --- Residual land value ---
-    let residual_land_value =
-        stabilised_value - total_construction_costs - financing_carry;
+    let residual_land_value = stabilised_value - total_construction_costs - financing_carry;
 
     // --- Profit margin ---
     let profit_margin = if total_development_cost.is_zero() {
@@ -969,7 +968,9 @@ pub fn refinancing(
     let annual_interest_savings = existing_annual_ds - proposed_annual_ds;
 
     // --- NPV of savings ---
-    let analysis_years = input.existing_remaining_years.min(input.proposed_term_years);
+    let analysis_years = input
+        .existing_remaining_years
+        .min(input.proposed_term_years);
     let one_plus_r = Decimal::ONE + input.discount_rate;
     let mut npv_savings = Decimal::ZERO;
     let mut df = Decimal::ONE;
@@ -1025,9 +1026,7 @@ pub fn refinancing(
         ));
     }
     if post_refi_dscr < dec!(1.25) && post_refi_dscr < dec!(999) {
-        warnings.push(format!(
-            "Post-refi DSCR {post_refi_dscr:.2}x below 1.25x"
-        ));
+        warnings.push(format!("Post-refi DSCR {post_refi_dscr:.2}x below 1.25x"));
     }
     if breakeven_months > 36 {
         warnings.push(format!(
@@ -1035,8 +1034,7 @@ pub fn refinancing(
         ));
     }
 
-    let recommend_refi =
-        npv_savings > total_refi_cost && breakeven_months < (analysis_years * 12);
+    let recommend_refi = npv_savings > total_refi_cost && breakeven_months < (analysis_years * 12);
 
     let output = RefinancingOutput {
         existing_annual_ds,
@@ -1204,8 +1202,8 @@ fn compute_tranche_balance(tranche: &DebtTranche, years: usize) -> CorpFinanceRe
             let payments_made = (amort_payments_years as u32) * 12;
 
             if monthly_rate.is_zero() {
-                let paid = tranche.amount * Decimal::from(payments_made)
-                    / Decimal::from(total_months);
+                let paid =
+                    tranche.amount * Decimal::from(payments_made) / Decimal::from(total_months);
                 return Ok((tranche.amount - paid).max(Decimal::ZERO));
             }
 
@@ -2012,12 +2010,8 @@ mod tests {
     #[test]
     fn test_monthly_payment_simple() {
         // 1M loan, 5% / 12 monthly, 360 months
-        let pmt = compute_monthly_payment_simple(
-            dec!(1_000_000),
-            dec!(0.05) / dec!(12),
-            360,
-        )
-        .unwrap();
+        let pmt =
+            compute_monthly_payment_simple(dec!(1_000_000), dec!(0.05) / dec!(12), 360).unwrap();
         // Expected ~5,368
         assert!(pmt > dec!(5_000) && pmt < dec!(6_000));
     }

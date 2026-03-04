@@ -195,14 +195,11 @@ pub fn ncreif_attribution(
                 });
             }
             let equity_fraction = Decimal::ONE - ltv;
-            let levered = annual_total_return
-                + (annual_total_return - cod) * ltv / equity_fraction;
+            let levered = annual_total_return + (annual_total_return - cod) * ltv / equity_fraction;
             Some(levered)
         }
         (Some(_), None) | (None, Some(_)) => {
-            warnings.push(
-                "Both ltv and cost_of_debt are required for leverage adjustment".into(),
-            );
+            warnings.push("Both ltv and cost_of_debt are required for leverage adjustment".into());
             None
         }
         _ => None,
@@ -313,10 +310,8 @@ pub fn odce_comparison(
     let sum_excess: Decimal = excess_returns.iter().copied().sum();
     let avg_excess_return = sum_excess / n_dec;
 
-    let avg_property_return: Rate =
-        input.property_returns.iter().copied().sum::<Decimal>() / n_dec;
-    let avg_index_return: Rate =
-        input.index_returns.iter().copied().sum::<Decimal>() / n_dec;
+    let avg_property_return: Rate = input.property_returns.iter().copied().sum::<Decimal>() / n_dec;
+    let avg_index_return: Rate = input.index_returns.iter().copied().sum::<Decimal>() / n_dec;
 
     // Tracking error (population std dev of excess returns)
     let tracking_error = if n > 1 {
@@ -352,21 +347,18 @@ pub fn odce_comparison(
             .iter()
             .map(|s| {
                 // Allocation effect: (wp_i - wb_i) * (rb_i - Rb)
-                let allocation_effect =
-                    (s.property_weight - s.benchmark_weight)
-                        * (s.benchmark_return - total_benchmark_return);
+                let allocation_effect = (s.property_weight - s.benchmark_weight)
+                    * (s.benchmark_return - total_benchmark_return);
 
                 // Selection effect: wb_i * (rp_i - rb_i)
                 let selection_effect =
                     s.benchmark_weight * (s.property_return - s.benchmark_return);
 
                 // Interaction effect: (wp_i - wb_i) * (rp_i - rb_i)
-                let interaction_effect =
-                    (s.property_weight - s.benchmark_weight)
-                        * (s.property_return - s.benchmark_return);
+                let interaction_effect = (s.property_weight - s.benchmark_weight)
+                    * (s.property_return - s.benchmark_return);
 
-                let total_effect =
-                    allocation_effect + selection_effect + interaction_effect;
+                let total_effect = allocation_effect + selection_effect + interaction_effect;
 
                 SectorAttribution {
                     sector: s.sector.clone(),
@@ -483,8 +475,7 @@ pub fn property_index(
                 context: format!("begin_value is zero at period {}", ip.period),
             });
         }
-        let period_return =
-            (ip.ending_value - begin_value - ip.capex + ip.noi) / begin_value;
+        let period_return = (ip.ending_value - begin_value - ip.capex + ip.noi) / begin_value;
         cumulative = cumulative * (Decimal::ONE + period_return);
         period_returns.push(period_return);
         index_series.push(IndexEntry {
@@ -658,14 +649,11 @@ pub fn relative_value(
         });
     }
 
-    let cap_rate_spread_to_benchmark =
-        input.property_cap_rate - input.benchmark_cap_rate;
-    let cap_rate_spread_to_risk_free =
-        input.property_cap_rate - input.risk_free_rate;
+    let cap_rate_spread_to_benchmark = input.property_cap_rate - input.benchmark_cap_rate;
+    let cap_rate_spread_to_risk_free = input.property_cap_rate - input.risk_free_rate;
     let implied_risk_premium = input.property_cap_rate - input.risk_free_rate;
 
-    let price_to_replacement_ratio =
-        input.price_per_sf / input.replacement_cost_per_sf;
+    let price_to_replacement_ratio = input.price_per_sf / input.replacement_cost_per_sf;
 
     let threshold_premium = dec!(1.1);
     let threshold_discount = dec!(0.9);
@@ -736,13 +724,7 @@ mod tests {
         diff <= tol
     }
 
-    fn qr(
-        period: &str,
-        bv: Decimal,
-        ev: Decimal,
-        noi: Decimal,
-        capex: Decimal,
-    ) -> QuarterlyReturn {
+    fn qr(period: &str, bv: Decimal, ev: Decimal, noi: Decimal, capex: Decimal) -> QuarterlyReturn {
         QuarterlyReturn {
             period: period.to_string(),
             beginning_value: bv,
@@ -768,7 +750,10 @@ mod tests {
         // income = 15/1000 = 0.015
         assert_eq!(out.quarterly_attributions[0].income_return, dec!(0.015));
         // appreciation = (1020 - 1000 - 5) / 1000 = 0.015
-        assert_eq!(out.quarterly_attributions[0].appreciation_return, dec!(0.015));
+        assert_eq!(
+            out.quarterly_attributions[0].appreciation_return,
+            dec!(0.015)
+        );
         // total = 0.03
         assert_eq!(out.quarterly_attributions[0].total_return, dec!(0.03));
     }
@@ -1130,9 +1115,9 @@ mod tests {
         let input = PropertyIndexInput {
             initial_value: dec!(1000),
             periods: vec![
-                ip("Q1", dec!(1100), dec!(10), dec!(0)),  // big gain
-                ip("Q2", dec!(1000), dec!(10), dec!(0)),   // drop
-                ip("Q3", dec!(1050), dec!(10), dec!(0)),   // partial recovery
+                ip("Q1", dec!(1100), dec!(10), dec!(0)), // big gain
+                ip("Q2", dec!(1000), dec!(10), dec!(0)), // drop
+                ip("Q3", dec!(1050), dec!(10), dec!(0)), // partial recovery
             ],
         };
         let result = property_index(&input).unwrap();
@@ -1165,7 +1150,12 @@ mod tests {
             ],
         };
         let result = property_index(&input).unwrap();
-        let rolling3 = result.result.rolling_stats.rolling_3_period.as_ref().unwrap();
+        let rolling3 = result
+            .result
+            .rolling_stats
+            .rolling_3_period
+            .as_ref()
+            .unwrap();
         assert_eq!(rolling3.len(), 1);
     }
 
@@ -1343,7 +1333,11 @@ mod tests {
 
     #[test]
     fn test_sqrt_one() {
-        assert!(approx_eq(decimal_sqrt(Decimal::ONE), Decimal::ONE, dec!(0.0000001)));
+        assert!(approx_eq(
+            decimal_sqrt(Decimal::ONE),
+            Decimal::ONE,
+            dec!(0.0000001)
+        ));
     }
 
     #[test]
@@ -1354,7 +1348,11 @@ mod tests {
     #[test]
     fn test_sqrt_small_value() {
         // sqrt(0.0001) = 0.01
-        assert!(approx_eq(decimal_sqrt(dec!(0.0001)), dec!(0.01), dec!(0.0000001)));
+        assert!(approx_eq(
+            decimal_sqrt(dec!(0.0001)),
+            dec!(0.01),
+            dec!(0.0000001)
+        ));
     }
 
     // -----------------------------------------------------------------------

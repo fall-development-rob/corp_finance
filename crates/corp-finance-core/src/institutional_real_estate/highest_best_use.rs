@@ -460,9 +460,12 @@ pub fn legal_permissible(
         let mut is_permitted = true;
 
         // Check zoning permitted uses
-        if !input.zoning.permitted_uses.iter().any(|p| {
-            p.eq_ignore_ascii_case(&potential.use_type)
-        }) {
+        if !input
+            .zoning
+            .permitted_uses
+            .iter()
+            .any(|p| p.eq_ignore_ascii_case(&potential.use_type))
+        {
             is_permitted = false;
             constraints.push(format!(
                 "Use '{}' not permitted under zoning class '{}'",
@@ -471,9 +474,12 @@ pub fn legal_permissible(
         }
 
         // Check deed restriction prohibited uses
-        if input.deed_restrictions.prohibited_uses.iter().any(|p| {
-            p.eq_ignore_ascii_case(&potential.use_type)
-        }) {
+        if input
+            .deed_restrictions
+            .prohibited_uses
+            .iter()
+            .any(|p| p.eq_ignore_ascii_case(&potential.use_type))
+        {
             is_permitted = false;
             constraints.push(format!(
                 "Use '{}' prohibited by deed restriction",
@@ -489,7 +495,8 @@ pub fn legal_permissible(
 
         // Check environmental: wetlands may prohibit certain development
         if input.environmental.wetlands {
-            constraints.push("Wetlands present — may require Army Corps of Engineers permit".into());
+            constraints
+                .push("Wetlands present — may require Army Corps of Engineers permit".into());
         }
 
         // Check environmental: flood zone adds regulatory burden
@@ -623,7 +630,8 @@ pub fn physically_possible(
             }
             "poor" => {
                 constraints.push(
-                    "Poor soil conditions require deep foundations — significant cost impact".into(),
+                    "Poor soil conditions require deep foundations — significant cost impact"
+                        .into(),
                 );
                 dec!(0.85)
             }
@@ -646,12 +654,12 @@ pub fn physically_possible(
         let access_factor = match input.site.access_quality.to_lowercase().as_str() {
             "good" => dec!(1.0),
             "fair" => {
-                constraints
-                    .push("Fair access quality may limit some commercial uses".into());
+                constraints.push("Fair access quality may limit some commercial uses".into());
                 dec!(0.95)
             }
             "poor" => {
-                constraints.push("Poor access significantly constrains development potential".into());
+                constraints
+                    .push("Poor access significantly constrains development potential".into());
                 dec!(0.80)
             }
             _ => dec!(0.95),
@@ -836,10 +844,7 @@ pub fn maximally_productive(
         let construction_years = (Decimal::from(construction_months) / dec!(12))
             .round_dp(0)
             .max(Decimal::ONE);
-        let construction_periods = construction_years
-            .to_string()
-            .parse::<usize>()
-            .unwrap_or(2);
+        let construction_periods = construction_years.to_string().parse::<usize>().unwrap_or(2);
 
         let holding_years = construction_periods + 5; // 5-year hold post-stabilisation
         let mut cash_flows: Vec<Decimal> = Vec::with_capacity(holding_years + 1);
@@ -1011,11 +1016,7 @@ mod tests {
     fn sample_zoning() -> ZoningConstraints {
         ZoningConstraints {
             use_class: "C-3".into(),
-            permitted_uses: vec![
-                "Office".into(),
-                "Retail".into(),
-                "Multifamily".into(),
-            ],
+            permitted_uses: vec!["Office".into(), "Retail".into(), "Multifamily".into()],
             max_far: dec!(4.0),
             max_height_ft: dec!(120),
             min_setback_ft: dec!(10),
@@ -1138,7 +1139,12 @@ mod tests {
         let output = legal_permissible(&input).unwrap();
         // Historic designation does not prohibit uses, just constrains
         assert_eq!(output.result.permitted_uses.len(), 3);
-        let office = output.result.results.iter().find(|r| r.use_type == "Office").unwrap();
+        let office = output
+            .result
+            .results
+            .iter()
+            .find(|r| r.use_type == "Office")
+            .unwrap();
         assert!(office.constraints.iter().any(|c| c.contains("Historic")));
     }
 
@@ -1157,7 +1163,12 @@ mod tests {
             environmental: env,
         };
         let output = legal_permissible(&input).unwrap();
-        let office = output.result.results.iter().find(|r| r.use_type == "Office").unwrap();
+        let office = output
+            .result
+            .results
+            .iter()
+            .find(|r| r.use_type == "Office")
+            .unwrap();
         assert!(office.constraints.iter().any(|c| c.contains("Wetlands")));
         assert!(office.constraints.iter().any(|c| c.contains("flood zone")));
         assert!(office.constraints.iter().any(|c| c.contains("Brownfield")));
@@ -1174,8 +1185,16 @@ mod tests {
             environmental: sample_environmental(),
         };
         let output = legal_permissible(&input).unwrap();
-        let office = output.result.results.iter().find(|r| r.use_type == "Office").unwrap();
-        assert!(office.constraints.iter().any(|c| c.contains("Deed restricts height")));
+        let office = output
+            .result
+            .results
+            .iter()
+            .find(|r| r.use_type == "Office")
+            .unwrap();
+        assert!(office
+            .constraints
+            .iter()
+            .any(|c| c.contains("Deed restricts height")));
     }
 
     #[test]
@@ -1651,7 +1670,7 @@ mod tests {
         let bad_uses = vec![PotentialUse {
             use_type: "Office".into(),
             max_buildable_sf: dec!(100000),
-            estimated_noi_psf: dec!(2),      // very low income
+            estimated_noi_psf: dec!(2), // very low income
             estimated_cap_rate: dec!(0.08),
             development_cost_psf: dec!(600), // very high cost
             construction_months: 24,

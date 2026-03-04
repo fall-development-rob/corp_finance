@@ -291,8 +291,7 @@ pub fn tenant_schedule(
 
         if in_downtime && downtime_remaining > 0 {
             let vacant_months = downtime_remaining.min(12);
-            let occupied_fraction =
-                dec!(1) - Decimal::from(vacant_months) / dec!(12);
+            let occupied_fraction = dec!(1) - Decimal::from(vacant_months) / dec!(12);
             downtime_remaining = downtime_remaining.saturating_sub(12);
             if downtime_remaining == 0 {
                 in_downtime = false;
@@ -317,7 +316,9 @@ pub fn tenant_schedule(
         // Escalation (skip year 0).
         if year_index > 0 {
             match &t.escalation {
-                EscalationType::FixedStep { annual_increase_pct } => {
+                EscalationType::FixedStep {
+                    annual_increase_pct,
+                } => {
                     current_rent_psf += current_rent_psf * annual_increase_pct;
                 }
                 EscalationType::CpiLinked {
@@ -327,8 +328,7 @@ pub fn tenant_schedule(
                     let growth = *assumed_cpi + *spread_over_cpi;
                     current_rent_psf += current_rent_psf * growth;
                 }
-                EscalationType::PercentageRent { .. }
-                | EscalationType::FlatRent => {}
+                EscalationType::PercentageRent { .. } | EscalationType::FlatRent => {}
             }
         }
 
@@ -363,12 +363,11 @@ pub fn tenant_schedule(
         for _ in 0..year_index {
             opex_current += opex_current * opex_growth;
         }
-        let recovery_psf =
-            if opex_current > expense_stop && expense_stop > dec!(0) {
-                opex_current - expense_stop
-            } else {
-                dec!(0)
-            };
+        let recovery_psf = if opex_current > expense_stop && expense_stop > dec!(0) {
+            opex_current - expense_stop
+        } else {
+            dec!(0)
+        };
         let expense_recovery = recovery_psf * t.leased_sf;
 
         // TI amortization (landlord cost, reduces net).
@@ -521,8 +520,7 @@ pub fn renewal_probability(
     }
 
     // Base probability driven by credit score (linear 40 %-95 %).
-    let credit_factor =
-        dec!(0.40) + (input.credit_score - dec!(1)) / dec!(9) * dec!(0.55);
+    let credit_factor = dec!(0.40) + (input.credit_score - dec!(1)) / dec!(9) * dec!(0.55);
 
     // Term factor: longer remaining term slightly raises renewal odds.
     let term_factor = if input.remaining_term_years >= dec!(5) {
@@ -539,8 +537,7 @@ pub fn renewal_probability(
     // Rent spread factor: if in-place rent is below market the tenant is more
     // likely to renew; if above market, less likely.
     let spread = if input.market_rent_psf > dec!(0) {
-        (input.in_place_rent_psf - input.market_rent_psf)
-            / input.market_rent_psf
+        (input.in_place_rent_psf - input.market_rent_psf) / input.market_rent_psf
     } else {
         dec!(0)
     };
@@ -657,8 +654,7 @@ pub fn weighted_avg_lease_term(
 
     let walt = match &input.weighting {
         WaltWeighting::ByBaseRent => {
-            let total_rent: Money =
-                input.tenants.iter().map(|t| t.annual_base_rent).sum();
+            let total_rent: Money = input.tenants.iter().map(|t| t.annual_base_rent).sum();
             if total_rent <= dec!(0) {
                 return Err(CorpFinanceError::DivisionByZero {
                     context: "total annual_base_rent is zero".into(),
@@ -672,8 +668,7 @@ pub fn weighted_avg_lease_term(
                 / total_rent
         }
         WaltWeighting::ByNra => {
-            let total_sf: Decimal =
-                input.tenants.iter().map(|t| t.leased_sf).sum();
+            let total_sf: Decimal = input.tenants.iter().map(|t| t.leased_sf).sum();
             if total_sf <= dec!(0) {
                 return Err(CorpFinanceError::DivisionByZero {
                     context: "total leased_sf is zero".into(),
@@ -687,10 +682,8 @@ pub fn weighted_avg_lease_term(
                 / total_sf
         }
         WaltWeighting::ByBoth => {
-            let total_rent: Money =
-                input.tenants.iter().map(|t| t.annual_base_rent).sum();
-            let total_sf: Decimal =
-                input.tenants.iter().map(|t| t.leased_sf).sum();
+            let total_rent: Money = input.tenants.iter().map(|t| t.annual_base_rent).sum();
+            let total_sf: Decimal = input.tenants.iter().map(|t| t.leased_sf).sum();
             if total_rent <= dec!(0) || total_sf <= dec!(0) {
                 return Err(CorpFinanceError::DivisionByZero {
                     context: "total rent or SF is zero".into(),
@@ -728,10 +721,7 @@ pub fn weighted_avg_lease_term(
             let sf: Decimal = input
                 .tenants
                 .iter()
-                .filter(|t| {
-                    t.remaining_lease_years >= *lo
-                        && t.remaining_lease_years < *hi
-                })
+                .filter(|t| t.remaining_lease_years >= *lo && t.remaining_lease_years < *hi)
                 .map(|t| t.leased_sf)
                 .sum();
             let pct = if total_sf > dec!(0) {
@@ -792,12 +782,7 @@ mod tests {
         }
     }
 
-    fn flat_tenant(
-        name: &str,
-        sf: Decimal,
-        rent_psf: Decimal,
-        end_yr: u32,
-    ) -> Tenant {
+    fn flat_tenant(name: &str, sf: Decimal, rent_psf: Decimal, end_yr: u32) -> Tenant {
         Tenant {
             name: name.into(),
             suite: "200".into(),
@@ -1002,9 +987,8 @@ mod tests {
         };
         let r = tenant_schedule(&input).unwrap();
         let row = &r.result.schedule[0];
-        let expected_net = row.gross_rent - row.free_rent_adjustment
-            + row.expense_recovery
-            - row.ti_amortization;
+        let expected_net =
+            row.gross_rent - row.free_rent_adjustment + row.expense_recovery - row.ti_amortization;
         assert_eq!(row.net_effective_rent, expected_net);
     }
 
@@ -1160,10 +1144,7 @@ mod tests {
         };
         let r_below = renewal_probability(&base).unwrap();
         let r_above = renewal_probability(&above).unwrap();
-        assert!(
-            r_below.result.renewal_probability
-                > r_above.result.renewal_probability
-        );
+        assert!(r_below.result.renewal_probability > r_above.result.renewal_probability);
     }
 
     #[test]
@@ -1330,8 +1311,7 @@ mod tests {
             weighting: WaltWeighting::ByBaseRent,
         };
         let r = weighted_avg_lease_term(&input).unwrap();
-        let expected = (dec!(500000) * dec!(5) + dec!(200000) * dec!(2))
-            / dec!(700000);
+        let expected = (dec!(500000) * dec!(5) + dec!(200000) * dec!(2)) / dec!(700000);
         assert_eq!(r.result.walt_years, expected);
     }
 
@@ -1355,8 +1335,7 @@ mod tests {
             weighting: WaltWeighting::ByNra,
         };
         let r = weighted_avg_lease_term(&input).unwrap();
-        let expected =
-            (dec!(10000) * dec!(5) + dec!(5000) * dec!(2)) / dec!(15000);
+        let expected = (dec!(10000) * dec!(5) + dec!(5000) * dec!(2)) / dec!(15000);
         assert_eq!(r.result.walt_years, expected);
     }
 
@@ -1380,10 +1359,8 @@ mod tests {
             weighting: WaltWeighting::ByBoth,
         };
         let r = weighted_avg_lease_term(&input).unwrap();
-        let w_rent = (dec!(500000) * dec!(5) + dec!(200000) * dec!(2))
-            / dec!(700000);
-        let w_sf =
-            (dec!(10000) * dec!(5) + dec!(5000) * dec!(2)) / dec!(15000);
+        let w_rent = (dec!(500000) * dec!(5) + dec!(200000) * dec!(2)) / dec!(700000);
+        let w_sf = (dec!(10000) * dec!(5) + dec!(5000) * dec!(2)) / dec!(15000);
         assert_eq!(r.result.walt_years, (w_rent + w_sf) / dec!(2));
     }
 
