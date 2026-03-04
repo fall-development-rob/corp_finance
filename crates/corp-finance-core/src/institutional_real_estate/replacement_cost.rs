@@ -106,7 +106,10 @@ pub static BASE_COSTS: &[BaseCostRow] = &[
     },
 ];
 
-fn lookup_base_cost(class: &BuildingClass, occupancy: &OccupancyType) -> CorpFinanceResult<Decimal> {
+fn lookup_base_cost(
+    class: &BuildingClass,
+    occupancy: &OccupancyType,
+) -> CorpFinanceResult<Decimal> {
     let idx = match class {
         BuildingClass::A => 0,
         BuildingClass::B => 1,
@@ -528,43 +531,43 @@ pub fn land_residual(
     }
 
     // Cross-validate with comparable land sales
-    let (comp_avg_psf, comp_implied, variance) =
-        if let Some(ref comps) = input.comparable_land_sales {
-            if comps.is_empty() {
+    let (comp_avg_psf, comp_implied, variance) = if let Some(ref comps) =
+        input.comparable_land_sales
+    {
+        if comps.is_empty() {
+            (None, None, None)
+        } else {
+            let valid: Vec<_> = comps.iter().filter(|c| c.land_area_sf > dec!(0)).collect();
+            if valid.is_empty() {
+                warnings.push("All comparable land sales have zero area".into());
                 (None, None, None)
             } else {
-                let valid: Vec<_> = comps.iter().filter(|c| c.land_area_sf > dec!(0)).collect();
-                if valid.is_empty() {
-                    warnings.push("All comparable land sales have zero area".into());
-                    (None, None, None)
+                let total_psf: Decimal = valid.iter().map(|c| c.sale_price / c.land_area_sf).sum();
+                let avg_psf = total_psf / Decimal::from(valid.len() as u32);
+
+                // For cross-validation we take the average total comp value
+                let total_comp_val: Decimal = valid.iter().map(|c| c.sale_price).sum();
+                let avg_comp_val = total_comp_val / Decimal::from(valid.len() as u32);
+
+                let var = if avg_comp_val > dec!(0) {
+                    (residual - avg_comp_val) / avg_comp_val
                 } else {
-                    let total_psf: Decimal =
-                        valid.iter().map(|c| c.sale_price / c.land_area_sf).sum();
-                    let avg_psf = total_psf / Decimal::from(valid.len() as u32);
+                    dec!(0)
+                };
 
-                    // For cross-validation we take the average total comp value
-                    let total_comp_val: Decimal = valid.iter().map(|c| c.sale_price).sum();
-                    let avg_comp_val = total_comp_val / Decimal::from(valid.len() as u32);
-
-                    let var = if avg_comp_val > dec!(0) {
-                        (residual - avg_comp_val) / avg_comp_val
-                    } else {
-                        dec!(0)
-                    };
-
-                    if var.abs() > dec!(0.25) {
-                        warnings.push(format!(
+                if var.abs() > dec!(0.25) {
+                    warnings.push(format!(
                             "Residual land value deviates {:.1}% from comparable average; review assumptions",
                             var * dec!(100)
                         ));
-                    }
-
-                    (Some(avg_psf), Some(avg_comp_val), Some(var))
                 }
+
+                (Some(avg_psf), Some(avg_comp_val), Some(var))
             }
-        } else {
-            (None, None, None)
-        };
+        }
+    } else {
+        (None, None, None)
+    };
 
     let output = LandResidualOutput {
         residual_land_value: residual,
@@ -996,7 +999,11 @@ mod tests {
         };
         let result = land_residual(&input).unwrap();
         assert_eq!(result.result.residual_land_value, dec!(-1_000_000));
-        assert!(result.result.warnings.iter().any(|w| w.contains("negative")));
+        assert!(result
+            .result
+            .warnings
+            .iter()
+            .any(|w| w.contains("negative")));
     }
 
     #[test]
@@ -1011,7 +1018,11 @@ mod tests {
             }]),
         };
         let result = land_residual(&input).unwrap();
-        assert!(result.result.warnings.iter().any(|w| w.contains("deviates")));
+        assert!(result
+            .result
+            .warnings
+            .iter()
+            .any(|w| w.contains("deviates")));
     }
 
     #[test]
@@ -1203,25 +1214,58 @@ mod tests {
 
     #[test]
     fn base_cost_all_class_a() {
-        assert_eq!(lookup_base_cost(&BuildingClass::A, &OccupancyType::Office).unwrap(), dec!(185));
-        assert_eq!(lookup_base_cost(&BuildingClass::A, &OccupancyType::Retail).unwrap(), dec!(165));
-        assert_eq!(lookup_base_cost(&BuildingClass::A, &OccupancyType::Industrial).unwrap(), dec!(125));
-        assert_eq!(lookup_base_cost(&BuildingClass::A, &OccupancyType::Multifamily).unwrap(), dec!(175));
-        assert_eq!(lookup_base_cost(&BuildingClass::A, &OccupancyType::Hospitality).unwrap(), dec!(210));
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::A, &OccupancyType::Office).unwrap(),
+            dec!(185)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::A, &OccupancyType::Retail).unwrap(),
+            dec!(165)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::A, &OccupancyType::Industrial).unwrap(),
+            dec!(125)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::A, &OccupancyType::Multifamily).unwrap(),
+            dec!(175)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::A, &OccupancyType::Hospitality).unwrap(),
+            dec!(210)
+        );
     }
 
     #[test]
     fn base_cost_class_d_all() {
-        assert_eq!(lookup_base_cost(&BuildingClass::D, &OccupancyType::Office).unwrap(), dec!(95));
-        assert_eq!(lookup_base_cost(&BuildingClass::D, &OccupancyType::Retail).unwrap(), dec!(90));
-        assert_eq!(lookup_base_cost(&BuildingClass::D, &OccupancyType::Industrial).unwrap(), dec!(70));
-        assert_eq!(lookup_base_cost(&BuildingClass::D, &OccupancyType::Multifamily).unwrap(), dec!(95));
-        assert_eq!(lookup_base_cost(&BuildingClass::D, &OccupancyType::Hospitality).unwrap(), dec!(120));
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::D, &OccupancyType::Office).unwrap(),
+            dec!(95)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::D, &OccupancyType::Retail).unwrap(),
+            dec!(90)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::D, &OccupancyType::Industrial).unwrap(),
+            dec!(70)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::D, &OccupancyType::Multifamily).unwrap(),
+            dec!(95)
+        );
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::D, &OccupancyType::Hospitality).unwrap(),
+            dec!(120)
+        );
     }
 
     #[test]
     fn base_cost_class_s_office() {
-        assert_eq!(lookup_base_cost(&BuildingClass::S, &OccupancyType::Office).unwrap(), dec!(75));
+        assert_eq!(
+            lookup_base_cost(&BuildingClass::S, &OccupancyType::Office).unwrap(),
+            dec!(75)
+        );
     }
 
     #[test]
