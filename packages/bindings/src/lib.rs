@@ -522,6 +522,118 @@ pub fn model_project_finance(input_json: String) -> NapiResult<String> {
 }
 
 // ---------------------------------------------------------------------------
+// Institutional Real Estate
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn tenant_schedule(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::rent_roll::TenantScheduleInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::rent_roll::tenant_schedule(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn lease_rollover(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::rent_roll::LeaseRolloverInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::rent_roll::lease_rollover(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn comp_adjustment_grid(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::comparable_sales::CompAdjustmentInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::comparable_sales::comp_adjustment_grid(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn comp_reconciliation(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::comparable_sales::ReconciliationInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::comparable_sales::reconciliation(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn hbu_analysis(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::highest_best_use::HbuAnalysisInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::highest_best_use::hbu_analysis(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn financially_feasible(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::highest_best_use::FinanciallyFeasibleInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::highest_best_use::financially_feasible(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn cost_approach(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::replacement_cost::CostApproachInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::replacement_cost::cost_approach(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn marshall_swift(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::replacement_cost::MarshallSwiftInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::replacement_cost::marshall_swift(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn ncreif_attribution(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::benchmark::NcreifAttributionInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::benchmark::ncreif_attribution(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn odce_comparison(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::benchmark::OdceComparisonInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::benchmark::odce_comparison(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn acquisition_model(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::acquisition::AcquisitionModelInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::acquisition::acquisition_model(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn development_feasibility(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::institutional_real_estate::acquisition::DevelopmentFeasibilityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::institutional_real_estate::acquisition::development_feasibility(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
 // FX & Commodities
 // ---------------------------------------------------------------------------
 
