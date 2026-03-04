@@ -9,9 +9,9 @@ All financial math runs in 128-bit decimal precision via Rust, with Node.js bind
 ## Architecture
 
 ```
-crates/corp-finance-core    Rust library — 71 domain modules, all in Decimal
-crates/corp-finance-cli     Rust CLI — 71 subcommands
-packages/mcp-server         200 corp-finance MCP tools (Zod-validated)
+crates/corp-finance-core    Rust library — 72 domain modules, all in Decimal
+crates/corp-finance-cli     Rust CLI — 72 subcommands
+packages/mcp-server         206 corp-finance MCP tools (Zod-validated)
 packages/data-mcp-server    121 data tools (FRED, EDGAR, FIGI, Yahoo Finance, World Bank, geopolitical)
 packages/vendor-mcp-server  87 vendor tools (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook)
 packages/agents             9-analyst pipeline with HNSW routing and swarm coordination
@@ -36,7 +36,7 @@ packages/agents             9-analyst pipeline with HNSW routing and swarm coord
 
 ```bash
 npm install && npm run build     # Turborepo — builds all 6 packages
-cargo test --workspace --all-features   # ~5,900 Rust tests
+cargo test --workspace --all-features   # ~6,100 Rust tests
 npm run test:contracts                  # 406 agent contract tests
 ```
 
@@ -64,6 +64,7 @@ cfa analyze -i
 | **Derivatives** | Options (BS/CRR), Greeks, vol surface, SABR, forwards, swaps |
 | **Credit** | Ratings, Altman Z, CDS, CVA, CLO waterfall, CECL, migration |
 | **Risk & Quant** | Factor models, BL, VaR/CVaR, risk parity, pairs trading, momentum |
+| **Real Estate** | Rent roll, comparable sales, HBU, replacement cost, NCREIF benchmarking, acquisition model |
 | **PE & VC** | LBO, waterfall, fund returns, SAFEs, J-curve, commitment pacing |
 | **Regulatory** | Basel III, AIFMD, MiFID II, GIPS, KYC/AML, FATCA/CRS, BEPS |
 | **ESG & Climate** | ESG scoring, carbon markets, CBAM, green bonds, SLL |
@@ -87,7 +88,7 @@ cfa analyze -i
 | ESG Analyst | ESG scoring, carbon, climate risk |
 | Private Markets Analyst | PE, VC, real assets, restructuring |
 
-20 slash commands available in Claude Code (`/cfa:initiate-coverage`, `/cfa:ic-memo`, `/cfa:conflict-risk`, etc.).
+25 slash commands available in Claude Code (`/cfa:initiate-coverage`, `/cfa:ic-memo`, `/cfa:property-valuation`, `/cfa:acquisition-model`, etc.).
 
 > See the **[Multi-Agent Pipeline](https://github.com/fall-development-rob/corp_finance/wiki/Multi-Agent-Pipeline)** wiki page for routing details, workflow skills, and slash command reference.
 
@@ -106,7 +107,7 @@ cfa analyze -i
 | Resource | Description |
 |----------|-------------|
 | **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** | Full technical reference |
-| `docs/adr/` | Architecture Decision Records (ADR-001 to ADR-011) |
+| `docs/adr/` | Architecture Decision Records (ADR-001 to ADR-013) |
 | `docs/prd/` | Product Requirements Documents |
 | `docs/ddd/` | Domain-Driven Design documents |
 | `docs/contracts/` | Executable specification contracts |
