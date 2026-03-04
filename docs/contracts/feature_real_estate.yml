@@ -1,0 +1,114 @@
+# Feature Contract: Institutional Real Estate Analytics
+# Enforces architectural rules for institutional CRE module
+# Source: ADR-013
+
+contracts:
+  - id: RE-CONTRACT-001
+    name: "Rent roll tenant SF must not exceed building SF"
+    description: "The sum of all tenant leased_sf in a RentRoll must be <= the property's total_sf. Prevents over-allocation of space."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/rent_roll.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-002
+    name: "Comparable adjustments bounded to ±50%"
+    description: "No single comparable sale adjustment may exceed +50% or -50%. This prevents manipulation of the comparable sales approach."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/comparable_sales.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-003
+    name: "HBU tests must run sequentially"
+    description: "Highest-and-best-use analysis must execute the 4 tests in order: legally_permissible → physically_possible → financially_feasible → maximally_productive. A failure at any stage short-circuits remaining tests."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/highest_best_use.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-004
+    name: "Cap rate must be positive and below 100%"
+    description: "All cap rate inputs must satisfy 0 < cap_rate < 1.0. This applies to direct cap, exit cap, and comp-extracted cap rates."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-005
+    name: "NOI = EGI - OpEx (no double counting)"
+    description: "Net operating income must equal effective gross income minus operating expenses. Capital reserves and debt service are below the NOI line."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-006
+    name: "Acquisition model must include hold/sell/develop NPV comparison"
+    description: "The acquisition decision function must compute NPV for at least hold and sell scenarios. Development is optional but recommended."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/acquisition.rs"
+    enforcement: review
+    severity: warning
+
+  - id: RE-CONTRACT-007
+    name: "Minimum 3 comparables required for sales approach"
+    description: "The comparable sales analysis must reject inputs with fewer than 3 comparable sales to ensure statistical minimums."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/comparable_sales.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-008
+    name: "Depreciation cannot exceed replacement cost"
+    description: "Total depreciation (physical + functional + external) must not exceed the replacement cost new. Prevents negative building values."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/replacement_cost.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-009
+    name: "MCP tools must use rust_decimal for all monetary values"
+    description: "All institutional real estate MCP tools must use rust_decimal::Decimal for money and rate types. f64 is only permitted for Monte Carlo simulation paths."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/**/*.rs"
+      - "crates/corp-finance-bindings/src/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RE-CONTRACT-010
+    name: "Benchmark returns must decompose into income + appreciation + leverage"
+    description: "NCREIF-style benchmark attribution must decompose total return into at minimum income return and appreciation return components."
+    scope:
+      - "crates/corp-finance-core/src/institutional_real_estate/benchmark.rs"
+    enforcement: review
+    severity: warning
+
+invariants:
+  - id: RE-INV-001
+    name: "Institutional RE module test coverage"
+    rule: "institutional_real_estate module must have >= 240 unit tests"
+    metric: "test_count"
+    threshold: 240
+    enforcement: ci
+
+  - id: RE-INV-002
+    name: "Institutional RE MCP tool count"
+    rule: "At least 6 MCP tools registered for institutional real estate"
+    metric: "mcp_tool_count"
+    threshold: 6
+    enforcement: ci
+
+  - id: RE-INV-003
+    name: "No f64 in monetary calculations"
+    rule: "Zero occurrences of f64 in institutional_real_estate/*.rs except in Monte Carlo paths"
+    metric: "f64_usage"
+    threshold: 0
+    enforcement: ci
+
+  - id: RE-INV-004
+    name: "Slash command registration"
+    rule: "property-valuation and acquisition-model commands exist in .claude/commands/cfa/"
+    metric: "command_count"
+    threshold: 2
+    enforcement: ci
