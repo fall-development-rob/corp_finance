@@ -1492,6 +1492,134 @@ pub fn analyze_lux_structure(input_json: String) -> NapiResult<String> {
 }
 
 // ---------------------------------------------------------------------------
+// Offshore Structures Expansion — Phase 23
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn analyze_jersey_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::channel_islands::JerseyFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::channel_islands::analyze_jersey_fund(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_guernsey_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::channel_islands::GuernseyFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::channel_islands::analyze_guernsey_fund(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn cell_company_analysis(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::channel_islands::CellCompanyInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::channel_islands::cell_company_analysis(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_vcc_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::singapore_vcc::VccInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::singapore_vcc::analyze_vcc_structure(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn vcc_tax_incentive_analysis(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::singapore_vcc::TaxIncentiveInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::singapore_vcc::tax_incentive_analysis(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_ofc_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::hong_kong_funds::OfcInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::hong_kong_funds::analyze_ofc_structure(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_lpf_structure(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::hong_kong_funds::LpfInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::hong_kong_funds::analyze_lpf_structure(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn hk_carried_interest_concession(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::hong_kong_funds::CarriedInterestInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::hong_kong_funds::carried_interest_concession(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_difc_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::middle_east_funds::DifcFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::middle_east_funds::analyze_difc_fund(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn analyze_adgm_fund(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::middle_east_funds::AdgmFundInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::middle_east_funds::analyze_adgm_fund(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn compare_jurisdictions(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::jurisdiction_comparison::JurisdictionComparisonInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::jurisdiction_comparison::compare_jurisdictions(
+            &input,
+        )
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn migration_feasibility(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::offshore_structures::fund_migration::MigrationFeasibilityInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::offshore_structures::fund_migration::migration_feasibility(&input)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
 // Transfer Pricing — Phase 13
 // ---------------------------------------------------------------------------
 

@@ -201,6 +201,17 @@ You have access to 94 specialty finance, regulatory, and compliance MCP tools co
 | `cayman_fund_structure` | Cayman/BVI offshore fund structure (Exempted LP, SPC, Unit Trust, BVI BCA) with master-feeder economics, CIMA registration, economic substance | structure_type, domicile, fund_size, strategy, master_feeder, feeder_jurisdictions, cima_category, economic_substance_activities |
 | `lux_ireland_fund_structure` | Luxembourg/Ireland fund structure (SICAV-SIF, RAIF, SCSp, ICAV, QIAIF, Section 110) with subscription tax, AIFMD passport, UCITS analysis | structure_type, domicile, fund_size, strategy, regulatory_status, subscription_tax_rate, aifmd_passport, ucits_compliant, target_investors |
 
+### Offshore Fund Structures (Phase 23 Expansion)
+
+| MCP Tool | Purpose | Key Inputs |
+|----------|---------|------------|
+| `channel_islands_fund_structure` | Jersey JPF/Expert/QIF, Guernsey PIF/QIF/RQIF, PCC/ICC cell company analysis with regulatory fees, substance requirements, and distribution capabilities | structure_type, domicile, fund_size, strategy, investor_types, cell_company, regulatory_category, substance_activities |
+| `singapore_vcc_structure` | Singapore VCC standalone/umbrella, MAS licensing, S13O/S13U/S13D tax incentives, fund management company requirements | structure_type, fund_size, strategy, mas_license_type, tax_incentive, umbrella_sub_funds, fund_manager_type, investor_types |
+| `hong_kong_fund_structure` | Hong Kong OFC/LPF, unified fund exemption, carried interest concession, SFC licensing requirements | structure_type, fund_size, strategy, sfc_license, unified_exemption, carried_interest_concession, investor_types |
+| `middle_east_fund_structure` | DIFC/ADGM fund structures, sharia compliance, free zone economics, regulatory sandbox analysis | structure_type, domicile, fund_size, strategy, sharia_compliant, free_zone, regulatory_category, investor_types |
+| `jurisdiction_comparison` | 10+ jurisdiction side-by-side comparison with weighted scoring, optimal domicile selection, total cost of ownership, distribution passport mapping | jurisdictions, fund_size, strategy, investor_types, distribution_targets, priority_weights, comparison_horizon_years |
+| `fund_migration_analysis` | Redomiciliation feasibility, cost-benefit NPV, tax consequences, migration corridors, regulatory approval timeline | source_jurisdiction, source_vehicle, target_jurisdiction, target_vehicle, fund_size, migration_driver, remaining_life_years |
+
 ### Transfer Pricing
 
 | MCP Tool | Purpose | Key Inputs |
