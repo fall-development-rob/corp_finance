@@ -55,6 +55,15 @@ import { registerCoinGeckoTools } from './alternative/coingecko/tools.js';
 import { registerUnhcrTools } from './alternative/unhcr/tools.js';
 import { registerOpenMeteoTools } from './alternative/openmeteo/tools.js';
 
+// Alpha Vantage tools (36)
+import { registerQuoteTools as registerAvQuoteTools } from './alphavantage/tools/quotes.js';
+import { registerTimeSeriesTools } from './alphavantage/tools/time-series.js';
+import { registerFundamentalTools } from './alphavantage/tools/fundamentals.js';
+import { registerForexCryptoTools } from './alphavantage/tools/forex-crypto.js';
+import { registerEconomicsTools } from './alphavantage/tools/economics.js';
+import { registerTechnicalTools as registerAvTechnicalTools } from './alphavantage/tools/technicals.js';
+import { registerIntelligenceTools } from './alphavantage/tools/intelligence.js';
+
 const server = new McpServer({
   name: 'data-sources',
   version: '1.0.0',
@@ -112,6 +121,15 @@ registerPolymarketTools(server);
 registerCoinGeckoTools(server);
 registerUnhcrTools(server);
 registerOpenMeteoTools(server);
+
+// Alpha Vantage (36 tools)
+registerAvQuoteTools(server);
+registerTimeSeriesTools(server);
+registerFundamentalTools(server);
+registerForexCryptoTools(server);
+registerEconomicsTools(server);
+registerAvTechnicalTools(server);
+registerIntelligenceTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

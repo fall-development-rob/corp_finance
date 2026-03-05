@@ -1,7 +1,7 @@
 {
   "name": "@robotixai/data-mcp-server",
   "version": "1.0.0",
-  "description": "Unified free data MCP server — FRED, EDGAR, FIGI, Yahoo Finance, World Bank, ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, USASpending, Polymarket, CoinGecko, UNHCR, Open-Meteo",
+  "description": "Unified free data MCP server — FRED, EDGAR, FIGI, Yahoo Finance, World Bank, Alpha Vantage, ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, USASpending, Polymarket, CoinGecko, UNHCR, Open-Meteo",
   "repository": {
     "type": "git",
     "url": "https://github.com/fall-development-rob/corp_finance.git",
@@ -10,7 +10,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "data-mcp-server": "dist/index.js"
+    "data-mcp-server": "dist/index.js",
+    "av-cli": "dist/alphavantage/cli.js"
   },
   "scripts": {
     "build": "tsc",
