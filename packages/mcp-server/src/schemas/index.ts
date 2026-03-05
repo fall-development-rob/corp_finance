@@ -251,6 +251,12 @@ export {
 export {
   CaymanFundSchema,
   LuxFundSchema,
+  JerseyFundSchema,
+  VccFundSchema,
+  HkOfcSchema,
+  DifcFundSchema,
+  JurisdictionComparisonSchema,
+  MigrationFeasibilitySchema,
 } from "./offshore_structures.js";
 
 export {

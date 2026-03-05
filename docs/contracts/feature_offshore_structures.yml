@@ -1,0 +1,247 @@
+# Feature Contract: Offshore Fund Structures Expansion (Phase 23)
+# Enforces architectural rules for expanded offshore fund structures module
+# Covers: Singapore VCC, Hong Kong funds, Channel Islands (Jersey/Guernsey),
+#         Middle East (DIFC/ADGM), fund migration, jurisdiction comparison
+# Source: ADR-014 (pending)
+
+contracts:
+  - id: OS-CONTRACT-001
+    name: "VCC sub-fund assets must be segregated"
+    description: >
+      Each sub-fund in a Singapore Variable Capital Company (VCC) umbrella
+      structure must have independently calculated NAV. Cross-subsidisation
+      between sub-funds is prohibited under the VCC Act 2018. The
+      implementation must track assets, liabilities, and NAV per sub-fund
+      and reject any operation that would commingle sub-fund assets.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/singapore_vcc.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-002
+    name: "Cell company cells must be ring-fenced"
+    description: >
+      In a Protected Cell Company (PCC) or Incorporated Cell Company (ICC),
+      cell assets cannot be used to satisfy obligations of other cells or of
+      the core. Each cell must maintain independent asset and liability
+      tracking. The ring-fence must be enforced at the type level so that
+      cross-cell asset references are impossible without explicit conversion.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/channel_islands.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-003
+    name: "Minimum capital requirements must be jurisdiction-specific"
+    description: >
+      Each jurisdiction enforces different minimum capital requirements.
+      Cayman Exempted LP: none. Luxembourg SICAV-SIF: EUR 1,250,000 within
+      12 months. Singapore VCC: SGD 1 (paid-up). Jersey Expert Fund: none
+      (but GBP 100 application fee). DIFC QIF: varies by DFSA rules. Hong
+      Kong OFC: none (but SFC licensing required). The validation layer must
+      reject fund setup inputs where stated capital is below the
+      jurisdiction-specific minimum.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-004
+    name: "Tax incentive eligibility requires valid conditions"
+    description: >
+      Singapore Section 13O (formerly 13R) tax exemption requires: fund
+      size >= SGD 10,000,000, local business spending >= SGD 200,000 per
+      annum, and at least 1 Singapore-based investment professional.
+      Section 13U (formerly 13X) requires fund size >= SGD 50,000,000 and
+      local business spending >= SGD 200,000. The eligibility check must
+      validate all conditions and return a detailed pass/fail breakdown.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/singapore_vcc.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-005
+    name: "Carried interest concession requires qualifying conditions"
+    description: >
+      Hong Kong carried interest tax concession (effective 1 April 2021)
+      taxes qualifying carried interest at 0% (vs standard 16.5%). Three
+      conditions must all be met: (1) certified investment fund by the Hong
+      Kong Monetary Authority, (2) carried interest linked to investments
+      held >= 24 months on average, (3) arm's length terms verified. The
+      implementation must check all three and return the applicable tax rate.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/hong_kong_funds.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-006
+    name: "DIFC QIF minimum subscription USD 50,000"
+    description: >
+      A DIFC Qualified Investor Fund (QIF) requires a minimum subscription
+      amount of USD 50,000 per investor under DFSA Collective Investment
+      Rules (CIR) Module. The fund setup validation must reject any QIF
+      configuration where the minimum subscription is set below this
+      threshold. Exempt Fund minimum is USD 500,000.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/middle_east_funds.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-007
+    name: "Substance scoring must cover 5 dimensions"
+    description: >
+      All jurisdiction substance analyses must produce scores across exactly
+      5 dimensions: (1) personnel — number and seniority of local employees,
+      (2) premises — physical office presence, (3) decision-making — where
+      key investment and management decisions are taken, (4) expenditure —
+      local operational spend relative to fund size, (5) CIGA — core
+      income-generating activities performed locally. This is consistent
+      with the existing substance_requirements module scoring model.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-008
+    name: "Migration feasibility requires both source and target jurisdiction"
+    description: >
+      Fund migration (redomiciliation) analysis must receive and validate
+      both a source jurisdiction and a target jurisdiction. The function
+      must confirm that (a) the source jurisdiction permits outbound
+      migration, (b) the target jurisdiction permits inbound migration via
+      continuation, and (c) the legal vehicle type is compatible. Common
+      corridors include Cayman-to-Luxembourg, BVI-to-Cayman, and
+      Jersey-to-Ireland. The output must include estimated timeline,
+      regulatory steps, tax consequences, and investor consent requirements.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/fund_migration.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-009
+    name: "Jurisdiction comparison requires at least 2 jurisdictions"
+    description: >
+      The multi-jurisdiction comparison tool must reject inputs containing
+      fewer than 2 jurisdictions. Comparison output must include a
+      normalised scoring matrix covering: regulatory framework, tax
+      efficiency, substance requirements, setup cost, setup timeline,
+      distribution access, and investor familiarity. Each dimension must
+      produce a score between 0 and 100.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/jurisdiction_comparison.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-010
+    name: "Distribution passport must validate regulatory basis"
+    description: >
+      Each distribution right in the cross-border distribution analysis must
+      reference a specific regulatory framework. Valid frameworks include:
+      AIFMD national private placement regime (NPPR), AIFMD full passport
+      (EU only), APAC bilateral MOU, SEC Regulation D/S exemption, and
+      national-level private placement exemptions. A distribution entry
+      without a regulatory basis must trigger a warning.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/jurisdiction_comparison.rs"
+    enforcement: build-time
+    severity: warning
+
+  - id: OS-CONTRACT-011
+    name: "Free zone 0% tax requires substance in free zone"
+    description: >
+      DIFC and ADGM offer 0% corporate income tax, but this benefit is
+      conditional on maintaining adequate economic substance within the
+      free zone. The tax calculation must cross-reference the substance
+      scoring output (OS-CONTRACT-007) and apply the standard UAE 9%
+      corporate tax rate if the substance score falls below the minimum
+      threshold for the relevant free zone.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/middle_east_funds.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-012
+    name: "Sharia compliance requires at least 3 screening criteria"
+    description: >
+      Sharia-compliant fund structures must pass a minimum of 3 financial
+      ratio screens based on AAOIFI/Dow Jones Islamic Market standards:
+      (1) total debt / trailing 24-month average market cap < 33%,
+      (2) interest income / total revenue < 5%, and (3) impure
+      (haram) income / total revenue < 5%. Additional screens may include
+      cash and receivables ratios. The implementation must return
+      per-criterion pass/fail and an overall compliance determination.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/middle_east_funds.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: OS-CONTRACT-013
+    name: "All monetary values must use rust_decimal"
+    description: >
+      All offshore fund structure calculations must use rust_decimal::Decimal
+      for monetary amounts, fee rates, tax rates, NAV, subscription amounts,
+      and capital thresholds. The f64 type is not permitted in any offshore
+      structures module. This is consistent with the project-wide monetary
+      precision policy enforced across all existing modules.
+    scope:
+      - "crates/corp-finance-core/src/offshore_structures/**/*.rs"
+      - "crates/corp-finance-bindings/src/**/*.rs"
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: OS-INV-001
+    name: "Offshore structures expansion test coverage"
+    rule: "Phase 23 offshore structures expansion must have >= 300 unit tests across all new sub-modules"
+    metric: "test_count"
+    threshold: 300
+    enforcement: ci
+
+  - id: OS-INV-002
+    name: "Offshore structures MCP tool count"
+    rule: "At least 6 new MCP tools registered for the offshore structures expansion (singapore_vcc, hong_kong_funds, channel_islands, middle_east_funds, fund_migration, jurisdiction_comparison)"
+    metric: "mcp_tool_count"
+    threshold: 6
+    enforcement: ci
+
+  - id: OS-INV-003
+    name: "No f64 in monetary calculations"
+    rule: "Zero occurrences of f64 in offshore_structures/**/*.rs source files"
+    metric: "f64_usage"
+    threshold: 0
+    enforcement: ci
+
+  - id: OS-INV-004
+    name: "Slash command registration"
+    rule: "offshore-comparison slash command exists in .claude/commands/cfa/ for multi-jurisdiction comparison workflows"
+    metric: "command_count"
+    threshold: 1
+    enforcement: ci
+
+  - id: OS-INV-005
+    name: "All sub-modules compile with feature flag"
+    rule: "All 6 new sub-modules (singapore_vcc, hong_kong_funds, channel_islands, middle_east_funds, fund_migration, jurisdiction_comparison) compile under the 'offshore_structures' feature flag with zero errors and zero warnings"
+    metric: "compilation_status"
+    threshold: 0
+    enforcement: ci
+
+  - id: OS-INV-006
+    name: "NAPI binding count for offshore expansion"
+    rule: "At least 12 NAPI bindings exposed in corp-finance-bindings for Phase 23 offshore structures functions"
+    metric: "napi_binding_count"
+    threshold: 12
+    enforcement: ci
+
+  - id: OS-INV-007
+    name: "Substance scoring integration with existing module"
+    rule: "Substance scoring in new offshore jurisdictions must reuse or extend the 5-dimension model from crates/corp-finance-core/src/substance_requirements/. No duplicate scoring logic permitted."
+    metric: "integration_check"
+    threshold: 1
+    enforcement: ci
+
+  - id: OS-INV-008
+    name: "FATCA/CRS classification consistency"
+    rule: "Entity classification for new offshore structures (VCC, OFC, PCC, ICC, QIF) must produce outputs compatible with the existing fatca_crs module classification taxonomy (FFI/NFFE/NFE/Reporting FI). New vehicle types must be added to the classification map."
+    metric: "classification_consistency"
+    threshold: 1
+    enforcement: ci

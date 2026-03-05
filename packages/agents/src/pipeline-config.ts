@@ -139,6 +139,12 @@ export const AGENT_SKILLS: Record<string, string[]> = {
     'institutional_acquisition',
     'institutional_comparable_sales',
     'institutional_benchmark',
+    'channel_islands_fund_structure',
+    'singapore_vcc_structure',
+    'hong_kong_fund_structure',
+    'middle_east_fund_structure',
+    'jurisdiction_comparison',
+    'fund_migration_analysis',
     'vendor-pitchbook',
     'vendor-sp-global',
   ],
@@ -376,6 +382,26 @@ export const CFA_INTENTS: AgentIntent[] = [
       'Review this pitch deck for institutional quality',
     ],
     tags: ['model-audit', 'deck-review', 'competitive-analysis', 'quality', 'document-standards'],
+  },
+  {
+    agentType: 'cfa-private-markets-analyst',
+    description: 'Offshore jurisdiction comparison, domicile selection, fund structuring across Cayman, BVI, Jersey, Guernsey, Singapore, Hong Kong, DIFC, ADGM, Luxembourg, Ireland',
+    examples: [
+      'Compare Cayman vs Singapore vs Luxembourg for a $500M PE fund',
+      'Which jurisdiction is optimal for a hedge fund targeting US and EU investors?',
+      'Rank offshore jurisdictions by total cost of ownership for a credit fund',
+    ],
+    tags: ['jurisdiction', 'domicile', 'offshore', 'fund-structure', 'cayman', 'singapore', 'hong-kong', 'jersey', 'guernsey', 'difc', 'adgm', 'comparison'],
+  },
+  {
+    agentType: 'cfa-private-markets-analyst',
+    description: 'Fund migration, redomiciliation feasibility, continuation mechanisms, exit tax analysis, regulatory approval timelines',
+    examples: [
+      'Analyze migrating this Cayman fund to Luxembourg for EU passport',
+      'What are the costs and tax consequences of redomiciling from BVI to Singapore?',
+      'Is fund continuation from Cayman to Ireland feasible for this $1B fund?',
+    ],
+    tags: ['migration', 'redomiciliation', 'continuation', 'exit-tax', 'fund-transfer', 'regulatory-approval', 'domicile-change'],
   },
 ];
 
