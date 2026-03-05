@@ -10,8 +10,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "data-mcp-server": "dist/index.js",
-    "av-cli": "dist/alphavantage/cli.js"
+    "data-mcp-server": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",

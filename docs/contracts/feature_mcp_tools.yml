@@ -7,6 +7,8 @@ contracts:
     description: "All MCP tool handlers must validate inputs using Zod schemas. Raw JSON parsing without validation is not permitted."
     scope:
       - "packages/mcp-server/src/**/*.ts"
+      - "packages/data-mcp-server/src/**/*.ts"
+      - "packages/fmp-mcp-server/src/**/*.ts"
     enforcement: build-time
     severity: error
 
@@ -16,6 +18,8 @@ contracts:
     scope:
       - "packages/agents/src/**/*.ts"
       - "packages/mcp-server/src/**/*.ts"
+      - "packages/data-mcp-server/src/**/*.ts"
+      - "packages/fmp-mcp-server/src/**/*.ts"
     enforcement: build-time
     severity: error
 
@@ -24,5 +28,7 @@ contracts:
     description: "All MCP tool names must use snake_case convention to match the corp-finance-mcp server registration format."
     scope:
       - "packages/mcp-server/src/**/*.ts"
+      - "packages/data-mcp-server/src/**/*.ts"
+      - "packages/fmp-mcp-server/src/**/*.ts"
     enforcement: build-time
     severity: error

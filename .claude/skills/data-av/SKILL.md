@@ -96,23 +96,6 @@ You have access to 36 Alpha Vantage MCP tools for retrieving financial market da
 |----------|-------------|
 | `av_news_sentiment` | Market news with AI-powered sentiment analysis. Filter by tickers and/or topics. |
 
-## CLI Usage
-
-The `av-cli` command provides direct terminal access to Alpha Vantage data:
-
-```bash
-av-cli quote AAPL                           # Real-time quote
-av-cli daily MSFT --outputsize full         # Full daily history
-av-cli overview TSLA                        # Company fundamentals
-av-cli fx EUR USD                           # Forex rate
-av-cli crypto BTC USD                       # Crypto rate
-av-cli treasury --maturity 10year           # Treasury yield
-av-cli sma AAPL --period 50 --interval daily  # 50-day SMA
-av-cli news --tickers AAPL,MSFT            # News with sentiment
-av-cli search "Apple"                       # Symbol search
-av-cli --help                               # Full command list
-```
-
 ## Key Differentiators vs Other Data Sources
 
 - **Company Overview**: Returns 50+ fundamental metrics in a single call — more comprehensive than FMP's profile

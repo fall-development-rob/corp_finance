@@ -80,15 +80,15 @@ contracts:
     rules:
       - "Free data sources get their own packages/xxx-mcp-server/ directory"
       - "Vendor integrations are config-only with skill documentation"
-      - "All data tools use source-prefixed snake_case naming (fred_, edgar_, figi_, yf_, wb_)"
+      - "All data tools use source-prefixed snake_case naming (fred_, edgar_, figi_, yf_, wb_, av_)"
       - "Data skills follow data-* naming convention"
       - "Vendor skills follow vendor-* naming convention"
 
 invariants:
   - id: ARCH-INV-001
     name: "Total skill count"
-    description: "There must be at least 36 git-tracked skills (8 corp-finance + 5 fmp + 5 data + 4 geopolitical + 6 vendor + 6 workflow + 1 specflow + 1 other)"
-    check: "count(.claude/skills/*/SKILL.md) >= 36"
+    description: "There must be at least 37 git-tracked skills (8 corp-finance + 5 fmp + 6 data + 4 geopolitical + 6 vendor + 6 workflow + 1 specflow + 1 other)"
+    check: "count(.claude/skills/*/SKILL.md) >= 37"
 
   - id: ARCH-INV-002
     name: "ESLint configuration exists"
