@@ -1,0 +1,4 @@
+mcp/node_modules/
+mcp/dist/
+mcp/wasm/
+*.log

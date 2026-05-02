@@ -1,6 +1,6 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
+use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::*;

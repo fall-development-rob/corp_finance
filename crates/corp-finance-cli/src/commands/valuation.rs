@@ -3,6 +3,9 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde_json::Value;
 
+use corp_finance_core::types::Currency;
+use corp_finance_core::valuation::comps::{self, CompsInput};
+use corp_finance_core::valuation::dcf::{self, DcfInput, TerminalMethod};
 use corp_finance_core::valuation::wacc::{self, WaccInput};
 
 use crate::input;
@@ -94,6 +97,26 @@ pub struct DcfArgs {
     /// Projection years
     #[arg(long, default_value = "5")]
     pub years: u32,
+
+    /// Capex as % of revenue (default 0.04)
+    #[arg(long)]
+    pub capex_pct: Option<Decimal>,
+
+    /// Change in NWC as % of revenue (default 0.01)
+    #[arg(long)]
+    pub nwc_pct: Option<Decimal>,
+
+    /// Marginal tax rate (default 0.25)
+    #[arg(long)]
+    pub tax_rate: Option<Decimal>,
+
+    /// Net debt for equity bridge (optional)
+    #[arg(long)]
+    pub net_debt: Option<Decimal>,
+
+    /// Diluted shares outstanding for per-share value (optional)
+    #[arg(long)]
+    pub shares_outstanding: Option<Decimal>,
 }
 
 /// Arguments for comparable company analysis
@@ -143,43 +166,63 @@ pub fn run_wacc(args: WaccArgs) -> Result<Value, Box<dyn std::error::Error>> {
 }
 
 pub fn run_dcf(args: DcfArgs) -> Result<Value, Box<dyn std::error::Error>> {
-    let input_data: Value = if let Some(ref path) = args.input {
-        input::file::read_json_value(path)?
+    let dcf_input: DcfInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
     } else if let Some(data) = input::stdin::read_stdin()? {
-        data
+        serde_json::from_value(data)?
     } else {
-        // Build from CLI args
-        serde_json::json!({
-            "base_revenue": args.base_revenue.map(|v| v.to_string()),
-            "growth_rate": args.growth_rate.map(|v| v.to_string()),
-            "ebitda_margin": args.ebitda_margin.map(|v| v.to_string()),
-            "discount_rate": args.discount_rate.map(|v| v.to_string()),
-            "terminal_growth": args.terminal_growth.map(|v| v.to_string()),
-            "years": args.years,
-        })
+        let base_revenue = args
+            .base_revenue
+            .ok_or("--base-revenue is required (or provide --input)")?;
+        let growth_rate = args
+            .growth_rate
+            .ok_or("--growth-rate is required (or provide --input)")?;
+        let ebitda_margin = args
+            .ebitda_margin
+            .ok_or("--ebitda-margin is required (or provide --input)")?;
+        let discount_rate = args
+            .discount_rate
+            .ok_or("--discount-rate is required (or provide --input)")?;
+        let terminal_growth = args
+            .terminal_growth
+            .ok_or("--terminal-growth is required for Gordon Growth terminal value")?;
+
+        DcfInput {
+            base_revenue,
+            revenue_growth_rates: vec![growth_rate; args.years as usize],
+            ebitda_margin,
+            ebit_margin: None,
+            da_as_pct_revenue: None,
+            capex_as_pct_revenue: args.capex_pct.unwrap_or(dec!(0.04)),
+            nwc_as_pct_revenue: args.nwc_pct.unwrap_or(dec!(0.01)),
+            tax_rate: args.tax_rate.unwrap_or(dec!(0.25)),
+            wacc: discount_rate,
+            wacc_input: None,
+            terminal_method: TerminalMethod::GordonGrowth,
+            terminal_growth_rate: Some(terminal_growth),
+            terminal_exit_multiple: None,
+            currency: Currency::USD,
+            forecast_years: Some(args.years),
+            mid_year_convention: Some(true),
+            net_debt: args.net_debt,
+            minority_interest: None,
+            shares_outstanding: args.shares_outstanding,
+        }
     };
 
-    // DCF module may not be fully implemented yet; pass through as structured data
-    Err(format!(
-        "DCF model not yet available. Input received: {}",
-        serde_json::to_string_pretty(&input_data)?
-    )
-    .into())
+    let result = dcf::calculate_dcf(&dcf_input)?;
+    Ok(serde_json::to_value(result)?)
 }
 
 pub fn run_comps(args: CompsArgs) -> Result<Value, Box<dyn std::error::Error>> {
-    let input_data: Value = if let Some(ref path) = args.input {
-        input::file::read_json_value(path)?
+    let comps_input: CompsInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
     } else if let Some(data) = input::stdin::read_stdin()? {
-        data
+        serde_json::from_value(data)?
     } else {
-        return Err("--input file is required for comps analysis".into());
+        return Err("--input file (or stdin JSON) is required for comps analysis".into());
     };
 
-    // Comps module may not be fully implemented yet
-    Err(format!(
-        "Comps analysis not yet available. Input received: {}",
-        serde_json::to_string_pretty(&input_data)?
-    )
-    .into())
+    let result = comps::calculate_comps(&comps_input)?;
+    Ok(serde_json::to_value(result)?)
 }

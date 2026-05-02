@@ -17,7 +17,7 @@
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
+use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate, Years};
