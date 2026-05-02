@@ -1,3 +1,4 @@
+pub mod compat;
 pub mod error;
 pub mod time_value;
 pub mod types;

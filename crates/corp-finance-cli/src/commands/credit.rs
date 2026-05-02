@@ -3,6 +3,8 @@ use rust_decimal::Decimal;
 use serde_json::Value;
 
 use corp_finance_core::credit::altman::{self, AltmanInput};
+use corp_finance_core::credit::capacity::{self, DebtCapacityInput};
+use corp_finance_core::credit::covenants::{self, CovenantTestInput};
 use corp_finance_core::credit::metrics::{self, CreditMetricsInput};
 
 use crate::input;
@@ -168,35 +170,29 @@ pub fn run_credit_metrics(args: CreditArgs) -> Result<Value, Box<dyn std::error:
 }
 
 pub fn run_debt_capacity(args: DebtCapacityArgs) -> Result<Value, Box<dyn std::error::Error>> {
-    let input_data: Value = if let Some(ref path) = args.input {
-        input::file::read_json_value(path)?
+    let capacity_input: DebtCapacityInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
     } else if let Some(data) = input::stdin::read_stdin()? {
-        data
+        serde_json::from_value(data)?
     } else {
-        return Err("--input file is required for debt capacity analysis".into());
+        return Err("--input file (or stdin JSON) is required for debt capacity analysis".into());
     };
 
-    Err(format!(
-        "Debt capacity model not yet available. Input received: {}",
-        serde_json::to_string_pretty(&input_data)?
-    )
-    .into())
+    let result = capacity::calculate_debt_capacity(&capacity_input)?;
+    Ok(serde_json::to_value(result)?)
 }
 
 pub fn run_covenant_test(args: CovenantArgs) -> Result<Value, Box<dyn std::error::Error>> {
-    let input_data: Value = if let Some(ref path) = args.input {
-        input::file::read_json_value(path)?
+    let covenant_input: CovenantTestInput = if let Some(ref path) = args.input {
+        input::file::read_json(path)?
     } else if let Some(data) = input::stdin::read_stdin()? {
-        data
+        serde_json::from_value(data)?
     } else {
-        return Err("--input file is required for covenant testing".into());
+        return Err("--input file (or stdin JSON) is required for covenant testing".into());
     };
 
-    Err(format!(
-        "Covenant testing not yet available. Input received: {}",
-        serde_json::to_string_pretty(&input_data)?
-    )
-    .into())
+    let result = covenants::test_covenants(&covenant_input)?;
+    Ok(serde_json::to_value(result)?)
 }
 
 /// Arguments for Altman Z-Score calculation

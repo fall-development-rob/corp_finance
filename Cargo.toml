@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/corp-finance-core",
     "crates/corp-finance-cli",
+    "crates/corp-finance-wasm",
     "packages/bindings",
 ]
 
@@ -11,3 +12,10 @@ version = "1.0.0"
 edition = "2021"
 authors = ["Robert Fall <hello@rob-otix.com>"]
 license = "MIT"
+
+# WASM release profile (used by `cargo build --release --target wasm32-unknown-unknown`
+# and by `wasm-pack build --release` for the corp-finance-wasm crate).
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1

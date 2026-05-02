@@ -1,0 +1,49 @@
+{
+  "name": "cfa-core",
+  "version": "0.1.0",
+  "description": "Institutional-grade corporate finance toolkit: WACC, DCF, LBO, credit, derivatives, fixed income, and 14 CFA-aligned skills with 9 specialist research agents. 100% offline, decimal-precision math, no API keys required.",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/cfa_agent.git"
+  },
+  "keywords": [
+    "finance",
+    "cfa",
+    "valuation",
+    "dcf",
+    "wacc",
+    "lbo",
+    "credit",
+    "derivatives",
+    "fixed-income",
+    "rust",
+    "wasm",
+    "decimal-precision"
+  ],
+  "category": "finance",
+  "tags": [
+    "valuation",
+    "credit-analysis",
+    "private-equity",
+    "fixed-income",
+    "derivatives",
+    "portfolio-analytics",
+    "research-workflows"
+  ],
+  "engines": {
+    "claudeCode": ">=2.0.0",
+    "node": ">=20.0.0"
+  },
+  "mcpServers": {
+    "cfa-core": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/server.js"]
+    }
+  }
+}

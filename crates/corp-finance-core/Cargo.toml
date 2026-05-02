@@ -93,5 +93,11 @@ chrono = { version = "0.4", features = ["serde"] }
 rand = { version = "0.8", optional = true }
 statrs = { version = "0.17", optional = true }
 
+# WASM compatibility: std::time::Instant panics on wasm32-unknown-unknown.
+# web-time provides a drop-in Instant backed by performance.now() in the browser
+# and a JS-host clock in Node. Pulled in only for wasm32 builds.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-time = "1"
+
 [dev-dependencies]
 pretty_assertions = "1"
