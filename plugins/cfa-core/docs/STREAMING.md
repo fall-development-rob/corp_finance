@@ -1,6 +1,6 @@
 # cfa-core streaming roadmap
 
-## v0.2 (this release)
+## v0.2
 
 `cfa_estimate_runtime` lets the LLM (or a user) check expected wall time
 **before** invoking a slow tool. It combines:
@@ -22,47 +22,120 @@ It returns `typical_us`, `max_us`, and a recommendation:
 This is enough to prevent the worst case ("LLM iterates `run_monte_carlo`
 50 times in a sensitivity grid and hangs the conversation for 10 minutes").
 
-## v0.3 (planned)
+## v0.3 (this release) — first streaming tool: `run_monte_carlo_streaming`
 
-True MCP streaming requires Rust-side progress callbacks. The work breaks
-into three coordinated changes:
+True MCP streaming requires Rust-side progress callbacks. v0.3 ships:
 
-### 1. Rust: progress callback type
+- `corp_finance_core::progress::ProgressSink` trait (+ `NullSink`)
+- `run_monte_carlo_simulation_with_progress(input, &dyn ProgressSink)` —
+  RNG-identical to `run_monte_carlo_simulation`
+- A WASM streaming binding macro and `run_monte_carlo_streaming` export
+  that bridges a JS callback to `ProgressSink`
+- An MCP tool `run_monte_carlo_streaming` that turns each callback into a
+  `notifications/progress` JSON-RPC message tagged with the request's
+  `_meta.progressToken`
+- An end-to-end integration test
+  (`plugins/cfa-core/mcp/tests/streaming.test.mjs`)
 
-```rust
-// crates/corp-finance-core/src/progress.rs (new)
-pub trait ProgressSink {
-    fn report(&self, fraction: f64, label: &str);
-}
+The 244-tool non-streaming surface is **unchanged** — `run_monte_carlo`
+keeps working exactly as before, so existing skills and pipelines need no
+update.
 
-pub struct NullSink;
-impl ProgressSink for NullSink { fn report(&self, _: f64, _: &str) {} }
+### How it fits together
+
+```
+                                  ┌────────────────────────────────────────┐
+                                  │ corp-finance-core                       │
+LLM/Claude                        │                                         │
+  │                               │  trait ProgressSink {                   │
+  │ tools/call                    │      fn report(&self, f64, &str);       │
+  │ {_meta:                       │  }                                      │
+  │   progressToken: "x"}         │                                         │
+  ▼                               │  fn run_monte_carlo_simulation_with_    │
+┌────────────────────┐            │      progress(input, &dyn ProgressSink) │
+│ cfa-core MCP       │            │                                         │
+│ server (server.ts) │            └────────────────────────────────────────┘
+│  └─ streaming.ts   │                                ▲
+│     handler:       │                                │
+│                    │            ┌───────────────────┴────────────────────┐
+│  ┌──────────────┐  │            │ corp-finance-wasm                       │
+│  │ build cb,    │  │            │                                         │
+│  │ buffer evts  │──┼────────────►  wasm_tool_streaming!(                  │
+│  │              │  │   call wit │      run_monte_carlo_streaming, …)      │
+│  │ on result:   │  │   JS cb    │                                         │
+│  │ flush evts   │  │            │  struct JsCallbackSink wrapping         │
+│  │ as           │  │            │      js_sys::Function                   │
+│  │ notifications│  │            │                                         │
+│  │ /progress    │  │            └─────────────────────────────────────────┘
+│  └──────────────┘  │
+└────────────────────┘
 ```
 
-Slow functions (`run_monte_carlo`, `optimize_mean_variance`,
-`build_implied_vol_surface`, `calibrate_sabr`) take an `&dyn ProgressSink`
-and call `sink.report(0.5, "5000/10000 paths complete")` at sensible
-checkpoints.
+### Adding more streaming tools
 
-### 2. WASM: marshal callbacks across the boundary
+Three steps, no codegen run needed:
 
-`wasm-bindgen` supports `Closure<dyn Fn(f64, &str)>`. Add a variant of
-`wasm_tool!` (call it `wasm_tool_streaming!`) that takes a JS callback
-and wires it to a `ProgressSink` impl.
+1. Add `<name>_with_progress(input, &dyn ProgressSink)` in corp-finance-core.
+   Pattern: keep the existing entry point as a one-line shim that delegates
+   with `&NullSink`. See `crates/corp-finance-core/src/monte_carlo/simulation.rs`.
 
-### 3. MCP server: emit progress notifications
+2. Add `wasm_tool_streaming!(<name>_streaming, …)` in
+   `crates/corp-finance-wasm/src/streaming.rs`.
 
-The MCP SDK supports `progressNotification`. Each progress callback
-becomes a notification with the original request's `progressToken`. Claude
-Code displays this as a streaming UI.
+3. Append a `StreamingToolSpec` to the `STREAMING_TOOLS` array in
+   `plugins/cfa-core/mcp/src/streaming.ts`.
 
-## v0.4 (further out)
+Then `bash plugins/cfa-core/scripts/build-wasm.sh && (cd plugins/cfa-core/mcp && npx tsc)`.
 
+The codegen-parity script (`scripts/verify-codegen-parity.sh`) is not affected
+because `tools.ts`, `lib.rs`, and the schemas all stay untouched.
+
+### Suggested next streaming targets
+
+Order them by user-visible latency × usage frequency:
+
+- `run_mc_dcf` — same Monte Carlo loop, distinct entry point (low effort,
+  high value)
+- `optimize_mean_variance` — quadratic programming, can take seconds for
+  large covariance matrices
+- `build_implied_vol_surface` — calibrates per-tenor smiles
+- `calibrate_sabr` — iterative non-linear least squares
+
+### Known limitation: notifications buffer until the call returns
+
+The current implementation **buffers** progress events on the JS side and
+flushes them right before the `tools/call` response. The reason: the WASM
+function is a synchronous Rust loop, and we can't `await
+sendNotification(...)` from inside a `Closure<dyn Fn(f64, &str)>` without
+crossing the sync/async boundary (which would either deadlock or require
+splitting each path into a separate event-loop tick).
+
+**Practical effect**: for a 60-second simulation the user still sees a
+60-second silent wait, then a burst of 20 progress events plus the result.
+The events still let the client *render* a progress bar after the fact, but
+they don't drive a *live* progress bar during the simulation.
+
+To get true real-time emission we need one of:
+
+- Rust async loop with `wasm_bindgen_futures::JsFuture` await between
+  checkpoints — yields the event loop so each notification flushes before
+  the next batch of paths runs. Adds a wasm-bindgen-futures dep.
+- Worker-thread Rust loop with `postMessage` events — full pipeline async,
+  no buffering. Higher complexity (need to also handle cancellation).
+
+Both are tracked under v0.4 below.
+
+## v0.4 (planned)
+
+- **Real-time event flushing**: convert the streaming loop to async so each
+  `notifications/progress` arrives at the client *while* the simulation is
+  running, not in a final burst.
+- **Cancellation**: respect MCP `$/cancelRequest` to abort long-running
+  Rust loops mid-flight. Needs the same async refactor as above plus an
+  `AtomicBool` "should_cancel" inspected at each checkpoint.
 - **True chunked output**: emit partial Monte Carlo paths as JSON-Lines
   events instead of a single batch. Lets the LLM make decisions on
   intermediate distributions without waiting for all 10k paths.
-- **Cancellation**: respect MCP `$/cancelRequest` to abort long-running
-  Rust loops mid-flight.
 - **Concurrent tool invocations**: refactor to allow N tools running in
   parallel within one MCP server (currently each call blocks the server).
 

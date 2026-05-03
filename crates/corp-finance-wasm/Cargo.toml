@@ -9,14 +9,140 @@ description = "WebAssembly bindings for corp-finance-core (cfa-core plugin)"
 [lib]
 crate-type = ["cdylib"]
 
+# ---------------------------------------------------------------------------
+# Per-domain feature gates
+#
+# Each `wasm_tool!` invocation in src/lib.rs is wrapped in
+# `#[cfg(feature = "<domain>")]`. Enabling a feature on this crate
+# transitively enables the same feature on `corp-finance-core`, so the
+# auto-generated WASM exports and the underlying compute paths are
+# compiled together. Disabling a feature drops both — yielding a smaller
+# `.wasm` artifact.
+#
+# Defaults: `full` keeps the v0.2 244-tool surface intact (no behavioural
+# change). End users wanting a slim build can use:
+#
+#     cargo build -p corp-finance-wasm --no-default-features \
+#         --features="valuation,credit"        # the `slim` preset
+#     cargo build -p corp-finance-wasm --no-default-features \
+#         --features="fixed_income,derivatives,credit"  # custom mix
+#
+# See plugins/cfa-core/README.md for a measured size table.
+# ---------------------------------------------------------------------------
+[features]
+default = ["full"]
+
+# Convenience preset: smallest "useful" WASM (valuation + credit).
+slim = ["valuation", "credit"]
+
+# Mirror corp-finance-core's `full`: every domain wired through.
+full = [
+    "valuation", "credit", "pe", "ma", "portfolio", "fixed_income",
+    "three_statement", "jurisdiction", "scenarios", "monte_carlo",
+    "derivatives", "quant_risk", "restructuring", "real_assets",
+    "fx_commodities", "securitization", "venture", "esg", "regulatory",
+    "insurance", "private_credit", "fpa", "wealth", "crypto", "trade_finance",
+    "structured_products", "municipal", "credit_derivatives", "convertibles",
+    "lease_accounting", "pension", "sovereign", "real_options",
+    "equity_research", "commodity_trading", "quant_strategies", "treasury",
+    "infrastructure", "behavioral", "performance_attribution",
+    "credit_portfolio", "macro_economics", "compliance", "onshore_structures",
+    "offshore_structures", "transfer_pricing", "tax_treaty", "fatca_crs",
+    "substance_requirements", "regulatory_reporting", "aml_compliance",
+    "volatility_surface", "portfolio_optimization", "risk_budgeting",
+    "market_microstructure", "interest_rate_models", "mortgage_analytics",
+    "inflation_linked", "repo_financing", "capital_allocation",
+    "credit_scoring", "clo_analytics", "fund_of_funds", "earnings_quality",
+    "dividend_policy", "carbon_markets", "bank_analytics", "private_wealth",
+    "emerging_markets", "index_construction", "financial_forensics",
+    "workflows", "institutional_real_estate",
+]
+
+# Per-domain features. Each one transitively enables the matching feature
+# on corp-finance-core (so the underlying compute is compiled in too).
+valuation = ["corp-finance-core/valuation"]
+credit = ["corp-finance-core/credit"]
+pe = ["corp-finance-core/pe"]
+ma = ["corp-finance-core/ma"]
+portfolio = ["corp-finance-core/portfolio"]
+fixed_income = ["corp-finance-core/fixed_income"]
+three_statement = ["corp-finance-core/three_statement"]
+jurisdiction = ["corp-finance-core/jurisdiction"]
+derivatives = ["corp-finance-core/derivatives"]
+quant_risk = ["corp-finance-core/quant_risk"]
+restructuring = ["corp-finance-core/restructuring"]
+real_assets = ["corp-finance-core/real_assets"]
+fx_commodities = ["corp-finance-core/fx_commodities"]
+securitization = ["corp-finance-core/securitization"]
+venture = ["corp-finance-core/venture"]
+esg = ["corp-finance-core/esg"]
+regulatory = ["corp-finance-core/regulatory"]
+insurance = ["corp-finance-core/insurance"]
+private_credit = ["corp-finance-core/private_credit"]
+fpa = ["corp-finance-core/fpa"]
+wealth = ["corp-finance-core/wealth"]
+crypto = ["corp-finance-core/crypto"]
+trade_finance = ["corp-finance-core/trade_finance"]
+structured_products = ["corp-finance-core/structured_products"]
+municipal = ["corp-finance-core/municipal"]
+credit_derivatives = ["corp-finance-core/credit_derivatives"]
+convertibles = ["corp-finance-core/convertibles"]
+lease_accounting = ["corp-finance-core/lease_accounting"]
+pension = ["corp-finance-core/pension"]
+sovereign = ["corp-finance-core/sovereign"]
+real_options = ["corp-finance-core/real_options"]
+equity_research = ["corp-finance-core/equity_research"]
+commodity_trading = ["corp-finance-core/commodity_trading"]
+quant_strategies = ["corp-finance-core/quant_strategies"]
+treasury = ["corp-finance-core/treasury"]
+infrastructure = ["corp-finance-core/infrastructure"]
+behavioral = ["corp-finance-core/behavioral"]
+performance_attribution = ["corp-finance-core/performance_attribution"]
+credit_portfolio = ["corp-finance-core/credit_portfolio"]
+macro_economics = ["corp-finance-core/macro_economics"]
+compliance = ["corp-finance-core/compliance"]
+onshore_structures = ["corp-finance-core/onshore_structures"]
+offshore_structures = ["corp-finance-core/offshore_structures"]
+transfer_pricing = ["corp-finance-core/transfer_pricing"]
+tax_treaty = ["corp-finance-core/tax_treaty"]
+fatca_crs = ["corp-finance-core/fatca_crs"]
+substance_requirements = ["corp-finance-core/substance_requirements"]
+regulatory_reporting = ["corp-finance-core/regulatory_reporting"]
+aml_compliance = ["corp-finance-core/aml_compliance"]
+volatility_surface = ["corp-finance-core/volatility_surface"]
+portfolio_optimization = ["corp-finance-core/portfolio_optimization"]
+risk_budgeting = ["corp-finance-core/risk_budgeting"]
+market_microstructure = ["corp-finance-core/market_microstructure"]
+interest_rate_models = ["corp-finance-core/interest_rate_models"]
+mortgage_analytics = ["corp-finance-core/mortgage_analytics"]
+inflation_linked = ["corp-finance-core/inflation_linked"]
+repo_financing = ["corp-finance-core/repo_financing"]
+capital_allocation = ["corp-finance-core/capital_allocation"]
+credit_scoring = ["corp-finance-core/credit_scoring"]
+clo_analytics = ["corp-finance-core/clo_analytics"]
+fund_of_funds = ["corp-finance-core/fund_of_funds"]
+earnings_quality = ["corp-finance-core/earnings_quality"]
+dividend_policy = ["corp-finance-core/dividend_policy"]
+carbon_markets = ["corp-finance-core/carbon_markets"]
+bank_analytics = ["corp-finance-core/bank_analytics"]
+private_wealth = ["corp-finance-core/private_wealth"]
+emerging_markets = ["corp-finance-core/emerging_markets"]
+index_construction = ["corp-finance-core/index_construction"]
+financial_forensics = ["corp-finance-core/financial_forensics"]
+workflows = ["corp-finance-core/workflows"]
+institutional_real_estate = ["corp-finance-core/institutional_real_estate"]
+scenarios = ["corp-finance-core/scenarios"]
+monte_carlo = ["corp-finance-core/monte_carlo"]
+
 [dependencies]
-# v0.2 ships the full corp-finance-core surface (244 tools).
-# The web-time + getrandom-js shims (below) make the timing- and RNG-using
-# modules (Monte Carlo, scenarios) work on wasm32-unknown-unknown.
-corp-finance-core = { path = "../corp-finance-core", default-features = false, features = [
-    "full",
-] }
+# corp-finance-core is pulled in with `default-features = false` so that
+# every domain is opt-in via the per-domain features above. The default
+# `full` preset keeps the v0.2 244-tool surface intact.
+corp-finance-core = { path = "../corp-finance-core", default-features = false }
 wasm-bindgen = "0.2"
+# js_sys provides js_sys::Function for the streaming callback bridge — see
+# crates/corp-finance-wasm/src/streaming.rs.
+js-sys = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde-wasm-bindgen = "0.6"

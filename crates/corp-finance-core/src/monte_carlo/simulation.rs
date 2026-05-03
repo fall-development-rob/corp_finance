@@ -6,6 +6,7 @@ use statrs::distribution::{LogNormal, Normal, Triangular, Uniform};
 use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
+use crate::progress::{should_report, NullSink, ProgressSink};
 use crate::types::{ComputationMetadata, ComputationOutput};
 use crate::CorpFinanceResult;
 
@@ -357,8 +358,33 @@ fn compute_statistics(values: &mut [f64], name: &str) -> McVariableResult {
 /// `num_simulations` paths. Returns per-variable statistics including
 /// mean, median, standard deviation, percentiles, skewness, kurtosis,
 /// and a 20-bin histogram.
+///
+/// This is a thin wrapper around [`run_monte_carlo_simulation_with_progress`]
+/// that uses [`NullSink`] — existing callers (NAPI bindings, native CLI,
+/// non-streaming WASM) keep working unchanged.
 pub fn run_monte_carlo_simulation(
     input: &MonteCarloInput,
+) -> CorpFinanceResult<ComputationOutput<MonteCarloOutput>> {
+    run_monte_carlo_simulation_with_progress(input, &NullSink)
+}
+
+/// Streaming-aware variant of [`run_monte_carlo_simulation`].
+///
+/// Behaves identically except that it calls `sink.report(fraction, label)`
+/// at coarse checkpoints (~5% increments) inside each variable's sampling
+/// loop. The fraction is computed across all variables: a 3-variable
+/// simulation reports `0.0`-`0.33` while sampling variable 1, `0.33`-`0.66`
+/// while sampling variable 2, etc.
+///
+/// Pass [`NullSink`] if you don't want progress events. The
+/// [`ProgressSink::report`] call is a no-op in that case and the wrapper
+/// `run_monte_carlo_simulation` does exactly that.
+///
+/// See `crates/corp-finance-wasm/src/streaming.rs` for the wasm-bindgen
+/// adapter that turns a JS callback into a `ProgressSink`.
+pub fn run_monte_carlo_simulation_with_progress(
+    input: &MonteCarloInput,
+    sink: &dyn ProgressSink,
 ) -> CorpFinanceResult<ComputationOutput<MonteCarloOutput>> {
     let start = Instant::now();
     let warnings: Vec<String> = Vec::new();
@@ -382,15 +408,35 @@ pub fn run_monte_carlo_simulation(
     };
 
     let n = input.num_simulations as usize;
-    let mut variable_results = Vec::with_capacity(input.variables.len());
+    let var_count = input.variables.len();
+    let mut variable_results = Vec::with_capacity(var_count);
 
-    for var in &input.variables {
+    sink.report(0.0, "starting Monte Carlo simulation");
+
+    for (var_idx, var) in input.variables.iter().enumerate() {
         let mut samples = Vec::with_capacity(n);
-        for _ in 0..n {
+        for i in 0..n {
             samples.push(sample(&mut rng, &var.distribution)?);
+            if should_report(i, n) {
+                // Fraction is split evenly across variables so a multi-var
+                // simulation gets the full [0, 1] range, not just [0, 1/k].
+                let var_fraction = i as f64 / n as f64;
+                let overall = (var_idx as f64 + var_fraction) / var_count as f64;
+                let label = format!(
+                    "variable {}/{} ({}): {}/{} paths",
+                    var_idx + 1,
+                    var_count,
+                    var.name,
+                    i,
+                    n
+                );
+                sink.report(overall, &label);
+            }
         }
         variable_results.push(compute_statistics(&mut samples, &var.name));
     }
+
+    sink.report(1.0, "Monte Carlo simulation complete");
 
     let output = MonteCarloOutput {
         num_simulations: input.num_simulations,
@@ -939,6 +985,98 @@ mod tests {
                 tp.probability
             );
         }
+    }
+
+    // --- Progress streaming tests ---
+
+    use std::sync::Mutex;
+
+    struct CountingSink {
+        events: Mutex<Vec<(f64, String)>>,
+    }
+
+    impl CountingSink {
+        fn new() -> Self {
+            Self { events: Mutex::new(Vec::new()) }
+        }
+        fn snapshot(&self) -> Vec<(f64, String)> {
+            self.events.lock().unwrap().clone()
+        }
+    }
+
+    impl ProgressSink for CountingSink {
+        fn report(&self, fraction: f64, label: &str) {
+            self.events.lock().unwrap().push((fraction, label.to_string()));
+        }
+    }
+
+    #[test]
+    fn test_streaming_emits_start_and_end_markers() {
+        let sink = CountingSink::new();
+        let _ = run_monte_carlo_simulation_with_progress(&basic_input(), &sink).unwrap();
+        let events = sink.snapshot();
+
+        // Always at least one start (0.0) and one end (1.0) event.
+        assert!(events.len() >= 2, "expected ≥2 events, got {}", events.len());
+        assert_eq!(events.first().unwrap().0, 0.0);
+        assert_eq!(events.last().unwrap().0, 1.0);
+        assert!(events.first().unwrap().1.contains("starting"));
+        assert!(events.last().unwrap().1.contains("complete"));
+    }
+
+    #[test]
+    fn test_streaming_fractions_are_monotonic() {
+        let sink = CountingSink::new();
+        let _ = run_monte_carlo_simulation_with_progress(&basic_input(), &sink).unwrap();
+        let events = sink.snapshot();
+
+        for w in events.windows(2) {
+            assert!(
+                w[0].0 <= w[1].0,
+                "non-monotonic: {} > {}",
+                w[0].0,
+                w[1].0
+            );
+        }
+    }
+
+    #[test]
+    fn test_streaming_results_match_non_streaming() {
+        // The streaming variant must produce identical numerics — the sink
+        // is purely observational and must not perturb the RNG.
+        let input = basic_input();
+        let plain = run_monte_carlo_simulation(&input).unwrap();
+        let streamed =
+            run_monte_carlo_simulation_with_progress(&input, &CountingSink::new()).unwrap();
+        assert_eq!(plain.result.num_simulations, streamed.result.num_simulations);
+        assert_eq!(
+            plain.result.variables[0].mean,
+            streamed.result.variables[0].mean
+        );
+        assert_eq!(
+            plain.result.variables[0].std_dev,
+            streamed.result.variables[0].std_dev
+        );
+    }
+
+    #[test]
+    fn test_streaming_multivariable_fraction_spans_full_range() {
+        // With 2 variables, the second variable's progress should push the
+        // fraction beyond 0.5 — proving we don't accidentally truncate to
+        // [0, 1/k] for k variables.
+        let input = MonteCarloInput {
+            num_simulations: 1_000,
+            seed: Some(SEED),
+            variables: vec![normal_var("a", 0.0, 1.0), normal_var("b", 0.0, 1.0)],
+        };
+        let sink = CountingSink::new();
+        let _ = run_monte_carlo_simulation_with_progress(&input, &sink).unwrap();
+        let events = sink.snapshot();
+
+        // At least one event should be > 0.5 (somewhere in variable 2).
+        assert!(events.iter().any(|(f, _)| *f > 0.5));
+        // Final event still reaches 1.0.
+        assert_eq!(events.last().unwrap().0, 1.0);
     }
 
     #[test]
