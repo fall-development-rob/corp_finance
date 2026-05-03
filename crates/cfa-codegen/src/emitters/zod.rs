@@ -22,7 +22,7 @@ use crate::parsers::rust_structs::{EnumInfo, FieldInfo, StructIndex, StructInfo}
 pub const HEADER: &str = r#"/**
  * cfa-core MCP tool input schemas.
  *
- * GENERATED FROM crates/corp-finance-core/src/ via cfa-codegen.
+ * GENERATED FROM crates/corp-finance-core/src/ via `cargo run -p cfa-codegen -- zod-schemas`.
  * Do not edit by hand — re-run the generator if Input structs change.
  *
  * Each entry is a zod schema for one MCP tool's input. Tools without an

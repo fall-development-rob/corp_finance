@@ -175,9 +175,9 @@ fn render_readme(napi_total: usize, written: usize, rich: usize, skipped: usize)
         "# cfa-core MCP tool examples\n\n\
 {written} of {napi_total} tools have a sample input here. They live in this directory as `<tool_name>.json` and pair with the per-tool zod schemas in `mcp/src/schemas.ts`.\n\n\
 ## Two flavours\n\n\
-- **{rich} rich examples** — hand-written realistic financial scenarios (WACC for a typical mid-cap, 5-year DCF with 8→4% growth taper, 5x EBITDA LBO, ATM Black-Scholes call, etc.). These run end-to-end through the MCP tool and produce sensible outputs. Use them as starting points for your own analyses. See `scripts/gen-examples.py:RICH_EXAMPLES`.\n\
+- **{rich} rich examples** — hand-written realistic financial scenarios (WACC for a typical mid-cap, 5-year DCF with 8→4% growth taper, 5x EBITDA LBO, ATM Black-Scholes call, etc.). These run end-to-end through the MCP tool and produce sensible outputs. Use them as starting points for your own analyses. See `crates/cfa-codegen/src/data/examples.rs:RICH_EXAMPLES`.\n\
 - **{auto} auto-generated shape examples** — minimum-valid inputs derived from the Rust struct definitions. Optional fields are omitted; required fields get type-appropriate placeholders (`\"0.05\"` for decimals, `\"EXAMPLE\"` for strings, `1` for ints). These pass the zod type check but **most will fail Rust validation** — domain enums (TerminalMethod, OptionType) need real values and business invariants (settlement before maturity, weights summing to 1) need realistic numbers. Treat them as field-name discovery aids, not turnkey inputs.\n\
-- **{skipped} tools without examples** — input struct couldn't be auto-extracted (enum-shaped, e.g. `MbsAnalyticsInput`). v0.3 enum-aware parser pass.\n\n\
+- **{skipped} tools without examples** — input struct couldn't be auto-extracted (enum-shaped variants without a single inner type).\n\n\
 ## Usage\n\n\
 ```bash\n\
 # In any Claude Code conversation:\n\
@@ -188,9 +188,9 @@ cat plugins/cfa-core/examples/build_lbo.json \\\n  | jq '{{input: .}}' \\\n  | s
 ```\n\n\
 ## Regenerating\n\n\
 ```bash\n\
-python3 scripts/gen-examples.py\n\
+cargo run -p cfa-codegen -- examples\n\
 ```\n\n\
-Re-run after any change to `crates/corp-finance-core/src/` Input structs or after editing `RICH_EXAMPLES` in the script.\n",
+Re-run after any change to `crates/corp-finance-core/src/` Input structs or after editing `RICH_EXAMPLES` in `crates/cfa-codegen/src/data/examples.rs`.\n",
         written = written,
         napi_total = napi_total,
         rich = rich,
