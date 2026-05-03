@@ -1,0 +1,6 @@
+# Bundled by scripts/build-plugins.sh — regenerate, don't commit.
+mcp/dist/
+mcp/vendors/
+mcp/node_modules/
+mcp/package.json
+mcp/package-lock.json

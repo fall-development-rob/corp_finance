@@ -39,7 +39,7 @@
   "mcpServers": {
     "cfa-data": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/data-mcp-server/dist/index.js"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
       "env": {
         "ACLED_ACCESS_TOKEN": "${ACLED_ACCESS_TOKEN:-}",
         "NASA_FIRMS_API_KEY": "${NASA_FIRMS_API_KEY:-}",
