@@ -1,0 +1,9 @@
+{
+  "spot_price": "0.05",
+  "futures_prices": [
+    "<FuturesPrice>"
+  ],
+  "storage_cost_per_unit_month": "0.05",
+  "financing_rate": "0.05",
+  "commodity_name": "EXAMPLE"
+}

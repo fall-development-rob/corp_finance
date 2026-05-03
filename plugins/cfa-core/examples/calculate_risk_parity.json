@@ -1,0 +1,11 @@
+{
+  "assets": [
+    "<AssetInfo>"
+  ],
+  "covariance_matrix": [
+    [
+      "0.05"
+    ]
+  ],
+  "method": "<RiskParityMethod>"
+}

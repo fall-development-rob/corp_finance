@@ -1,0 +1,9 @@
+{
+  "portfolio_name": "EXAMPLE",
+  "portfolio_return": "0.05",
+  "benchmark_return": "0.05",
+  "factors": [
+    "<FactorExposure>"
+  ],
+  "risk_free_rate": "0.05"
+}

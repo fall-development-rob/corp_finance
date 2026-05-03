@@ -1,0 +1,10 @@
+{
+  "notional": "0.05",
+  "fixed_rate": "0.05",
+  "payment_frequency": 1,
+  "remaining_years": "0.05",
+  "discount_curve": [
+    "<DiscountPoint>"
+  ],
+  "is_pay_fixed": false
+}

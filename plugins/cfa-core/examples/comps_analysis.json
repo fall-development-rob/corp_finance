@@ -1,0 +1,28 @@
+{
+  "target": {
+    "ticker": "TGT",
+    "ev": "5000000",
+    "revenue": "1200000",
+    "ebitda": "300000",
+    "earnings": "150000",
+    "book_value": "800000"
+  },
+  "peers": [
+    {
+      "ticker": "PEER1",
+      "ev": "4500000",
+      "revenue": "1100000",
+      "ebitda": "275000",
+      "earnings": "140000",
+      "book_value": "750000"
+    },
+    {
+      "ticker": "PEER2",
+      "ev": "5500000",
+      "revenue": "1300000",
+      "ebitda": "325000",
+      "earnings": "160000",
+      "book_value": "850000"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "principal": "0.05",
+  "interest_rate": "0.05",
+  "term_months": 1,
+  "elapsed_months": 1,
+  "discount_rate": "0.05",
+  "qualified_financing_amount": "0.05",
+  "qualified_financing_pre_money": "0.05",
+  "pre_money_shares": 1,
+  "conversion_trigger": "<ConversionTrigger>"
+}

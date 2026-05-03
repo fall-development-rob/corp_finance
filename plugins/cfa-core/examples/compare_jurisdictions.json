@@ -1,0 +1,9 @@
+{
+  "jurisdictions": [
+    "EXAMPLE"
+  ],
+  "fund_strategy": "EXAMPLE",
+  "fund_size": "0.05",
+  "fund_type": "EXAMPLE",
+  "weights": "<ComparisonWeights>"
+}

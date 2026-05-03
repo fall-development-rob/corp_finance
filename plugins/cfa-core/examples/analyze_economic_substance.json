@@ -1,0 +1,20 @@
+{
+  "entity_name": "EXAMPLE",
+  "jurisdiction": "EXAMPLE",
+  "entity_type": "<EntityType>",
+  "activity_type": "EXAMPLE",
+  "annual_revenue": "0.05",
+  "passive_income_ratio": "0.05",
+  "local_employees": 1,
+  "local_qualified_directors": 1,
+  "total_directors": 1,
+  "has_local_premises": false,
+  "premises_type": "<PremisesType>",
+  "board_meetings_in_jurisdiction": 1,
+  "total_board_meetings": 1,
+  "annual_operating_expenditure": "0.05",
+  "local_expenditure": "0.05",
+  "ciga_performed_locally": false,
+  "outsourced_ciga": false,
+  "years_established": 1
+}

@@ -1,0 +1,8 @@
+{
+  "forward_price": "0.05",
+  "expiry": "0.05",
+  "market_vols": [
+    "<SabrVolPoint>"
+  ],
+  "beta": "0.05"
+}

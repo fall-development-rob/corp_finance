@@ -1,0 +1,9 @@
+{
+  "spot_price": "0.05",
+  "strike_price": "0.05",
+  "time_to_expiry": "0.05",
+  "risk_free_rate": "0.05",
+  "dividend_yield": "0.05",
+  "option_type": "<OptionType>",
+  "market_price": "0.05"
+}

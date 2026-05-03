@@ -1,0 +1,7 @@
+{
+  "source_jurisdiction": "<Jurisdiction>",
+  "investor_jurisdiction": "<Jurisdiction>",
+  "income_type": "<IncomeType>",
+  "gross_income": "0.05",
+  "is_tax_exempt_investor": false
+}

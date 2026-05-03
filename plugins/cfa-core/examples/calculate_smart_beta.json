@@ -1,0 +1,8 @@
+{
+  "constituents": [
+    "<SmartBetaConstituent>"
+  ],
+  "factor_tilts": "<FactorTilts>",
+  "max_weight": "0.05",
+  "min_weight": "0.05"
+}

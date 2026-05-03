@@ -1,0 +1,17 @@
+{
+  "loan_name": "EXAMPLE",
+  "commitment": "0.05",
+  "drawn_amount": "0.05",
+  "base_rate": "0.05",
+  "spread_bps": "0.05",
+  "pik_toggle": false,
+  "delayed_draw_fee_bps": "0.05",
+  "maturity_years": 1,
+  "amortization_schedule": "<AmortSchedule>",
+  "prepayment_penalty": [
+    "<PrepaymentPenalty>"
+  ],
+  "projection_years": 1,
+  "expected_default_rate": "0.05",
+  "expected_loss_severity": "0.05"
+}

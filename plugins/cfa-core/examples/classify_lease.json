@@ -1,0 +1,11 @@
+{
+  "lease_description": "EXAMPLE",
+  "standard": "<LeaseStandard>",
+  "lease_term_months": 1,
+  "monthly_payment": "0.05",
+  "incremental_borrowing_rate": "0.05",
+  "fair_value_of_asset": "0.05",
+  "useful_life_months": 1,
+  "transfer_of_ownership": false,
+  "specialized_asset": false
+}

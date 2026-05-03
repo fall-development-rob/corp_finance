@@ -1,0 +1,13 @@
+{
+  "acquirer_name": "EXAMPLE",
+  "acquirer_net_income": "0.05",
+  "acquirer_shares_outstanding": "0.05",
+  "acquirer_share_price": "0.05",
+  "acquirer_tax_rate": "0.05",
+  "target_name": "EXAMPLE",
+  "target_net_income": "0.05",
+  "target_shares_outstanding": "0.05",
+  "target_share_price": "0.05",
+  "offer_price_per_share": "0.05",
+  "consideration": "<ConsiderationType>"
+}

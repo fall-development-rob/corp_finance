@@ -1,0 +1,25 @@
+{
+  "asset_names": [
+    "EXAMPLE"
+  ],
+  "weights": [
+    "0.05"
+  ],
+  "factor_names": [
+    "EXAMPLE"
+  ],
+  "factor_loadings": [
+    [
+      "0.05"
+    ]
+  ],
+  "factor_covariance": [
+    [
+      "0.05"
+    ]
+  ],
+  "specific_variances": [
+    "0.05"
+  ],
+  "rebalance": false
+}

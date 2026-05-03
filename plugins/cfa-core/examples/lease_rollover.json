@@ -1,0 +1,8 @@
+{
+  "tenants": [
+    "<Tenant>"
+  ],
+  "holding_period_years": 1,
+  "analysis_start_year": 1,
+  "total_building_sf": "0.05"
+}

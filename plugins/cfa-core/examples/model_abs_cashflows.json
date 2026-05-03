@@ -1,0 +1,13 @@
+{
+  "pool_balance": "0.05",
+  "weighted_avg_coupon": "0.05",
+  "weighted_avg_maturity_months": 1,
+  "weighted_avg_age_months": 1,
+  "num_loans": 1,
+  "prepayment_model": "<PrepaymentModel>",
+  "default_model": "<DefaultModel>",
+  "loss_severity": "0.05",
+  "recovery_lag_months": 1,
+  "servicing_fee_rate": "0.05",
+  "projection_months": 1
+}

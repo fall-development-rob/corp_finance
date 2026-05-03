@@ -1,0 +1,11 @@
+{
+  "pre_money_valuation": "0.05",
+  "investment_amount": "0.05",
+  "existing_shares": 1,
+  "existing_shareholders": [
+    "<Shareholder>"
+  ],
+  "option_pool_shares_existing": 1,
+  "round_name": "EXAMPLE",
+  "liquidation_preference": "<LiqPref>"
+}

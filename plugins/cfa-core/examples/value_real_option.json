@@ -1,0 +1,9 @@
+{
+  "option_type": "<OptionType>",
+  "underlying_value": "0.05",
+  "exercise_price": "0.05",
+  "volatility": "0.05",
+  "risk_free_rate": "0.05",
+  "time_to_expiry": "0.05",
+  "steps": 1
+}

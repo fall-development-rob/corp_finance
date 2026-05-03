@@ -1,0 +1,14 @@
+{
+  "bond_name": "EXAMPLE",
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "maturity_years": "0.05",
+  "credit_spread": "0.05",
+  "risk_free_rate": "0.05",
+  "stock_price": "0.05",
+  "conversion_ratio": "0.05",
+  "stock_volatility": "0.05",
+  "stock_scenarios": [
+    "0.05"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "fund_name": "EXAMPLE",
+  "ofc_type": "EXAMPLE",
+  "umbrella": false,
+  "sub_fund_count": 1,
+  "fund_strategy": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "performance_fee_rate": "0.05",
+  "type9_licensed_manager": false,
+  "grant_scheme_eligible": false,
+  "target_investors": [
+    "EXAMPLE"
+  ]
+}

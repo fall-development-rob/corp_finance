@@ -1,0 +1,7 @@
+{
+  "returns": [
+    "0.05"
+  ],
+  "risk_free_rate": "0.05",
+  "frequency": "<ReturnFrequency>"
+}

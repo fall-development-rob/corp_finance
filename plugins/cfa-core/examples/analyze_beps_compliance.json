@@ -1,0 +1,14 @@
+{
+  "entity_name": "EXAMPLE",
+  "parent_jurisdiction": "EXAMPLE",
+  "entities": [
+    "<GroupEntity>"
+  ],
+  "intercompany_transactions": [
+    "<IntercompanyTx>"
+  ],
+  "group_consolidated_revenue": "0.05",
+  "group_consolidated_profit": "0.05",
+  "cbcr_threshold": "0.05",
+  "pillar_two_applicable": false
+}

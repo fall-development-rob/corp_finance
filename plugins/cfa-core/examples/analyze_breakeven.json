@@ -1,0 +1,10 @@
+{
+  "nominal_yield": "0.05",
+  "real_yield": "0.05",
+  "nominal_yield_curve": [
+    "<YieldPoint>"
+  ],
+  "real_yield_curve": [
+    "<YieldPoint>"
+  ]
+}

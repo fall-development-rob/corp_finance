@@ -1,0 +1,10 @@
+{
+  "company_name": "EXAMPLE",
+  "premium_risk": "<PremiumReserveRisk>",
+  "catastrophe_risk": "0.05",
+  "market_risk": "0.05",
+  "credit_risk": "0.05",
+  "operational_risk_premium": "0.05",
+  "eligible_own_funds": "0.05",
+  "mcr_factor": "0.05"
+}

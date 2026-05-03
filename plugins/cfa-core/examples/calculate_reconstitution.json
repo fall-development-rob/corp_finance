@@ -1,0 +1,13 @@
+{
+  "current_members": [
+    "<IndexMember>"
+  ],
+  "candidates": [
+    "<IndexMember>"
+  ],
+  "min_market_cap": "0.05",
+  "min_float_pct": "0.05",
+  "min_volume": "0.05",
+  "max_members": 1,
+  "buffer_zone_pct": "0.05"
+}

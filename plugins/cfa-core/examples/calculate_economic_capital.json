@@ -1,0 +1,15 @@
+{
+  "portfolio_losses": [
+    "0.05"
+  ],
+  "confidence_level": "0.05",
+  "pd": "0.05",
+  "lgd": "0.05",
+  "ead": "0.05",
+  "maturity": "0.05",
+  "total_capital": "0.05",
+  "risk_weighted_assets": "0.05",
+  "stress_scenarios": [
+    "<StressScenario>"
+  ]
+}

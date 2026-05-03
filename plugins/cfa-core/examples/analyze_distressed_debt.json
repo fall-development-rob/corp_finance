@@ -1,0 +1,12 @@
+{
+  "enterprise_value": "0.05",
+  "exit_enterprise_value": "0.05",
+  "exit_timeline_years": "0.05",
+  "capital_structure": [
+    "<DebtTranche>"
+  ],
+  "proposed_treatment": [
+    "<RestructuringTreatment>"
+  ],
+  "operating_assumptions": "<OperatingAssumptions>"
+}

@@ -1,0 +1,9 @@
+{
+  "company_name": "EXAMPLE",
+  "historical_periods": [
+    "<ForecastPeriod>"
+  ],
+  "forecast_periods": 1,
+  "revenue_growth_rate": "0.05",
+  "drivers": "<ForecastDrivers>"
+}

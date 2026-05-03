@@ -1,0 +1,18 @@
+{
+  "total_estate_value": "0.05",
+  "annual_gifting": [
+    "<GiftPlan>"
+  ],
+  "estate_tax_exemption": "0.05",
+  "gift_tax_annual_exclusion": "0.05",
+  "estate_tax_rate": "0.05",
+  "gst_tax_rate": "0.05",
+  "gst_exemption": "0.05",
+  "trust_structures": [
+    "<TrustPlan>"
+  ],
+  "charitable_bequests": "0.05",
+  "marital_deduction": "0.05",
+  "life_insurance_proceeds": "0.05",
+  "planning_horizon_years": 1
+}

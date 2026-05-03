@@ -1,0 +1,10 @@
+{
+  "enterprise_value": "0.05",
+  "liquidation_value": "0.05",
+  "valuation_type": "<ValuationType>",
+  "claims": [
+    "<Claim>"
+  ],
+  "administrative_costs": "0.05",
+  "cash_on_hand": "0.05"
+}

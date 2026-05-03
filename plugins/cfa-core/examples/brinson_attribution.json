@@ -1,0 +1,8 @@
+{
+  "portfolio_name": "EXAMPLE",
+  "benchmark_name": "EXAMPLE",
+  "sectors": [
+    "<SectorWeight>"
+  ],
+  "risk_free_rate": "0.05"
+}

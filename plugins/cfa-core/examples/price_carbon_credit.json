@@ -1,0 +1,11 @@
+{
+  "spot_price": "0.05",
+  "risk_free_rate": "0.05",
+  "storage_cost": "0.05",
+  "convenience_yield": "0.05",
+  "time_to_delivery": "0.05",
+  "vintage_year": 1,
+  "current_year": 1,
+  "registry": "EXAMPLE",
+  "credit_type": "EXAMPLE"
+}

@@ -1,0 +1,11 @@
+{
+  "working_capital": "150000",
+  "total_assets": "3000000",
+  "retained_earnings": "500000",
+  "ebit": "400000",
+  "revenue": "2000000",
+  "total_liabilities": "1500000",
+  "market_cap": "2500000",
+  "is_public": true,
+  "is_manufacturing": true
+}

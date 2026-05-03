@@ -1,0 +1,15 @@
+{
+  "asset_names": [
+    "EXAMPLE"
+  ],
+  "expected_returns": [
+    "0.05"
+  ],
+  "covariance_matrix": [
+    [
+      "0.05"
+    ]
+  ],
+  "risk_free_rate": "0.05",
+  "constraints": "<OptimizationConstraints>"
+}

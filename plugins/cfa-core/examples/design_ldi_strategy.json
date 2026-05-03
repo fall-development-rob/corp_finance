@@ -1,0 +1,14 @@
+{
+  "plan_name": "EXAMPLE",
+  "liability_pv": "0.05",
+  "liability_duration": "0.05",
+  "plan_assets": "0.05",
+  "current_asset_duration": "0.05",
+  "current_asset_allocation": [
+    "<AssetAllocation>"
+  ],
+  "available_instruments": [
+    "<LdiInstrument>"
+  ],
+  "target_hedge_ratio": "0.05"
+}

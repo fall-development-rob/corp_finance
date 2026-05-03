@@ -1,0 +1,15 @@
+{
+  "fund_name": "EXAMPLE",
+  "structure_type": "EXAMPLE",
+  "fund_strategy": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "performance_fee_rate": "0.05",
+  "investor_count": 1,
+  "guernsey_directors_count": 1,
+  "local_admin": false,
+  "licensed_manager": false,
+  "target_investors": [
+    "EXAMPLE"
+  ]
+}

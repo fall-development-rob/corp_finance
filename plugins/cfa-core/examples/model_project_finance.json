@@ -1,0 +1,13 @@
+{
+  "project_name": "EXAMPLE",
+  "total_project_cost": "0.05",
+  "construction_period_years": 1,
+  "operating_period_years": 1,
+  "revenue_assumptions": "<RevenueAssumptions>",
+  "operating_assumptions": "<OpExAssumptions>",
+  "debt_assumptions": "<ProjectDebt>",
+  "equity_contribution": "0.05",
+  "discount_rate": "0.05",
+  "tax_rate": "0.05",
+  "depreciation_years": 1
+}

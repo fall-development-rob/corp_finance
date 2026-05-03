@@ -1,0 +1,11 @@
+{
+  "donation_amount": "0.05",
+  "donor_income": "0.05",
+  "donor_tax_rate": "0.05",
+  "appreciated_asset_fmv": "0.05",
+  "appreciated_asset_basis": "0.05",
+  "payout_rate": "0.05",
+  "trust_term_years": 1,
+  "discount_rate": "0.05",
+  "donor_age": 1
+}

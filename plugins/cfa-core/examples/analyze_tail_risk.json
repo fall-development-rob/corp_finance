@@ -1,0 +1,20 @@
+{
+  "asset_names": [
+    "EXAMPLE"
+  ],
+  "weights": [
+    "0.05"
+  ],
+  "expected_returns": [
+    "0.05"
+  ],
+  "covariance_matrix": [
+    [
+      "0.05"
+    ]
+  ],
+  "confidence_level": "0.05",
+  "time_horizon": "0.05",
+  "distribution": "<TailDistribution>",
+  "portfolio_value": "0.05"
+}

@@ -1,0 +1,14 @@
+{
+  "country": "EXAMPLE",
+  "political_stability": "0.05",
+  "regulatory_quality": "0.05",
+  "rule_of_law": "0.05",
+  "control_of_corruption": "0.05",
+  "voice_accountability": "0.05",
+  "government_effectiveness": "0.05",
+  "expropriation_history": false,
+  "sanctions_risk": false,
+  "conflict_zone": false,
+  "investment_amount": "0.05",
+  "insurance_premium_rate": "0.05"
+}

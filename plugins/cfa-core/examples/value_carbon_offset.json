@@ -1,0 +1,13 @@
+{
+  "base_price": "0.05",
+  "credit_type": "EXAMPLE",
+  "permanence_years": "0.05",
+  "additionality_score": "0.05",
+  "vintage_year": 1,
+  "current_year": 1,
+  "certification": "EXAMPLE",
+  "co_benefits": [
+    "EXAMPLE"
+  ],
+  "reversal_risk": "0.05"
+}

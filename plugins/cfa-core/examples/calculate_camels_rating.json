@@ -1,0 +1,23 @@
+{
+  "tier1_capital": "0.05",
+  "total_capital": "0.05",
+  "risk_weighted_assets": "0.05",
+  "leverage_ratio": "0.05",
+  "npl_ratio": "0.05",
+  "provision_coverage": "0.05",
+  "loan_loss_reserve_ratio": "0.05",
+  "classified_assets_ratio": "0.05",
+  "efficiency_ratio": "0.05",
+  "compliance_score": "0.05",
+  "board_independence_pct": "0.05",
+  "roa": "0.05",
+  "roe": "0.05",
+  "nim": "0.05",
+  "cost_income_ratio": "0.05",
+  "lcr": "0.05",
+  "nsfr": "0.05",
+  "loan_to_deposit": "0.05",
+  "interest_rate_risk_score": "0.05",
+  "fx_exposure_pct": "0.05",
+  "duration_gap": "0.05"
+}

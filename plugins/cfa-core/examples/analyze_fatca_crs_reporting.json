@@ -1,0 +1,17 @@
+{
+  "institution_name": "EXAMPLE",
+  "jurisdiction": "EXAMPLE",
+  "iga_model": "<IgaModel>",
+  "account_count": 1,
+  "aggregate_balance_usd": "0.05",
+  "account_types": [
+    "<AccountType>"
+  ],
+  "us_indicia_found": 1,
+  "has_giin": false,
+  "crs_participating": false,
+  "crs_jurisdictions": [
+    "EXAMPLE"
+  ],
+  "reporting_year": 1
+}

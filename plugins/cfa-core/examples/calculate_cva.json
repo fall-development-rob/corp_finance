@@ -1,0 +1,9 @@
+{
+  "trade_description": "EXAMPLE",
+  "expected_exposure_profile": [
+    "<ExposurePoint>"
+  ],
+  "counterparty_default_probability": "0.05",
+  "counterparty_recovery_rate": "0.05",
+  "risk_free_rate": "0.05"
+}

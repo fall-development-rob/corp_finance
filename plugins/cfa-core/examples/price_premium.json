@@ -1,0 +1,14 @@
+{
+  "line_of_business": "EXAMPLE",
+  "exposure_units": "0.05",
+  "claim_frequency": "0.05",
+  "average_severity": "0.05",
+  "severity_trend": "0.05",
+  "frequency_trend": "0.05",
+  "projection_years": 1,
+  "expense_ratio_target": "0.05",
+  "profit_margin_target": "0.05",
+  "reinsurance_cost_pct": "0.05",
+  "investment_income_credit": "0.05",
+  "large_loss_load_pct": "0.05"
+}

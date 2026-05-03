@@ -1,0 +1,16 @@
+{
+  "outcomes": [
+    "<Outcome>"
+  ],
+  "reference_point": "0.05",
+  "current_value": "0.05",
+  "loss_aversion_lambda": "0.05",
+  "alpha": "0.05",
+  "beta_param": "0.05",
+  "gamma": "0.05",
+  "delta_param": "0.05",
+  "holding_period_months": 1,
+  "annual_return_history": [
+    "0.05"
+  ]
+}

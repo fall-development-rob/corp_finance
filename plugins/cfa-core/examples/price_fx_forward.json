@@ -1,0 +1,8 @@
+{
+  "spot_rate": "0.05",
+  "domestic_rate": "0.05",
+  "foreign_rate": "0.05",
+  "time_to_expiry": "0.05",
+  "notional_foreign": "0.05",
+  "forward_type": "<FxForwardType>"
+}

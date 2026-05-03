@@ -1,0 +1,40 @@
+{
+  "entry_ev": "10000000",
+  "entry_ebitda": "1500000",
+  "base_revenue": "6000000",
+  "revenue_growth": [
+    "0.08",
+    "0.07",
+    "0.06",
+    "0.05",
+    "0.04"
+  ],
+  "ebitda_margin": [
+    "0.25",
+    "0.26",
+    "0.27",
+    "0.27",
+    "0.28"
+  ],
+  "da_as_pct_revenue": "0.04",
+  "capex_as_pct_revenue": "0.05",
+  "nwc_as_pct_revenue": "0.02",
+  "tax_rate": "0.21",
+  "tranches": [
+    {
+      "name": "Term Loan B",
+      "amount": "5000000",
+      "interest_rate": "0.07",
+      "is_floating": false,
+      "amortisation": "Bullet",
+      "maturity_years": 7,
+      "seniority": 1,
+      "is_revolver": false
+    }
+  ],
+  "equity_contribution": "5000000",
+  "exit_year": 5,
+  "exit_multiple": "9.0",
+  "transaction_fees": "200000",
+  "financing_fees": "150000"
+}

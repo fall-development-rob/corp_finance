@@ -1,0 +1,5 @@
+{
+  "win_probability": "0.05",
+  "win_loss_ratio": "0.05",
+  "kelly_fraction": "0.05"
+}

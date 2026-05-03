@@ -1,0 +1,9 @@
+{
+  "face_value": "1000",
+  "coupon_rate": "0.05",
+  "coupon_frequency": 2,
+  "ytm": "0.045",
+  "settlement_date": "2026-05-03",
+  "maturity_date": "2036-05-03",
+  "day_count": "Thirty360"
+}

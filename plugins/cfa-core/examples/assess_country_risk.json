@@ -1,0 +1,14 @@
+{
+  "country": "EXAMPLE",
+  "gdp_growth_rate": "0.05",
+  "inflation_rate": "0.05",
+  "fiscal_balance_pct_gdp": "0.05",
+  "debt_to_gdp": "0.05",
+  "current_account_pct_gdp": "0.05",
+  "fx_reserves_months_imports": "0.05",
+  "political_stability_score": "0.05",
+  "rule_of_law_score": "0.05",
+  "external_debt_to_gdp": "0.05",
+  "short_term_debt_to_reserves": "0.05",
+  "sovereign_default_history": false
+}

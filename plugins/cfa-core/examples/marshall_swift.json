@@ -1,0 +1,11 @@
+{
+  "building_class": "<BuildingClass>",
+  "occupancy_type": "<OccupancyType>",
+  "gross_area_sf": "0.05",
+  "current_cost_multiplier": "0.05",
+  "local_cost_modifier": "0.05",
+  "height_multiplier": "0.05",
+  "perimeter_multiplier": "0.05",
+  "sprinkler_cost_psf": "0.05",
+  "hvac_premium_pct": "0.05"
+}

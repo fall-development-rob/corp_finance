@@ -1,0 +1,7 @@
+{
+  "rate_changes": [
+    "<RateChange>"
+  ],
+  "current_deposit_rate": "0.05",
+  "current_benchmark_rate": "0.05"
+}

@@ -1,0 +1,11 @@
+{
+  "current_shares": "0.05",
+  "current_eps": "0.05",
+  "current_price": "0.05",
+  "buyback_amount": "0.05",
+  "cost_of_debt": "0.05",
+  "tax_rate": "0.05",
+  "dividend_tax_rate": "0.05",
+  "capital_gains_tax_rate": "0.05",
+  "funding_source": "EXAMPLE"
+}

@@ -1,0 +1,13 @@
+{
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "carried_interest_rate": "0.05",
+  "hurdle_rate": "0.05",
+  "gp_commitment_pct": "0.05",
+  "fund_life_years": 1,
+  "investment_period_years": 1,
+  "num_investment_professionals": 1,
+  "annual_gp_overhead": "0.05",
+  "gross_irr_assumption": "0.05",
+  "gross_moic_assumption": "0.05"
+}

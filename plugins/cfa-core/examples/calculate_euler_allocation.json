@@ -1,0 +1,8 @@
+{
+  "units": [
+    "<EulerUnit>"
+  ],
+  "portfolio_var": "0.05",
+  "epsilon": "0.05",
+  "confidence_level": "0.05"
+}

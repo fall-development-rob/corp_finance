@@ -1,0 +1,26 @@
+{
+  "project_name": "EXAMPLE",
+  "total_capex": "0.05",
+  "construction_period_months": 1,
+  "concession_years": 1,
+  "revenue_model": "<RevenueModel>",
+  "annual_availability_payment": "0.05",
+  "initial_traffic_volume": "0.05",
+  "traffic_growth_rate": "0.05",
+  "toll_rate": "0.05",
+  "opex_pct_revenue": "0.05",
+  "major_maintenance_reserve_pct": "0.05",
+  "senior_debt_pct": "0.05",
+  "senior_debt_rate": "0.05",
+  "senior_debt_tenor_years": 1,
+  "mezzanine_debt_pct": "0.05",
+  "mezzanine_rate": "0.05",
+  "equity_pct": "0.05",
+  "tax_rate": "0.05",
+  "discount_rate": "0.05",
+  "inflation_rate": "0.05",
+  "availability_deductions_pct": "0.05",
+  "lifecycle_cost_schedule": [
+    "0.05"
+  ]
+}

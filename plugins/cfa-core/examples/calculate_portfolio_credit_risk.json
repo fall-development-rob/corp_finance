@@ -1,0 +1,9 @@
+{
+  "portfolio_name": "EXAMPLE",
+  "exposures": [
+    "<CreditExposure>"
+  ],
+  "default_correlation": "0.05",
+  "confidence_level": "0.05",
+  "time_horizon_years": "0.05"
+}

@@ -1,0 +1,9 @@
+{
+  "transaction_name": "EXAMPLE",
+  "pricing_method": "EXAMPLE",
+  "tested_party": "<TestedParty>",
+  "comparables": [
+    "<Comparable>"
+  ],
+  "transaction_value": "0.05"
+}

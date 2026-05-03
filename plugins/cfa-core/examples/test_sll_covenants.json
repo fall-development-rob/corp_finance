@@ -1,0 +1,8 @@
+{
+  "loan_name": "EXAMPLE",
+  "facility_amount": "0.05",
+  "base_margin_bps": "0.05",
+  "spts": [
+    "<SustainabilityTarget>"
+  ]
+}

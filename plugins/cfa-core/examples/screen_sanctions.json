@@ -1,0 +1,12 @@
+{
+  "screening_type": "<ScreeningType>",
+  "entities_to_screen": [
+    "<ScreeningEntity>"
+  ],
+  "lists_to_check": [
+    "<SanctionsList>"
+  ],
+  "screening_threshold": "0.05",
+  "include_pep_screening": false,
+  "include_adverse_media": false
+}

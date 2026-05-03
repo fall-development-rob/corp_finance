@@ -1,0 +1,15 @@
+{
+  "tranches": [
+    "<WaterfallTranche>"
+  ],
+  "pool_balance": "0.05",
+  "weighted_avg_spread": "0.05",
+  "cdr": "0.05",
+  "cpr": "0.05",
+  "recovery_rate": "0.05",
+  "recovery_lag_months": 1,
+  "reference_rate": "0.05",
+  "num_periods": 1,
+  "period_days": 1,
+  "senior_fees_bps": "0.05"
+}

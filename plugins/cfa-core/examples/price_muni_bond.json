@@ -1,0 +1,15 @@
+{
+  "bond_name": "EXAMPLE",
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "coupon_frequency": 1,
+  "maturity_years": "0.05",
+  "yield_to_maturity": "0.05",
+  "federal_tax_rate": "0.05",
+  "state_tax_rate": "0.05",
+  "state_tax_exempt": false,
+  "is_private_activity": false,
+  "credit_rating": "EXAMPLE",
+  "bond_type": "<MuniBondType>",
+  "day_count": "EXAMPLE"
+}

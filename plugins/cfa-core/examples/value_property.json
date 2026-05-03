@@ -1,0 +1,12 @@
+{
+  "property_name": "EXAMPLE",
+  "valuation_method": "<ValuationMethod>",
+  "gross_potential_rent": "0.05",
+  "vacancy_rate": "0.05",
+  "other_income": "0.05",
+  "operating_expenses": "0.05",
+  "capital_reserves": "0.05",
+  "market_rent_growth": "0.05",
+  "expense_growth": "0.05",
+  "holding_period_years": 1
+}

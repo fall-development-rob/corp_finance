@@ -1,0 +1,13 @@
+{
+  "cfo_to_net_income": "0.05",
+  "revenue_growth": "0.05",
+  "receivables_growth": "0.05",
+  "inventory_growth": "0.05",
+  "sga_to_revenue_change": "0.05",
+  "debt_to_equity": "0.05",
+  "interest_coverage": "0.05",
+  "audit_opinion": "EXAMPLE",
+  "auditor_change": false,
+  "related_party_transactions": false,
+  "restatement_history": false
+}

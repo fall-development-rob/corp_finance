@@ -1,0 +1,7 @@
+{
+  "spot_price": "0.05",
+  "futures_prices": [
+    "<FuturesContract>"
+  ],
+  "risk_free_rate": "0.05"
+}

@@ -1,0 +1,12 @@
+{
+  "spread_type": "<SpreadType>",
+  "input_prices": [
+    "<CommodityPrice>"
+  ],
+  "output_prices": [
+    "<CommodityPrice>"
+  ],
+  "conversion_ratios": [
+    "0.05"
+  ]
+}

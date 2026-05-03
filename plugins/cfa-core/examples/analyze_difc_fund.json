@@ -1,0 +1,15 @@
+{
+  "fund_name": "EXAMPLE",
+  "fund_type": "EXAMPLE",
+  "fund_strategy": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "performance_fee_rate": "0.05",
+  "minimum_subscription": "0.05",
+  "investor_count": 1,
+  "sharia_compliant": false,
+  "sharia_board_members": 1,
+  "target_investors": [
+    "EXAMPLE"
+  ]
+}

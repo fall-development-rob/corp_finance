@@ -1,0 +1,7 @@
+{
+  "strategy_type": "<StrategyType>",
+  "underlying_price": "0.05",
+  "legs": [
+    "<StrategyLeg>"
+  ]
+}

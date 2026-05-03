@@ -1,0 +1,10 @@
+{
+  "tranche_name": "EXAMPLE",
+  "cash_flows": [
+    "<TrancheCashFlow>"
+  ],
+  "initial_investment": "0.05",
+  "price": "0.05",
+  "call_date_period": 1,
+  "reference_rate": "0.05"
+}

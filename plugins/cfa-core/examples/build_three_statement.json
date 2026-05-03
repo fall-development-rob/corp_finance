@@ -1,0 +1,26 @@
+{
+  "base_revenue": "0.05",
+  "revenue_growth_rates": [
+    "0.05"
+  ],
+  "cogs_pct": "0.05",
+  "sga_pct": "0.05",
+  "rnd_pct": "0.05",
+  "da_pct": "0.05",
+  "interest_rate": "0.05",
+  "tax_rate": "0.05",
+  "base_cash": "0.05",
+  "base_receivables": "0.05",
+  "base_inventory": "0.05",
+  "base_payables": "0.05",
+  "base_ppe": "0.05",
+  "base_debt": "0.05",
+  "base_equity": "0.05",
+  "dso_days": "0.05",
+  "dio_days": "0.05",
+  "dpo_days": "0.05",
+  "capex_pct": "0.05",
+  "debt_repayment_pct": "0.05",
+  "dividend_payout_ratio": "0.05",
+  "min_cash_balance": "0.05"
+}

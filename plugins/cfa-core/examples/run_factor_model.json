@@ -1,0 +1,10 @@
+{
+  "asset_returns": [
+    "0.05"
+  ],
+  "factor_returns": [
+    "<FactorSeries>"
+  ],
+  "model_type": "<FactorModelType>",
+  "risk_free_rate": "0.05"
+}

@@ -1,0 +1,10 @@
+{
+  "initial_ratings": [
+    "<RatedExposure>"
+  ],
+  "transition_matrix": "<TransitionMatrix>",
+  "time_horizon_years": 1,
+  "spread_curve": [
+    "<RatingSpread>"
+  ]
+}

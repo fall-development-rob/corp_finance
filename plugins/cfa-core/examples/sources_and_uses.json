@@ -1,0 +1,10 @@
+{
+  "enterprise_value": "0.05",
+  "equity_contribution": "0.05",
+  "debt_tranches": [
+    [
+      "EXAMPLE",
+      "0.0"
+    ]
+  ]
+}

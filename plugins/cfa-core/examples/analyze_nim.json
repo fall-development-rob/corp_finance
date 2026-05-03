@@ -1,0 +1,16 @@
+{
+  "interest_income": "0.05",
+  "interest_expense": "0.05",
+  "earning_assets": "0.05",
+  "asset_mix": [
+    "<AssetMixItem>"
+  ],
+  "liability_mix": [
+    "<LiabilityMixItem>"
+  ],
+  "prior_interest_income": "0.05",
+  "prior_interest_expense": "0.05",
+  "prior_earning_assets": "0.05",
+  "rate_sensitive_assets": "0.05",
+  "rate_sensitive_liabilities": "0.05"
+}

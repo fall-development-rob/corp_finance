@@ -1,0 +1,22 @@
+{
+  "aifm_name": "EXAMPLE",
+  "aifm_jurisdiction": "EXAMPLE",
+  "total_aum": "0.05",
+  "funds": [
+    "<FundInfo>"
+  ],
+  "reporting_period_end": "EXAMPLE",
+  "long_exposures": "0.05",
+  "short_exposures": "0.05",
+  "top_counterparties": [
+    "<CounterpartyExposure>"
+  ],
+  "liquidity_profile": "<LiquidityProfile>",
+  "principal_markets": [
+    "<MarketExposure>"
+  ],
+  "stress_equity_impact": "0.05",
+  "stress_rates_impact": "0.05",
+  "stress_fx_impact": "0.05",
+  "stress_credit_impact": "0.05"
+}

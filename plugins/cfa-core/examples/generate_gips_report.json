@@ -1,0 +1,15 @@
+{
+  "composite_name": "EXAMPLE",
+  "periods": [
+    "<PerformancePeriod>"
+  ],
+  "benchmark_returns": [
+    "0.05"
+  ],
+  "inception_date": "EXAMPLE",
+  "reporting_currency": "EXAMPLE",
+  "fee_schedule": "EXAMPLE",
+  "composite_accounts": [
+    "<AccountReturn>"
+  ]
+}

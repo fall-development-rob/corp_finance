@@ -1,0 +1,9 @@
+{
+  "risk_free_rate": "0.045",
+  "equity_risk_premium": "0.055",
+  "beta": "1.20",
+  "cost_of_debt": "0.045",
+  "tax_rate": "0.21",
+  "debt_weight": "0.30",
+  "equity_weight": "0.70"
+}

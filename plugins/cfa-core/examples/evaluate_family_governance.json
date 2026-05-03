@@ -1,0 +1,15 @@
+{
+  "family_members": 1,
+  "generations_active": 1,
+  "has_family_constitution": false,
+  "has_investment_committee": false,
+  "has_succession_plan": false,
+  "has_conflict_resolution": false,
+  "has_next_gen_education": false,
+  "has_external_advisors": false,
+  "has_regular_meetings": false,
+  "has_philanthropy_program": false,
+  "total_aum": "0.05",
+  "num_investment_vehicles": 1,
+  "reporting_frequency": "EXAMPLE"
+}

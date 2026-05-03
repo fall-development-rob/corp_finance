@@ -1,0 +1,17 @@
+{
+  "portfolio_returns": [
+    "0.05"
+  ],
+  "benchmark_returns": [
+    "0.05"
+  ],
+  "portfolio_weights": [
+    "<TickerWeight>"
+  ],
+  "benchmark_weights": [
+    "<TickerWeight>"
+  ],
+  "covariance_diagonal": [
+    "0.05"
+  ]
+}

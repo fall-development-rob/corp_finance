@@ -1,0 +1,8 @@
+{
+  "equity_value": "0.05",
+  "equity_vol": "0.05",
+  "debt_face": "0.05",
+  "risk_free_rate": "0.05",
+  "maturity": "0.05",
+  "growth_rate": "0.05"
+}

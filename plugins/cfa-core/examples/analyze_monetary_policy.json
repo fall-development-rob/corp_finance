@@ -1,0 +1,18 @@
+{
+  "current_inflation": "0.05",
+  "target_inflation": "0.05",
+  "current_gdp_growth": "0.05",
+  "potential_gdp_growth": "0.05",
+  "current_unemployment": "0.05",
+  "natural_unemployment": "0.05",
+  "current_policy_rate": "0.05",
+  "neutral_real_rate": "0.05",
+  "inflation_weight": "0.05",
+  "output_weight": "0.05",
+  "historical_inflation": [
+    "0.05"
+  ],
+  "historical_unemployment": [
+    "0.05"
+  ]
+}

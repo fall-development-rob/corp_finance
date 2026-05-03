@@ -1,0 +1,18 @@
+{
+  "current_cash": "0.05",
+  "operating_cash_flows": [
+    "0.05"
+  ],
+  "minimum_cash_buffer": "0.05",
+  "credit_facility_size": "0.05",
+  "credit_facility_rate": "0.05",
+  "investment_rate": "0.05",
+  "overdraft_rate": "0.05",
+  "accounts_receivable": "0.05",
+  "accounts_payable": "0.05",
+  "dso_days": "0.05",
+  "dpo_days": "0.05",
+  "annual_revenue": "0.05",
+  "sweep_threshold": "0.05",
+  "target_cash_ratio": "0.05"
+}

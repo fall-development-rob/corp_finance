@@ -1,0 +1,16 @@
+{
+  "notional_domestic": "0.05",
+  "notional_foreign": "0.05",
+  "domestic_fixed_rate": "0.05",
+  "foreign_fixed_rate": "0.05",
+  "payment_frequency": 1,
+  "remaining_years": "0.05",
+  "domestic_discount_curve": [
+    "<DiscountPoint>"
+  ],
+  "foreign_discount_curve": [
+    "<DiscountPoint>"
+  ],
+  "spot_fx_rate": "0.05",
+  "is_pay_domestic": false
+}

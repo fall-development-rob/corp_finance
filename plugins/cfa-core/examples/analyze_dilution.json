@@ -1,0 +1,9 @@
+{
+  "rounds": [
+    "<RoundSpec>"
+  ],
+  "initial_shares": 1,
+  "founders": [
+    "<FounderSpec>"
+  ]
+}

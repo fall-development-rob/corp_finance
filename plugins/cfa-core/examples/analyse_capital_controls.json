@@ -1,0 +1,13 @@
+{
+  "country": "EXAMPLE",
+  "control_type": "EXAMPLE",
+  "repatriation_delay_days": 1,
+  "withholding_tax_dividends": "0.05",
+  "withholding_tax_interest": "0.05",
+  "withholding_tax_royalties": "0.05",
+  "fx_conversion_spread": "0.05",
+  "investment_amount": "0.05",
+  "expected_annual_income": "0.05",
+  "holding_period_years": 1,
+  "risk_free_rate": "0.05"
+}

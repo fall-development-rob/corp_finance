@@ -1,0 +1,8 @@
+{
+  "d0": "0.05",
+  "r": "0.05",
+  "stages": [
+    "<GrowthStage>"
+  ],
+  "terminal_growth": "0.05"
+}

@@ -1,0 +1,15 @@
+{
+  "net_income": "0.05",
+  "cfo": "0.05",
+  "total_assets": "0.05",
+  "prior_total_assets": "0.05",
+  "current_assets": "0.05",
+  "prior_current_assets": "0.05",
+  "current_liabilities": "0.05",
+  "prior_current_liabilities": "0.05",
+  "depreciation": "0.05",
+  "revenue": "0.05",
+  "prior_revenue": "0.05",
+  "ppe": "0.05",
+  "prior_ppe": "0.05"
+}

@@ -1,0 +1,16 @@
+{
+  "fund_name": "EXAMPLE",
+  "vcc_type": "EXAMPLE",
+  "sub_funds": [
+    "<SubFundInfo>"
+  ],
+  "manager_license": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "performance_fee_rate": "0.05",
+  "investment_professionals_sg": 1,
+  "local_business_spending": "0.05",
+  "target_investors": [
+    "EXAMPLE"
+  ]
+}

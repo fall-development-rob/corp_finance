@@ -1,0 +1,10 @@
+{
+  "property_name": "EXAMPLE",
+  "cost_type": "<CostType>",
+  "land_value": "0.05",
+  "replacement_cost_new": "0.05",
+  "physical_depreciation_pct": "0.05",
+  "functional_obsolescence": "0.05",
+  "external_obsolescence": "0.05",
+  "gross_area_sf": "0.05"
+}

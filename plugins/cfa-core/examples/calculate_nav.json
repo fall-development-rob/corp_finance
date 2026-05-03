@@ -1,0 +1,9 @@
+{
+  "share_classes": [
+    "<ShareClassInput>"
+  ],
+  "gross_portfolio_return": "0.05",
+  "period_label": "EXAMPLE",
+  "equalisation_method": "<EqualisationMethod>",
+  "base_currency": "<Currency>"
+}

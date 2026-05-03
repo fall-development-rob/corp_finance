@@ -1,0 +1,14 @@
+{
+  "source_jurisdiction": "EXAMPLE",
+  "recipient_jurisdiction": "EXAMPLE",
+  "income_types": [
+    "<IncomeFlow>"
+  ],
+  "intermediary_jurisdictions": [
+    "EXAMPLE"
+  ],
+  "recipient_entity_type": "EXAMPLE",
+  "beneficial_owner": false,
+  "lob_qualified": false,
+  "ppt_met": false
+}
