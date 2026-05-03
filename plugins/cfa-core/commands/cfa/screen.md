@@ -1,3 +1,12 @@
+---
+requires_tools:
+  - calculate_beneish_mscore
+  - calculate_piotroski_fscore
+requires_external_tools:
+  - fmp_key_metrics
+  - fmp_ratios
+  - fmp_stock_screener
+---
 # Equity Screening
 
 Investment idea generation and screening using the Idea Generation workflow from `workflow-equity-research`.
@@ -9,7 +18,7 @@ Runs quantitative screens (Piotroski F-Score, Beneish M-Score, ROIC vs WACC), ap
 Routes to `cfa-equity-analyst`.
 
 ## Key Tools
-`piotroski_fscore`, `beneish_mscore`, `fmp_ratios`, `fmp_key_metrics`, `fmp_stock_screener`
+`calculate_piotroski_fscore`, `calculate_beneish_mscore`, `fmp_ratios`, `fmp_key_metrics`, `fmp_stock_screener`
 
 ## Usage
 Specify screening criteria (e.g., sector, market cap range, minimum quality score) or use defaults.

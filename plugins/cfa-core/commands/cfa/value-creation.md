@@ -1,3 +1,9 @@
+---
+requires_tools:
+  - build_lbo
+  - build_sensitivity_grid
+  - calculate_returns
+---
 # Value Creation Plan
 
 Build a post-acquisition value creation plan using the VCP workflow from `workflow-private-equity`.
@@ -9,7 +15,7 @@ Produces a value creation plan with revenue levers, cost levers, EBITDA bridge (
 Routes to `cfa-private-markets-analyst`.
 
 ## Key Tools
-`lbo_model`, `sensitivity_matrix`, `returns_calculator`
+`build_lbo`, `build_sensitivity_grid`, `calculate_returns`
 
 ## Usage
 Provide the portfolio company details, entry financials, and strategic priorities.

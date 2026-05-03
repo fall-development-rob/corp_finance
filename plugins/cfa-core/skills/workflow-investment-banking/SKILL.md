@@ -2,9 +2,13 @@
 name: Investment Banking Workflows
 description: Professional IB deal execution document workflows — CIM drafting, teasers, process letters, buyer lists, merger models, pitch decks, strip profiles, deal tracking, and datapack assembly. Defines sell-side and buy-side advisory document production pipelines using corp-finance-mcp tools and FMP data. Use when preparing M&A materials, sell-side processes, pitch books, or deal documentation.
 requires_tools:
+  - analyze_merger
+  - build_lbo
+  - build_sensitivity_grid
   - comps_analysis
   - credit_metrics
   - dcf_model
+  - sources_and_uses
 requires_external_tools:
   - fmp_balance_sheet
   - fmp_cash_flow
@@ -31,9 +35,9 @@ You are a senior investment banking associate executing professional deal docume
 | "Draft a CIM" | CIM Builder | 40-60 page document | `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`, `comps_analysis` |
 | "Create a teaser" | Teaser | 1-2 page summary | `fmp_profile`, `fmp_key_metrics` |
 | "Build a buyer list" | Buyer List | Ranked buyer matrix | `comps_analysis`, `fmp_profile` |
-| "Merger model" | Merger Model | Accretion/dilution | `merger_model`, `credit_metrics`, `sensitivity_matrix` |
+| "Merger model" | Merger Model | Accretion/dilution | `analyze_merger`, `credit_metrics`, `build_sensitivity_grid` |
 | "Process letter" | Process Letter | Formal bid letter | (no tools - pure document) |
-| "Pitch deck" | Pitch Deck | Slide structure | `dcf_model`, `comps_analysis`, `lbo_model` |
+| "Pitch deck" | Pitch Deck | Slide structure | `dcf_model`, `comps_analysis`, `build_lbo` |
 | "Strip profile" | Strip Profile | Financial summary | `fmp_key_metrics`, `comps_analysis`, `credit_metrics` |
 | "Deal tracker" | Deal Tracker | Pipeline status | (no tools - tracking doc) |
 
@@ -154,7 +158,7 @@ The teaser is a brief document sent to prospective buyers before NDA execution. 
 
 ## Merger Model Workflow
 
-1. **Run accretion/dilution**: call `merger_model` with acquirer and target financials
+1. **Run accretion/dilution**: call `analyze_merger` with acquirer and target financials
    - Specify consideration type: `AllCash`, `AllStock`, or `Mixed`
    - Include expected synergies with phase-in timeline (Year 1: 25%, Year 2: 75%, Year 3: 100%)
    - Include integration costs and one-time charges
@@ -162,7 +166,7 @@ The teaser is a brief document sent to prospective buyers before NDA execution. 
    - Implied EV/EBITDA, EV/Revenue, P/E multiples at offer price
    - Premium to undisturbed share price (30-day, 60-day, 90-day VWAP)
    - Compare to precedent transaction multiples
-3. **Sources & Uses**: call `sources_uses` for financing structure
+3. **Sources & Uses**: call `sources_and_uses` for financing structure
    - Sources: equity, term loans, bonds, revolver, rollover equity, seller note
    - Uses: equity purchase price, refinancing, transaction fees, cash to balance sheet
    - Sources must equal Uses exactly
@@ -170,7 +174,7 @@ The teaser is a brief document sent to prospective buyers before NDA execution. 
    - Standalone acquirer EPS vs combined EPS at various synergy levels
    - Accretive: combined EPS > standalone EPS
    - Dilutive: combined EPS < standalone EPS
-5. **Sensitivity analysis**: call `sensitivity_matrix`
+5. **Sensitivity analysis**: call `build_sensitivity_grid`
    - Vary synergy level vs offer premium
    - Vary cash/stock mix vs EPS impact
    - Calculate breakeven synergies: minimum synergy for EPS-neutral outcome
@@ -208,7 +212,7 @@ The process letter defines the rules of engagement for a competitive sale proces
 3. **Valuation Analysis**:
    - Call `dcf_model` for intrinsic value range
    - Call `comps_analysis` for relative value benchmarks
-   - Call `lbo_model` for financial sponsor floor price
+   - Call `build_lbo` for financial sponsor floor price
    - Construct valuation football field: DCF range, trading comps range, precedent transactions range, LBO floor
 4. **Transaction Structure**: recommended structure, financing alternatives, tax considerations
 5. **Execution Timeline**: key milestones, critical path, resource requirements

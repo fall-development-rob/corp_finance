@@ -1,6 +1,13 @@
 ---
 requires_tools:
   - altman_zscore
+  - build_sensitivity_grid
+  - calculate_cecl_provision
+  - calculate_intensity_model
+  - calculate_merton
+  - calculate_migration
+  - calculate_portfolio_credit_risk
+  - calculate_scorecard
   - covenant_compliance
   - credit_metrics
   - debt_capacity
@@ -21,7 +28,7 @@ Executes a multi-step credit assessment: (1) Credit metrics computation (leverag
 Routes to `cfa-credit-analyst` with `corp-finance-tools-core` and `corp-finance-tools-regulatory` skills.
 
 ## Key Tools
-`credit_metrics`, `altman_zscore`, `debt_capacity`, `covenant_compliance`, `credit_scorecard`, `merton_model`, `intensity_model`, `cecl_provisioning`, `credit_portfolio_var`, `rating_migration`, `sensitivity_matrix`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`, `fmp_key_metrics`
+`credit_metrics`, `altman_zscore`, `debt_capacity`, `covenant_compliance`, `calculate_scorecard`, `calculate_merton`, `calculate_intensity_model`, `calculate_cecl_provision`, `calculate_portfolio_credit_risk`, `calculate_migration`, `build_sensitivity_grid`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`, `fmp_key_metrics`
 
 ## Quality Standards
 - Cite every ratio and score to the specific tool call that produced it

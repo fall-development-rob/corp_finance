@@ -2,8 +2,15 @@
 name: Equity Research Workflows
 description: Professional equity research document workflows — initiating coverage reports, earnings updates, morning notes, model updates, thesis tracking, catalyst calendars, idea generation, and sector overviews. Defines institutional-standard document production pipelines that orchestrate existing corp-finance-mcp computation tools and FMP market data tools. Use when creating equity research deliverables, coverage initiation, earnings analysis, or investment idea generation.
 requires_tools:
+  - build_sensitivity_grid
+  - build_three_statement
+  - calculate_beneish_mscore
+  - calculate_piotroski_fscore
+  - calculate_sotp
+  - calculate_target_price
   - comps_analysis
   - dcf_model
+  - run_mc_dcf
   - wacc_calculator
 requires_external_tools:
   - fmp_analyst_estimates
@@ -36,14 +43,14 @@ You are a sell-side equity research analyst producing institutional-grade delive
 
 | Request Pattern | Workflow | Output | Key Tools |
 |-----------------|----------|--------|-----------|
-| "Initiate coverage on X" | Initiating Coverage | 30-50 page report | `dcf_model`, `comps_analysis`, `three_statement_model`, `wacc_calculator`, `sotp_valuation`, `target_price` |
-| "Earnings update for X" | Earnings Analysis | 8-12 page report | `fmp_earnings`, `fmp_analyst_estimates`, `sensitivity_matrix` |
+| "Initiate coverage on X" | Initiating Coverage | 30-50 page report | `dcf_model`, `comps_analysis`, `build_three_statement`, `wacc_calculator`, `calculate_sotp`, `calculate_target_price` |
+| "Earnings update for X" | Earnings Analysis | 8-12 page report | `fmp_earnings`, `fmp_analyst_estimates`, `build_sensitivity_grid` |
 | "Morning note" | Morning Note | 2-4 page brief | `fmp_quote`, `fmp_earnings`, `fmp_sector_performance` |
-| "Investment thesis for X" | Thesis Tracker | 3-5 page memo | `dcf_model`, `comps_analysis`, `sensitivity_matrix` |
-| "Screen for ideas" | Idea Generation | Screening report | `piotroski_fscore`, `beneish_mscore`, `fmp_ratios`, `fmp_key_metrics` |
+| "Investment thesis for X" | Thesis Tracker | 3-5 page memo | `dcf_model`, `comps_analysis`, `build_sensitivity_grid` |
+| "Screen for ideas" | Idea Generation | Screening report | `calculate_piotroski_fscore`, `calculate_beneish_mscore`, `fmp_ratios`, `fmp_key_metrics` |
 | "Sector overview" | Sector Overview | 10-15 page report | `comps_analysis`, `fmp_sector_performance` |
-| "Update model for X" | Model Update | Updated model + note | `three_statement_model`, `dcf_model`, `fmp_income_statement` |
-| "Earnings preview for X" | Earnings Preview | 3-5 page preview | `fmp_analyst_estimates`, `fmp_earnings`, `sensitivity_matrix` |
+| "Update model for X" | Model Update | Updated model + note | `build_three_statement`, `dcf_model`, `fmp_income_statement` |
+| "Earnings preview for X" | Earnings Preview | 3-5 page preview | `fmp_analyst_estimates`, `fmp_earnings`, `build_sensitivity_grid` |
 | "Catalyst calendar" | Catalyst Calendar | Event timeline | `fmp_earnings_calendar`, `fmp_ipo_calendar` |
 
 ## Initiating Coverage Workflow
@@ -74,7 +81,7 @@ Gather business overview, competitive positioning, management quality, and TAM/S
 Build a projection model with revenue build-up, margin trajectory, capex, and working capital.
 
 **Tools:**
-- `three_statement_model` — integrated IS/BS/CF with circular reference resolution
+- `build_three_statement` — integrated IS/BS/CF with circular reference resolution
 - `fmp_income_statement` — 3 years of historical data as base
 - `fmp_balance_sheet` — historical balance sheet for working capital trends
 - `fmp_cash_flow` — historical capex intensity and cash conversion
@@ -95,10 +102,10 @@ Derive a price target using multiple methodologies with full sensitivity analysi
 - `wacc_calculator` — CAPM-based cost of capital
 - `dcf_model` — discounted cash flow with terminal value
 - `comps_analysis` — trading multiples vs 4-6 comparable companies
-- `sotp_valuation` — sum-of-the-parts for multi-segment businesses
-- `target_price` — blended target from multiple methodologies
-- `sensitivity_matrix` — WACC vs terminal growth, exit multiple vs EBITDA growth
-- `monte_carlo_dcf` — stochastic valuation for probability distribution
+- `calculate_sotp` — sum-of-the-parts for multi-segment businesses
+- `calculate_target_price` — blended target from multiple methodologies
+- `build_sensitivity_grid` — WACC vs terminal growth, exit multiple vs EBITDA growth
+- `run_mc_dcf` — stochastic valuation for probability distribution
 
 **Output:** Valuation summary with base/bull/bear price targets including:
 - DCF valuation with both Gordon Growth AND exit multiple terminal values
@@ -146,7 +153,7 @@ Compile the final initiation report from Tasks 1-4 outputs.
 
 Produce an 8-12 page earnings update note following a quarterly or annual results release.
 
-**Tools:** `fmp_earnings`, `fmp_analyst_estimates`, `fmp_income_statement`, `sensitivity_matrix`, `target_price`
+**Tools:** `fmp_earnings`, `fmp_analyst_estimates`, `fmp_income_statement`, `build_sensitivity_grid`, `calculate_target_price`
 
 **Workflow:**
 1. **Beat/miss summary**: call `fmp_earnings` — compare actual EPS, revenue vs consensus estimates
@@ -161,14 +168,14 @@ Produce an 8-12 page earnings update note following a quarterly or annual result
 4. **Thesis impact assessment**: does this quarter change the bull/base/bear framework?
    - Thesis confirming: results in line or better, maintain rating
    - Thesis challenging: negative surprise on key driver, reassess
-5. **Price target update**: call `target_price` with revised inputs
-   - Updated sensitivity tables via `sensitivity_matrix`
+5. **Price target update**: call `calculate_target_price` with revised inputs
+   - Updated sensitivity tables via `build_sensitivity_grid`
 
 ## Earnings Preview Workflow
 
 Produce a 3-5 page preview note ahead of an earnings release.
 
-**Tools:** `fmp_analyst_estimates`, `fmp_earnings`, `sensitivity_matrix`
+**Tools:** `fmp_analyst_estimates`, `fmp_earnings`, `build_sensitivity_grid`
 
 **Workflow:**
 1. **Consensus expectations**: call `fmp_analyst_estimates` — current street estimates for revenue, EPS, key segment metrics
@@ -209,7 +216,7 @@ Produce a 2-4 page morning brief for the trading desk or portfolio managers.
 
 Produce a 3-5 page investment thesis memo with ongoing tracking framework.
 
-**Tools:** `dcf_model`, `comps_analysis`, `sensitivity_matrix`
+**Tools:** `dcf_model`, `comps_analysis`, `build_sensitivity_grid`
 
 **Workflow:**
 1. **Bull case** (upside target, key catalysts, probability weight)
@@ -236,12 +243,12 @@ Produce a 3-5 page investment thesis memo with ongoing tracking framework.
 
 Produce a ranked screening report of investment candidates.
 
-**Tools:** `piotroski_fscore`, `beneish_mscore`, `fmp_ratios`, `fmp_key_metrics`
+**Tools:** `calculate_piotroski_fscore`, `calculate_beneish_mscore`, `fmp_ratios`, `fmp_key_metrics`
 
 **Workflow:**
 1. **Quantitative screens**: apply hard filters to reduce universe
-   - `piotroski_fscore` >= 7 (strong fundamentals)
-   - `beneish_mscore` < -1.78 (no manipulation flags)
+   - `calculate_piotroski_fscore` >= 7 (strong fundamentals)
+   - `calculate_beneish_mscore` < -1.78 (no manipulation flags)
    - `fmp_ratios` — ROIC > estimated WACC (value creation)
    - `fmp_key_metrics` — FCF yield > 5%, revenue growth > sector median
 2. **Thematic filtering**: overlay qualitative criteria
@@ -283,7 +290,7 @@ Produce a 10-15 page sector report covering competitive landscape and valuation.
 
 Produce an updated model and revision note when material new information arrives.
 
-**Tools:** `three_statement_model`, `dcf_model`, `target_price`, `fmp_income_statement`
+**Tools:** `build_three_statement`, `dcf_model`, `calculate_target_price`, `fmp_income_statement`
 
 **Triggers:**
 - New quarterly/annual earnings release
@@ -295,10 +302,10 @@ Produce an updated model and revision note when material new information arrives
 1. **Identify changes**: pull latest actuals via `fmp_income_statement`
    - Compare actual results to prior model assumptions
    - Identify which assumptions need revision and direction
-2. **Update three-statement model**: call `three_statement_model` with revised assumptions
+2. **Update three-statement model**: call `build_three_statement` with revised assumptions
    - Adjust revenue growth, margins, capex, working capital as warranted
    - Re-solve circular references (interest expense, revolver draws)
-3. **Recalculate valuation**: call `dcf_model` and `target_price` with updated projections
+3. **Recalculate valuation**: call `dcf_model` and `calculate_target_price` with updated projections
    - New DCF value, updated comps-implied value
    - Revised blended price target
 4. **Issue revision note**: old vs new estimates with change rationale
@@ -333,7 +340,7 @@ All equity research deliverables must meet these standards:
 
 1. **Data integrity**: every financial figure sourced from MCP tool output or explicitly stated user assumption — never LLM-generated
 2. **Dual valuation**: at least 2 independent valuation methods for any price target recommendation
-3. **Sensitivity testing**: key variables (growth rate, discount rate, terminal multiple) stress-tested via `sensitivity_matrix`
+3. **Sensitivity testing**: key variables (growth rate, discount rate, terminal multiple) stress-tested via `build_sensitivity_grid`
 4. **Three scenarios**: bull/base/bear cases with probability weights mandatory for all recommendations
 5. **Source attribution**: all data sources cited with specific tool invocation reference
 6. **Timeliness**: note the date of all market data and financial statements used

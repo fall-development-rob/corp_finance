@@ -1,6 +1,10 @@
 ---
 requires_tools:
+  - build_sensitivity_grid
+  - plan_estate
+  - plan_retirement
   - risk_metrics
+  - run_monte_carlo
 ---
 # Financial Plan
 
@@ -13,7 +17,7 @@ Produces a 15-25 page financial plan covering cash flow analysis, retirement pro
 Routes to `cfa-quant-risk-analyst` with `workflow-wealth-management` skill.
 
 ## Key Tools
-`retirement_projection`, `tax_estate_planning`, `monte_carlo_simulation`, `sensitivity_matrix`, `risk_metrics`
+`plan_retirement`, `plan_estate`, `run_monte_carlo`, `build_sensitivity_grid`, `risk_metrics`
 
 ## Usage
 Provide client profile: age, income, assets, liabilities, risk tolerance, and financial goals.

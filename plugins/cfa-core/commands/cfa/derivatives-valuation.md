@@ -1,6 +1,16 @@
 ---
 requires_tools:
+  - analyze_strategy
+  - build_implied_vol_surface
+  - build_sensitivity_grid
+  - calibrate_sabr
   - implied_volatility
+  - price_exotic
+  - price_forward
+  - price_option
+  - price_structured_note
+  - run_monte_carlo
+  - value_interest_rate_swap
 requires_external_tools:
   - yf_options_chain
   - yf_quote
@@ -16,7 +26,7 @@ Executes a multi-step derivatives assessment: (1) Options pricing via Black-Scho
 Routes to `cfa-derivatives-analyst` with `corp-finance-tools-markets` skill.
 
 ## Key Tools
-`options_pricing`, `greeks_calculator`, `implied_volatility`, `volatility_surface`, `sabr_model`, `forward_pricing`, `swap_pricing`, `strategy_payoff`, `structured_notes`, `exotic_products`, `sensitivity_matrix`, `monte_carlo_simulation`, `yf_options_chain`, `yf_quote`
+`price_option`, `implied_volatility`, `build_implied_vol_surface`, `calibrate_sabr`, `price_forward`, `value_interest_rate_swap`, `analyze_strategy`, `price_structured_note`, `price_exotic`, `build_sensitivity_grid`, `run_monte_carlo`, `yf_options_chain`, `yf_quote`
 
 ## Quality Standards
 - Cite every price, Greek, and implied vol to the specific tool call that produced it

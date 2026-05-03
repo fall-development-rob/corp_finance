@@ -3,11 +3,18 @@ name: Wealth Management Workflows
 description: Professional wealth management client workflows — client meeting prep, financial planning, portfolio rebalancing, tax-loss harvesting, client reports, and investment proposals. Defines advisory document production pipelines using corp-finance-mcp portfolio, retirement, and tax tools. Use when preparing client meetings, building financial plans, rebalancing portfolios, harvesting tax losses, or generating client reports.
 requires_tools:
   - brinson_attribution
+  - build_sensitivity_grid
+  - calculate_risk_parity
   - comps_analysis
   - dcf_model
   - factor_attribution
+  - optimize_black_litterman_portfolio
+  - optimize_mean_variance
+  - plan_estate
+  - plan_retirement
   - risk_adjusted_returns
   - risk_metrics
+  - run_monte_carlo
 ---
 # Wealth Management Workflows
 
@@ -27,11 +34,11 @@ You are a senior wealth management advisor producing institutional-grade client 
 | Request | Workflow | Output | Key Tools |
 |---------|----------|--------|-----------|
 | Client review | Client Review | Meeting prep doc | `risk_adjusted_returns`, `risk_metrics`, `brinson_attribution` |
-| Financial plan | Financial Plan | Comprehensive plan | `retirement_projection`, `tax_estate_planning`, `monte_carlo_simulation` |
-| Rebalance portfolio | Rebalance | Trade list | `mean_variance_optimization`, `black_litterman_portfolio`, `risk_parity` |
+| Financial plan | Financial Plan | Comprehensive plan | `plan_retirement`, `plan_estate`, `run_monte_carlo` |
+| Rebalance portfolio | Rebalance | Trade list | `optimize_mean_variance`, `optimize_black_litterman_portfolio`, `calculate_risk_parity` |
 | Tax-loss harvest | TLH | Opportunity list | Manual analysis with `risk_metrics` for replacement screening |
 | Client report | Client Report | Quarterly report | `brinson_attribution`, `factor_attribution`, `risk_adjusted_returns` |
-| Investment proposal | Proposal | Recommendation | `dcf_model`, `comps_analysis`, `risk_metrics`, `sensitivity_matrix` |
+| Investment proposal | Proposal | Recommendation | `dcf_model`, `comps_analysis`, `risk_metrics`, `build_sensitivity_grid` |
 
 ## Analysis Workflows
 
@@ -71,15 +78,15 @@ You are a senior wealth management advisor producing institutional-grade client 
    - Savings rate: target >15% of gross income for retirement readiness
    - Emergency fund: 3-6 months of expenses in liquid assets
    - Debt service ratio: total debt payments / gross income — flag if >36%
-3. **Retirement projection**: call `retirement_projection` tool
+3. **Retirement projection**: call `plan_retirement` tool
    - Current savings, annual contribution, expected return, inflation, retirement age
    - Gap analysis: projected assets vs required assets at retirement
    - Social Security / pension integration if applicable
 4. **Goal-specific analysis**:
    - Education: 529 plan projections, cost escalation (5-6% annual tuition inflation)
-   - Estate planning: call `tax_estate_planning` for transfer tax analysis
+   - Estate planning: call `plan_estate` for transfer tax analysis
    - Major purchases: savings timeline and funding source
-5. **Monte Carlo simulation**: call `monte_carlo_simulation` for probability of success
+5. **Monte Carlo simulation**: call `run_monte_carlo` for probability of success
    - 1,000+ simulations minimum
    - Report median outcome and 10th / 90th percentile range
    - Probability of meeting each goal independently and all goals jointly
@@ -106,10 +113,10 @@ You are a senior wealth management advisor producing institutional-grade client 
 2. **Drift detection**: calculate absolute and relative deviation
    - Flag any asset class >3% absolute drift from target
    - Flag total portfolio drift (sum of absolute deviations / 2) >5%
-3. **Optimisation**: call `mean_variance_optimization` or `black_litterman_portfolio` for new targets
+3. **Optimisation**: call `optimize_mean_variance` or `optimize_black_litterman_portfolio` for new targets
    - Mean-variance: efficient frontier, optimal Sharpe portfolio
    - Black-Litterman: incorporate views on expected returns
-   - Risk parity alternative: call `risk_parity` for equal risk contribution
+   - Risk parity alternative: call `calculate_risk_parity` for equal risk contribution
 4. **Trade list**: generate buys and sells to reach target
    - Minimise number of transactions (combine rebalance with new contributions)
    - Lot-level detail: which lots to sell for tax efficiency
@@ -199,7 +206,7 @@ You are a senior wealth management advisor producing institutional-grade client 
    - Expected holding period and liquidity considerations
 3. **Risk assessment**: comprehensive risk analysis
    - Call `risk_metrics` for volatility, VaR, drawdown profile
-   - Call `sensitivity_matrix` varying 2-3 key assumptions
+   - Call `build_sensitivity_grid` varying 2-3 key assumptions
    - Identify top 3 risks and potential mitigants
    - Downside scenario: maximum expected loss
 4. **Portfolio fit**: impact on overall allocation

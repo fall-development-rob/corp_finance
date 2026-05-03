@@ -2,6 +2,7 @@
 requires_tools:
   - brinson_attribution
   - factor_attribution
+  - optimize_mean_variance
   - risk_adjusted_returns
   - risk_metrics
 ---
@@ -16,7 +17,7 @@ Produces meeting prep with portfolio performance summary, asset allocation drift
 Routes to `cfa-quant-risk-analyst`.
 
 ## Key Tools
-`risk_adjusted_returns`, `risk_metrics`, `brinson_attribution`, `factor_attribution`, `mean_variance_optimization`
+`risk_adjusted_returns`, `risk_metrics`, `brinson_attribution`, `factor_attribution`, `optimize_mean_variance`
 
 ## Usage
 Provide client name and portfolio details for personalized review prep.

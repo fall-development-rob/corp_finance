@@ -1,7 +1,13 @@
 ---
 requires_tools:
   - altman_zscore
+  - build_debt_schedule
+  - build_lbo
+  - build_sensitivity_grid
+  - calculate_returns
+  - calculate_waterfall
   - credit_metrics
+  - sources_and_uses
 requires_external_tools:
   - fmp_balance_sheet
   - fmp_cash_flow
@@ -18,7 +24,7 @@ Produces a 10-15 page IC memo with 9 sections: Executive Summary, Company Overvi
 Routes to `cfa-private-markets-analyst`.
 
 ## Key Tools
-`lbo_model`, `returns_calculator`, `sources_uses`, `debt_schedule`, `waterfall_calculator`, `sensitivity_matrix`, `credit_metrics`, `altman_zscore`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`
+`build_lbo`, `calculate_returns`, `sources_and_uses`, `build_debt_schedule`, `calculate_waterfall`, `build_sensitivity_grid`, `credit_metrics`, `altman_zscore`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`
 
 ## Usage
 Provide deal details including company info, financials, deal terms, and due diligence findings.
