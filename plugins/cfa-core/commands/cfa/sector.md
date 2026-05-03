@@ -1,3 +1,11 @@
+---
+requires_tools:
+  - comps_analysis
+requires_external_tools:
+  - fmp_key_metrics
+  - fmp_profile
+  - fmp_sector_performance
+---
 # Sector Overview
 
 Sector-level analysis using the Sector Overview workflow from `workflow-equity-research`.

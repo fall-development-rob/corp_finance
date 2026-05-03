@@ -1,3 +1,15 @@
+---
+requires_tools:
+  - altman_zscore
+  - covenant_compliance
+  - credit_metrics
+  - debt_capacity
+requires_external_tools:
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_income_statement
+  - fmp_key_metrics
+---
 # Credit Analysis
 
 Perform a comprehensive credit analysis using the `corp-finance-tools-core` and `corp-finance-tools-regulatory` skills. Covers credit metrics, default risk, debt capacity, and covenant compliance.

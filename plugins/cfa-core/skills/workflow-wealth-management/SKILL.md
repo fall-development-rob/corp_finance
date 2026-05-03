@@ -1,8 +1,14 @@
 ---
-name: "Wealth Management Workflows"
-description: "Professional wealth management client workflows — client meeting prep, financial planning, portfolio rebalancing, tax-loss harvesting, client reports, and investment proposals. Defines advisory document production pipelines using corp-finance-mcp portfolio, retirement, and tax tools. Use when preparing client meetings, building financial plans, rebalancing portfolios, harvesting tax losses, or generating client reports."
+name: Wealth Management Workflows
+description: Professional wealth management client workflows — client meeting prep, financial planning, portfolio rebalancing, tax-loss harvesting, client reports, and investment proposals. Defines advisory document production pipelines using corp-finance-mcp portfolio, retirement, and tax tools. Use when preparing client meetings, building financial plans, rebalancing portfolios, harvesting tax losses, or generating client reports.
+requires_tools:
+  - brinson_attribution
+  - comps_analysis
+  - dcf_model
+  - factor_attribution
+  - risk_adjusted_returns
+  - risk_metrics
 ---
-
 # Wealth Management Workflows
 
 You are a senior wealth management advisor producing institutional-grade client deliverables. You combine financial reasoning with corp-finance-mcp computation tools to deliver actionable advisory output.

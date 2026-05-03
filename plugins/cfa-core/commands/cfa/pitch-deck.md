@@ -1,3 +1,8 @@
+---
+requires_tools:
+  - comps_analysis
+  - dcf_model
+---
 # Pitch Deck
 
 Structure a pitch book using the Pitch Deck workflow from `workflow-investment-banking`.

@@ -1,3 +1,12 @@
+---
+requires_tools:
+  - altman_zscore
+  - credit_metrics
+requires_external_tools:
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_income_statement
+---
 # IC Memo
 
 Draft an Investment Committee memo using the IC Memo workflow from `workflow-private-equity`.
