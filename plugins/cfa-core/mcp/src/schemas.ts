@@ -1,11 +1,18 @@
 /**
  * cfa-core MCP tool input schemas.
  *
- * GENERATED FROM crates/corp-finance-core/src/ via scripts/gen-zod-schemas.py.
+ * GENERATED FROM crates/corp-finance-core/src/ via cfa-codegen.
  * Do not edit by hand — re-run the generator if Input structs change.
  *
  * Each entry is a zod schema for one MCP tool's input. Tools without an
  * extractable schema fall back to the passthrough record schema in tools.ts.
+ *
+ * Tools whose Rust input type is an enum (e.g. `MbsAnalyticsInput` with
+ * `PassThrough` / `Oas` / `Duration` variants) emit a `z.union(...)` of
+ * single-key wrappers — serde's default external tagging maps each variant
+ * to `{ "<Variant>": <inner schema> }`. The inner struct schemas live in
+ * `TOOL_SCHEMAS_INNER` since they're not directly callable tools but are
+ * referenced from the union.
  */
 import { z } from "zod";
 
@@ -15,7 +22,36 @@ const decimalLike = z
   .union([z.string(), z.number()])
   .describe("Decimal value (string preferred for full precision; number accepted)");
 
-export type ToolSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
+// Schemas for inner structs referenced by enum-shaped tool inputs. These
+// are not registered as tools themselves; they exist so the discriminated
+// unions in TOOL_SCHEMAS can reference a real schema rather than `z.any()`.
+export const TOOL_SCHEMAS_INNER: Record<string, z.ZodObject<Record<string, z.ZodTypeAny>>> = {
+  MbsDurationInput: z.object({
+    pass_through_input: z.any().describe("Pass-through specification for generating cash flows."),
+    yield_bps: decimalLike.describe("Yield in basis points for Macaulay/modified duration."),
+    shock_bps: decimalLike.describe("Rate shock in basis points for effective duration/convexity."),
+  }),
+  OasInput: z.object({
+    market_price: decimalLike.describe("Market (dirty) price of the MBS."),
+    cashflows: z.array(z.any()).describe("Monthly cash flows from the pass-through model."),
+    benchmark_zero_rates: z.array(z.any()).describe("Benchmark zero-rate curve."),
+    spread_search_range: z.tuple([decimalLike, decimalLike]).describe("Search range for spread in decimal form (e.g., (-0.05, 0.10))."),
+  }),
+  PassThroughInput: z.object({
+    original_balance: decimalLike.describe("Original pool balance."),
+    current_balance: decimalLike.describe("Current pool balance."),
+    mortgage_rate: decimalLike.describe("Weighted average mortgage rate (gross coupon)."),
+    pass_through_rate: decimalLike.describe("Pass-through rate (net coupon to investors)."),
+    servicing_fee: decimalLike.describe("Servicing fee rate (annual)."),
+    remaining_months: z.number().int().describe("Remaining months to maturity."),
+    psa_speed: decimalLike.describe("PSA speed (e.g., 150 for 150% PSA)."),
+    settlement_delay_days: z.number().int().describe("Settlement delay in days (for pricing)."),
+  }),
+};
+
+// Permits both struct-shaped (z.object) and enum-shaped (z.union of
+// single-key wrappers) tool inputs.
+export type ToolSchema = z.ZodTypeAny;
 
 export const TOOL_SCHEMAS: Record<string, ToolSchema> = {
   acquisition_model: z.object({
@@ -487,6 +523,11 @@ export const TOOL_SCHEMAS: Record<string, ToolSchema> = {
     qualitative_scores: z.array(z.any()).describe("Qualitative assessment factors."),
     benchmark_quartiles: z.array(z.any()).describe("Benchmark quartile boundaries."),
   }),
+  analyze_mbs: z.union([
+    z.object({ PassThrough: TOOL_SCHEMAS_INNER.PassThroughInput }),
+    z.object({ Oas: TOOL_SCHEMAS_INNER.OasInput }),
+    z.object({ Duration: TOOL_SCHEMAS_INNER.MbsDurationInput })
+  ]),
   analyze_merger: z.object({
     acquirer_name: z.string(),
     acquirer_net_income: decimalLike,
