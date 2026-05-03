@@ -117,6 +117,347 @@ function registerTool(
   );
 }
 
+// ---------------------------------------------------------------------------
+// cfa_assumptions (T2.2): conversation-scoped key/value store
+// ---------------------------------------------------------------------------
+
+const ASSUMPTIONS = new Map<string, unknown>();
+
+function registerAssumptionTools(server: McpServer) {
+  server.tool(
+    "cfa_set_assumption",
+    "Store an assumption (rate, multiple, currency, scenario tag) in the conversation-scoped store. Persists across tool calls within one MCP session. Useful for 'use 8% WACC throughout this analysis' workflows where you don't want to re-state the value on every call. Reference from cfa_pipeline steps via $$.<key>.",
+    {
+      key: z.string().min(1).describe("Assumption name (e.g. 'wacc', 'tax_rate', 'forecast_currency')"),
+      value: z.any().describe("Value to store. Decimals usually as strings; can also be number, boolean, array, object."),
+    },
+    async ({ key, value }) => {
+      ASSUMPTIONS.set(key, value);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({ stored: { [key]: value }, total_assumptions: ASSUMPTIONS.size }, null, 2),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "cfa_get_assumptions",
+    "Read all currently-stored conversation assumptions. Returns the full key/value map.",
+    {},
+    async () => {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of ASSUMPTIONS.entries()) out[k] = v;
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(out, null, 2) }],
+      };
+    },
+  );
+
+  server.tool(
+    "cfa_clear_assumptions",
+    "Clear the conversation assumption store. Useful when starting a new analysis with different inputs.",
+    {
+      keys: z
+        .array(z.string())
+        .optional()
+        .describe("Specific keys to clear (default: clear all)"),
+    },
+    async ({ keys }) => {
+      const cleared: string[] = [];
+      if (keys && keys.length) {
+        for (const k of keys) {
+          if (ASSUMPTIONS.delete(k)) cleared.push(k);
+        }
+      } else {
+        for (const k of ASSUMPTIONS.keys()) cleared.push(k);
+        ASSUMPTIONS.clear();
+      }
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({ cleared, remaining: ASSUMPTIONS.size }, null, 2),
+          },
+        ],
+      };
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// cfa_pipeline (T2.1): atomic multi-step composition with shared state
+// ---------------------------------------------------------------------------
+
+interface PipelineStep {
+  name: string;
+  input?: Record<string, unknown>;
+  save_as?: string;
+}
+
+interface PipelineResult {
+  step: number;
+  tool: string;
+  saved_as?: string;
+  result?: unknown;
+  error?: string;
+}
+
+function resolveRef(value: unknown, state: Record<string, unknown>): unknown {
+  if (typeof value === "string") {
+    // $$.key → assumption store lookup (T2.2). Checked before $. so the longer
+    // prefix wins.
+    if (value.startsWith("$$.")) {
+      const key = value.slice(3);
+      if (!ASSUMPTIONS.has(key)) {
+        throw new Error(`pipeline: unresolved assumption '${value}' (no such key in cfa_assumptions store)`);
+      }
+      return ASSUMPTIONS.get(key);
+    }
+    // $.var or $.var.field.subfield → step-output lookup
+    if (value.startsWith("$.")) {
+      const parts = value.slice(2).split(".");
+      let current: unknown = state;
+      for (const part of parts) {
+        if (current && typeof current === "object" && part in (current as Record<string, unknown>)) {
+          current = (current as Record<string, unknown>)[part];
+        } else {
+          throw new Error(`pipeline: unresolved reference '${value}' at path '.${part}'`);
+        }
+      }
+      return current;
+    }
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => resolveRef(v, state));
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = resolveRef(v, state);
+    }
+    return out;
+  }
+  return value;
+}
+
+function registerPipelineTool(server: McpServer, wasm: WasmExports) {
+  server.tool(
+    "cfa_pipeline",
+    "Run a multi-step pipeline of cfa-core tools atomically with shared state. Each step can reference outputs of earlier steps via $.var.path JSONPath refs. Use save_as to bind a step's output to a variable. Reduces N round-trips through the LLM to 1 — useful for multi-step workflows like 'compute WACC, plug into DCF, then run sensitivity'.",
+    {
+      steps: z
+        .array(
+          z.object({
+            name: z.string().describe("The cfa-core tool to call at this step"),
+            input: z
+              .record(z.any())
+              .optional()
+              .describe(
+                "Tool inputs. String values starting with $. are resolved from prior steps' saved outputs.",
+              ),
+            save_as: z
+              .string()
+              .optional()
+              .describe(
+                "Bind this step's parsed JSON output to a variable name for later $. references",
+              ),
+          }),
+        )
+        .min(1)
+        .describe("Ordered list of tool calls to execute"),
+      stop_on_error: z
+        .boolean()
+        .optional()
+        .describe(
+          "Halt the pipeline at the first failed step (default true). When false, errors are recorded and execution continues.",
+        ),
+    },
+    async (params) => {
+      const stopOnError = params.stop_on_error ?? true;
+      const state: Record<string, unknown> = {};
+      const results: PipelineResult[] = [];
+
+      for (let i = 0; i < params.steps.length; i++) {
+        const step = params.steps[i] as PipelineStep;
+        const stepNum = i + 1;
+        try {
+          const fn = wasm[step.name];
+          if (typeof fn !== "function") {
+            // Fall through — maybe it's a built-in like cfa_profile that we don't pipeline.
+            throw new Error(`unknown WASM tool '${step.name}' (built-in tools cannot be pipelined)`);
+          }
+          const resolvedInput = step.input ? (resolveRef(step.input, state) as Record<string, unknown>) : {};
+          const t0 = process.hrtime.bigint();
+          const raw = fn(JSON.stringify(resolvedInput));
+          const wallUs = Number((process.hrtime.bigint() - t0) / 1000n);
+          const parsed = JSON.parse(raw);
+          bumpProfile(step.name, wallUs, extractComputeUs(raw));
+          if (step.save_as) {
+            state[step.save_as] = parsed;
+          }
+          results.push({
+            step: stepNum,
+            tool: step.name,
+            saved_as: step.save_as,
+            result: parsed,
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          results.push({ step: stepNum, tool: step.name, error: message });
+          if (stopOnError) break;
+        }
+      }
+
+      const summary = {
+        steps_total: params.steps.length,
+        steps_executed: results.length,
+        steps_succeeded: results.filter((r) => !r.error).length,
+        steps_failed: results.filter((r) => r.error).length,
+        bound_variables: Object.keys(state),
+        results,
+      };
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(summary, null, 2) }],
+      };
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// cfa_estimate_runtime (T2.3): runtime hints for expensive tools
+//
+// True MCP streaming requires Rust-side progress callbacks (refactoring
+// run_monte_carlo, optimize_mean_variance, etc. to emit checkpoints across
+// the WASM boundary). That's a v0.3 work item.
+//
+// What we can ship today: aggregate per-tool wall time stats from the
+// PROFILE counter (T4.3) and let the LLM/user check expected duration
+// before invoking. Keeps "don't run a 5-second tool 50 times in a
+// sensitivity grid" feasible without true streaming.
+// ---------------------------------------------------------------------------
+
+// Hand-curated baseline expectations for tools we've benchmarked. Used when
+// PROFILE has no data yet (cold-start session). Values in microseconds.
+const RUNTIME_BASELINES: Record<string, { typical_us: number; max_us: number; notes?: string }> = {
+  calculate_wacc: { typical_us: 500, max_us: 2_000 },
+  build_dcf: { typical_us: 1_500, max_us: 5_000 },
+  comps_analysis: { typical_us: 800, max_us: 3_000 },
+  credit_metrics: { typical_us: 800, max_us: 3_000 },
+  build_lbo: { typical_us: 3_000, max_us: 10_000 },
+  run_monte_carlo: {
+    typical_us: 500_000,
+    max_us: 5_000_000,
+    notes: "10k paths default. Scales linearly with `simulations` parameter. v0.3 will add streaming.",
+  },
+  run_mc_dcf: {
+    typical_us: 800_000,
+    max_us: 8_000_000,
+    notes: "DCF with 10k Monte Carlo paths. Scales linearly with simulation count.",
+  },
+  optimize_mean_variance: {
+    typical_us: 50_000,
+    max_us: 500_000,
+    notes: "Scales with universe size. >100 assets: expect >100ms.",
+  },
+  optimize_black_litterman_portfolio: {
+    typical_us: 80_000,
+    max_us: 1_000_000,
+  },
+  run_stress_test: { typical_us: 5_000, max_us: 50_000 },
+  build_implied_vol_surface: {
+    typical_us: 100_000,
+    max_us: 2_000_000,
+    notes: "Scales with strike × maturity grid size.",
+  },
+  calibrate_sabr: {
+    typical_us: 200_000,
+    max_us: 5_000_000,
+    notes: "Iterative calibration; convergence depends on initial guess.",
+  },
+};
+
+function registerEstimateTool(server: McpServer) {
+  server.tool(
+    "cfa_estimate_runtime",
+    "Estimate the wall time a cfa-core tool will take before you invoke it. Combines hand-curated baselines with this session's measured PROFILE data (T4.3). Returns typical/max microseconds plus a recommendation (run normally / batch / split). Use before iterating an expensive tool in a loop.",
+    {
+      tool: z.string().describe("Tool name to estimate"),
+      iterations: z
+        .number()
+        .int()
+        .min(1)
+        .optional()
+        .describe("Planned iteration count (e.g. for sensitivity grids). Default 1."),
+    },
+    async ({ tool, iterations = 1 }) => {
+      const measured = PROFILE.get(tool);
+      const baseline = RUNTIME_BASELINES[tool];
+
+      let typical_us: number;
+      let max_us: number;
+      let source: string;
+
+      if (measured && measured.calls >= 3) {
+        typical_us = Math.round(measured.wall_us_total / measured.calls);
+        max_us = typical_us * 3;
+        source = `measured (${measured.calls} calls this session)`;
+      } else if (baseline) {
+        typical_us = baseline.typical_us;
+        max_us = baseline.max_us;
+        source = "hand-curated baseline";
+      } else {
+        typical_us = 5_000;
+        max_us = 50_000;
+        source = "default estimate (no baseline or measurement)";
+      }
+
+      const total_typical_us = typical_us * iterations;
+      const total_max_us = max_us * iterations;
+
+      let recommendation = "run normally";
+      if (total_max_us > 30_000_000) {
+        recommendation =
+          "split into multiple invocations; total max exceeds 30s, may hit MCP timeouts";
+      } else if (total_typical_us > 5_000_000) {
+        recommendation =
+          "consider running in background; expected wall >5s. v0.3 will support streaming for tools with this signature.";
+      } else if (total_typical_us > 500_000) {
+        recommendation = "OK but slow; consider caching results across iterations";
+      }
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(
+              {
+                tool,
+                iterations,
+                source,
+                per_call: { typical_us, max_us },
+                total: {
+                  typical_us: total_typical_us,
+                  max_us: total_max_us,
+                  typical_ms: Math.round(total_typical_us / 1000),
+                  max_ms: Math.round(total_max_us / 1000),
+                },
+                recommendation,
+                notes: baseline?.notes,
+              },
+              null,
+              2,
+            ),
+          },
+        ],
+      };
+    },
+  );
+}
+
 function registerProfileTool(server: McpServer) {
   server.tool(
     "cfa_profile",
@@ -574,6 +915,15 @@ export function registerAllTools(server: McpServer, wasm: WasmExports): number {
   // --- Legacy v0.1 aliases (kept for skill/command compatibility) ---
   registerTool(server, wasm, "wacc_calculator", `Weighted Average Cost of Capital via CAPM. Inputs: risk_free_rate, equity_risk_premium, beta, cost_of_debt, tax_rate, debt_weight, equity_weight. Optional: size_premium, country_risk_premium, specific_risk_premium, unlevered_beta, target_debt_equity (Hamada). Returns wacc, cost_of_equity, after_tax_cost_of_debt, levered_beta.`, "calculate_wacc"); count++;
   registerTool(server, wasm, "dcf_model", `Discounted Cash Flow valuation. Inputs: base_revenue, currency, revenue_growth_rates[], ebitda_margin, capex_as_pct_revenue, nwc_as_pct_revenue, tax_rate, wacc, terminal_method (GordonGrowth | ExitMultiple), terminal_growth_rate, shares_outstanding, net_debt. Returns enterprise_value, equity_value, per-share value, year-by-year projections.`, "build_dcf"); count++;
+
+  // --- Built-in: cfa_assumptions (T2.2 conversation-scoped store) ---
+  registerAssumptionTools(server); count += 3;
+
+  // --- Built-in: cfa_pipeline (T2.1 composition) ---
+  registerPipelineTool(server, wasm); count++;
+
+  // --- Built-in: cfa_estimate_runtime (T2.3 runtime hints) ---
+  registerEstimateTool(server); count++;
 
   // --- Built-in: cfa_profile (T4.3 telemetry) ---
   registerProfileTool(server); count++;
