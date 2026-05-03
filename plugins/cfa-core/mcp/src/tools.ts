@@ -1,0 +1,464 @@
+/**
+ * cfa-core MCP tool registry.
+ *
+ * GENERATED FROM packages/bindings/src/lib.rs by scripts/gen-mcp-tools.py.
+ * Do not edit by hand — re-run the generator if NAPI bindings change.
+ *
+ * Each entry registers one WASM export as an MCP tool with a domain-grouped
+ * description. Inputs are validated by the Rust serde layer; rich per-tool
+ * zod schemas land in v0.3 (T1.2).
+ */
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+
+type WasmExports = Record<string, (json: string) => string>;
+
+const passthroughShape = {
+  input: z
+    .record(z.any())
+    .describe("Tool inputs as a JSON object — see tool description for fields"),
+};
+
+function wrap(jsonResult: string) {
+  return { content: [{ type: "text" as const, text: jsonResult }] };
+}
+
+function registerTool(
+  server: McpServer,
+  wasm: WasmExports,
+  name: string,
+  description: string,
+  exportName: string = name,
+) {
+  const fn = wasm[exportName];
+  if (typeof fn !== "function") {
+    // Defensive: WASM was built without this export. Skip with a warning so
+    // partial WASM builds don't crash the whole server.
+    console.warn(`[cfa-core] WASM export missing: ${exportName} — skipping`);
+    return;
+  }
+  server.tool(
+    name,
+    description,
+    passthroughShape,
+    async (params: { input: Record<string, unknown> }) => {
+      try {
+        const result = fn(JSON.stringify(params.input ?? {}));
+        return wrap(result);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [{ type: "text" as const, text: `error: ${message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+}
+
+export function registerAllTools(server: McpServer, wasm: WasmExports): number {
+  let count = 0;
+
+  // --- Valuation ---
+  registerTool(server, wasm, "calculate_wacc", `Weighted Average Cost of Capital via CAPM. Inputs: risk_free_rate, equity_risk_premium, beta, cost_of_debt, tax_rate, debt_weight, equity_weight. Optional: size_premium, country_risk_premium, specific_risk_premium, unlevered_beta, target_debt_equity (Hamada). Returns wacc, cost_of_equity, after_tax_cost_of_debt, levered_beta.`); count++;
+  registerTool(server, wasm, "build_dcf", `Discounted Cash Flow valuation. Inputs: base_revenue, currency, revenue_growth_rates[], ebitda_margin, capex_as_pct_revenue, nwc_as_pct_revenue, tax_rate, wacc, terminal_method (GordonGrowth | ExitMultiple), terminal_growth_rate, shares_outstanding, net_debt. Returns enterprise_value, equity_value, per-share value, year-by-year projections.`); count++;
+  registerTool(server, wasm, "comps_analysis", `Trading comparables across peer set. Computes EV/EBITDA, EV/Revenue, P/E, P/B, PEG mean/median/high/low and derives implied target valuations.`); count++;
+
+  // --- Credit ---
+  registerTool(server, wasm, "credit_metrics", `Standard credit metrics: leverage (Debt/EBITDA, Net Debt/EBITDA), coverage (interest, EBIT, DSCR), liquidity (current, quick), and synthetic rating (AAA→D).`); count++;
+  registerTool(server, wasm, "debt_capacity", `Maximum sustainable debt at target rating given EBITDA, interest rate, tax rate, and rating-grade leverage thresholds.`); count++;
+  registerTool(server, wasm, "covenant_compliance", `Maintenance covenant headroom test: leverage, coverage, and DSCR vs. covenant levels, with EBITDA cushion calculation.`); count++;
+
+  // --- Private Equity ---
+  registerTool(server, wasm, "calculate_returns", `Private Equity: Calculate returns.`); count++;
+  registerTool(server, wasm, "build_debt_schedule", `Private Equity: Build debt schedule.`); count++;
+  registerTool(server, wasm, "sources_and_uses", `Private Equity: Sources and uses.`); count++;
+
+  // --- Private Equity — Phase 2 ---
+  registerTool(server, wasm, "build_lbo", `Full LBO model with sources & uses, pro-forma capital structure, debt schedule, equity returns, and IRR/MOIC waterfall.`); count++;
+  registerTool(server, wasm, "calculate_waterfall", `European or American waterfall: return-of-capital → preferred return → catch-up → carried interest. Per-LP and GP cash splits.`); count++;
+
+  // --- M&A ---
+  registerTool(server, wasm, "analyze_merger", `M&A: Analyze merger.`); count++;
+
+  // --- Credit — Phase 2 ---
+  registerTool(server, wasm, "altman_zscore", `Altman Z-Score distress prediction (manufacturing/private/non-mfg models). Returns score and zone (Safe / Grey / Distress).`); count++;
+
+  // --- Jurisdiction / Fund ---
+  registerTool(server, wasm, "calculate_fund_fees", `Jurisdiction / Fund: Calculate fund fees.`); count++;
+  registerTool(server, wasm, "reconcile_accounting", `Jurisdiction / Fund: Reconcile accounting.`); count++;
+  registerTool(server, wasm, "calculate_wht", `Jurisdiction / Fund: Calculate wht.`); count++;
+  registerTool(server, wasm, "calculate_portfolio_wht", `Jurisdiction / Fund: Calculate portfolio wht.`); count++;
+  registerTool(server, wasm, "calculate_nav", `Jurisdiction / Fund: Calculate nav.`); count++;
+  registerTool(server, wasm, "calculate_gp_economics", `Jurisdiction / Fund: Calculate gp economics.`); count++;
+  registerTool(server, wasm, "calculate_investor_net_returns", `Jurisdiction / Fund: Calculate investor net returns.`); count++;
+  registerTool(server, wasm, "screen_ubti_eci", `Jurisdiction / Fund: Screen ubti eci.`); count++;
+
+  // --- Fixed Income ---
+  registerTool(server, wasm, "price_bond", `Bond pricing from yield: clean/dirty price, accrued interest, DV01. Supports semi-annual / annual / monthly compounding.`); count++;
+  registerTool(server, wasm, "calculate_bond_yield", `Fixed Income: Calculate bond yield.`); count++;
+  registerTool(server, wasm, "bootstrap_spot_curve", `Fixed Income: Bootstrap spot curve.`); count++;
+  registerTool(server, wasm, "fit_nelson_siegel", `Fixed Income: Fit nelson siegel.`); count++;
+  registerTool(server, wasm, "calculate_duration", `Fixed Income: Calculate duration.`); count++;
+  registerTool(server, wasm, "calculate_credit_spreads", `Fixed Income: Calculate credit spreads.`); count++;
+
+  // --- Derivatives ---
+  registerTool(server, wasm, "price_option", `Option pricing: Black-Scholes (European), CRR binomial (American). Returns price + Greeks (delta, gamma, theta, vega, rho).`); count++;
+  registerTool(server, wasm, "implied_volatility", `Derivatives: Implied volatility.`); count++;
+  registerTool(server, wasm, "price_forward", `Derivatives: Price forward.`); count++;
+  registerTool(server, wasm, "value_forward_position", `Derivatives: Value forward position.`); count++;
+  registerTool(server, wasm, "futures_basis_analysis", `Derivatives: Futures basis analysis.`); count++;
+  registerTool(server, wasm, "value_interest_rate_swap", `Derivatives: Value interest rate swap.`); count++;
+  registerTool(server, wasm, "value_currency_swap", `Derivatives: Value currency swap.`); count++;
+  registerTool(server, wasm, "analyze_strategy", `Derivatives: Analyze strategy.`); count++;
+
+  // --- Portfolio ---
+  registerTool(server, wasm, "risk_adjusted_returns", `Portfolio: Risk adjusted returns.`); count++;
+  registerTool(server, wasm, "risk_metrics", `Portfolio: Risk metrics.`); count++;
+  registerTool(server, wasm, "kelly_sizing", `Portfolio: Kelly sizing.`); count++;
+
+  // --- Scenarios ---
+  registerTool(server, wasm, "build_sensitivity_grid", `Scenarios: Build sensitivity grid.`); count++;
+
+  // --- Three-Statement Model ---
+  registerTool(server, wasm, "build_three_statement", `Three-Statement Model: Build three statement.`); count++;
+
+  // --- Monte Carlo ---
+  registerTool(server, wasm, "run_monte_carlo", `Monte Carlo: Run monte carlo.`); count++;
+  registerTool(server, wasm, "run_mc_dcf", `Monte Carlo: Run mc dcf.`); count++;
+
+  // --- Quant Risk ---
+  registerTool(server, wasm, "run_factor_model", `Quant Risk: Run factor model.`); count++;
+  registerTool(server, wasm, "run_black_litterman", `Quant Risk: Run black litterman.`); count++;
+  registerTool(server, wasm, "calculate_risk_parity", `Quant Risk: Calculate risk parity.`); count++;
+  registerTool(server, wasm, "run_stress_test", `Quant Risk: Run stress test.`); count++;
+
+  // --- Restructuring ---
+  registerTool(server, wasm, "analyze_recovery", `Restructuring: Analyze recovery.`); count++;
+  registerTool(server, wasm, "analyze_distressed_debt", `Restructuring: Analyze distressed debt.`); count++;
+
+  // --- Real Assets ---
+  registerTool(server, wasm, "value_property", `Real Assets: Value property.`); count++;
+  registerTool(server, wasm, "model_project_finance", `Real Assets: Model project finance.`); count++;
+
+  // --- Institutional Real Estate ---
+  registerTool(server, wasm, "tenant_schedule", `Institutional Real Estate: Tenant schedule.`); count++;
+  registerTool(server, wasm, "lease_rollover", `Institutional Real Estate: Lease rollover.`); count++;
+  registerTool(server, wasm, "comp_adjustment_grid", `Institutional Real Estate: Comp adjustment grid.`); count++;
+  registerTool(server, wasm, "comp_reconciliation", `Institutional Real Estate: Comp reconciliation.`); count++;
+  registerTool(server, wasm, "hbu_analysis", `Institutional Real Estate: Hbu analysis.`); count++;
+  registerTool(server, wasm, "financially_feasible", `Institutional Real Estate: Financially feasible.`); count++;
+  registerTool(server, wasm, "cost_approach", `Institutional Real Estate: Cost approach.`); count++;
+  registerTool(server, wasm, "marshall_swift", `Institutional Real Estate: Marshall swift.`); count++;
+  registerTool(server, wasm, "ncreif_attribution", `Institutional Real Estate: Ncreif attribution.`); count++;
+  registerTool(server, wasm, "odce_comparison", `Institutional Real Estate: Odce comparison.`); count++;
+  registerTool(server, wasm, "acquisition_model", `Institutional Real Estate: Acquisition model.`); count++;
+  registerTool(server, wasm, "development_feasibility", `Institutional Real Estate: Development feasibility.`); count++;
+
+  // --- FX & Commodities ---
+  registerTool(server, wasm, "price_fx_forward", `FX & Commodities: Price fx forward.`); count++;
+  registerTool(server, wasm, "calculate_cross_rate", `FX & Commodities: Calculate cross rate.`); count++;
+  registerTool(server, wasm, "price_commodity_forward", `FX & Commodities: Price commodity forward.`); count++;
+  registerTool(server, wasm, "analyze_commodity_curve", `FX & Commodities: Analyze commodity curve.`); count++;
+
+  // --- Scenarios ---
+
+  // --- Securitization ---
+  registerTool(server, wasm, "model_abs_cashflows", `Securitization: Model abs cashflows.`); count++;
+  registerTool(server, wasm, "analyze_tranching", `Securitization: Analyze tranching.`); count++;
+
+  // --- Venture Capital ---
+  registerTool(server, wasm, "model_funding_round", `Venture Capital: Model funding round.`); count++;
+  registerTool(server, wasm, "analyze_dilution", `Venture Capital: Analyze dilution.`); count++;
+  registerTool(server, wasm, "convert_note", `Venture Capital: Convert note.`); count++;
+  registerTool(server, wasm, "convert_safe", `Venture Capital: Convert safe.`); count++;
+  registerTool(server, wasm, "model_venture_fund", `Venture Capital: Model venture fund.`); count++;
+
+  // --- ESG ---
+  registerTool(server, wasm, "calculate_esg_score", `ESG: Calculate esg score.`); count++;
+  registerTool(server, wasm, "analyze_carbon_footprint", `ESG: Analyze carbon footprint.`); count++;
+  registerTool(server, wasm, "analyze_green_bond", `ESG: Analyze green bond.`); count++;
+  registerTool(server, wasm, "test_sll_covenants", `ESG: Test sll covenants.`); count++;
+
+  // --- Regulatory ---
+  registerTool(server, wasm, "calculate_regulatory_capital", `Regulatory: Calculate regulatory capital.`); count++;
+  registerTool(server, wasm, "calculate_lcr", `Regulatory: Calculate lcr.`); count++;
+  registerTool(server, wasm, "calculate_nsfr", `Regulatory: Calculate nsfr.`); count++;
+  registerTool(server, wasm, "analyze_alm", `Regulatory: Analyze alm.`); count++;
+
+  // --- Private Credit ---
+  registerTool(server, wasm, "price_unitranche", `Private Credit: Price unitranche.`); count++;
+  registerTool(server, wasm, "model_direct_loan", `Private Credit: Model direct loan.`); count++;
+  registerTool(server, wasm, "analyze_syndication", `Private Credit: Analyze syndication.`); count++;
+
+  // --- Insurance ---
+  registerTool(server, wasm, "estimate_reserves", `Insurance: Estimate reserves.`); count++;
+  registerTool(server, wasm, "price_premium", `Insurance: Price premium.`); count++;
+  registerTool(server, wasm, "analyze_combined_ratio", `Insurance: Analyze combined ratio.`); count++;
+  registerTool(server, wasm, "calculate_scr", `Insurance: Calculate scr.`); count++;
+
+  // --- FP&A (Financial Planning & Analysis) ---
+  registerTool(server, wasm, "analyze_variance", `FP&A (Financial Planning & Analysis): Analyze variance.`); count++;
+  registerTool(server, wasm, "analyze_breakeven", `FP&A (Financial Planning & Analysis): Analyze breakeven.`); count++;
+  registerTool(server, wasm, "analyze_working_capital", `FP&A (Financial Planning & Analysis): Analyze working capital.`); count++;
+  registerTool(server, wasm, "build_rolling_forecast", `FP&A (Financial Planning & Analysis): Build rolling forecast.`); count++;
+
+  // --- Wealth Management ---
+  registerTool(server, wasm, "plan_retirement", `Wealth Management: Plan retirement.`); count++;
+  registerTool(server, wasm, "simulate_tax_loss_harvesting", `Wealth Management: Simulate tax loss harvesting.`); count++;
+  registerTool(server, wasm, "plan_estate", `Wealth Management: Plan estate.`); count++;
+
+  // --- Crypto / Digital Assets — Phase 8 ---
+  registerTool(server, wasm, "value_token", `Crypto / Digital Assets — Phase 8: Value token.`); count++;
+  registerTool(server, wasm, "analyze_defi", `Crypto / Digital Assets — Phase 8: Analyze defi.`); count++;
+
+  // --- Municipal Bonds — Phase 8 ---
+  registerTool(server, wasm, "price_muni_bond", `Municipal Bonds — Phase 8: Price muni bond.`); count++;
+  registerTool(server, wasm, "analyze_municipal", `Municipal Bonds — Phase 8: Analyze municipal.`); count++;
+
+  // --- Structured Products — Phase 8 ---
+  registerTool(server, wasm, "price_structured_note", `Structured Products — Phase 8: Price structured note.`); count++;
+  registerTool(server, wasm, "price_exotic", `Structured Products — Phase 8: Price exotic.`); count++;
+
+  // --- Trade Finance — Phase 8 ---
+  registerTool(server, wasm, "price_letter_of_credit", `Trade Finance — Phase 8: Price letter of credit.`); count++;
+  registerTool(server, wasm, "analyze_supply_chain_finance", `Trade Finance — Phase 8: Analyze supply chain finance.`); count++;
+
+  // --- Credit Derivatives — Phase 9 ---
+  registerTool(server, wasm, "price_cds", `Credit Derivatives — Phase 9: Price cds.`); count++;
+  registerTool(server, wasm, "calculate_cva", `Credit Derivatives — Phase 9: Calculate cva.`); count++;
+
+  // --- Convertible Bonds — Phase 9 ---
+  registerTool(server, wasm, "price_convertible", `Convertible Bonds — Phase 9: Price convertible.`); count++;
+  registerTool(server, wasm, "analyze_convertible", `Convertible Bonds — Phase 9: Analyze convertible.`); count++;
+
+  // --- Lease Accounting — Phase 9 ---
+  registerTool(server, wasm, "classify_lease", `Lease Accounting — Phase 9: Classify lease.`); count++;
+  registerTool(server, wasm, "analyze_sale_leaseback", `Lease Accounting — Phase 9: Analyze sale leaseback.`); count++;
+
+  // --- Pension & LDI — Phase 9 ---
+  registerTool(server, wasm, "analyze_pension_funding", `Pension & LDI — Phase 9: Analyze pension funding.`); count++;
+  registerTool(server, wasm, "design_ldi_strategy", `Pension & LDI — Phase 9: Design ldi strategy.`); count++;
+
+  // --- Sovereign — Phase 10 ---
+  registerTool(server, wasm, "analyze_sovereign_bond", `Sovereign — Phase 10: Analyze sovereign bond.`); count++;
+  registerTool(server, wasm, "assess_country_risk", `Sovereign — Phase 10: Assess country risk.`); count++;
+
+  // --- Real Options — Phase 10 ---
+  registerTool(server, wasm, "value_real_option", `Real Options — Phase 10: Value real option.`); count++;
+  registerTool(server, wasm, "analyze_decision_tree", `Real Options — Phase 10: Analyze decision tree.`); count++;
+
+  // --- Equity Research — Phase 10 ---
+  registerTool(server, wasm, "calculate_sotp", `Equity Research — Phase 10: Calculate sotp.`); count++;
+  registerTool(server, wasm, "calculate_target_price", `Equity Research — Phase 10: Calculate target price.`); count++;
+
+  // --- Commodity Trading — Phase 10 ---
+  registerTool(server, wasm, "analyze_commodity_spread", `Commodity Trading — Phase 10: Analyze commodity spread.`); count++;
+  registerTool(server, wasm, "analyze_storage_economics", `Commodity Trading — Phase 10: Analyze storage economics.`); count++;
+
+  // --- Quant Strategies — Phase 11 ---
+  registerTool(server, wasm, "analyze_pairs_trading", `Quant Strategies — Phase 11: Analyze pairs trading.`); count++;
+  registerTool(server, wasm, "analyze_momentum", `Quant Strategies — Phase 11: Analyze momentum.`); count++;
+
+  // --- Treasury — Phase 11 ---
+  registerTool(server, wasm, "analyze_cash_management", `Treasury — Phase 11: Analyze cash management.`); count++;
+  registerTool(server, wasm, "analyze_hedging", `Treasury — Phase 11: Analyze hedging.`); count++;
+
+  // --- Infrastructure — Phase 11 ---
+  registerTool(server, wasm, "model_ppp", `Infrastructure — Phase 11: Model ppp.`); count++;
+  registerTool(server, wasm, "value_concession", `Infrastructure — Phase 11: Value concession.`); count++;
+
+  // --- Behavioral Finance — Phase 11 ---
+  registerTool(server, wasm, "analyze_prospect_theory", `Behavioral Finance — Phase 11: Analyze prospect theory.`); count++;
+  registerTool(server, wasm, "analyze_sentiment", `Behavioral Finance — Phase 11: Analyze sentiment.`); count++;
+
+  // --- Performance Attribution — Phase 12 ---
+  registerTool(server, wasm, "brinson_attribution", `Performance Attribution — Phase 12: Brinson attribution.`); count++;
+  registerTool(server, wasm, "factor_attribution", `Performance Attribution — Phase 12: Factor attribution.`); count++;
+
+  // --- Credit Portfolio — Phase 12 ---
+  registerTool(server, wasm, "calculate_portfolio_credit_risk", `Credit Portfolio — Phase 12: Calculate portfolio credit risk.`); count++;
+  registerTool(server, wasm, "calculate_migration", `Credit Portfolio — Phase 12: Calculate migration.`); count++;
+
+  // --- Macro Economics — Phase 12 ---
+  registerTool(server, wasm, "analyze_monetary_policy", `Macro Economics — Phase 12: Analyze monetary policy.`); count++;
+  registerTool(server, wasm, "analyze_international", `Macro Economics — Phase 12: Analyze international.`); count++;
+
+  // --- Compliance — Phase 12 ---
+  registerTool(server, wasm, "analyze_best_execution", `Compliance — Phase 12: Analyze best execution.`); count++;
+  registerTool(server, wasm, "generate_gips_report", `Compliance — Phase 12: Generate gips report.`); count++;
+
+  // --- Onshore Structures — Phase 13 ---
+  registerTool(server, wasm, "analyze_us_fund_structure", `Onshore Structures — Phase 13: Analyze us fund structure.`); count++;
+  registerTool(server, wasm, "analyze_uk_eu_fund", `Onshore Structures — Phase 13: Analyze uk eu fund.`); count++;
+
+  // --- Offshore Structures — Phase 13 ---
+  registerTool(server, wasm, "analyze_cayman_structure", `Offshore Structures — Phase 13: Analyze cayman structure.`); count++;
+  registerTool(server, wasm, "analyze_lux_structure", `Offshore Structures — Phase 13: Analyze lux structure.`); count++;
+
+  // --- Offshore Structures Expansion — Phase 23 ---
+  registerTool(server, wasm, "analyze_jersey_fund", `Offshore Structures Expansion — Phase 23: Analyze jersey fund.`); count++;
+  registerTool(server, wasm, "analyze_guernsey_fund", `Offshore Structures Expansion — Phase 23: Analyze guernsey fund.`); count++;
+  registerTool(server, wasm, "cell_company_analysis", `Offshore Structures Expansion — Phase 23: Cell company analysis.`); count++;
+  registerTool(server, wasm, "analyze_vcc_structure", `Offshore Structures Expansion — Phase 23: Analyze vcc structure.`); count++;
+  registerTool(server, wasm, "vcc_tax_incentive_analysis", `Offshore Structures Expansion — Phase 23: Vcc tax incentive analysis.`); count++;
+  registerTool(server, wasm, "analyze_ofc_structure", `Offshore Structures Expansion — Phase 23: Analyze ofc structure.`); count++;
+  registerTool(server, wasm, "analyze_lpf_structure", `Offshore Structures Expansion — Phase 23: Analyze lpf structure.`); count++;
+  registerTool(server, wasm, "hk_carried_interest_concession", `Offshore Structures Expansion — Phase 23: Hk carried interest concession.`); count++;
+  registerTool(server, wasm, "analyze_difc_fund", `Offshore Structures Expansion — Phase 23: Analyze difc fund.`); count++;
+  registerTool(server, wasm, "analyze_adgm_fund", `Offshore Structures Expansion — Phase 23: Analyze adgm fund.`); count++;
+  registerTool(server, wasm, "compare_jurisdictions", `Offshore Structures Expansion — Phase 23: Compare jurisdictions.`); count++;
+  registerTool(server, wasm, "migration_feasibility", `Offshore Structures Expansion — Phase 23: Migration feasibility.`); count++;
+
+  // --- Transfer Pricing — Phase 13 ---
+  registerTool(server, wasm, "analyze_beps_compliance", `Transfer Pricing — Phase 13: Analyze beps compliance.`); count++;
+  registerTool(server, wasm, "analyze_intercompany", `Transfer Pricing — Phase 13: Analyze intercompany.`); count++;
+
+  // --- Tax Treaty — Phase 13 ---
+  registerTool(server, wasm, "analyze_treaty_network", `Tax Treaty — Phase 13: Analyze treaty network.`); count++;
+  registerTool(server, wasm, "optimize_treaty_structure", `Tax Treaty — Phase 13: Optimize treaty structure.`); count++;
+
+  // --- FATCA/CRS — Phase 14 ---
+  registerTool(server, wasm, "analyze_fatca_crs_reporting", `FATCA/CRS — Phase 14: Analyze fatca crs reporting.`); count++;
+  registerTool(server, wasm, "classify_entity", `FATCA/CRS — Phase 14: Classify entity.`); count++;
+
+  // --- Substance Requirements — Phase 14 ---
+  registerTool(server, wasm, "analyze_economic_substance", `Substance Requirements — Phase 14: Analyze economic substance.`); count++;
+  registerTool(server, wasm, "run_jurisdiction_substance_test", `Substance Requirements — Phase 14: Run jurisdiction substance test.`); count++;
+
+  // --- Regulatory Reporting — Phase 14 ---
+  registerTool(server, wasm, "generate_aifmd_report", `Regulatory Reporting — Phase 14: Generate aifmd report.`); count++;
+  registerTool(server, wasm, "generate_sec_cftc_report", `Regulatory Reporting — Phase 14: Generate sec cftc report.`); count++;
+
+  // --- AML Compliance — Phase 14 ---
+  registerTool(server, wasm, "assess_kyc_risk", `AML Compliance — Phase 14: Assess kyc risk.`); count++;
+  registerTool(server, wasm, "screen_sanctions", `AML Compliance — Phase 14: Screen sanctions.`); count++;
+
+  // --- Volatility Surface — Phase 15 ---
+  registerTool(server, wasm, "build_implied_vol_surface", `Volatility Surface — Phase 15: Build implied vol surface.`); count++;
+  registerTool(server, wasm, "calibrate_sabr", `Volatility Surface — Phase 15: Calibrate sabr.`); count++;
+
+  // --- Portfolio Optimization — Phase 15 ---
+  registerTool(server, wasm, "optimize_mean_variance", `Portfolio Optimization — Phase 15: Optimize mean variance.`); count++;
+  registerTool(server, wasm, "optimize_black_litterman_portfolio", `Portfolio Optimization — Phase 15: Optimize black litterman portfolio.`); count++;
+
+  // --- Risk Budgeting — Phase 15 ---
+  registerTool(server, wasm, "analyze_factor_risk_budget", `Risk Budgeting — Phase 15: Analyze factor risk budget.`); count++;
+  registerTool(server, wasm, "analyze_tail_risk", `Risk Budgeting — Phase 15: Analyze tail risk.`); count++;
+
+  // --- Market Microstructure — Phase 15 ---
+  registerTool(server, wasm, "analyze_spreads", `Market Microstructure — Phase 15: Analyze spreads.`); count++;
+  registerTool(server, wasm, "optimize_execution", `Market Microstructure — Phase 15: Optimize execution.`); count++;
+
+  // --- Interest Rate Models — Phase 16 ---
+  registerTool(server, wasm, "analyze_short_rate", `Interest Rate Models — Phase 16: Analyze short rate.`); count++;
+  registerTool(server, wasm, "fit_term_structure", `Interest Rate Models — Phase 16: Fit term structure.`); count++;
+
+  // --- Mortgage Analytics — Phase 16 ---
+  registerTool(server, wasm, "analyze_prepayment", `Mortgage Analytics — Phase 16: Analyze prepayment.`); count++;
+  registerTool(server, wasm, "analyze_mbs", `Mortgage Analytics — Phase 16: Analyze mbs.`); count++;
+
+  // --- Inflation-Linked — Phase 16 ---
+  registerTool(server, wasm, "analyze_tips", `Inflation-Linked — Phase 16: Analyze tips.`); count++;
+  registerTool(server, wasm, "analyze_inflation_derivatives", `Inflation-Linked — Phase 16: Analyze inflation derivatives.`); count++;
+
+  // --- Repo Financing — Phase 16 ---
+  registerTool(server, wasm, "analyze_repo", `Repo Financing — Phase 16: Analyze repo.`); count++;
+  registerTool(server, wasm, "analyze_collateral", `Repo Financing — Phase 16: Analyze collateral.`); count++;
+
+  // --- Credit Scoring — Phase 18 ---
+  registerTool(server, wasm, "calculate_scorecard", `Credit Scoring — Phase 18: Calculate scorecard.`); count++;
+  registerTool(server, wasm, "calculate_merton", `Credit Scoring — Phase 18: Calculate merton.`); count++;
+  registerTool(server, wasm, "calculate_intensity_model", `Credit Scoring — Phase 18: Calculate intensity model.`); count++;
+  registerTool(server, wasm, "calculate_calibration", `Credit Scoring — Phase 18: Calculate calibration.`); count++;
+  registerTool(server, wasm, "calculate_scoring_validation", `Credit Scoring — Phase 18: Calculate scoring validation.`); count++;
+
+  // --- Capital Allocation — Phase 18 ---
+  registerTool(server, wasm, "calculate_economic_capital", `Capital Allocation — Phase 18: Calculate economic capital.`); count++;
+  registerTool(server, wasm, "calculate_raroc", `Capital Allocation — Phase 18: Calculate raroc.`); count++;
+  registerTool(server, wasm, "calculate_euler_allocation", `Capital Allocation — Phase 18: Calculate euler allocation.`); count++;
+  registerTool(server, wasm, "calculate_shapley_allocation", `Capital Allocation — Phase 18: Calculate shapley allocation.`); count++;
+  registerTool(server, wasm, "evaluate_limits", `Capital Allocation — Phase 18: Evaluate limits.`); count++;
+
+  // --- CLO Analytics — Phase 18 ---
+  registerTool(server, wasm, "calculate_clo_waterfall", `CLO Analytics — Phase 18: Calculate clo waterfall.`); count++;
+  registerTool(server, wasm, "calculate_coverage_tests", `CLO Analytics — Phase 18: Calculate coverage tests.`); count++;
+  registerTool(server, wasm, "calculate_reinvestment", `CLO Analytics — Phase 18: Calculate reinvestment.`); count++;
+  registerTool(server, wasm, "calculate_tranche_analytics", `CLO Analytics — Phase 18: Calculate tranche analytics.`); count++;
+  registerTool(server, wasm, "calculate_clo_scenario", `CLO Analytics — Phase 18: Calculate clo scenario.`); count++;
+
+  // --- Fund of Funds — Phase 18 ---
+  registerTool(server, wasm, "calculate_j_curve", `Fund of Funds — Phase 18: Calculate j curve.`); count++;
+  registerTool(server, wasm, "calculate_commitment_pacing", `Fund of Funds — Phase 18: Calculate commitment pacing.`); count++;
+  registerTool(server, wasm, "analyze_manager_selection", `Fund of Funds — Phase 18: Analyze manager selection.`); count++;
+  registerTool(server, wasm, "calculate_secondaries_pricing", `Fund of Funds — Phase 18: Calculate secondaries pricing.`); count++;
+  registerTool(server, wasm, "analyze_fof_portfolio", `Fund of Funds — Phase 18: Analyze fof portfolio.`); count++;
+
+  // --- Earnings Quality — Phase 19 ---
+  registerTool(server, wasm, "calculate_beneish_mscore", `Earnings Quality — Phase 19: Calculate beneish mscore.`); count++;
+  registerTool(server, wasm, "calculate_piotroski_fscore", `Earnings Quality — Phase 19: Calculate piotroski fscore.`); count++;
+  registerTool(server, wasm, "calculate_accrual_quality", `Earnings Quality — Phase 19: Calculate accrual quality.`); count++;
+  registerTool(server, wasm, "calculate_revenue_quality", `Earnings Quality — Phase 19: Calculate revenue quality.`); count++;
+  registerTool(server, wasm, "calculate_earnings_quality_composite", `Earnings Quality — Phase 19: Calculate earnings quality composite.`); count++;
+
+  // --- Bank Analytics — Phase 19 ---
+  registerTool(server, wasm, "analyze_nim", `Bank Analytics — Phase 19: Analyze nim.`); count++;
+  registerTool(server, wasm, "calculate_camels_rating", `Bank Analytics — Phase 19: Calculate camels rating.`); count++;
+  registerTool(server, wasm, "calculate_cecl_provision", `Bank Analytics — Phase 19: Calculate cecl provision.`); count++;
+  registerTool(server, wasm, "analyze_deposit_beta", `Bank Analytics — Phase 19: Analyze deposit beta.`); count++;
+  registerTool(server, wasm, "analyze_loan_book", `Bank Analytics — Phase 19: Analyze loan book.`); count++;
+
+  // --- Dividend Policy — Phase 19 ---
+  registerTool(server, wasm, "calculate_h_model_ddm", `Dividend Policy — Phase 19: Calculate h model ddm.`); count++;
+  registerTool(server, wasm, "calculate_multistage_ddm", `Dividend Policy — Phase 19: Calculate multistage ddm.`); count++;
+  registerTool(server, wasm, "analyze_buyback", `Dividend Policy — Phase 19: Analyze buyback.`); count++;
+  registerTool(server, wasm, "analyze_payout_sustainability", `Dividend Policy — Phase 19: Analyze payout sustainability.`); count++;
+  registerTool(server, wasm, "calculate_total_shareholder_return", `Dividend Policy — Phase 19: Calculate total shareholder return.`); count++;
+
+  // --- Carbon Markets — Phase 19 ---
+  registerTool(server, wasm, "price_carbon_credit", `Carbon Markets — Phase 19: Price carbon credit.`); count++;
+  registerTool(server, wasm, "analyze_ets_compliance", `Carbon Markets — Phase 19: Analyze ets compliance.`); count++;
+  registerTool(server, wasm, "analyze_cbam", `Carbon Markets — Phase 19: Analyze cbam.`); count++;
+  registerTool(server, wasm, "value_carbon_offset", `Carbon Markets — Phase 19: Value carbon offset.`); count++;
+  registerTool(server, wasm, "calculate_shadow_carbon_price", `Carbon Markets — Phase 19: Calculate shadow carbon price.`); count++;
+
+  // --- Private Wealth — Phase 20 ---
+  registerTool(server, wasm, "analyze_concentrated_stock", `Private Wealth — Phase 20: Analyze concentrated stock.`); count++;
+  registerTool(server, wasm, "compare_philanthropic_vehicles", `Private Wealth — Phase 20: Compare philanthropic vehicles.`); count++;
+  registerTool(server, wasm, "analyze_wealth_transfer", `Private Wealth — Phase 20: Analyze wealth transfer.`); count++;
+  registerTool(server, wasm, "analyze_direct_indexing", `Private Wealth — Phase 20: Analyze direct indexing.`); count++;
+  registerTool(server, wasm, "evaluate_family_governance", `Private Wealth — Phase 20: Evaluate family governance.`); count++;
+
+  // --- Emerging Markets — Phase 20 ---
+  registerTool(server, wasm, "calculate_country_risk_premium", `Emerging Markets — Phase 20: Calculate country risk premium.`); count++;
+  registerTool(server, wasm, "assess_political_risk", `Emerging Markets — Phase 20: Assess political risk.`); count++;
+  registerTool(server, wasm, "analyse_capital_controls", `Emerging Markets — Phase 20: Analyse capital controls.`); count++;
+  registerTool(server, wasm, "analyse_em_bonds", `Emerging Markets — Phase 20: Analyse em bonds.`); count++;
+  registerTool(server, wasm, "calculate_em_equity_premium", `Emerging Markets — Phase 20: Calculate em equity premium.`); count++;
+
+  // --- Index Construction — Phase 20 ---
+  registerTool(server, wasm, "calculate_weighting", `Index Construction — Phase 20: Calculate weighting.`); count++;
+  registerTool(server, wasm, "calculate_rebalancing", `Index Construction — Phase 20: Calculate rebalancing.`); count++;
+  registerTool(server, wasm, "calculate_tracking_error", `Index Construction — Phase 20: Calculate tracking error.`); count++;
+  registerTool(server, wasm, "calculate_smart_beta", `Index Construction — Phase 20: Calculate smart beta.`); count++;
+  registerTool(server, wasm, "calculate_reconstitution", `Index Construction — Phase 20: Calculate reconstitution.`); count++;
+
+  // --- Financial Forensics — Phase 20 ---
+  registerTool(server, wasm, "analyze_benfords_law", `Financial Forensics — Phase 20: Analyze benfords law.`); count++;
+  registerTool(server, wasm, "calculate_dupont", `Financial Forensics — Phase 20: Calculate dupont.`); count++;
+  registerTool(server, wasm, "calculate_zscore_models", `Financial Forensics — Phase 20: Calculate zscore models.`); count++;
+  registerTool(server, wasm, "calculate_peer_benchmarking", `Financial Forensics — Phase 20: Calculate peer benchmarking.`); count++;
+  registerTool(server, wasm, "calculate_red_flag_scoring", `Financial Forensics — Phase 20: Calculate red flag scoring.`); count++;
+
+  // --- Workflows ---
+  registerTool(server, wasm, "workflow_list", `Workflows: Workflow list.`); count++;
+  registerTool(server, wasm, "workflow_describe", `Workflows: Workflow describe.`); count++;
+  registerTool(server, wasm, "workflow_validate", `Workflows: Workflow validate.`); count++;
+  registerTool(server, wasm, "workflow_quality_check", `Workflows: Workflow quality check.`); count++;
+  registerTool(server, wasm, "workflow_audit", `Workflows: Workflow audit.`); count++;
+
+  // --- Legacy v0.1 aliases (kept for skill/command compatibility) ---
+  registerTool(server, wasm, "wacc_calculator", `Weighted Average Cost of Capital via CAPM. Inputs: risk_free_rate, equity_risk_premium, beta, cost_of_debt, tax_rate, debt_weight, equity_weight. Optional: size_premium, country_risk_premium, specific_risk_premium, unlevered_beta, target_debt_equity (Hamada). Returns wacc, cost_of_equity, after_tax_cost_of_debt, levered_beta.`, "calculate_wacc"); count++;
+  registerTool(server, wasm, "dcf_model", `Discounted Cash Flow valuation. Inputs: base_revenue, currency, revenue_growth_rates[], ebitda_margin, capex_as_pct_revenue, nwc_as_pct_revenue, tax_rate, wacc, terminal_method (GordonGrowth | ExitMultiple), terminal_growth_rate, shares_outstanding, net_debt. Returns enterprise_value, equity_value, per-share value, year-by-year projections.`, "build_dcf"); count++;
+  return count;
+}
