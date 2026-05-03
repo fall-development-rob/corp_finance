@@ -9,7 +9,7 @@ use crate::parsers::napi::{Item, NapiBinding};
 
 pub const HEADER: &str = r#"//! WebAssembly bindings for corp-finance-core.
 //!
-//! GENERATED FROM packages/bindings/src/lib.rs by scripts/gen-wasm-bindings.py.
+//! GENERATED FROM packages/bindings/src/lib.rs via `cargo run -p cfa-codegen -- wasm-bindings`.
 //! Do not edit by hand — re-run the generator if NAPI bindings change.
 //!
 //! Each exported function takes a JSON string (matching the corresponding

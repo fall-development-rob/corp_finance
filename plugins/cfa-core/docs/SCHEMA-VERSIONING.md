@@ -44,8 +44,8 @@ Format: `MAJOR.MINOR.PATCH`. Currently `1.0.0`.
 
 When opening a PR that changes any `*Input` or `*Output` struct:
 
-1. Run `python3 scripts/gen-zod-schemas.py` to refresh `schemas.json`.
-2. Run `python3 scripts/diff-schemas.py origin/main HEAD` to see what changed.
+1. Run `cargo run -p cfa-codegen -- zod-schemas` to refresh `schemas.json`.
+2. Run `cargo run -p cfa-codegen -- diff-schemas origin/main HEAD` to see what changed.
 3. Update `schemas.json:schema_version` per the table above.
 4. If MAJOR, also update `crates/corp-finance-wasm/Cargo.toml` MAJOR and the
    plugin manifest. Add a "Migration from N → N+1" section to this file.
