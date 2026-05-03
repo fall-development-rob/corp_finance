@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
+# Equivalent: `cargo run -p cfa-codegen -- wasm-bindings`
 """Generate crates/corp-finance-wasm/src/lib.rs from packages/bindings/src/lib.rs.
 
 The NAPI bindings file is the source of truth for which corp-finance-core
