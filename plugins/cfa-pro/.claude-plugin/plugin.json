@@ -39,14 +39,14 @@
   "mcpServers": {
     "cfa-pro-fmp": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/fmp-mcp-server/dist/index.js"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
       "env": {
         "FMP_API_KEY": "${FMP_API_KEY:-}"
       }
     },
     "cfa-pro-vendors": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/vendor-mcp-server/dist/index.js"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/vendors/dist/index.js"],
       "env": {
         "LSEG_CLIENT_ID": "${LSEG_CLIENT_ID:-}",
         "LSEG_CLIENT_SECRET": "${LSEG_CLIENT_SECRET:-}",
