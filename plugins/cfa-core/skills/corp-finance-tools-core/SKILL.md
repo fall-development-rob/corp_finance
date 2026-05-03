@@ -3,14 +3,47 @@ name: Corp Finance Tools - Core
 description: Use the corp-finance-mcp server tools for core corporate finance calculations. Invoke when performing valuations (DCF, WACC, comps), credit analysis (metrics, debt capacity, covenants, Altman Z-score), PE/M&A (LBO models, IRR, MOIC, debt schedules, waterfall distributions, merger accretion/dilution), portfolio analytics (Sharpe, VaR, Kelly), fund economics (fee calculator, GP/LP splits, GP economics, investor net returns), jurisdiction (GAAP/IFRS reconciliation, withholding tax, NAV with equalisation, UBTI/ECI screening), three-statement financial modelling, Monte Carlo simulation (DCF, generic), scenario/sensitivity analysis, earnings quality (Beneish M-Score, Piotroski F-Score, accrual quality, revenue quality, composite scoring), dividend policy (H-Model DDM, multi-stage DDM, buyback analysis, payout sustainability, total shareholder return), financial forensics (Benford's Law, DuPont analysis, Z-score models, peer benchmarking, red flag scoring). All computation uses 128-bit decimal precision.
 requires_tools:
   - altman_zscore
+  - analyze_benfords_law
+  - analyze_buyback
+  - analyze_merger
+  - analyze_payout_sustainability
+  - build_debt_schedule
+  - build_lbo
+  - build_sensitivity_grid
+  - build_three_statement
+  - calculate_accrual_quality
+  - calculate_beneish_mscore
+  - calculate_dupont
+  - calculate_earnings_quality_composite
+  - calculate_fund_fees
+  - calculate_gp_economics
+  - calculate_h_model_ddm
+  - calculate_investor_net_returns
+  - calculate_multistage_ddm
+  - calculate_nav
+  - calculate_peer_benchmarking
+  - calculate_piotroski_fscore
+  - calculate_portfolio_wht
+  - calculate_red_flag_scoring
+  - calculate_returns
+  - calculate_revenue_quality
+  - calculate_total_shareholder_return
+  - calculate_waterfall
+  - calculate_wht
+  - calculate_zscore_models
   - comps_analysis
   - covenant_compliance
   - credit_metrics
   - dcf_model
   - debt_capacity
   - kelly_sizing
+  - reconcile_accounting
   - risk_adjusted_returns
   - risk_metrics
+  - run_mc_dcf
+  - run_monte_carlo
+  - screen_ubti_eci
+  - sources_and_uses
   - wacc_calculator
 ---
 # Corp Finance Tools - Core
@@ -40,30 +73,30 @@ You have access to 44 core corporate finance MCP tools for fundamental valuation
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `returns_calculator` | IRR, XIRR, MOIC, Cash-on-Cash | entry_equity, exit_equity, cash_flows, dated_cash_flows |
-| `debt_schedule` | Multi-tranche amortisation | name, amount, interest_rate, amortisation type, maturity_years, PIK, seniority |
-| `sources_uses` | Transaction financing summary | enterprise_value, equity_contribution, debt tranches, fees |
-| `lbo_model` | Full LBO with multi-tranche debt | entry_ev, entry_ebitda, tranches, equity, revenue_growth, ebitda_margin, exit_year, exit_multiple, cash_sweep_pct |
-| `waterfall_calculator` | GP/LP distribution waterfall | total_proceeds, total_invested, tiers (ROC, pref, catch-up, carry), gp_commitment_pct |
+| `calculate_returns` | IRR, XIRR, MOIC, Cash-on-Cash | entry_equity, exit_equity, cash_flows, dated_cash_flows |
+| `build_debt_schedule` | Multi-tranche amortisation | name, amount, interest_rate, amortisation type, maturity_years, PIK, seniority |
+| `sources_and_uses` | Transaction financing summary | enterprise_value, equity_contribution, debt tranches, fees |
+| `build_lbo` | Full LBO with multi-tranche debt | entry_ev, entry_ebitda, tranches, equity, revenue_growth, ebitda_margin, exit_year, exit_multiple, cash_sweep_pct |
+| `calculate_waterfall` | GP/LP distribution waterfall | total_proceeds, total_invested, tiers (ROC, pref, catch-up, carry), gp_commitment_pct |
 
 ### M&A
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `merger_model` | Accretion/dilution analysis | acquirer/target financials, offer_price, consideration type (cash/stock/mixed), synergies, financing rates |
+| `analyze_merger` | Accretion/dilution analysis | acquirer/target financials, offer_price, consideration type (cash/stock/mixed), synergies, financing rates |
 
 ### Fund Economics & Jurisdiction
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `fund_fee_calculator` | Fund fee modelling + LP net returns | fund_size, mgmt_fee_rate, perf_fee_rate, hurdle, catch_up, waterfall_type (European/American), gp_commitment, fund_life |
-| `gaap_ifrs_reconciliation` | GAAP/IFRS accounting reconciliation | source/target standard, revenue, ebitda, total_assets, lease payments, lifo_reserve, dev costs, revaluation surplus |
-| `withholding_tax_calculator` | Withholding tax with treaty rates | source/investor jurisdiction, income_type, gross_income, is_tax_exempt |
-| `portfolio_wht_calculator` | Portfolio-level WHT analysis | holdings array (each with jurisdiction, income_type, gross_income) |
-| `nav_calculator` | NAV with equalisation & multi-class | share_classes (per-class HWM, fees, crystallisation), gross_return, equalisation_method |
-| `gp_economics_model` | GP economics: fees, carry, break-even | fund_size, fee_rates, carry_rate, hurdle, gp_commitment, fund_life, professionals |
-| `investor_net_returns` | Gross-to-net after all fees/WHT/blocker | gross_moic, gross_irr, holding_period, fee_rates, wht_rate, blocker_cost |
-| `ubti_eci_screening` | UBTI/ECI income classification | investor_type, vehicle_structure, income_items, has_debt_financing |
+| `calculate_fund_fees` | Fund fee modelling + LP net returns | fund_size, mgmt_fee_rate, perf_fee_rate, hurdle, catch_up, waterfall_type (European/American), gp_commitment, fund_life |
+| `reconcile_accounting` | GAAP/IFRS accounting reconciliation | source/target standard, revenue, ebitda, total_assets, lease payments, lifo_reserve, dev costs, revaluation surplus |
+| `calculate_wht` | Withholding tax with treaty rates | source/investor jurisdiction, income_type, gross_income, is_tax_exempt |
+| `calculate_portfolio_wht` | Portfolio-level WHT analysis | holdings array (each with jurisdiction, income_type, gross_income) |
+| `calculate_nav` | NAV with equalisation & multi-class | share_classes (per-class HWM, fees, crystallisation), gross_return, equalisation_method |
+| `calculate_gp_economics` | GP economics: fees, carry, break-even | fund_size, fee_rates, carry_rate, hurdle, gp_commitment, fund_life, professionals |
+| `calculate_investor_net_returns` | Gross-to-net after all fees/WHT/blocker | gross_moic, gross_irr, holding_period, fee_rates, wht_rate, blocker_cost |
+| `screen_ubti_eci` | UBTI/ECI income classification | investor_type, vehicle_structure, income_items, has_debt_financing |
 
 ### Portfolio Analytics
 
@@ -77,51 +110,50 @@ You have access to 44 core corporate finance MCP tools for fundamental valuation
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `sensitivity_matrix` | 2-way sensitivity grid | model, variable_1, variable_2, base_inputs |
-| `scenario_analysis` | Bear/Base/Bull with probability weights | scenarios (name, probability, overrides), output_values, base_case_value |
+| `build_sensitivity_grid` | 2-way sensitivity grid + Bear/Base/Bull scenario weighting | model, variable_1, variable_2, base_inputs (or scenarios with name/probability/overrides) |
 
 ### Three-Statement Model
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `three_statement_model` | Linked 3-statement financial projection (IS/BS/CF) | base_revenue, revenue_growth_rates, cost percentages, working capital days, capex_pct, base balance sheet items |
+| `build_three_statement` | Linked 3-statement financial projection (IS/BS/CF) | base_revenue, revenue_growth_rates, cost percentages, working capital days, capex_pct, base balance sheet items |
 
 ### Monte Carlo
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `monte_carlo_simulation` | Generic MC simulation with statistical output | variables (name, distribution), num_simulations, seed |
-| `monte_carlo_dcf` | Stochastic DCF valuation with confidence intervals | base_fcf, projection_years, distributions for growth/margin/wacc/terminal_growth |
+| `run_monte_carlo` | Generic MC simulation with statistical output | variables (name, distribution), num_simulations, seed |
+| `run_mc_dcf` | Stochastic DCF valuation with confidence intervals | base_fcf, projection_years, distributions for growth/margin/wacc/terminal_growth |
 
 ### Earnings Quality
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `beneish_mscore` | Beneish M-Score: 8-variable earnings manipulation model | dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata (or raw financials for 2 periods to compute indices) |
-| `piotroski_fscore` | Piotroski F-Score: 9-signal fundamental strength score | net_income, operating_cash_flow, roa, roa_prior, leverage, leverage_prior, current_ratio, current_ratio_prior, shares_outstanding, shares_prior, gross_margin, gross_margin_prior, asset_turnover, asset_turnover_prior |
-| `accrual_quality` | Accrual quality analysis: Sloan ratio, Dechow-Dichev, Jones, modified Jones | total_accruals, cash_from_operations, net_income, total_assets, delta_revenue, ppe, delta_receivables, prior period data |
-| `revenue_quality` | Revenue quality assessment: receivables, deferred revenue, concentration | revenue, receivables, revenue_prior, receivables_prior, deferred_revenue, deferred_revenue_prior, allowance, segment_revenues |
-| `earnings_quality_composite` | Composite earnings quality score with traffic-light rating | beneish_mscore_output, piotroski_fscore_output, accrual_quality_output, revenue_quality_output, weights (optional) |
+| `calculate_beneish_mscore` | Beneish M-Score: 8-variable earnings manipulation model | dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata (or raw financials for 2 periods to compute indices) |
+| `calculate_piotroski_fscore` | Piotroski F-Score: 9-signal fundamental strength score | net_income, operating_cash_flow, roa, roa_prior, leverage, leverage_prior, current_ratio, current_ratio_prior, shares_outstanding, shares_prior, gross_margin, gross_margin_prior, asset_turnover, asset_turnover_prior |
+| `calculate_accrual_quality` | Accrual quality analysis: Sloan ratio, Dechow-Dichev, Jones, modified Jones | total_accruals, cash_from_operations, net_income, total_assets, delta_revenue, ppe, delta_receivables, prior period data |
+| `calculate_revenue_quality` | Revenue quality assessment: receivables, deferred revenue, concentration | revenue, receivables, revenue_prior, receivables_prior, deferred_revenue, deferred_revenue_prior, allowance, segment_revenues |
+| `calculate_earnings_quality_composite` | Composite earnings quality score with traffic-light rating | beneish_mscore_output, piotroski_fscore_output, accrual_quality_output, revenue_quality_output, weights (optional) |
 
 ### Dividend Policy
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `h_model_ddm` | H-Model DDM: Fuller & Hsia declining growth valuation | current_dividend, short_term_growth, long_term_growth, half_life_years, required_return |
-| `multistage_ddm` | Multi-stage DDM: N-stage with terminal Gordon Growth | current_dividend, growth_stages (rate, years per stage), terminal_growth, required_return |
-| `buyback_analysis` | Share buyback analysis: EPS accretion/dilution, P/E breakeven | shares_outstanding, current_eps, share_price, buyback_amount, funding_source, cost_of_debt, tax_rate, dividend_per_share |
-| `payout_sustainability` | Payout sustainability: payout ratio, FCF coverage, Lintner smoothing | dividends_paid, net_income, free_cash_flow, total_debt, ebitda, prior_dividend, target_payout_ratio, speed_of_adjustment |
-| `total_shareholder_return` | Total shareholder return: price + dividend + buyback attribution | price_begin, price_end, dividends_per_share, shares_repurchased, shares_outstanding, period_years |
+| `calculate_h_model_ddm` | H-Model DDM: Fuller & Hsia declining growth valuation | current_dividend, short_term_growth, long_term_growth, half_life_years, required_return |
+| `calculate_multistage_ddm` | Multi-stage DDM: N-stage with terminal Gordon Growth | current_dividend, growth_stages (rate, years per stage), terminal_growth, required_return |
+| `analyze_buyback` | Share buyback analysis: EPS accretion/dilution, P/E breakeven | shares_outstanding, current_eps, share_price, buyback_amount, funding_source, cost_of_debt, tax_rate, dividend_per_share |
+| `analyze_payout_sustainability` | Payout sustainability: payout ratio, FCF coverage, Lintner smoothing | dividends_paid, net_income, free_cash_flow, total_debt, ebitda, prior_dividend, target_payout_ratio, speed_of_adjustment |
+| `calculate_total_shareholder_return` | Total shareholder return: price + dividend + buyback attribution | price_begin, price_end, dividends_per_share, shares_repurchased, shares_outstanding, period_years |
 
 ### Financial Forensics
 
 | MCP Tool | Purpose | Key Inputs |
 |----------|---------|------------|
-| `benfords_law` | Benford's Law: digit distribution conformity testing | data_series, test_type (first_digit, second_digit, first_two_digits), significance_level |
-| `dupont_analysis` | DuPont decomposition: 3-step and 5-step ROE breakdown | net_income, revenue, total_assets, total_equity, interest_expense, pretax_income, tax_expense, prior_period (optional for trend) |
-| `zscore_models` | Z-Score models: Altman, Ohlson, Zmijewski, Springate | working_capital, total_assets, retained_earnings, ebit, revenue, total_liabilities, market_cap, book_equity, net_income, current_assets, current_liabilities, total_debt, cash_from_operations, is_public, is_manufacturing |
-| `peer_benchmarking` | Peer benchmarking: percentile ranking, z-score normalisation | target_metrics, peer_metrics (array of peer company metrics), metric_definitions (name, direction: higher_better/lower_better) |
-| `red_flag_scoring` | Red flag scoring: composite fraud/distress risk assessment | beneish_output, altman_output, piotroski_output, financial_ratios, audit_indicators (auditor_changes, restatements, late_filings, going_concern) |
+| `analyze_benfords_law` | Benford's Law: digit distribution conformity testing | data_series, test_type (first_digit, second_digit, first_two_digits), significance_level |
+| `calculate_dupont` | DuPont decomposition: 3-step and 5-step ROE breakdown | net_income, revenue, total_assets, total_equity, interest_expense, pretax_income, tax_expense, prior_period (optional for trend) |
+| `calculate_zscore_models` | Z-Score models: Altman, Ohlson, Zmijewski, Springate | working_capital, total_assets, retained_earnings, ebit, revenue, total_liabilities, market_cap, book_equity, net_income, current_assets, current_liabilities, total_debt, cash_from_operations, is_public, is_manufacturing |
+| `calculate_peer_benchmarking` | Peer benchmarking: percentile ranking, z-score normalisation | target_metrics, peer_metrics (array of peer company metrics), metric_definitions (name, direction: higher_better/lower_better) |
+| `calculate_red_flag_scoring` | Red flag scoring: composite fraud/distress risk assessment | beneish_output, altman_output, piotroski_output, financial_ratios, audit_indicators (auditor_changes, restatements, late_filings, going_concern) |
 
 ---
 
@@ -154,7 +186,7 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
 1. `wacc_calculator` — compute discount rate
 2. `dcf_model` — build DCF using that WACC (or pass `wacc_input` directly)
 3. `comps_analysis` — cross-check with trading multiples
-4. `sensitivity_matrix` — vary WACC and terminal growth to show range
+4. `build_sensitivity_grid` — vary WACC and terminal growth to show range
 
 ### Credit Assessment
 
@@ -164,21 +196,21 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
 
 ### LBO Deal Analysis
 
-1. `lbo_model` — full LBO with projections, debt service, cash sweep, exit returns
-2. Or build manually: `sources_uses` → `debt_schedule` → `returns_calculator`
-3. `sensitivity_matrix` — sensitivity on exit multiple vs EBITDA
+1. `build_lbo` — full LBO with projections, debt service, cash sweep, exit returns
+2. Or build manually: `sources_and_uses` → `build_debt_schedule` → `calculate_returns`
+3. `build_sensitivity_grid` — sensitivity on exit multiple vs EBITDA
 4. `altman_zscore` — check bankruptcy risk at entry leverage
 
 ### Merger Analysis
 
-1. `merger_model` — accretion/dilution with consideration structure and synergies
-2. `sensitivity_matrix` — vary synergies vs offer premium
+1. `analyze_merger` — accretion/dilution with consideration structure and synergies
+2. `build_sensitivity_grid` — vary synergies vs offer premium
 3. `credit_metrics` — assess combined entity credit profile
 
 ### Waterfall Distribution
 
-1. `waterfall_calculator` — GP/LP splits with hurdle, catch-up, carry
-2. `fund_fee_calculator` — full fund economics over fund life
+1. `calculate_waterfall` — GP/LP splits with hurdle, catch-up, carry
+2. `calculate_fund_fees` — full fund economics over fund life
 
 ### Credit Assessment
 
@@ -192,47 +224,47 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
 1. `risk_adjusted_returns` — Sharpe, Sortino, and peer-relative metrics
 2. `risk_metrics` — VaR, CVaR, drawdown profile
 3. `kelly_sizing` — optimal position sizing
-4. `scenario_analysis` — stress test across bear/base/bull
+4. `build_sensitivity_grid` — stress test across bear/base/bull
 
 ### GAAP/IFRS Reconciliation
 
-1. `gaap_ifrs_reconciliation` — reconcile between US GAAP and IFRS
+1. `reconcile_accounting` — reconcile between US GAAP and IFRS
    - Adjustments: lease capitalisation (IFRS 16), LIFO→FIFO, dev cost capitalisation (IAS 38), revaluation strip
    - Returns adjusted EBITDA, EBIT, net income, debt, equity, assets + materiality flag
 
 ### Withholding Tax Analysis
 
-1. `withholding_tax_calculator` — single holding WHT with treaty rate lookup
-2. `portfolio_wht_calculator` — portfolio-level WHT with optimisation suggestions
+1. `calculate_wht` — single holding WHT with treaty rate lookup
+2. `calculate_portfolio_wht` — portfolio-level WHT with optimisation suggestions
    - Covers 15+ jurisdictions, 10+ bilateral tax treaties
    - Provides blocker recommendations for tax-neutral investors
 
 ### NAV & Fund Administration
 
-1. `nav_calculator` — multi-class NAV with equalisation
+1. `calculate_nav` — multi-class NAV with equalisation
    - Per-class: management fee accrual, performance fee (HWM-based), net NAV, FX conversion
    - Equalisation methods: equalisation shares, series accounting, depreciation deposit
    - Crystallisation: monthly, quarterly, semi-annual, annual, on redemption
 
 ### GP Economics & Investor Returns
 
-1. `gp_economics_model` — GP revenue decomposition over fund life
+1. `calculate_gp_economics` — GP revenue decomposition over fund life
    - Management fees, carried interest, co-invest returns, breakeven AUM
    - Per-professional economics, fee holiday, successor fund offset
-2. `investor_net_returns` — gross-to-net after all fee layers
+2. `calculate_investor_net_returns` — gross-to-net after all fee layers
    - Management fees, carry, fund expenses, WHT, blocker cost, org costs
    - Fee drag in bps, fee breakdown as % of gross
 
 ### UBTI/ECI Screening
 
-1. `ubti_eci_screening` — classify income for US tax-exempt investors
+1. `screen_ubti_eci` — classify income for US tax-exempt investors
    - Classifies: interest, dividend, capital gain, rental, operating business, partnership, royalty, CFC
    - Risk assessment: None/Low/Medium/High
    - Blocker analysis: cost-benefit of US C-corp blocker (21% corp vs 37% trust rate)
 
 ### Three-Statement Financial Modelling
 
-1. `three_statement_model` — build linked IS/BS/CF projections
+1. `build_three_statement` — build linked IS/BS/CF projections
    - Revenue growth, cost structure, working capital (DSO/DIO/DPO), capex, debt service
    - Circular reference resolution (5-iteration convergence on interest expense)
    - Revolver draw / excess cash paydown logic
@@ -240,56 +272,56 @@ Always check `warnings` — they flag suspicious inputs (beta > 3, ERP > 10%, WA
 
 ### Monte Carlo Simulation
 
-1. `monte_carlo_simulation` — generic MC with configurable distributions
+1. `run_monte_carlo` — generic MC with configurable distributions
    - Normal, LogNormal, Triangular, Uniform distributions
    - Returns: mean, median, percentiles (P5-P95), histogram, skewness, kurtosis
    - Reproducible with optional seed
-2. `monte_carlo_dcf` — stochastic DCF valuation
+2. `run_mc_dcf` — stochastic DCF valuation
    - Vary revenue growth, EBITDA margin, WACC, terminal growth simultaneously
    - Returns: EV percentiles, 90% confidence interval, probability above thresholds
 
 ### Earnings Quality Assessment
 
-1. `beneish_mscore` — compute M-Score for earnings manipulation detection
+1. `calculate_beneish_mscore` — compute M-Score for earnings manipulation detection
    - 8 variables: DSRI, GMI, AQI, SGI, DEPI, SGAI, LVGI, TATA
    - M-Score > -1.78 suggests possible manipulation
-2. `piotroski_fscore` — assess fundamental strength (0-9)
+2. `calculate_piotroski_fscore` — assess fundamental strength (0-9)
    - Profitability (4 signals), leverage (3 signals), operating efficiency (2 signals)
    - F-Score >= 8 = strong fundamentals; <= 2 = weak
-3. `accrual_quality` — analyse earnings persistence
+3. `calculate_accrual_quality` — analyse earnings persistence
    - Sloan ratio, Dechow-Dichev, Jones model for discretionary accruals
-4. `revenue_quality` — assess revenue recognition quality
+4. `calculate_revenue_quality` — assess revenue recognition quality
    - Receivables vs revenue growth, deferred revenue trends, concentration
-5. `earnings_quality_composite` — weighted composite score with traffic-light rating
+5. `calculate_earnings_quality_composite` — weighted composite score with traffic-light rating
 
 ### Dividend Policy Analysis
 
-1. `h_model_ddm` — H-Model for declining growth assumptions
+1. `calculate_h_model_ddm` — H-Model for declining growth assumptions
    - Fuller & Hsia: V = D0(1+gL)/(r-gL) + D0*H*(gS-gL)/(r-gL)
-2. `multistage_ddm` — explicit growth periods + terminal value
+2. `calculate_multistage_ddm` — explicit growth periods + terminal value
    - N-stage with Gordon Growth terminal value
-3. `buyback_analysis` — compare buyback vs dividend alternatives
+3. `analyze_buyback` — compare buyback vs dividend alternatives
    - EPS accretion/dilution, P/E breakeven, tax efficiency
-4. `payout_sustainability` — assess dividend safety
+4. `analyze_payout_sustainability` — assess dividend safety
    - Payout ratio, FCF coverage, Lintner smoothing model
-5. `total_shareholder_return` — component attribution of TSR
+5. `calculate_total_shareholder_return` — component attribution of TSR
    - Price + dividend yield + buyback yield
 
 ### Financial Forensics Workflow
 
-1. `benfords_law` — test data for manipulation indicators
+1. `analyze_benfords_law` — test data for manipulation indicators
    - First/second/first-two digit distribution vs Benford expected
    - Chi-squared and MAD conformity tests
-2. `dupont_analysis` — decompose ROE drivers (3-way and 5-way)
+2. `calculate_dupont` — decompose ROE drivers (3-way and 5-way)
    - 3-way: margin x turnover x leverage
    - 5-way: tax burden x interest burden x operating margin x turnover x leverage
    - Trend analysis with prior period comparison
-3. `zscore_models` — comprehensive distress scoring
+3. `calculate_zscore_models` — comprehensive distress scoring
    - 5 models: Altman (original/revised/private), Ohlson O-Score, Zmijewski, Springate
    - Composite weighted distress score
-4. `peer_benchmarking` — relative performance analysis
+4. `calculate_peer_benchmarking` — relative performance analysis
    - Percentile ranking, z-score normalization across peer group
-5. `red_flag_scoring` — composite fraud/distress risk assessment
+5. `calculate_red_flag_scoring` — composite fraud/distress risk assessment
    - Integrates Beneish, Altman, Piotroski, financial ratios, audit indicators
 
 ---

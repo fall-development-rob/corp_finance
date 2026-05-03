@@ -1,3 +1,20 @@
+---
+requires_tools:
+  - analyze_inflation_derivatives
+  - analyze_prepayment
+  - analyze_repo
+  - analyze_short_rate
+  - analyze_spreads
+  - analyze_tips
+  - bootstrap_spot_curve
+  - build_sensitivity_grid
+  - calculate_duration
+  - fit_term_structure
+  - price_bond
+requires_external_tools:
+  - fred_treasury_rates
+  - fred_yield_curve
+---
 # Bond Analysis
 
 Perform fixed income analysis using the `corp-finance-tools-markets` skill. Covers bond pricing, yield analytics, duration/convexity, spread decomposition, and rate sensitivity.
@@ -9,7 +26,7 @@ Executes a multi-step fixed income assessment: (1) Bond pricing and yield-to-mat
 Routes to `cfa-fixed-income-analyst` with `corp-finance-tools-markets` skill.
 
 ## Key Tools
-`bond_pricing`, `yield_curve`, `duration_convexity`, `spread_analysis`, `tips_pricing`, `inflation_derivatives`, `repo_rates`, `short_rate_model`, `term_structure_model`, `mbs_analytics`, `prepayment_model`, `sensitivity_matrix`, `fred_treasury_rates`, `fred_yield_curve`
+`price_bond`, `bootstrap_spot_curve`, `calculate_duration`, `analyze_spreads`, `analyze_tips`, `analyze_inflation_derivatives`, `analyze_repo`, `analyze_short_rate`, `fit_term_structure`, `analyze_prepayment`, `build_sensitivity_grid`, `fred_treasury_rates`, `fred_yield_curve`
 
 ## Quality Standards
 - Cite every price, yield, and spread to the specific tool call that produced it

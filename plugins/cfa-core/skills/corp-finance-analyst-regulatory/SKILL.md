@@ -3,7 +3,95 @@ name: Financial Analyst - Specialty & Regulatory
 description: Transforms Claude into a CFA-level financial analyst for specialty finance, regulatory compliance, and industry-specific analysis. Use when performing private credit pricing, insurance reserving, FP&A variance analysis, wealth planning, restructuring recovery analysis, real estate valuation, venture capital analysis, ESG assessment, regulatory capital analysis (Basel III), compliance reporting (MiFID II, GIPS), credit derivatives (CDS, CVA), convertible bond analysis, lease accounting (ASC 842/IFRS 16), pension funding/LDI, sovereign risk assessment, real option valuation, equity research (SOTP, target price), commodity spread trading, treasury operations, PPP infrastructure modelling, onshore fund structuring, offshore fund structuring, transfer pricing analysis (BEPS, Pillar Two), tax treaty optimisation, FATCA/CRS compliance, economic substance analysis, regulatory reporting (AIFMD, Form PF), AML/KYC compliance, crypto/DeFi analysis, municipal bond analysis, structured products, trade finance, fund of funds (J-curve, commitment pacing, manager selection, secondaries), bank analytics (NIM, CAMELS, CECL, deposit beta, loan book), carbon markets (credit pricing, ETS, CBAM, offsets, shadow carbon price), or private wealth (concentrated stock, philanthropic vehicles, wealth transfer, direct indexing, family governance) analysis is required. Pairs with corp-finance-mcp tools for computation.
 requires_tools:
   - altman_zscore
+  - analyze_alm
+  - analyze_beps_compliance
+  - analyze_best_execution
+  - analyze_breakeven
+  - analyze_carbon_footprint
+  - analyze_cash_management
+  - analyze_cayman_structure
+  - analyze_cbam
+  - analyze_combined_ratio
+  - analyze_commodity_spread
+  - analyze_concentrated_stock
+  - analyze_convertible
+  - analyze_decision_tree
+  - analyze_deposit_beta
+  - analyze_dilution
+  - analyze_direct_indexing
+  - analyze_distressed_debt
+  - analyze_economic_substance
+  - analyze_ets_compliance
+  - analyze_fatca_crs_reporting
+  - analyze_fof_portfolio
+  - analyze_green_bond
+  - analyze_hedging
+  - analyze_intercompany
+  - analyze_loan_book
+  - analyze_lux_structure
+  - analyze_manager_selection
+  - analyze_nim
+  - analyze_pension_funding
+  - analyze_recovery
+  - analyze_sale_leaseback
+  - analyze_sovereign_bond
+  - analyze_storage_economics
+  - analyze_syndication
+  - analyze_treaty_network
+  - analyze_uk_eu_fund
+  - analyze_us_fund_structure
+  - analyze_variance
+  - analyze_wealth_transfer
+  - analyze_working_capital
+  - assess_country_risk
+  - assess_kyc_risk
+  - build_rolling_forecast
+  - build_sensitivity_grid
+  - calculate_camels_rating
+  - calculate_cecl_provision
+  - calculate_commitment_pacing
+  - calculate_credit_spreads
+  - calculate_cva
+  - calculate_esg_score
+  - calculate_j_curve
+  - calculate_lcr
+  - calculate_regulatory_capital
+  - calculate_scr
+  - calculate_secondaries_pricing
+  - calculate_shadow_carbon_price
+  - calculate_sotp
+  - calculate_target_price
+  - classify_entity
+  - classify_lease
+  - compare_philanthropic_vehicles
+  - convert_note
   - credit_metrics
+  - design_ldi_strategy
+  - estimate_reserves
+  - evaluate_family_governance
+  - generate_aifmd_report
+  - generate_gips_report
+  - generate_sec_cftc_report
+  - model_direct_loan
+  - model_ppp
+  - model_project_finance
+  - model_venture_fund
+  - optimize_treaty_structure
+  - plan_estate
+  - plan_retirement
+  - price_carbon_credit
+  - price_cds
+  - price_convertible
+  - price_premium
+  - price_unitranche
+  - run_jurisdiction_substance_test
+  - screen_sanctions
+  - simulate_tax_loss_harvesting
+  - test_sll_covenants
+  - value_carbon_offset
+  - value_concession
+  - value_property
+  - value_real_option
 ---
 # Financial Analyst Skill - Specialty & Regulatory
 
@@ -13,56 +101,56 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 | Situation | Primary Method | Cross-Check | MCP Tools |
 |-----------|---------------|-------------|-----------|
-| Restructuring / recovery | APR waterfall analysis | Liquidation vs going-concern | `recovery_analysis` + `credit_metrics` |
-| Distressed debt investing | Fulcrum security + return analysis | Credit spread cross-check | `distressed_debt_analysis` + `credit_spreads` |
-| Property valuation | Direct cap + DCF + GRM | Leveraged return analysis | `property_valuation` + `sensitivity_matrix` |
-| Project / infrastructure finance | Debt sculpting + coverage ratios | IRR sensitivity | `project_finance` + `sensitivity_matrix` |
-| Venture round modelling | Pre/post-money dilution + cap table | Convertible conversion analysis | `venture_dilution` + `convertible_instrument` |
-| VC fund performance | Fund return analytics + J-curve | Peer fund comparison | `venture_fund_returns` + `sensitivity_matrix` |
-| ESG assessment | Sector-weighted ESG scoring | Carbon footprint analysis | `esg_score` + `carbon_footprint` |
-| Regulatory capital | Basel III capital ratios (SA) | Liquidity ratios cross-check | `basel_capital` + `lcr_nsfr` |
-| ALM / rate risk | Gap analysis + NII sensitivity | EVE duration of equity | `alm_analysis` + `sensitivity_matrix` |
-| Private credit pricing | Unitranche FOLO + direct lending | Syndication economics | `unitranche_pricing` + `direct_lending` + `syndication_analysis` |
-| Insurance reserving | Chain-ladder + Bornhuetter-Ferguson | Combined ratio trend | `loss_reserving` + `combined_ratio` |
-| Insurance capital | Solvency II SCR standard formula | MCR floor check | `solvency_scr` + `premium_pricing` |
-| Budget variance analysis | Price/volume/mix decomposition | YoY comparison | `variance_analysis` + `breakeven_analysis` |
-| Working capital optimisation | DSO/DIO/DPO/CCC efficiency | Rolling forecast | `working_capital` + `rolling_forecast` |
-| Retirement planning | Accumulation + decumulation modelling | Savings gap analysis | `retirement_planning` + `sensitivity_matrix` |
-| Tax & estate planning | TLH simulation + estate tax | Trust strategy analysis | `tax_loss_harvesting` + `estate_planning` |
-| CDS / counterparty risk | CDS pricing + CVA/DVA | Credit spread cross-check | `cds_pricing` + `cva_calculation` |
-| Convertible bond analysis | Binomial tree pricing + scenario | Bond floor vs parity cross-check | `convertible_bond_pricing` + `convertible_bond_analysis` |
-| Lease accounting (ASC 842/IFRS 16) | Classification + measurement | Sale-leaseback analysis | `lease_classification` + `sale_leaseback_analysis` |
-| Pension funding / LDI | PBO/ABO funding analysis | Duration-matched hedging | `pension_funding` + `ldi_strategy` |
-| Sovereign risk assessment | Multi-factor scoring + CRP | Bond spread decomposition | `country_risk_assessment` + `sovereign_bond_analysis` |
-| Real option valuation | CRR binomial tree | Decision tree EMV | `real_option_valuation` + `decision_tree_analysis` |
-| Equity research / target price | SOTP + multi-method target | Peer comps cross-check | `sotp_valuation` + `target_price` |
-| Commodity spread trading | Processing/calendar/basis | Storage economics analysis | `commodity_spread` + `storage_economics` |
-| Treasury management | Cash forecasting + liquidity | Hedge effectiveness testing | `cash_management` + `hedge_effectiveness` |
-| PPP / infrastructure finance | PPP model + VfM analysis | Concession valuation cross-check | `ppp_model` + `concession_valuation` |
-| Onshore fund structuring | Vehicle selection + tax analysis | ERISA/AIFMD compliance check | `onshore_fund_structure` + `erisa_analysis` |
-| Offshore fund structuring | Jurisdiction selection + domiciliation | Master-feeder economics | `offshore_fund_structure` + `master_feeder_analysis` |
-| Transfer pricing | OECD BEPS compliance + TP methods | CFC risk + GAAR assessment | `transfer_pricing` + `cfc_analysis` |
-| Tax treaty optimisation | Treaty rate analysis + conduit routing | LOB/PPT anti-avoidance + PE risk | `treaty_analysis` + `conduit_routing` |
-| FATCA/CRS compliance | IGA model + reporting assessment | Entity classification + withholding | `fatca_crs_reporting` + `entity_classification` |
-| Economic substance | Multi-jurisdiction scoring | Compliance gap analysis | `economic_substance` + `jurisdiction_substance_test` |
-| Regulatory reporting | AIFMD/Form PF filing | Leverage + stress test analysis | `aifmd_reporting` + `sec_cftc_reporting` |
-| AML/KYC compliance | FATF risk scoring | Sanctions screening + PEP | `kyc_risk_assessment` + `sanctions_screening` |
-| Compliance & reporting (best execution, GIPS) | MiFID II implementation shortfall / Modified Dietz TWR | VWAP/TWAP benchmark / composite dispersion | `mifid_best_execution` + `gips_performance` |
-| Fund of funds / PE allocation | J-curve + commitment pacing | Manager selection + secondaries | `j_curve_model` + `commitment_pacing` + `manager_selection` |
-| Bank analysis / CAMELS | NIM analysis + CAMELS rating | CECL provisioning + deposit beta | `nim_analysis` + `camels_rating` + `cecl_provisioning` |
-| Carbon/ESG compliance | ETS compliance + CBAM exposure | Carbon pricing + offset valuation | `carbon_credit_pricing` + `ets_compliance` + `cbam_analysis` |
-| UHNW wealth planning | Concentrated stock + wealth transfer | Philanthropic vehicles + governance | `concentrated_stock` + `wealth_transfer` + `philanthropic_vehicles` |
+| Restructuring / recovery | APR waterfall analysis | Liquidation vs going-concern | `analyze_recovery` + `credit_metrics` |
+| Distressed debt investing | Fulcrum security + return analysis | Credit spread cross-check | `analyze_distressed_debt` + `calculate_credit_spreads` |
+| Property valuation | Direct cap + DCF + GRM | Leveraged return analysis | `value_property` + `build_sensitivity_grid` |
+| Project / infrastructure finance | Debt sculpting + coverage ratios | IRR sensitivity | `model_project_finance` + `build_sensitivity_grid` |
+| Venture round modelling | Pre/post-money dilution + cap table | Convertible conversion analysis | `analyze_dilution` + `convert_note` |
+| VC fund performance | Fund return analytics + J-curve | Peer fund comparison | `model_venture_fund` + `build_sensitivity_grid` |
+| ESG assessment | Sector-weighted ESG scoring | Carbon footprint analysis | `calculate_esg_score` + `analyze_carbon_footprint` |
+| Regulatory capital | Basel III capital ratios (SA) | Liquidity ratios cross-check | `calculate_regulatory_capital` + `calculate_lcr` |
+| ALM / rate risk | Gap analysis + NII sensitivity | EVE duration of equity | `analyze_alm` + `build_sensitivity_grid` |
+| Private credit pricing | Unitranche FOLO + direct lending | Syndication economics | `price_unitranche` + `model_direct_loan` + `analyze_syndication` |
+| Insurance reserving | Chain-ladder + Bornhuetter-Ferguson | Combined ratio trend | `estimate_reserves` + `analyze_combined_ratio` |
+| Insurance capital | Solvency II SCR standard formula | MCR floor check | `calculate_scr` + `price_premium` |
+| Budget variance analysis | Price/volume/mix decomposition | YoY comparison | `analyze_variance` + `analyze_breakeven` |
+| Working capital optimisation | DSO/DIO/DPO/CCC efficiency | Rolling forecast | `analyze_working_capital` + `build_rolling_forecast` |
+| Retirement planning | Accumulation + decumulation modelling | Savings gap analysis | `plan_retirement` + `build_sensitivity_grid` |
+| Tax & estate planning | TLH simulation + estate tax | Trust strategy analysis | `simulate_tax_loss_harvesting` + `plan_estate` |
+| CDS / counterparty risk | CDS pricing + CVA/DVA | Credit spread cross-check | `price_cds` + `calculate_cva` |
+| Convertible bond analysis | Binomial tree pricing + scenario | Bond floor vs parity cross-check | `price_convertible` + `analyze_convertible` |
+| Lease accounting (ASC 842/IFRS 16) | Classification + measurement | Sale-leaseback analysis | `classify_lease` + `analyze_sale_leaseback` |
+| Pension funding / LDI | PBO/ABO funding analysis | Duration-matched hedging | `analyze_pension_funding` + `design_ldi_strategy` |
+| Sovereign risk assessment | Multi-factor scoring + CRP | Bond spread decomposition | `assess_country_risk` + `analyze_sovereign_bond` |
+| Real option valuation | CRR binomial tree | Decision tree EMV | `value_real_option` + `analyze_decision_tree` |
+| Equity research / target price | SOTP + multi-method target | Peer comps cross-check | `calculate_sotp` + `calculate_target_price` |
+| Commodity spread trading | Processing/calendar/basis | Storage economics analysis | `analyze_commodity_spread` + `analyze_storage_economics` |
+| Treasury management | Cash forecasting + liquidity | Hedge effectiveness testing | `analyze_cash_management` + `analyze_hedging` |
+| PPP / infrastructure finance | PPP model + VfM analysis | Concession valuation cross-check | `model_ppp` + `value_concession` |
+| Onshore fund structuring | Vehicle selection + tax analysis | ERISA/AIFMD compliance check | `analyze_us_fund_structure` + `analyze_uk_eu_fund` |
+| Offshore fund structuring | Jurisdiction selection + domiciliation | Master-feeder economics | `analyze_cayman_structure` + `analyze_lux_structure` |
+| Transfer pricing | OECD BEPS compliance + TP methods | CFC risk + GAAR assessment | `analyze_intercompany` + `analyze_beps_compliance` |
+| Tax treaty optimisation | Treaty rate analysis + conduit routing | LOB/PPT anti-avoidance + PE risk | `analyze_treaty_network` + `optimize_treaty_structure` |
+| FATCA/CRS compliance | IGA model + reporting assessment | Entity classification + withholding | `analyze_fatca_crs_reporting` + `classify_entity` |
+| Economic substance | Multi-jurisdiction scoring | Compliance gap analysis | `analyze_economic_substance` + `run_jurisdiction_substance_test` |
+| Regulatory reporting | AIFMD/Form PF filing | Leverage + stress test analysis | `generate_aifmd_report` + `generate_sec_cftc_report` |
+| AML/KYC compliance | FATF risk scoring | Sanctions screening + PEP | `assess_kyc_risk` + `screen_sanctions` |
+| Compliance & reporting (best execution, GIPS) | MiFID II implementation shortfall / Modified Dietz TWR | VWAP/TWAP benchmark / composite dispersion | `analyze_best_execution` + `generate_gips_report` |
+| Fund of funds / PE allocation | J-curve + commitment pacing | Manager selection + secondaries | `calculate_j_curve` + `calculate_commitment_pacing` + `analyze_manager_selection` |
+| Bank analysis / CAMELS | NIM analysis + CAMELS rating | CECL provisioning + deposit beta | `analyze_nim` + `calculate_camels_rating` + `calculate_cecl_provision` |
+| Carbon/ESG compliance | ETS compliance + CBAM exposure | Carbon pricing + offset valuation | `price_carbon_credit` + `analyze_ets_compliance` + `analyze_cbam` |
+| UHNW wealth planning | Concentrated stock + wealth transfer | Philanthropic vehicles + governance | `analyze_concentrated_stock` + `analyze_wealth_transfer` + `compare_philanthropic_vehicles` |
 
 ## Analysis Workflows
 
 ### Restructuring & Distressed Debt Workflow
 
-1. **Recovery analysis**: call `recovery_analysis` with enterprise value, claims, and collateral data
+1. **Recovery analysis**: call `analyze_recovery` with enterprise value, claims, and collateral data
    - Absolute Priority Rule (APR) waterfall: DIP -> admin -> secured -> unsecured -> sub -> equity
    - Going-concern vs liquidation scenarios (liquidation typically 30-60% haircut)
    - Fulcrum security: the class that is partially impaired (recovery < 100%)
    - Collateral deficiency claims: secured shortfall becomes unsecured claim
-2. **Distressed debt analysis**: call `distressed_debt_analysis` with debt terms, market prices, and restructuring terms
+2. **Distressed debt analysis**: call `analyze_distressed_debt` with debt terms, market prices, and restructuring terms
    - Treatment types: reinstate, amend & extend, exchange, equity conversion, cash paydown, combination
    - IRR at market price: expected return if bought at current trading price
    - Credit bid value: maximum price an asset-based buyer would pay
@@ -72,7 +160,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Real Assets Workflow
 
-1. **Property valuation**: call `property_valuation` with NOI, cap rate, growth assumptions
+1. **Property valuation**: call `value_property` with NOI, cap rate, growth assumptions
    - Direct capitalisation: Value = NOI / Cap Rate (quick single-year valuation)
    - DCF: project NOI growth over hold period + terminal value at exit cap rate
    - Gross rent multiplier: Value = GRM x Gross Rent (quick screening metric)
@@ -83,24 +171,24 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Cash-on-cash return: annual cash flow / equity invested
    - Equity multiple: total distributions / initial equity
    - Levered IRR: return on equity accounting for leverage and amortisation
-3. **Project / infrastructure finance**: call `project_finance` with construction + operating parameters
+3. **Project / infrastructure finance**: call `model_project_finance` with construction + operating parameters
    - Construction phase: drawdown schedule, IDC capitalisation, completion milestones
    - Operating phase: revenue ramp-up, O&M costs, debt service, distribution waterfall
    - Debt sculpting methods: level (equal payments), sculpted (sized to target DSCR), bullet (interest-only + balloon)
    - Coverage ratios: DSCR (annual), LLCR (loan life), PLCR (project life)
-4. **Sensitivity**: call `sensitivity_matrix` varying cap rate vs NOI growth (property) or revenue vs cost (project)
+4. **Sensitivity**: call `build_sensitivity_grid` varying cap rate vs NOI growth (property) or revenue vs cost (project)
 
 ### Venture Capital Workflow
 
-1. **Model dilution**: call `venture_dilution` with funding rounds
+1. **Model dilution**: call `analyze_dilution` with funding rounds
    - Option pool shuffle: pool created pre-money, dilutes founders not the new investor
    - Post-money = pre-money + investment; price per share = post-money / fully diluted shares
    - Track founder ownership decline through multiple rounds
-2. **Analyse convertible instruments**: call `convertible_instrument` for SAFEs and convertible notes
+2. **Analyse convertible instruments**: call `convert_note` for SAFEs and convertible notes
    - SAFE: post-money ownership = investment / valuation_cap; no interest, no maturity
    - Convertible note: accrued interest, cap vs discount (investor gets more favorable), maturity conversion
    - MFN (most favored nation) provisions
-3. **Fund return analytics**: call `venture_fund_returns` with portfolio data
+3. **Fund return analytics**: call `model_venture_fund` with portfolio data
    - J-curve: negative returns in early years (management fees + unrealised), positive in later years
    - TVPI (total value to paid-in), DPI (distributed), RVPI (residual)
    - Carry calculation: 20% above 8% hurdle (typical)
@@ -109,32 +197,32 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### ESG & Climate Workflow
 
-1. **Score ESG performance**: call `esg_score` with pillar-level data
+1. **Score ESG performance**: call `calculate_esg_score` with pillar-level data
    - Sector-specific materiality weights across 9 sectors (Technology, Energy, Financials, Healthcare, Consumer, Industrial, Materials, Utilities, Real Estate)
    - 7-level rating: AAA (leader) through CCC (laggard)
    - Red/amber/green flag system for critical issues
-2. **Analyse carbon footprint**: call `carbon_footprint` for emissions intensity
+2. **Analyse carbon footprint**: call `analyze_carbon_footprint` for emissions intensity
    - Scope 1 (direct), Scope 2 (purchased energy), Scope 3 (value chain)
    - Carbon intensity: tCO2e per $M revenue
-3. **Green bond analysis**: call `green_bond` for framework assessment
+3. **Green bond analysis**: call `analyze_green_bond` for framework assessment
    - Eligible categories, use of proceeds, impact metrics
-4. **SLL testing**: call `sll_covenants` for sustainability-linked loan KPI compliance
+4. **SLL testing**: call `test_sll_covenants` for sustainability-linked loan KPI compliance
    - KPI performance vs targets, margin ratchet adjustments
 
 ### Regulatory Capital Workflow
 
-1. **Compute capital adequacy**: call `basel_capital` with exposure data
+1. **Compute capital adequacy**: call `calculate_regulatory_capital` with exposure data
    - CET1, Tier 1, Total Capital ratios
    - Standardised Approach risk weights by asset class (sovereign, bank, corporate, retail, mortgage) and external rating
    - Operational risk: Basic Indicator Approach (BIA) or Standardised Approach (SA)
    - Credit risk mitigation: financial collateral haircuts
    - Capital buffers: conservation (2.5%), countercyclical (0-2.5%), G-SIB/D-SIB
-2. **Assess liquidity**: call `lcr_nsfr` for liquidity compliance
+2. **Assess liquidity**: call `calculate_lcr` for liquidity compliance
    - LCR >= 100%: HQLA / Net Cash Outflows (30-day stress)
    - HQLA: Level 1 (cash, government), Level 2A (40% cap), Level 2B (15% cap)
    - Inflow cap: 75% of outflows
    - NSFR >= 100%: Available Stable Funding / Required Stable Funding
-3. **Model rate risk**: call `alm_analysis` for banking book rate exposure
+3. **Model rate risk**: call `analyze_alm` for banking book rate exposure
    - Repricing gap analysis: mismatch between asset and liability repricing
    - NII sensitivity: impact of parallel rate shifts with beta pass-through (deposits reprice slower)
    - EVE (Economic Value of Equity): present value sensitivity to rate changes
@@ -142,19 +230,19 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Private Credit Workflow
 
-1. **Price unitranche**: call `unitranche_pricing` with deal terms
+1. **Price unitranche**: call `price_unitranche` with deal terms
    - First-out/last-out split: FO has lower spread (senior-like), LO has higher spread (mezz-like)
    - Blended spread = FO% x FO_spread + LO% x LO_spread
    - OID and fee yield pickup: straight-line over maturity
    - Borrower metrics: total leverage, FO/LO leverage, interest coverage
-2. **Model direct loan**: call `direct_lending` with loan structure
+2. **Model direct loan**: call `model_direct_loan` with loan structure
    - PIK toggle: interest accrues to principal (increases exposure, defers cash)
    - Delayed draw: commitment fee on undrawn portion
    - Amortisation: interest-only, level amort, bullet, or custom schedule
    - Rate floors: effective_base = max(base_rate, floor_rate)
    - YTM via Newton-Raphson IRR on lender cash flows
    - Credit analytics: expected loss (PD x LGD x exposure), credit VaR
-3. **Analyse syndication**: call `syndication_analysis` for deal distribution
+3. **Analyse syndication**: call `analyze_syndication` for deal distribution
    - Oversubscription and pro-rata scaling of non-lead commitments
    - Arranger economics: arrangement fee + ongoing spread on hold amount
    - Participant allocations and fee splits
@@ -162,21 +250,21 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Insurance & Actuarial Workflow
 
-1. **Estimate reserves**: call `loss_reserving` with claims triangle
+1. **Estimate reserves**: call `estimate_reserves` with claims triangle
    - Chain-ladder: volume-weighted age-to-age factors -> cumulative development factors -> ultimate losses
    - Bornhuetter-Ferguson: blends a priori expected loss ratio with actual development for immature years
    - Method selection (when "Both"): CL for mature years (>50% developed), BF for immature
    - IBNR = Ultimate - Paid to Date; present value discounting for reserve adequacy
-2. **Price premiums**: call `premium_pricing` with loss assumptions
+2. **Price premiums**: call `price_premium` with loss assumptions
    - Pure premium = frequency x severity
    - Trend projections: apply annual trend factors forward
    - Loaded premium: pure premium + expense loading + profit loading + contingency
-3. **Analyse profitability**: call `combined_ratio` with historical periods
+3. **Analyse profitability**: call `analyze_combined_ratio` with historical periods
    - Loss ratio = incurred losses / earned premium
    - Expense ratio = expenses / written premium
    - Combined ratio = loss + expense (< 100% means underwriting profit)
    - Operating ratio = combined - investment income ratio
-4. **Compute capital**: call `solvency_scr` for Solvency II requirements
+4. **Compute capital**: call `calculate_scr` for Solvency II requirements
    - Standard Formula: premium risk + reserve risk with correlation-based diversification
    - Operational risk component
    - MCR floor: SCR can never be below minimum capital requirement
@@ -184,24 +272,24 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### FP&A Workflow
 
-1. **Analyse budget variance**: call `variance_analysis` with budget and actual data
+1. **Analyse budget variance**: call `analyze_variance` with budget and actual data
    - Revenue decomposition: price variance + volume variance + mix variance = total variance
    - Cost variance: favorable (actual < budget) vs unfavorable, by line item
    - Profit variance with budget and actual margin percentages
    - YoY comparison: revenue growth, profit growth, margin expansion (bps)
-2. **Compute break-even**: call `breakeven_analysis` with cost structure
+2. **Compute break-even**: call `analyze_breakeven` with cost structure
    - Contribution margin = selling price - variable cost per unit
    - Break-even units = fixed costs / contribution margin
    - Degree of Operating Leverage (DOL) = total CM / operating profit
    - Target volume for profit goals
    - Scenario analysis: what-if on price, variable cost, fixed cost changes
-3. **Analyse working capital**: call `working_capital` with period data
+3. **Analyse working capital**: call `analyze_working_capital` with period data
    - DSO (days sales outstanding), DIO (days inventory outstanding), DPO (days payable outstanding)
    - Cash conversion cycle = DSO + DIO - DPO
    - Trend analysis: improving/deteriorating/stable over time
    - Optimisation: cash freed from efficiency improvements, financing cost savings
    - Peer benchmarking against industry medians
-4. **Build forecast**: call `rolling_forecast` with historical data and growth assumptions
+4. **Build forecast**: call `build_rolling_forecast` with historical data and growth assumptions
    - Revenue projection at compound growth rate
    - COGS/OpEx/CapEx derived from historical averages or driver overrides
    - Free cash flow projection, cumulative FCF, terminal revenue
@@ -209,7 +297,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Wealth Management Workflow
 
-1. **Plan retirement**: call `retirement_planning` with personal financial data
+1. **Plan retirement**: call `plan_retirement` with personal financial data
    - Accumulation phase: savings compound with growth, contributions grow annually
    - Decumulation phase: 4 withdrawal strategies:
      - Constant Dollar: inflation-adjusted fixed amount (classic 4% rule)
@@ -218,14 +306,14 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
      - RMD: required minimum distribution (balance / remaining years)
    - Savings gap analysis: if projected portfolio < needed, calculate required additional savings
    - Real vs nominal values: all amounts shown in today's dollars
-2. **Optimise taxes**: call `tax_loss_harvesting` with portfolio positions
+2. **Optimise taxes**: call `simulate_tax_loss_harvesting` with portfolio positions
    - Identify candidates: positions with unrealised losses above harvest threshold
    - Short-term vs long-term classification (365-day holding period boundary)
    - Tax savings: offset ST losses against ST gains first (higher rate), then LT
    - Wash-sale rule: 30-day restriction on repurchasing substantially identical securities
    - Carry-forward: excess losses above current gains carried to future years
    - Portfolio impact: new cost basis if reinvested, deferred tax liability
-3. **Plan estate**: call `estate_planning` with estate details
+3. **Plan estate**: call `plan_estate` with estate details
    - Gifting analysis: annual exclusion ($18K/person), lifetime exemption usage
    - Trust analysis: 7 types (Revocable, Irrevocable, GRAT, ILIT, QPRT, Crummey, Charitable Remainder)
    - Estate tax: gross estate - deductions (marital, charitable, irrevocable trusts) = taxable estate
@@ -236,7 +324,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Credit Derivatives Workflow
 
-1. **Price CDS**: call `cds_pricing` with reference entity, spread, recovery, tenor
+1. **Price CDS**: call `price_cds` with reference entity, spread, recovery, tenor
    - Discrete hazard-rate model: annual survival probabilities from implied PD
    - Risky PV01: present value of 1bp of premium payments (risky annuity)
    - Protection leg: sum of discounted expected default losses
@@ -245,7 +333,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - DV01: dollar value of 1bp spread change = risky_PV01 * notional / 10,000
    - Jump-to-default: loss if default happens immediately = notional * (1 - recovery)
    - MTM = (market_spread - contract_spread) * risky_PV01 * notional / 10,000
-2. **Compute CVA/DVA**: call `cva_calculation` with exposure profile and default probabilities
+2. **Compute CVA/DVA**: call `calculate_cva` with exposure profile and default probabilities
    - Unilateral CVA = sum over periods of (marginal PD * LGD * discounted expected exposure)
    - DVA: same calculation using own PD (benefit from own default -- controversial)
    - Bilateral CVA = unilateral CVA - DVA
@@ -259,7 +347,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Convertible Bond Workflow
 
-1. **Price convertible**: call `convertible_bond_pricing` with bond terms, stock data, and volatility
+1. **Price convertible**: call `price_convertible` with bond terms, stock data, and volatility
    - CRR binomial tree: at each node, CB value = max(hold_value, conversion_value)
    - Hold value = discounted expected future value + coupon
    - Conversion value = stock_price * conversion_ratio
@@ -269,7 +357,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Conversion premium = (CB_price - conversion_value) / conversion_value
    - Investment premium = (CB_price - bond_floor) / bond_floor
    - Greeks via finite differences: bump stock +/-1% for delta/gamma, bump vol +1% for vega, reduce time for theta
-2. **Analyse scenarios**: call `convertible_bond_analysis` with scenario parameters
+2. **Analyse scenarios**: call `analyze_convertible` with scenario parameters
    - Stock sensitivity: CB price across range of stock prices -- convex payoff profile
    - Vol sensitivity: higher volatility increases embedded option value (CB price rises)
    - Spread sensitivity: wider credit spread reduces bond floor component
@@ -284,7 +372,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Lease Accounting Workflow
 
-1. **Classify lease**: call `lease_classification` with lease terms and asset data
+1. **Classify lease**: call `classify_lease` with lease terms and asset data
    - ASC 842 five tests -- any one triggered = finance lease:
      - Transfer of ownership at lease end
      - Purchase option reasonably certain to be exercised
@@ -296,7 +384,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Lease liability = PV of payments at incremental borrowing rate (or implicit rate if known)
    - Finance lease: effective interest on liability + straight-line depreciation on ROU (front-loaded expense)
    - Operating lease (ASC 842): single straight-line lease expense (simpler, but still on balance sheet)
-2. **Analyse sale-leaseback**: call `sale_leaseback_analysis` with transaction data
+2. **Analyse sale-leaseback**: call `analyze_sale_leaseback` with transaction data
    - Qualifying sale (ASC 606): gain = (sale_price - carrying_value) * (1 - retained_right_ratio)
    - Retained right ratio = PV of leaseback / fair_value (deferred portion)
    - Above-FMV: excess price deferred as financing component
@@ -308,7 +396,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Pension & LDI Workflow
 
-1. **Analyse pension funding**: call `pension_funding` with plan data
+1. **Analyse pension funding**: call `analyze_pension_funding` with plan data
    - PBO (Projected Benefit Obligation): includes future salary growth projections
    - ABO (Accumulated Benefit Obligation): current salaries only (lower than PBO)
    - Unit credit method: PV of earned benefit = accrual_rate * service * final_salary * annuity_factor * discount_factor
@@ -320,7 +408,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - NPPC = service_cost + interest_cost - expected_return (net periodic pension cost)
    - Minimum required contribution: bring funded ratio to minimum_funding_pct
    - Maximum deductible: up to maximum_deductible_pct * PBO
-2. **Design LDI strategy**: call `ldi_strategy` with liability and asset data
+2. **Design LDI strategy**: call `design_ldi_strategy` with liability and asset data
    - Duration gap = asset_duration - (liability_PV / plan_assets) * liability_duration
    - Dollar duration gap = (asset_dollar_duration - liability_dollar_duration)
    - Interest rate risk (1% shock) = dollar_duration_gap * 0.01
@@ -337,12 +425,12 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Sovereign Risk Workflow
 
-1. **Assess country risk**: call `country_risk_assessment` with macro-economic data
+1. **Assess country risk**: call `assess_country_risk` with macro-economic data
    - 12-factor scoring: GDP growth, inflation, fiscal balance, debt/GDP, current account, FX reserves, political stability, rule of law, external debt, ST debt/reserves, default history, dollarization
    - Composite score maps to implied sovereign rating (AAA through CCC)
    - Country Risk Premium (CRP) for use in cost-of-equity calculations (add to WACC)
    - Default probability implied by CRP level
-2. **Price sovereign bonds**: call `sovereign_bond_analysis` with bond terms and sovereign spread
+2. **Price sovereign bonds**: call `analyze_sovereign_bond` with bond terms and sovereign spread
    - Spread decomposition: credit risk, liquidity, FX risk components
    - Local vs hard currency: local currency bonds carry additional inflation and FX risk
    - Duration and convexity for rate sensitivity
@@ -361,11 +449,11 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Switch: option to change operating mode (e.g., fuel type, product mix)
    - Contract: option to scale down operations
    - Compound: option that creates further options (R&D -> commercialisation)
-2. **Value real options**: call `real_option_valuation` with project parameters
+2. **Value real options**: call `value_real_option` with project parameters
    - CRR binomial tree: up/down moves calibrated to project volatility
    - Option value = expanded NPV - static NPV (the value of flexibility)
    - Greeks provide sensitivity analysis (delta to underlying, vega to uncertainty)
-3. **Decision tree analysis**: call `decision_tree_analysis` for multi-stage decisions
+3. **Decision tree analysis**: call `analyze_decision_tree` for multi-stage decisions
    - EMV rollback: compute expected value at each decision/chance node
    - EVPI: maximum you should pay for perfect information
    - Sensitivity: how optimal decision changes with key probability shifts
@@ -373,12 +461,12 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Equity Research Workflow
 
-1. **SOTP valuation**: call `sotp_valuation` for multi-segment companies
+1. **SOTP valuation**: call `calculate_sotp` for multi-segment companies
    - Value each business segment using the most appropriate method (EV/EBITDA, P/E, EV/Revenue, DCF, NAV)
    - Apply holding company / conglomerate discount (typically 10-25%)
    - Football field: overlay min/base/max from comparable ranges per segment
    - Bridge to equity: total EV - net debt - minorities + unconsolidated investments
-2. **Target price derivation**: call `target_price` with per-share metrics and peer data
+2. **Target price derivation**: call `calculate_target_price` with per-share metrics and peer data
    - Run all methods simultaneously: PE, PEG, P/B, P/S, DDM
    - Peer-relative: compare subject's implied price across each multiple vs median
    - Football field: visualise range of target prices across methods
@@ -388,12 +476,12 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Commodity Trading Workflow
 
-1. **Analyse processing spreads**: call `commodity_spread` with input/output prices
+1. **Analyse processing spreads**: call `analyze_commodity_spread` with input/output prices
    - Crack spread (3-2-1): refining margin from crude oil to gasoline + heating oil
    - Crush spread: soybean processing margin (meal + oil - beans)
    - Spark spread: power generation margin (electricity - gas * heat rate)
    - Historical z-score: identify mean-reversion opportunities
-2. **Evaluate storage economics**: call `storage_economics` with futures term structure
+2. **Evaluate storage economics**: call `analyze_storage_economics` with futures term structure
    - Cash-and-carry: profit = (futures - spot) - (storage + financing + insurance)
    - Implied convenience yield: what the market assigns to physical possession
    - Seasonal patterns: injection/withdrawal cycles (gas), planting/harvest (agriculture)
@@ -402,13 +490,13 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Treasury Management Workflow
 
-1. **Cash management**: call `cash_management` with 12-month cash flow projections
+1. **Cash management**: call `analyze_cash_management` with 12-month cash flow projections
    - Month-by-month simulation: opening cash -> operating flows -> sweep/facility logic -> closing cash
    - Sweep excess to money market when above threshold
    - Draw revolving facility when below minimum buffer
    - Output: peak deficit, investment income, facility cost, net interest, CCC
    - Liquidity score: weighted average of buffer adequacy, facility headroom, CCC
-2. **Hedge effectiveness**: call `hedge_effectiveness` for accounting compliance
+2. **Hedge effectiveness**: call `analyze_hedging` for accounting compliance
    - Prospective (before hedge): qualitative assessment + quantitative forecast
    - Retrospective (ongoing): dollar offset within 80-125% AND regression R-squared > 0.80
    - IAS 39: both tests must pass; IFRS 9: more qualitative, R-squared > 0.80 sufficient
@@ -417,13 +505,13 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Infrastructure PPP Workflow
 
-1. **Model PPP structure**: call `ppp_model` with project economics
+1. **Model PPP structure**: call `model_ppp` with project economics
    - Revenue model: availability payment (government risk), demand-based (traffic risk), or mixed
    - Year-by-year: revenue, opex, EBITDA, senior debt service, mezzanine, equity distributions
    - Coverage: DSCR (must exceed 1.20x), LLCR (>1.40x for IG), PLCR
    - VfM analysis: PPP cost vs public sector comparator -- must show value for money
    - Risk allocation: 5 risk categories scored and allocated between public and private
-2. **Value existing concessions**: call `concession_valuation` with remaining term data
+2. **Value existing concessions**: call `value_concession` with remaining term data
    - Project year-by-year FCF through remaining concession life
    - Handback costs: provision for return-condition compliance in final years
    - Extension option: probability-weighted additional cash flows beyond base term
@@ -433,7 +521,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Compliance & Reporting Workflow
 
-1. **MiFID II best execution**: call `mifid_best_execution` with trade execution data
+1. **MiFID II best execution**: call `analyze_best_execution` with trade execution data
    - Perold Implementation Shortfall decomposition:
      - Delay cost: slippage between decision price and execution start
      - Market impact: price movement caused by the trade itself
@@ -452,7 +540,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
      - Speed: 20% weight -- time to execution completion
      - Likelihood: 10% weight -- probability of full execution
    - Compliance assessment: pass/fail against RTS 28 thresholds
-2. **GIPS performance reporting**: call `gips_performance` with account return data
+2. **GIPS performance reporting**: call `generate_gips_report` with account return data
    - Modified Dietz time-weighted return:
      - Return = (EMV - BMV - CF) / (BMV + sum(CF_i * W_i))
      - W_i = day-weighting factor = (CD - D_i) / CD for each external cash flow
@@ -477,14 +565,14 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Onshore Fund Structures Workflow
 
-1. **US vehicle selection**: call `onshore_fund_structure` with fund strategy, investor base, and regulatory parameters
+1. **US vehicle selection**: call `analyze_us_fund_structure` with fund strategy, investor base, and regulatory parameters
    - Delaware LP: pass-through taxation, K-1 reporting to LPs, general partner fiduciary duties
    - LLC: check-the-box election (partnership or corporate treatment), flexible governance
    - REIT: 90% distribution requirement, 75% income test (real estate sources), 95% income test (passive), 25% TRS limit
    - MLP: 90% qualifying income test (natural resources, transportation, real estate), IDR tiers (incentive distribution rights escalating GP share)
    - BDC: 70% qualifying asset test (private/thinly traded), 2:1 leverage limit (asset coverage ratio), RIC pass-through
    - QOZ (Qualified Opportunity Zone): 10-year step-up to fair value (capital gains elimination), 90% QOZP test (qualified opportunity zone property), substantial improvement (double basis in 30 months)
-2. **ERISA analysis**: call `erisa_analysis` with pension/plan asset data
+2. **ERISA analysis**: call `analyze_us_fund_structure` with pension/plan asset data
    - 25% plan asset threshold: if benefit plan investors hold >= 25% of a fund class, fund assets become "plan assets" subject to ERISA fiduciary rules
    - VCOC (Venture Capital Operating Company): exemption via 50%+ invested in operating companies with management rights
    - REOC (Real Estate Operating Company): exemption via 50%+ in real estate with active management
@@ -504,11 +592,11 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Offshore Fund Structures Workflow
 
-1. **Cayman structures**: call `offshore_fund_structure` with fund type and investor base
+1. **Cayman structures**: call `analyze_cayman_structure` with fund type and investor base
    - Exempted LP: standard PE/VC vehicle, 50-year tax exemption certificate, no Cayman income/gains/withholding tax
    - SPC (Segregated Portfolio Company): segregated portfolios with statutory ring-fencing, assets/liabilities of each portfolio legally isolated from others
    - BVI BCA (Business Companies Act): lower formation and ongoing costs, ESA (Economic Substance Act) considerations for certain activities
-2. **Master-feeder economics**: call `master_feeder_analysis` with fee structure and investor allocation
+2. **Master-feeder economics**: call `analyze_cayman_structure` with fee structure and investor allocation
    - Fee allocation: management fee and performance fee calculated at master level, allocated through feeders pro rata
    - Feeder-level expenses: organisational costs, administrator fees, legal, audit (each feeder bears its own)
    - TER (Total Expense Ratio): calculate at both master level (investment costs) and feeder level (all-in cost to investor)
@@ -527,7 +615,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Transfer Pricing Workflow
 
-1. **OECD BEPS compliance**: call `transfer_pricing` with intercompany transaction data
+1. **OECD BEPS compliance**: call `analyze_intercompany` with intercompany transaction data
    - Actions 8-10: transfer pricing of intangibles, risk allocation, other high-risk transactions
    - Action 13: Country-by-Country Reporting (CbCR) mandatory at EUR 750M consolidated revenue threshold
    - Pillar Two GloBE (Global Anti-Base Erosion): 15% minimum effective tax rate
@@ -542,7 +630,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - P25 (25th percentile), median (50th percentile), P75 (75th percentile)
    - If tested party result falls outside IQR, adjustment to median is standard practice
    - Document comparable search: database (e.g., Bureau van Dijk), filters, rejection log
-4. **CFC rules**: call `cfc_analysis` with subsidiary data and parent jurisdiction
+4. **CFC rules**: call `analyze_intercompany` with subsidiary data and parent jurisdiction
    - US Subpart F / GILTI: applies to US shareholders with >= 10% ownership in CFC, triggered when effective rate < 90% of US rate (for GILTI: 13.125% threshold with 50% GILTI deduction)
    - UK CFC: gateway test at 75% of UK rate (18.75% at 25% UK rate), entity-level and income-level exemptions
    - EU ATAD (Anti-Tax Avoidance Directive): CFC triggered when subsidiary rate < 50% of parent rate AND parent holds > 50% control
@@ -553,11 +641,11 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Tax Treaty Networks Workflow
 
-1. **Treaty rate analysis**: call `treaty_analysis` with source/recipient jurisdictions and income type
+1. **Treaty rate analysis**: call `analyze_treaty_network` with source/recipient jurisdictions and income type
    - Domestic WHT rate vs treaty rate for dividends, interest, royalties
    - Savings calculation: (domestic_rate - treaty_rate) * gross_income
    - Qualifying conditions: beneficial ownership requirement, minimum holding period (typically 365 days for reduced dividend rate), limitation on benefits clause
-2. **Conduit routing optimisation**: call `conduit_routing` with source, intermediary, and recipient jurisdictions
+2. **Conduit routing optimisation**: call `optimize_treaty_structure` with source, intermediary, and recipient jurisdictions
    - Two-hop analysis: Source -> Intermediary -> Recipient
    - Combined effective rate: 1 - (1 - WHT_source_to_intermediary) * (1 - WHT_intermediary_to_recipient)
    - Optimal jurisdiction selection: minimise combined effective rate across candidate intermediaries
@@ -566,7 +654,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - LOB (Limitation on Benefits): US treaty-specific, qualified person tests (publicly traded, ownership/base erosion, active trade, derivative benefits)
    - PPT (Principal Purpose Test): MLI Article 7 -- benefit denied if one of the principal purposes was to obtain treaty benefit
    - Beneficial ownership doctrine: income recipient must be the true economic owner, not a conduit or agent
-4. **Holding company optimisation**: call `holding_optimization` with group structure
+4. **Holding company optimisation**: call `optimize_treaty_structure` with group structure
    - Participation exemption: dividend/capital gains exemption on qualifying holdings (thresholds vary: 10% Netherlands, 25% Germany, 10% Luxembourg)
    - IP box rates: reduced rate on qualifying IP income (e.g., Netherlands 9%, Luxembourg 5.2%, Ireland 6.25%)
    - Interest deduction limits: 30% of EBITDA cap under ATAD (with EUR 3M de minimis)
@@ -581,7 +669,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### FATCA/CRS Compliance Workflow
 
-1. **FATCA reporting models**: call `fatca_crs_reporting` with entity and account data
+1. **FATCA reporting models**: call `analyze_fatca_crs_reporting` with entity and account data
    - IGA Model 1: financial institution reports to local tax authority, which exchanges with IRS (most common, 100+ jurisdictions)
    - IGA Model 2: financial institution reports directly to IRS, with local authority consent
    - Non-IGA: no intergovernmental agreement -- 30% withholding on US-source FDAP income as enforcement mechanism
@@ -596,7 +684,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Due diligence: self-certification for new accounts, indicia search for pre-existing accounts
    - Lower-value (< $1M pre-existing): residence address test or electronic record search
    - Higher-value (>= $1M pre-existing): enhanced review including relationship manager inquiry
-3. **Entity classification**: call `entity_classification` with entity details
+3. **Entity classification**: call `classify_entity` with entity details
    - FFI (Foreign Financial Institution): depository, custodial, investment entity, specified insurance company
    - NFFE (Non-Financial Foreign Entity -- FATCA term): active (>50% income from active business AND >50% assets held for active business) or passive
    - NFE (Non-Financial Entity -- CRS term): active test mirrors NFFE but uses 50% gross income AND 50% gross assets for passive classification
@@ -610,14 +698,14 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Economic Substance Workflow
 
-1. **Multi-jurisdiction substance scoring**: call `economic_substance` with entity operations data
+1. **Multi-jurisdiction substance scoring**: call `analyze_economic_substance` with entity operations data
    - 5-dimension scoring framework (total 100 points):
      - Personnel (25 points): qualified employees in jurisdiction, FTE count, relevant expertise
      - Premises (20 points): physical office space, dedicated vs shared, adequate for activity
      - Decision-making (25 points): board meetings in jurisdiction, strategic decisions made locally, minutes documenting local decisions
      - Expenditure (15 points): operating expenses incurred locally, proportion of total costs
      - CIGA -- Core Income Generating Activities (15 points): key revenue-producing activities performed in jurisdiction
-2. **Cayman Islands ES Act**: call `jurisdiction_substance_test` with Cayman entity data
+2. **Cayman Islands ES Act**: call `run_jurisdiction_substance_test` with Cayman entity data
    - Relevant activities: banking, insurance, fund management, financing & leasing, headquarters, shipping, distribution & service centres, IP holding
    - CIGA must be conducted in or directed from Cayman Islands
    - IP holding entities face highest substance bar: must demonstrate adequate employees with necessary qualifications, adequate expenditure, and decision-making for IP development/exploitation
@@ -644,7 +732,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Regulatory Reporting Workflow
 
-1. **AIFMD Annex IV reporting**: call `aifmd_reporting` with fund and manager data
+1. **AIFMD Annex IV reporting**: call `generate_aifmd_report` with fund and manager data
    - Reporting frequency determined by AUM thresholds:
      - >= EUR 1B: quarterly reporting (within 30 days of quarter-end)
      - EUR 500M-1B: semi-annual reporting (within 30 days)
@@ -667,7 +755,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
      - FX shock: -20% depreciation in base currency
      - Credit spread shock: +400bps widening across credit markets
      - Liquidity stress: redemption of 50% of NAV in 30 days
-2. **SEC Form PF**: call `sec_cftc_reporting` with US-registered adviser data
+2. **SEC Form PF**: call `generate_sec_cftc_report` with US-registered adviser data
    - Filing thresholds:
      - $150M regulatory AUM: must file Form PF
      - $1.5B hedge fund AUM: classified as "large private fund adviser" (quarterly filing, sections 1-3)
@@ -693,7 +781,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### AML/KYC Compliance Workflow
 
-1. **FATF-based risk scoring**: call `kyc_risk_assessment` with customer and transaction data
+1. **FATF-based risk scoring**: call `assess_kyc_risk` with customer and transaction data
    - 5-dimension risk scoring framework (total 0-100):
      - Customer type (0-25): individual (5), corporate (10), trust/foundation (15), PEP/complex structure (25)
      - Geographic risk (0-25): low-risk FATF member (5), moderate (10), FATF grey list (20), FATF black list (25)
@@ -714,7 +802,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - EDD (Enhanced Due Diligence): PEP, high-risk countries, complex structures -- senior management approval, source of wealth and funds documentation, enhanced ongoing monitoring, adverse media screening, site visits where appropriate
    - Risk score thresholds: 0-30 = SDD eligible, 31-70 = CDD, >70 = EDD mandatory
    - PEP customers: always EDD regardless of risk score
-4. **Sanctions screening**: call `sanctions_screening` with entity names and identifiers
+4. **Sanctions screening**: call `screen_sanctions` with entity names and identifiers
    - Fuzzy matching algorithm: Levenshtein distance-based comparison for name variations, transliterations, and alternative spellings
    - Lists screened: OFAC SDN (US), EU Consolidated List, HMT (UK), UN Security Council, FATF high-risk jurisdictions
    - Match scoring:
@@ -737,31 +825,31 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Fund of Funds Workflow
 
-1. **Model fund lifecycle**: call `j_curve_model` with fund parameters and cash flow assumptions
+1. **Model fund lifecycle**: call `calculate_j_curve` with fund parameters and cash flow assumptions
    - Cash flow projection: drawdowns in investment period (years 1-5), distributions in harvest period (years 4-10+)
    - J-curve pattern: NAV dips below invested capital in early years due to management fees, setup costs, and unrealised write-downs
    - PE trough: typically year 3-4 (buyout) or year 2-3 (venture) -- time to first meaningful realisations
    - Multiples: TVPI (total value / paid-in), DPI (distributions / paid-in), RVPI (residual / paid-in); TVPI = DPI + RVPI
    - PME (Kaplan-Schoar): compares PE cash flows to equivalent public market investment -- PME > 1.0 means PE outperformed
    - Net vs gross IRR: gross IRR is before fees; net IRR = gross - management fee drag - carry; typical spread 300-600bps
-2. **Plan commitment pacing**: call `commitment_pacing` with portfolio allocation targets
+2. **Plan commitment pacing**: call `calculate_commitment_pacing` with portfolio allocation targets
    - Vintage year allocation: spread commitments across 3-5 vintages to diversify cycle risk
    - Drawdown modelling: PE funds typically draw 80-90% of commitments over 3-5 years
    - NAV projection: forecast portfolio NAV based on expected growth, drawdowns, and distributions
    - Over-commitment ratio: total unfunded commitments / target allocation; typically 1.3-1.6x to maintain target exposure (funds don't draw 100% simultaneously)
    - Cash flow waterfall: capital calls -> portfolio investments -> realisations -> distributions -> recycling
-3. **Evaluate managers**: call `manager_selection` with track record and qualitative data
+3. **Evaluate managers**: call `analyze_manager_selection` with track record and qualitative data
    - Quantitative scoring: quartile ranking (top quartile = score 4), persistence (do top managers repeat?), alpha vs PME benchmark
    - Persistence analysis: historically, top-quartile PE managers show 30-40% persistence to next fund (higher than random)
    - Qualitative assessment: strategy clarity, team stability (key person risk), operational due diligence (back office, compliance, valuation policies)
    - Red flags: key person departure, style drift, excessive fund size growth (>2x prior fund), poor LP communication
-4. **Price secondaries**: call `secondaries_pricing` with fund position data
+4. **Price secondaries**: call `calculate_secondaries_pricing` with fund position data
    - NAV discount/premium: secondary buyer pays % of reported NAV; discount reflects illiquidity, blind pool risk, and J-curve acceleration
    - Unfunded commitment PV: buyer assumes remaining capital calls; PV of unfunded reduces effective purchase price
    - IRR sensitivity: model returns at different exit multiples (1.0x, 1.5x, 2.0x residual)
    - Breakeven analysis: minimum exit multiple required to achieve target IRR at given purchase price
    - Tail-end secondaries: near-end-of-life funds with few remaining assets; deep discounts but concentrated risk
-5. **Analyse portfolio**: call `fof_portfolio` with fund-level holdings
+5. **Analyse portfolio**: call `analyze_fof_portfolio` with fund-level holdings
    - Diversification dimensions: strategy (buyout, VC, growth, RE, infra), vintage year, geography (NA, EU, APAC), sector
    - HHI concentration: sum of squared allocation weights; HHI < 0.15 = well-diversified, > 0.25 = concentrated
    - Constraint monitoring: check against IPS limits (max single fund, max single vintage, max single strategy)
@@ -771,7 +859,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Bank Analytics Workflow
 
-1. **Analyse net interest margin**: call `nim_analysis` with bank income statement and balance sheet data
+1. **Analyse net interest margin**: call `analyze_nim` with bank income statement and balance sheet data
    - NIM = (interest income - interest expense) / average earning assets
    - Rate effect: change in yield/cost applied to prior-period balances (isolates pricing impact)
    - Volume effect: change in balances multiplied by prior-period yield/cost (isolates growth impact)
@@ -779,7 +867,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Asset-side drivers: loan yields, securities yields, Fed funds/repo; liability-side: deposit costs, wholesale funding, FHLB advances
    - Interest rate gap: mismatch between rate-sensitive assets and liabilities in each repricing bucket (0-3M, 3-6M, 6-12M, 1-3Y, 3-5Y, >5Y)
    - Positive gap (RSA > RSL): NIM benefits from rising rates; negative gap: NIM benefits from falling rates
-2. **Compute CAMELS rating**: call `camels_rating` with bank financial and governance data
+2. **Compute CAMELS rating**: call `calculate_camels_rating` with bank financial and governance data
    - Capital adequacy (C): CET1 ratio (min 4.5%, well-capitalised >6.5%), tier 1 ratio (min 6%, well-capitalised >8%), total capital ratio (min 8%, well-capitalised >10%)
    - Asset quality (A): NPL ratio (non-performing loans / total loans), provision coverage (reserves / NPLs), net charge-off rate, classified assets ratio
    - Management (M): governance effectiveness, risk management framework, strategic planning, compliance track record, internal controls (scored 1-5)
@@ -788,7 +876,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Sensitivity (S): interest rate risk (EVE and NII sensitivity), FX exposure, equity risk in banking book
    - Composite score: weighted average 1-5 (1=strong, 2=satisfactory, 3=fair, 4=marginal, 5=critically deficient)
    - Regulatory implications: CAMELS 3+ triggers supervisory concern; CAMELS 4-5 = enforcement action risk
-3. **Calculate expected credit losses**: call `cecl_provisioning` with loan portfolio and scenario data
+3. **Calculate expected credit losses**: call `calculate_cecl_provision` with loan portfolio and scenario data
    - CECL (US GAAP, ASC 326): lifetime expected credit loss from day 1 for all financial assets at amortised cost
    - IFRS 9 (international): three-stage model:
      - Stage 1 (performing): 12-month ECL -- probability of default in next 12 months
@@ -798,7 +886,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - ECL = PD x LGD x EAD x discount factor, aggregated by segment
    - Day-1 impact: CECL typically increases provisions 20-40% vs prior incurred-loss model (front-loading)
    - Qualitative overlays: management adjustments for risks not captured in quantitative models
-4. **Analyse deposit beta**: call `deposit_beta` with rate history data
+4. **Analyse deposit beta**: call `analyze_deposit_beta` with rate history data
    - Deposit beta = change in deposit rate / change in policy rate (Fed funds, ECB refi, BoE base)
    - Instantaneous beta: single-period pass-through (typically low in early hike cycle)
    - Cumulative beta: total deposit rate change / total policy rate change over full cycle (converges over time)
@@ -806,7 +894,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Product segmentation: demand deposits (beta 0-20%), savings (beta 30-50%), time deposits/CDs (beta 60-80%), money market (beta 70-90%)
    - Repricing lag: months between policy rate change and deposit rate adjustment (typically 1-6 months)
    - Franchise value: low-beta core deposits are a competitive advantage; NIM expansion during rising rate cycles
-5. **Assess loan book quality**: call `loan_book_analysis` with detailed loan portfolio data
+5. **Assess loan book quality**: call `analyze_loan_book` with detailed loan portfolio data
    - Sector concentration: HHI across CRE, C&I, consumer, mortgage, public sector (HHI < 0.15 = diversified)
    - Geographic concentration: HHI across regions/states/countries
    - NPL analysis: NPL ratio by segment, NPL migration (performing -> watch -> substandard -> doubtful -> loss)
@@ -819,28 +907,28 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Carbon Markets Workflow
 
-1. **Price carbon credits**: call `carbon_credit_pricing` with market data and credit characteristics
+1. **Price carbon credits**: call `price_carbon_credit` with market data and credit characteristics
    - Compliance market pricing: EU ETS allowances (EUA), UK ETS, California cap-and-trade, RGGI
    - Forward pricing: F = S * (1 + r)^T (cost-of-carry model); contango is typical in compliance markets
    - Vintage discount: older credits (pre-2020) trade at 5-15% discount per year of age; some registries restrict use of old vintages
    - Registry premium: Gold Standard > VCS (Verra) > ACR (American Carbon Registry) > Plan Vivo; premium reflects perceived quality and verification rigour
    - Credit type: compliance credits (fungible within ETS, regulated, higher price) vs voluntary credits (OTC, variable quality, lower price)
    - Nature-based vs technology-based: nature-based (forestry, soil) typically cheaper but higher permanence risk; technology-based (DAC, CCS) premium pricing but more permanent
-2. **Assess ETS compliance position**: call `ets_compliance` with allocation and emissions data
+2. **Assess ETS compliance position**: call `analyze_ets_compliance` with allocation and emissions data
    - Allowance balance: free allocation + purchased allowances - surrendered allowances = surplus/deficit
    - Free allocation phase-down: EU ETS Phase 4 reduces free allocation for most sectors (2026-2034 linear reduction)
    - Compliance cost projection: deficit * carbon price; model at multiple price scenarios (low/base/high)
    - Carbon intensity: tCO2 per unit of output (MWh, tonne of product, $M revenue) vs sector benchmark
    - Banking and borrowing: unused allowances can be banked to future periods; limited borrowing from future allocation
    - Price volatility: EU ETS annualised vol 30-50%; hedging via futures reduces compliance cost uncertainty
-3. **Calculate CBAM exposure**: call `cbam_analysis` with import data and emissions intensity
+3. **Calculate CBAM exposure**: call `analyze_cbam` with import data and emissions intensity
    - EU CBAM (Carbon Border Adjustment Mechanism): applies to imports of cement, iron/steel, aluminium, fertilisers, electricity, hydrogen
    - Certificate cost: embedded emissions per unit * EU ETS reference price
    - Origin credit: deduct carbon price effectively paid in country of origin (verified by importer)
    - Net CBAM liability: EU certificate cost - origin carbon credit; zero if origin price >= EU ETS price
    - Transition period: reporting-only 2023-2025; financial obligation begins 2026; full implementation by 2034
    - Supply chain impact: importers must track direct and indirect emissions, verify origin carbon pricing, purchase CBAM certificates quarterly
-4. **Value carbon offsets**: call `offset_valuation` with project and quality data
+4. **Value carbon offsets**: call `value_carbon_offset` with project and quality data
    - Base price: market reference for credit type (forestry, renewable energy, cookstoves, etc.)
    - Quality adjustments applied multiplicatively:
      - Permanence (0.5-1.0x): risk of carbon re-release; forestry lower than geological storage
@@ -850,7 +938,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Co-benefit premium: social co-benefits (livelihoods, health) and biodiversity add 10-30% premium
    - Quality-adjusted price = base_price * permanence * additionality * vintage * certification + co_benefit_premium
    - Integrity concerns: Article 6 of Paris Agreement requires corresponding adjustments to avoid double counting
-5. **Set internal carbon price**: call `shadow_carbon_price` with project portfolio and emissions data
+5. **Set internal carbon price**: call `calculate_shadow_carbon_price` with project portfolio and emissions data
    - Shadow carbon price: internal price applied to investment decisions, typically $50-100/tCO2 (corporate best practice)
    - Carbon-adjusted NPV: base project NPV - PV of (annual emissions * shadow price over project life)
    - Abatement cost curve: rank emission reduction projects by marginal cost per tCO2 abated
@@ -862,14 +950,14 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
 
 ### Private Wealth Workflow
 
-1. **Manage concentrated stock risk**: call `concentrated_stock` with position data and strategy parameters
+1. **Manage concentrated stock risk**: call `analyze_concentrated_stock` with position data and strategy parameters
    - Costless collar: buy put (floor protection) + sell call (cap upside); zero or low net premium; triggers constructive sale risk if too tight (IRS Section 1259)
    - Exchange fund: contribute appreciated stock to partnership with other holders; gain diversification without triggering taxable event; 7-year lock-up required; must meet 20% non-securities asset test
    - Prepaid forward: receive upfront cash (80-90% of stock value) in exchange for future delivery of shares; economic monetisation without current sale; deferred recognition
    - Charitable strategies: donate appreciated stock to DAF or CRT; deduct FMV, avoid capital gains tax on appreciation; CRT provides income stream
    - Tax-adjusted comparison: model after-tax proceeds across all strategies accounting for capital gains rate, holding period, state taxes, and time value
    - Risk metrics: position as % of net worth (>10% = concentrated), correlation to rest of portfolio, sector exposure
-2. **Compare philanthropic vehicles**: call `philanthropic_vehicles` with donation amount and vehicle options
+2. **Compare philanthropic vehicles**: call `compare_philanthropic_vehicles` with donation amount and vehicle options
    - CRT (Charitable Remainder Trust): irrevocable trust pays income to donor/beneficiary for life or term of years; remainder to charity; income tax deduction for PV of remainder interest; bypasses capital gains on contributed appreciated assets
      - CRAT (annuity trust): fixed annuity 5-50% of initial FMV; no additional contributions
      - CRUT (unitrust): variable payment 5-50% of annual FMV; allows additional contributions
@@ -877,7 +965,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - DAF (Donor-Advised Fund): immediate tax deduction at contribution; recommend grants over time; low admin cost; no minimum distribution required (unlike foundations)
    - Private foundation: maximum control and perpetuity; 5% minimum annual distribution; excise tax on net investment income (1.39%); enhanced due diligence and reporting
    - Comparison matrix: tax deduction timing, income stream, control, admin cost, privacy, minimum contribution, ongoing obligations
-3. **Plan wealth transfers**: call `wealth_transfer` with estate data and trust structures
+3. **Plan wealth transfers**: call `analyze_wealth_transfer` with estate data and trust structures
    - Federal estate tax: 40% on taxable estate above exemption ($13.61M per person, 2024; scheduled to revert to ~$7M in 2026 under TCJA sunset)
    - GST (Generation-Skipping Transfer) tax: additional 40% on transfers to grandchildren or lower generations; separate GST exemption = estate tax exemption
    - Annual exclusion: $18,000/recipient (2024); unlimited recipients; no lifetime exemption usage; most efficient for large families
@@ -886,7 +974,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Dynasty trust: multi-generational trust exempt from estate/GST tax at each generation; leverages GST exemption; most beneficial in jurisdictions with no rule against perpetuities (Nevada, South Dakota, Delaware)
    - ILIT (Irrevocable Life Insurance Trust): life insurance proceeds excluded from estate; Crummey notices provide annual exclusion for premium gifts; second-to-die policy common for married couples
    - Tax savings analysis: compare total transfer tax across strategies; present value of tax savings over multiple generations
-4. **Optimise direct indexing**: call `direct_indexing` with individual stock portfolio data
+4. **Optimise direct indexing**: call `analyze_direct_indexing` with individual stock portfolio data
    - Tax-loss harvesting: sell individual positions at a loss to realise capital losses; offset gains elsewhere in portfolio
    - Wash sale compliance: cannot repurchase substantially identical security within 30 days before or after sale; monitor across all accounts
    - Tracking error: standard deviation of return difference vs target index; typical 50-200bps for direct indexing portfolios
@@ -894,7 +982,7 @@ You are a senior financial analyst with CFA-equivalent knowledge specialising in
    - Loss budget: total unrealised losses available for harvesting; replenished by market volatility
    - ESG/values customisation: exclude specific stocks or sectors while maintaining similar risk/return profile; tracking error increases with more exclusions
    - Transition management: when converting from concentrated position to direct index, stage sales over multiple tax years to manage gain recognition
-5. **Evaluate family governance**: call `family_governance` with family office data
+5. **Evaluate family governance**: call `evaluate_family_governance` with family office data
    - 5-dimension governance scoring (total 0-100):
      - Decision-making framework (25): investment committee, spending policies, conflict resolution
      - Communication (20): family meetings, reporting transparency, education programmes

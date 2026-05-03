@@ -1,5 +1,8 @@
 ---
 requires_tools:
+  - analyze_merger
+  - build_lbo
+  - build_sensitivity_grid
   - comps_analysis
   - dcf_model
 ---
@@ -14,7 +17,7 @@ Creates pitch book structure: Situation Overview, Market Context, Valuation Anal
 Routes to `cfa-private-markets-analyst`.
 
 ## Key Tools
-`dcf_model`, `comps_analysis`, `lbo_model`, `merger_model`, `sensitivity_matrix`
+`dcf_model`, `comps_analysis`, `build_lbo`, `analyze_merger`, `build_sensitivity_grid`
 
 ## Usage
 Provide the deal context and pitch objective (sell-side, buy-side, financing, restructuring).

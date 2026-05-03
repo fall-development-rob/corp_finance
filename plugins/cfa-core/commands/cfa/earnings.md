@@ -1,3 +1,12 @@
+---
+requires_tools:
+  - build_sensitivity_grid
+  - calculate_target_price
+requires_external_tools:
+  - fmp_analyst_estimates
+  - fmp_earnings
+  - fmp_income_statement
+---
 # Earnings Analysis
 
 Post-earnings update report using the Earnings Analysis workflow from `workflow-equity-research`.
@@ -9,7 +18,7 @@ Analyzes quarterly earnings: beat/miss summary, guidance revisions, updated esti
 Routes to `cfa-equity-analyst`.
 
 ## Key Tools
-`fmp_earnings`, `fmp_analyst_estimates`, `fmp_income_statement`, `sensitivity_matrix`, `target_price`
+`fmp_earnings`, `fmp_analyst_estimates`, `fmp_income_statement`, `build_sensitivity_grid`, `calculate_target_price`
 
 ## Usage
 Provide ticker and quarter (e.g., "AAPL Q4 2025"). The agent retrieves actual vs estimate data and produces the update.

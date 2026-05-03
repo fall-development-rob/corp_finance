@@ -1,5 +1,6 @@
 ---
 requires_tools:
+  - build_sensitivity_grid
   - comps_analysis
   - dcf_model
 requires_external_tools:
@@ -17,7 +18,7 @@ Creates a structured bull/base/bear thesis with catalyst milestones, probability
 Routes to `cfa-equity-analyst`.
 
 ## Key Tools
-`dcf_model`, `comps_analysis`, `sensitivity_matrix`, `fmp_quote`, `fmp_analyst_estimates`
+`dcf_model`, `comps_analysis`, `build_sensitivity_grid`, `fmp_quote`, `fmp_analyst_estimates`
 
 ## Usage
 Provide a ticker to create a new thesis or update an existing one.

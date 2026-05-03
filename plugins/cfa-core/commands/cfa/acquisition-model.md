@@ -1,14 +1,17 @@
 ---
-description: "Full acquisition underwriting with sources & uses, pro forma, debt sizing, and hold/sell analysis"
+description: Full acquisition underwriting with sources & uses, pro forma, debt sizing, and hold/sell analysis
+requires_tools:
+  - acquisition_model
+  - comp_adjustment_grid
+  - tenant_schedule
 ---
-
 Build a full acquisition underwriting model for: $ARGUMENTS
 
 Use the following analytical framework:
 
-1. **Acquisition Underwriting** — Use `institutional_acquisition` to build sources & uses, year-by-year pro forma, and compute levered/unlevered IRR
-2. **Rent Roll Foundation** — Use `institutional_rent_roll` for tenant-level NOI projections feeding the pro forma
-3. **Comparable Sales** — Use `institutional_comparable_sales` to validate the purchase price against recent transactions
+1. **Acquisition Underwriting** — Use `acquisition_model` to build sources & uses, year-by-year pro forma, and compute levered/unlevered IRR
+2. **Rent Roll Foundation** — Use `tenant_schedule` for tenant-level NOI projections feeding the pro forma
+3. **Comparable Sales** — Use `comp_adjustment_grid` to validate the purchase price against recent transactions
 4. **Hold/Sell Analysis** — Compute break-even exit cap rate and optimal hold period
 5. **Value-Add Scenario** — If applicable, model renovation CapEx, lease-up, and value-add IRR
 6. **Development Alternative** — If applicable, run development feasibility analysis

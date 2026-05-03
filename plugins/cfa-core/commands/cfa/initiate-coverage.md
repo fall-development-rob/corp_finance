@@ -1,7 +1,12 @@
 ---
 requires_tools:
+  - build_sensitivity_grid
+  - build_three_statement
+  - calculate_sotp
+  - calculate_target_price
   - comps_analysis
   - dcf_model
+  - run_mc_dcf
   - wacc_calculator
 requires_external_tools:
   - fmp_balance_sheet
@@ -21,7 +26,7 @@ Executes a 5-task pipeline: (1) Company research, (2) Financial modelling, (3) V
 Routes to `cfa-equity-analyst` with `workflow-equity-research` skill.
 
 ## Key Tools
-`fmp_profile`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`, `fmp_key_metrics`, `wacc_calculator`, `dcf_model`, `comps_analysis`, `three_statement_model`, `sotp_valuation`, `target_price`, `sensitivity_matrix`, `monte_carlo_dcf`
+`fmp_profile`, `fmp_income_statement`, `fmp_balance_sheet`, `fmp_cash_flow`, `fmp_key_metrics`, `wacc_calculator`, `dcf_model`, `comps_analysis`, `build_three_statement`, `calculate_sotp`, `calculate_target_price`, `build_sensitivity_grid`, `run_mc_dcf`
 
 ## Usage
 Provide a company name or ticker. The agent will ask which task to start with.

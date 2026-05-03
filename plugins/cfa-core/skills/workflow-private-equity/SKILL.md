@@ -3,9 +3,15 @@ name: Private Equity Workflows
 description: Professional PE deal lifecycle workflows — deal sourcing and screening, due diligence checklists, DD meeting prep, IC memos, returns analysis, unit economics, value creation plans, and portfolio monitoring. Defines institutional PE document production pipelines using corp-finance-mcp tools. Use when screening deals, preparing IC materials, modelling PE returns, or tracking portfolio companies.
 requires_tools:
   - altman_zscore
+  - build_debt_schedule
+  - build_lbo
+  - build_sensitivity_grid
+  - calculate_returns
+  - calculate_waterfall
   - comps_analysis
   - covenant_compliance
   - credit_metrics
+  - sources_and_uses
 requires_external_tools:
   - fmp_balance_sheet
   - fmp_cash_flow
@@ -31,12 +37,12 @@ You are a senior private equity associate executing professional deal evaluation
 | Request | Workflow | Output | Key Tools |
 |---------|----------|--------|-----------|
 | "Screen this deal" | Deal Screening | 1-page screening memo | `credit_metrics`, `altman_zscore`, `fmp_key_metrics` |
-| "IC memo" | IC Memo | 10-15 page memo | `lbo_model`, `returns_calculator`, `sources_uses`, `waterfall_calculator` |
+| "IC memo" | IC Memo | 10-15 page memo | `build_lbo`, `calculate_returns`, `sources_and_uses`, `calculate_waterfall` |
 | "DD checklist" | DD Checklist | Categorised checklist | (no tools - document structure) |
 | "DD meeting prep" | DD Meeting Prep | Question list + agenda | `fmp_income_statement`, `fmp_key_metrics` |
-| "Returns analysis" | Returns Analysis | IRR/MOIC sensitivity | `lbo_model`, `returns_calculator`, `sensitivity_matrix` |
+| "Returns analysis" | Returns Analysis | IRR/MOIC sensitivity | `build_lbo`, `calculate_returns`, `build_sensitivity_grid` |
 | "Unit economics" | Unit Economics | Per-unit P&L | (manual analysis framework) |
-| "Value creation plan" | VCP | 100-day plan | `lbo_model`, `sensitivity_matrix` |
+| "Value creation plan" | VCP | 100-day plan | `build_lbo`, `build_sensitivity_grid` |
 | "Portfolio monitoring" | Portfolio Monitor | KPI dashboard | `credit_metrics`, `covenant_compliance` |
 | "Deal sourcing" | Deal Sourcing | Pipeline funnel | `fmp_stock_screener`, `fmp_profile` |
 
@@ -121,23 +127,23 @@ The IC memo is the formal recommendation document presented to the investment co
 
 **VI. Deal Terms & Structure (1 page)**
 - Enterprise value and implied multiples (EV/EBITDA, EV/Revenue, P/E)
-- Call `sources_uses` for financing table:
+- Call `sources_and_uses` for financing table:
   - Sources: equity, senior secured term loan, second lien, mezzanine, revolver, rollover equity, seller note
   - Uses: equity purchase price, debt refinancing, transaction fees, cash to balance sheet
   - Sources must equal Uses exactly
 - Capital structure: leverage by tranche, blended cost of debt, equity contribution %
-- Call `debt_schedule` for amortisation profile and cash sweep mechanics
+- Call `build_debt_schedule` for amortisation profile and cash sweep mechanics
 - Key legal terms: representations, warranties, indemnities, MAC clause, non-compete
 
 **VII. Returns Analysis (1 page)**
-- Call `lbo_model` with entry EV, EBITDA, debt tranches, growth assumptions, exit parameters
+- Call `build_lbo` with entry EV, EBITDA, debt tranches, growth assumptions, exit parameters
 - Base / upside / downside scenarios:
   - Base: consensus growth, flat margins, exit at entry multiple
   - Upside: above-plan growth, margin expansion, exit at premium
   - Downside: below-plan growth, margin pressure, exit at discount
 - IRR and MOIC for each scenario
 - Return attribution: EBITDA growth + multiple expansion + debt paydown
-- Call `sensitivity_matrix` varying exit multiple vs EBITDA at exit
+- Call `build_sensitivity_grid` varying exit multiple vs EBITDA at exit
 - Breakeven analysis: minimum EBITDA at exit for 1.0x MOIC
 
 **VIII. Risk Factors (1 page)**
@@ -187,7 +193,7 @@ Comprehensive checklist organised by function. Each item carries a priority (cri
 
 ## Returns Analysis Workflow
 
-1. **Build LBO model**: call `lbo_model` with full deal parameters
+1. **Build LBO model**: call `build_lbo` with full deal parameters
    - Entry EV and implied multiples
    - Multi-tranche debt: senior secured, second lien, mezzanine (if applicable)
    - Revenue growth and margin assumptions by year
@@ -198,12 +204,12 @@ Comprehensive checklist organised by function. Each item carries a priority (cri
    - Multiple expansion contribution: exit multiple vs entry multiple
    - Debt paydown contribution: leverage reduction from FCF debt service
    - Each component as % of total value creation
-3. **Scenario analysis**: call `returns_calculator` for each scenario
+3. **Scenario analysis**: call `calculate_returns` for each scenario
    - Base case: management plan with modest haircut
    - Upside case: plan achievement + operational improvements
    - Downside case: revenue miss + margin compression + lower exit multiple
    - Probability-weighted expected return
-4. **Sensitivity tables**: call `sensitivity_matrix`
+4. **Sensitivity tables**: call `build_sensitivity_grid`
    - Entry multiple vs exit multiple
    - EBITDA growth rate vs exit multiple
    - Leverage level vs IRR
@@ -263,10 +269,10 @@ The VCP defines how the fund will generate returns beyond financial engineering.
    - Monthly KPIs: revenue, bookings, EBITDA, cash conversion, headcount
    - Quarterly milestones: initiative progress, budget vs actual, covenant compliance
    - Annual targets: EBITDA, leverage reduction, value creation plan delivery
-6. **Model impact on returns**: call `lbo_model` with VCP assumptions
+6. **Model impact on returns**: call `build_lbo` with VCP assumptions
    - Compare base case (no VCP) vs VCP case
    - Quantify IRR and MOIC uplift from each initiative
-   - Call `sensitivity_matrix` varying VCP delivery % vs exit multiple
+   - Call `build_sensitivity_grid` varying VCP delivery % vs exit multiple
 
 ## Portfolio Monitoring Workflow
 
