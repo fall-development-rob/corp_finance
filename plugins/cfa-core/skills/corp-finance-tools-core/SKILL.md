@@ -1,8 +1,18 @@
 ---
-name: "Corp Finance Tools - Core"
-description: "Use the corp-finance-mcp server tools for core corporate finance calculations. Invoke when performing valuations (DCF, WACC, comps), credit analysis (metrics, debt capacity, covenants, Altman Z-score), PE/M&A (LBO models, IRR, MOIC, debt schedules, waterfall distributions, merger accretion/dilution), portfolio analytics (Sharpe, VaR, Kelly), fund economics (fee calculator, GP/LP splits, GP economics, investor net returns), jurisdiction (GAAP/IFRS reconciliation, withholding tax, NAV with equalisation, UBTI/ECI screening), three-statement financial modelling, Monte Carlo simulation (DCF, generic), scenario/sensitivity analysis, earnings quality (Beneish M-Score, Piotroski F-Score, accrual quality, revenue quality, composite scoring), dividend policy (H-Model DDM, multi-stage DDM, buyback analysis, payout sustainability, total shareholder return), financial forensics (Benford's Law, DuPont analysis, Z-score models, peer benchmarking, red flag scoring). All computation uses 128-bit decimal precision."
+name: Corp Finance Tools - Core
+description: Use the corp-finance-mcp server tools for core corporate finance calculations. Invoke when performing valuations (DCF, WACC, comps), credit analysis (metrics, debt capacity, covenants, Altman Z-score), PE/M&A (LBO models, IRR, MOIC, debt schedules, waterfall distributions, merger accretion/dilution), portfolio analytics (Sharpe, VaR, Kelly), fund economics (fee calculator, GP/LP splits, GP economics, investor net returns), jurisdiction (GAAP/IFRS reconciliation, withholding tax, NAV with equalisation, UBTI/ECI screening), three-statement financial modelling, Monte Carlo simulation (DCF, generic), scenario/sensitivity analysis, earnings quality (Beneish M-Score, Piotroski F-Score, accrual quality, revenue quality, composite scoring), dividend policy (H-Model DDM, multi-stage DDM, buyback analysis, payout sustainability, total shareholder return), financial forensics (Benford's Law, DuPont analysis, Z-score models, peer benchmarking, red flag scoring). All computation uses 128-bit decimal precision.
+requires_tools:
+  - altman_zscore
+  - comps_analysis
+  - covenant_compliance
+  - credit_metrics
+  - dcf_model
+  - debt_capacity
+  - kelly_sizing
+  - risk_adjusted_returns
+  - risk_metrics
+  - wacc_calculator
 ---
-
 # Corp Finance Tools - Core
 
 You have access to 44 core corporate finance MCP tools for fundamental valuation, credit, PE/M&A, portfolio, fund economics, jurisdiction, three-statement modelling, Monte Carlo, scenario analysis, earnings quality, dividend policy, and financial forensics. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point (except Monte Carlo which uses f64 for performance).

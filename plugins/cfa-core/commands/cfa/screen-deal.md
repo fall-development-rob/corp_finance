@@ -1,3 +1,11 @@
+---
+requires_tools:
+  - altman_zscore
+  - comps_analysis
+  - credit_metrics
+requires_external_tools:
+  - fmp_key_metrics
+---
 # Deal Screening
 
 Screen inbound deal flow using the Deal Screening workflow from `workflow-private-equity`.

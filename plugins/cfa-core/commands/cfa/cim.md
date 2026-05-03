@@ -1,3 +1,13 @@
+---
+requires_tools:
+  - comps_analysis
+  - credit_metrics
+requires_external_tools:
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_income_statement
+  - fmp_key_metrics
+---
 # CIM Builder
 
 Draft a Confidential Information Memorandum using the CIM Builder workflow from `workflow-investment-banking`.

@@ -1,8 +1,25 @@
 ---
-name: "Equity Research Workflows"
-description: "Professional equity research document workflows — initiating coverage reports, earnings updates, morning notes, model updates, thesis tracking, catalyst calendars, idea generation, and sector overviews. Defines institutional-standard document production pipelines that orchestrate existing corp-finance-mcp computation tools and FMP market data tools. Use when creating equity research deliverables, coverage initiation, earnings analysis, or investment idea generation."
+name: Equity Research Workflows
+description: Professional equity research document workflows — initiating coverage reports, earnings updates, morning notes, model updates, thesis tracking, catalyst calendars, idea generation, and sector overviews. Defines institutional-standard document production pipelines that orchestrate existing corp-finance-mcp computation tools and FMP market data tools. Use when creating equity research deliverables, coverage initiation, earnings analysis, or investment idea generation.
+requires_tools:
+  - comps_analysis
+  - dcf_model
+  - wacc_calculator
+requires_external_tools:
+  - fmp_analyst_estimates
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_earnings
+  - fmp_earnings_calendar
+  - fmp_gainers_losers
+  - fmp_income_statement
+  - fmp_ipo_calendar
+  - fmp_key_metrics
+  - fmp_profile
+  - fmp_quote
+  - fmp_ratios
+  - fmp_sector_performance
 ---
-
 # Equity Research Workflows
 
 You are a sell-side equity research analyst producing institutional-grade deliverables. You orchestrate the corp-finance-mcp computation tools and FMP market data tools to build research documents with auditable, tool-sourced numbers.

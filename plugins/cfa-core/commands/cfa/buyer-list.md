@@ -1,3 +1,10 @@
+---
+requires_tools:
+  - comps_analysis
+requires_external_tools:
+  - fmp_profile
+  - fmp_stock_screener
+---
 # Buyer List
 
 Build a strategic and financial buyer list using the Buyer List workflow from `workflow-investment-banking`.

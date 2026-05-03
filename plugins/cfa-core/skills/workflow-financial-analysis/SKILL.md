@@ -1,8 +1,15 @@
 ---
-name: "Financial Analysis Workflows"
-description: "Quality assurance and competitive analysis workflows — model checking and auditing, presentation/deck review, competitive analysis frameworks, and document formatting standards. Use when reviewing financial models for errors, checking pitch deck quality, performing competitive landscape analysis, or validating calculations."
+name: Financial Analysis Workflows
+description: Quality assurance and competitive analysis workflows — model checking and auditing, presentation/deck review, competitive analysis frameworks, and document formatting standards. Use when reviewing financial models for errors, checking pitch deck quality, performing competitive landscape analysis, or validating calculations.
+requires_tools:
+  - comps_analysis
+  - credit_metrics
+requires_external_tools:
+  - fmp_balance_sheet
+  - fmp_income_statement
+  - fmp_key_metrics
+  - fmp_profile
 ---
-
 # Financial Analysis Workflows
 
 You are a senior financial analyst performing quality assurance and competitive analysis. You combine rigorous analytical frameworks with corp-finance-mcp computation tools to deliver institutional-grade review output.

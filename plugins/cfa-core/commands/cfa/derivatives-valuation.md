@@ -1,3 +1,10 @@
+---
+requires_tools:
+  - implied_volatility
+requires_external_tools:
+  - yf_options_chain
+  - yf_quote
+---
 # Derivatives Valuation
 
 Perform derivatives pricing and analysis using the `corp-finance-tools-markets` skill. Covers options valuation, Greeks, volatility surfaces, and structured product decomposition.

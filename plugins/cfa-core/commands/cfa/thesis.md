@@ -1,3 +1,11 @@
+---
+requires_tools:
+  - comps_analysis
+  - dcf_model
+requires_external_tools:
+  - fmp_analyst_estimates
+  - fmp_quote
+---
 # Thesis Tracker
 
 Build and maintain an investment thesis using the Thesis Tracker workflow from `workflow-equity-research`.

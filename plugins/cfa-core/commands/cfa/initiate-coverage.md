@@ -1,3 +1,15 @@
+---
+requires_tools:
+  - comps_analysis
+  - dcf_model
+  - wacc_calculator
+requires_external_tools:
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_income_statement
+  - fmp_key_metrics
+  - fmp_profile
+---
 # Initiate Coverage
 
 Invoke the Initiating Coverage workflow from the `workflow-equity-research` skill to create an institutional-quality equity research initiation report.

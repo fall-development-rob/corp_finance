@@ -1,3 +1,7 @@
+---
+requires_tools:
+  - risk_metrics
+---
 # Financial Plan
 
 Build a comprehensive financial plan using the Financial Plan workflow from `workflow-wealth-management`.

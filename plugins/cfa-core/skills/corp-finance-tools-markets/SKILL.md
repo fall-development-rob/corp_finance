@@ -1,8 +1,11 @@
 ---
-name: "Corp Finance Tools - Markets"
-description: "Use the corp-finance-mcp server tools for capital markets calculations. Invoke when performing fixed income analysis (bond pricing, yield analysis, duration/convexity, credit spreads, yield curve bootstrapping, Nelson-Siegel fitting), derivatives pricing (option pricing, implied volatility, forwards/futures, interest rate swaps, currency swaps, option strategies), volatility surface (implied vol surface construction, SABR calibration), interest rate models (Vasicek/CIR/Hull-White, Nelson-Siegel-Svensson term structure), mortgage analytics (prepayment modelling, MBS pass-through analytics), inflation-linked instruments (TIPS pricing, inflation swaps/caps/floors), repo financing (repo rates, implied repo, collateral management), FX (forwards, cross rates), commodities (forwards, term structure), securitization (ABS/MBS, CDO tranching), CLO analytics (waterfall, coverage tests, reinvestment, tranche analytics, scenario analysis), emerging markets (country risk premium, political risk, capital controls, EM bond analysis, EM equity premium). All computation uses 128-bit decimal precision."
+name: Corp Finance Tools - Markets
+description: Use the corp-finance-mcp server tools for capital markets calculations. Invoke when performing fixed income analysis (bond pricing, yield analysis, duration/convexity, credit spreads, yield curve bootstrapping, Nelson-Siegel fitting), derivatives pricing (option pricing, implied volatility, forwards/futures, interest rate swaps, currency swaps, option strategies), volatility surface (implied vol surface construction, SABR calibration), interest rate models (Vasicek/CIR/Hull-White, Nelson-Siegel-Svensson term structure), mortgage analytics (prepayment modelling, MBS pass-through analytics), inflation-linked instruments (TIPS pricing, inflation swaps/caps/floors), repo financing (repo rates, implied repo, collateral management), FX (forwards, cross rates), commodities (forwards, term structure), securitization (ABS/MBS, CDO tranching), CLO analytics (waterfall, coverage tests, reinvestment, tranche analytics, scenario analysis), emerging markets (country risk premium, political risk, capital controls, EM bond analysis, EM equity premium). All computation uses 128-bit decimal precision.
+requires_tools:
+  - bootstrap_spot_curve
+  - futures_basis_analysis
+  - implied_volatility
 ---
-
 # Corp Finance MCP Tools - Markets
 
 You have access to 40 capital markets MCP tools for fixed income, derivatives, volatility, rate models, mortgage/MBS, inflation, repo, FX, commodities, securitization, CLO analytics, and emerging markets. All tools return structured JSON with `result`, `methodology`, `assumptions`, `warnings`, and `metadata` fields. All monetary math uses `rust_decimal` (128-bit fixed-point) — never floating-point.

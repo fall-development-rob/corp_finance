@@ -1,3 +1,10 @@
+---
+requires_tools:
+  - brinson_attribution
+  - factor_attribution
+  - risk_adjusted_returns
+  - risk_metrics
+---
 # Client Review
 
 Prepare a client meeting review using the Client Review workflow from `workflow-wealth-management`.
