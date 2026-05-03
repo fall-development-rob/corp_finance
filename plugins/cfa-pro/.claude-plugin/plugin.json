@@ -1,0 +1,63 @@
+{
+  "name": "cfa-pro",
+  "version": "0.1.0",
+  "description": "Premium financial data vendors for institutional research: FMP, LSEG, S&P Global (Kensho), FactSet, Morningstar, Moody's, PitchBook. 267+ MCP tools across 7 vendors. Bring your own API keys.",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/cfa_agent.git"
+  },
+  "keywords": [
+    "finance",
+    "data",
+    "fmp",
+    "lseg",
+    "sp-global",
+    "factset",
+    "morningstar",
+    "moodys",
+    "pitchbook",
+    "institutional"
+  ],
+  "category": "finance",
+  "tags": [
+    "premium-data",
+    "institutional-research",
+    "vendor-data",
+    "ratings",
+    "private-markets"
+  ],
+  "engines": {
+    "claudeCode": ">=2.0.0",
+    "node": ">=20.0.0"
+  },
+  "mcpServers": {
+    "cfa-pro-fmp": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/fmp-mcp-server/dist/index.js"],
+      "env": {
+        "FMP_API_KEY": "${FMP_API_KEY:-}"
+      }
+    },
+    "cfa-pro-vendors": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/vendor-mcp-server/dist/index.js"],
+      "env": {
+        "LSEG_CLIENT_ID": "${LSEG_CLIENT_ID:-}",
+        "LSEG_CLIENT_SECRET": "${LSEG_CLIENT_SECRET:-}",
+        "SP_GLOBAL_API_KEY": "${SP_GLOBAL_API_KEY:-}",
+        "FACTSET_USERNAME": "${FACTSET_USERNAME:-}",
+        "FACTSET_API_KEY": "${FACTSET_API_KEY:-}",
+        "MORNINGSTAR_API_KEY": "${MORNINGSTAR_API_KEY:-}",
+        "MOODYS_CLIENT_ID": "${MOODYS_CLIENT_ID:-}",
+        "MOODYS_CLIENT_SECRET": "${MOODYS_CLIENT_SECRET:-}",
+        "PITCHBOOK_API_KEY": "${PITCHBOOK_API_KEY:-}"
+      }
+    }
+  }
+}

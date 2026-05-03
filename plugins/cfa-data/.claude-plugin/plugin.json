@@ -1,0 +1,50 @@
+{
+  "name": "cfa-data",
+  "version": "0.1.0",
+  "description": "Free public financial and macro data feeds: SEC EDGAR, FRED, Yahoo Finance, OpenFIGI, World Bank, and 9 geopolitical APIs (ACLED, GDELT, GDACS, USGS, NASA FIRMS, EIA, WTO, USASpending, Polymarket). 121 MCP tools, mostly keyless. Companion to cfa-core for data-driven analysis.",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fall-development-rob/cfa_agent.git"
+  },
+  "keywords": [
+    "finance",
+    "data",
+    "edgar",
+    "fred",
+    "yahoo-finance",
+    "world-bank",
+    "geopolitical",
+    "macro",
+    "10k",
+    "13f"
+  ],
+  "category": "finance",
+  "tags": [
+    "market-data",
+    "macro-data",
+    "regulatory-filings",
+    "geopolitical",
+    "free-data"
+  ],
+  "engines": {
+    "claudeCode": ">=2.0.0",
+    "node": ">=20.0.0"
+  },
+  "mcpServers": {
+    "cfa-data": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/data-mcp-server/dist/index.js"],
+      "env": {
+        "ACLED_ACCESS_TOKEN": "${ACLED_ACCESS_TOKEN:-}",
+        "NASA_FIRMS_API_KEY": "${NASA_FIRMS_API_KEY:-}",
+        "EIA_API_KEY": "${EIA_API_KEY:-}"
+      }
+    }
+  }
+}
