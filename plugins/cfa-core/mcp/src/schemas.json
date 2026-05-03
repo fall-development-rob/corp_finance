@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "generated_from": "packages/bindings/src/lib.rs",
   "tool_count": 244,
-  "schema_count": 243,
+  "schema_count": 244,
   "tools": [
     "acquisition_model",
     "altman_zscore",
@@ -48,6 +48,7 @@
     "analyze_lpf_structure",
     "analyze_lux_structure",
     "analyze_manager_selection",
+    "analyze_mbs",
     "analyze_merger",
     "analyze_momentum",
     "analyze_monetary_policy",
@@ -248,10 +249,5 @@
     "workflow_quality_check",
     "workflow_validate"
   ],
-  "missing": [
-    {
-      "tool": "analyze_mbs",
-      "struct": "MbsAnalyticsInput"
-    }
-  ]
+  "missing": []
 }
