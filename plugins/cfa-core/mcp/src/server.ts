@@ -14,6 +14,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createRequire } from "node:module";
 
+import { registerStreamingTools } from "./streaming.js";
 import { registerAllTools } from "./tools.js";
 
 const require = createRequire(import.meta.url);
@@ -29,11 +30,19 @@ async function main() {
   });
 
   const count = registerAllTools(server, wasm);
+  // Streaming tools live in a separate hand-maintained module so
+  // tools.ts (auto-generated) stays untouched. See streaming.ts for the
+  // progressToken → notifications/progress wiring.
+  const streamingCount = registerStreamingTools(
+    server,
+    wasm as Record<string, unknown>,
+  );
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error(
-    `cfa-core MCP server v${wasm.version()} listening — ${count} tools registered`,
+    `cfa-core MCP server v${wasm.version()} listening — ${count} tools registered ` +
+      `(+${streamingCount} streaming)`,
   );
 }
 

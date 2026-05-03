@@ -12,3 +12,4 @@ pub mod descriptions;
 pub mod examples;
 pub mod ext_prefixes;
 pub mod runtime_baselines;
+pub mod wasm_features;
