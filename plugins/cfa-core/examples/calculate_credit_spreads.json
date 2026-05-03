@@ -1,0 +1,10 @@
+{
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "coupon_frequency": 1,
+  "market_price": "0.05",
+  "years_to_maturity": "0.05",
+  "benchmark_curve": [
+    "<BenchmarkPoint>"
+  ]
+}

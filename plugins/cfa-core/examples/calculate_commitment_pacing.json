@@ -1,0 +1,15 @@
+{
+  "existing_funds": [
+    "<ExistingFund>"
+  ],
+  "target_allocation_pct": "0.05",
+  "total_portfolio_value": "0.05",
+  "planning_years": 1,
+  "new_commitment_per_year": "0.05",
+  "drawdown_curve": [
+    "0.05"
+  ],
+  "distribution_curve": [
+    "0.05"
+  ]
+}

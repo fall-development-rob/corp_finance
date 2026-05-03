@@ -1,0 +1,11 @@
+{
+  "portfolio_value": "0.05",
+  "positions": [
+    "<TlhPosition>"
+  ],
+  "short_term_tax_rate": "0.05",
+  "long_term_tax_rate": "0.05",
+  "annual_capital_gains": "0.05",
+  "harvest_threshold_pct": "0.05",
+  "wash_sale_days": 1
+}

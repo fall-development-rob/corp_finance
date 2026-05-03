@@ -1,0 +1,6 @@
+{
+  "investor_type": "<InvestorType>",
+  "investments": [
+    "<InvestmentDetail>"
+  ]
+}

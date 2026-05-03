@@ -1,0 +1,12 @@
+{
+  "deal_name": "EXAMPLE",
+  "collateral_balance": "0.05",
+  "collateral_cashflows": [
+    "<PeriodCashflow>"
+  ],
+  "tranches": [
+    "<TrancheSpec>"
+  ],
+  "reserve_account": "0.05",
+  "reinvestment_period_months": 1
+}

@@ -1,0 +1,8 @@
+{
+  "investment_amount": "0.05",
+  "safe_type": "<SafeType>",
+  "qualified_financing_pre_money": "0.05",
+  "qualified_financing_amount": "0.05",
+  "pre_money_shares": 1,
+  "mfn": false
+}

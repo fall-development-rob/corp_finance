@@ -1,0 +1,15 @@
+{
+  "local_market_return": "0.05",
+  "us_market_return": "0.05",
+  "risk_free_rate": "0.05",
+  "sovereign_spread": "0.05",
+  "equity_vol_local": "0.05",
+  "equity_vol_us": "0.05",
+  "bond_vol_local": "0.05",
+  "market_cap_to_gdp": "0.05",
+  "pe_ratio": "0.05",
+  "dividend_yield": "0.05",
+  "gdp_growth": "0.05",
+  "earnings_growth": "0.05",
+  "fx_volatility": "0.05"
+}

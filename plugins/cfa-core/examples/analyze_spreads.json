@@ -1,0 +1,11 @@
+{
+  "security_name": "EXAMPLE",
+  "trade_data": [
+    "<TradeRecord>"
+  ],
+  "quote_data": [
+    "<QuoteRecord>"
+  ],
+  "analysis_method": "<SpreadMethod>",
+  "daily_volume": "0.05"
+}

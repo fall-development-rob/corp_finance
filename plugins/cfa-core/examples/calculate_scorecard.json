@@ -1,0 +1,11 @@
+{
+  "bins": [
+    "<WoeBin>"
+  ],
+  "target_score": "0.05",
+  "target_odds": "0.05",
+  "pdo": "0.05",
+  "predictions": [
+    "<PredictionPair>"
+  ]
+}

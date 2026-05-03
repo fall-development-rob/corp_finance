@@ -1,0 +1,12 @@
+{
+  "tranches": [
+    "<ScenarioTranche>"
+  ],
+  "pool_balance": "0.05",
+  "weighted_avg_spread": "0.05",
+  "reference_rate": "0.05",
+  "scenarios": [
+    "<ScenarioDefinition>"
+  ],
+  "num_periods": 1
+}

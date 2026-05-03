@@ -1,0 +1,11 @@
+{
+  "site_name": "EXAMPLE",
+  "potential_uses": [
+    "<PotentialUse>"
+  ],
+  "zoning": "<ZoningConstraints>",
+  "deed_restrictions": "<DeedRestrictions>",
+  "environmental": "<EnvironmentalConstraints>",
+  "site": "<SiteCharacteristics>",
+  "discount_rate": "0.05"
+}

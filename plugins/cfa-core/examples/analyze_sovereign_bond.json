@@ -1,0 +1,11 @@
+{
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "maturity_years": "0.05",
+  "payment_frequency": 1,
+  "risk_free_rate": "0.05",
+  "sovereign_spread": "0.05",
+  "currency": "EXAMPLE",
+  "country": "EXAMPLE",
+  "is_local_currency": false
+}

@@ -1,0 +1,7 @@
+{
+  "base_inputs": "<Value>",
+  "variable_1": "<SensitivityVariable>",
+  "variable_2": "<SensitivityVariable>",
+  "output_metric": "EXAMPLE",
+  "compute_fn": "EXAMPLE"
+}

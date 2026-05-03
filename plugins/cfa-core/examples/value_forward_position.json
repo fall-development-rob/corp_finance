@@ -1,0 +1,8 @@
+{
+  "original_forward_price": "0.05",
+  "current_spot": "0.05",
+  "risk_free_rate": "0.05",
+  "remaining_time": "0.05",
+  "is_long": false,
+  "contract_size": "0.05"
+}

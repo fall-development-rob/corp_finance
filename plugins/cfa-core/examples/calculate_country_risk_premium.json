@@ -1,0 +1,12 @@
+{
+  "sovereign_spread_bps": "0.05",
+  "equity_vol_local": "0.05",
+  "bond_vol_local": "0.05",
+  "us_equity_risk_premium": "0.05",
+  "country_rating": "EXAMPLE",
+  "gdp_growth": "0.05",
+  "inflation_rate": "0.05",
+  "fx_volatility": "0.05",
+  "governance_score": "0.05",
+  "risk_free_rate": "0.05"
+}

@@ -1,0 +1,11 @@
+{
+  "period_name": "EXAMPLE",
+  "revenue_lines": [
+    "<RevenueLine>"
+  ],
+  "cost_lines": [
+    "<CostLine>"
+  ],
+  "budget_total_revenue": "0.05",
+  "budget_total_costs": "0.05"
+}

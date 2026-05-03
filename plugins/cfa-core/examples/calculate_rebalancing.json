@@ -1,0 +1,9 @@
+{
+  "current_weights": [
+    "<PositionWeight>"
+  ],
+  "portfolio_value": "0.05",
+  "transaction_cost_bps": "0.05",
+  "rebalance_threshold": "0.05",
+  "rebalance_frequency": "EXAMPLE"
+}

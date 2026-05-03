@@ -1,0 +1,8 @@
+{
+  "funds": [
+    "<PortfolioFund>"
+  ],
+  "max_strategy_pct": "0.05",
+  "max_vintage_pct": "0.05",
+  "max_geography_pct": "0.05"
+}

@@ -1,0 +1,11 @@
+{
+  "base_fcf": "0.05",
+  "projection_years": 1,
+  "revenue_growth": "<McDistribution>",
+  "ebitda_margin": "<McDistribution>",
+  "wacc": "<McDistribution>",
+  "terminal_growth": "<McDistribution>",
+  "capex_pct": "0.05",
+  "tax_rate": "0.05",
+  "num_simulations": 1
+}

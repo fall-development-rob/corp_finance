@@ -1,0 +1,23 @@
+{
+  "customer_name": "EXAMPLE",
+  "customer_type": "<CustomerType>",
+  "jurisdiction_of_incorporation": "EXAMPLE",
+  "jurisdiction_of_operations": [
+    "EXAMPLE"
+  ],
+  "is_pep": false,
+  "source_of_wealth": "<SourceOfWealth>",
+  "source_of_funds": "EXAMPLE",
+  "product_type": "<ProductType>",
+  "channel": "<Channel>",
+  "annual_transaction_volume": "0.05",
+  "average_transaction_size": "0.05",
+  "cross_border_transaction_pct": "0.05",
+  "cash_transaction_pct": "0.05",
+  "ownership_layers": 1,
+  "has_nominee_directors": false,
+  "has_bearer_shares": false,
+  "adverse_media_hits": 1,
+  "industry": "EXAMPLE",
+  "expected_account_activity": "EXAMPLE"
+}

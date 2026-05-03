@@ -1,0 +1,10 @@
+{
+  "fund_name": "EXAMPLE",
+  "fund_size": "0.05",
+  "qualifying_income": "0.05",
+  "non_qualifying_income": "0.05",
+  "investment_professionals_sg": 1,
+  "local_business_spending": "0.05",
+  "scheme": "EXAMPLE",
+  "is_resident": false
+}

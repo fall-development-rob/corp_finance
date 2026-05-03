@@ -1,0 +1,17 @@
+{
+  "fund_name": "EXAMPLE",
+  "structure_type": "EXAMPLE",
+  "domicile": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "carried_interest_rate": "0.05",
+  "preferred_return": "0.05",
+  "fund_term_years": 1,
+  "investor_types": [
+    "<InvestorType>"
+  ],
+  "expected_annual_return": "0.05",
+  "aifmd_compliant": false,
+  "ucits_compliant": false,
+  "vat_rate": "0.05"
+}

@@ -1,0 +1,11 @@
+{
+  "company_name": "EXAMPLE",
+  "cell_type": "EXAMPLE",
+  "jurisdiction": "EXAMPLE",
+  "core_aum": "0.05",
+  "cells": [
+    "<CellInfo>"
+  ],
+  "core_annual_cost": "0.05",
+  "cost_allocation_method": "EXAMPLE"
+}

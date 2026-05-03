@@ -1,0 +1,9 @@
+{
+  "source_jurisdiction": "EXAMPLE",
+  "source_vehicle_type": "EXAMPLE",
+  "target_jurisdiction": "EXAMPLE",
+  "target_vehicle_type": "EXAMPLE",
+  "fund_size": "0.05",
+  "investor_count": 1,
+  "migration_driver": "EXAMPLE"
+}

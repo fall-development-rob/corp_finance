@@ -1,0 +1,18 @@
+{
+  "market_name": "EXAMPLE",
+  "vix_current": "0.05",
+  "vix_sma_50": "0.05",
+  "put_call_ratio": "0.05",
+  "put_call_sma_20": "0.05",
+  "advance_decline_ratio": "0.05",
+  "new_highs_lows_ratio": "0.05",
+  "margin_debt_change_pct": "0.05",
+  "fund_flows": "0.05",
+  "short_interest_ratio": "0.05",
+  "insider_buy_sell_ratio": "0.05",
+  "consumer_confidence": "0.05",
+  "risk_appetite_indicators": [
+    "<RiskIndicator>"
+  ],
+  "contrarian_mode": false
+}

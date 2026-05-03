@@ -1,0 +1,10 @@
+{
+  "assets": [
+    "<PoolAsset>"
+  ],
+  "target_par": "0.05",
+  "max_warf": "0.05",
+  "min_wals": "0.05",
+  "max_wal": "0.05",
+  "min_diversity_score": "0.05"
+}

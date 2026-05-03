@@ -1,0 +1,14 @@
+{
+  "purchase_price": "0.05",
+  "closing_costs": "0.05",
+  "capex_reserves": "0.05",
+  "noi_year1": "0.05",
+  "noi_growth_rate": "0.05",
+  "hold_period_years": 1,
+  "exit_cap_rate": "0.05",
+  "disposition_cost_rate": "0.05",
+  "debt_tranches": [
+    "<DebtTranche>"
+  ],
+  "discount_rate": "0.05"
+}

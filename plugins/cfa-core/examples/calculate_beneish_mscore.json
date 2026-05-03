@@ -1,0 +1,20 @@
+{
+  "current_receivables": "0.05",
+  "prior_receivables": "0.05",
+  "current_revenue": "0.05",
+  "prior_revenue": "0.05",
+  "current_cogs": "0.05",
+  "prior_cogs": "0.05",
+  "current_total_assets": "0.05",
+  "prior_total_assets": "0.05",
+  "current_ppe": "0.05",
+  "prior_ppe": "0.05",
+  "current_depreciation": "0.05",
+  "prior_depreciation": "0.05",
+  "current_sga": "0.05",
+  "prior_sga": "0.05",
+  "current_total_debt": "0.05",
+  "prior_total_debt": "0.05",
+  "current_net_income": "0.05",
+  "current_cfo": "0.05"
+}

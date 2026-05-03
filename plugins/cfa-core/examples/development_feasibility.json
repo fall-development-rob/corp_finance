@@ -1,0 +1,13 @@
+{
+  "land_cost": "0.05",
+  "hard_costs": "0.05",
+  "soft_cost_pct": "0.05",
+  "construction_months": 1,
+  "draw_schedule_pct": [
+    "0.05"
+  ],
+  "construction_loan_rate": "0.05",
+  "lease_up_months": 1,
+  "stabilised_noi": "0.05",
+  "market_cap_rate": "0.05"
+}

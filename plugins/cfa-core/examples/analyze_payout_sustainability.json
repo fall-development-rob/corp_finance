@@ -1,0 +1,11 @@
+{
+  "eps": "0.05",
+  "dps": "0.05",
+  "fcf_per_share": "0.05",
+  "net_debt": "0.05",
+  "ebitda": "0.05",
+  "interest_expense": "0.05",
+  "total_dividends": "0.05",
+  "capex_required": "0.05",
+  "operating_cash_flow": "0.05"
+}

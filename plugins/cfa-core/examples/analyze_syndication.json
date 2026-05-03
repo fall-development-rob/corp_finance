@@ -1,0 +1,10 @@
+{
+  "total_facility": "0.05",
+  "arranger_hold": "0.05",
+  "syndicate_members": [
+    "<SyndicateMember>"
+  ],
+  "arrangement_fee_bps": "0.05",
+  "participation_fee_bps": "0.05",
+  "coupon_spread_bps": "0.05"
+}

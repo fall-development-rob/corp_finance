@@ -1,0 +1,17 @@
+{
+  "working_capital": "0.05",
+  "total_assets": "0.05",
+  "retained_earnings": "0.05",
+  "ebit": "0.05",
+  "market_cap": "0.05",
+  "book_equity": "0.05",
+  "total_liabilities": "0.05",
+  "revenue": "0.05",
+  "net_income": "0.05",
+  "total_debt": "0.05",
+  "current_assets": "0.05",
+  "current_liabilities": "0.05",
+  "cash_flow_operations": "0.05",
+  "is_public": false,
+  "is_manufacturing": false
+}

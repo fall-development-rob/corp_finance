@@ -1,0 +1,8 @@
+{
+  "company_name": "EXAMPLE",
+  "segments": [
+    "<SegmentInput>"
+  ],
+  "net_debt": "0.05",
+  "shares_outstanding": "0.05"
+}

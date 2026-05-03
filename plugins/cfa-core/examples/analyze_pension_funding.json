@@ -1,0 +1,16 @@
+{
+  "plan_name": "EXAMPLE",
+  "plan_assets": "0.05",
+  "discount_rate": "0.05",
+  "expected_return_on_assets": "0.05",
+  "salary_growth_rate": "0.05",
+  "inflation_rate": "0.05",
+  "benefit_obligation_type": "<ObligationType>",
+  "active_participants": [
+    "<Participant>"
+  ],
+  "retired_participants": [
+    "<Retiree>"
+  ],
+  "plan_provisions": "<PlanProvisions>"
+}

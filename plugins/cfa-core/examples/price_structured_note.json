@@ -1,0 +1,8 @@
+{
+  "note_type": "<NoteType>",
+  "notional": "0.05",
+  "maturity_years": "0.05",
+  "risk_free_rate": "0.05",
+  "underlying_price": "0.05",
+  "underlying_volatility": "0.05"
+}

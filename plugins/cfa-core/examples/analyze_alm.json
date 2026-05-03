@@ -1,0 +1,16 @@
+{
+  "institution_name": "EXAMPLE",
+  "assets": [
+    "<AlmPosition>"
+  ],
+  "liabilities": [
+    "<AlmPosition>"
+  ],
+  "off_balance_sheet": [
+    "<AlmPosition>"
+  ],
+  "rate_scenarios": [
+    "<RateScenario>"
+  ],
+  "current_nii": "0.05"
+}

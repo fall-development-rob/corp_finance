@@ -1,0 +1,12 @@
+{
+  "token_name": "EXAMPLE",
+  "network_value": "0.05",
+  "daily_transaction_volume": "0.05",
+  "active_addresses": 1,
+  "annual_protocol_revenue": "0.05",
+  "token_supply": "0.05",
+  "circulating_supply": "0.05",
+  "discount_rate": "0.05",
+  "revenue_growth_rate": "0.05",
+  "terminal_growth_rate": "0.05"
+}

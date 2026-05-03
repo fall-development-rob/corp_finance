@@ -1,0 +1,12 @@
+{
+  "verified_emissions": "0.05",
+  "free_allowances": "0.05",
+  "purchased_allowances": "0.05",
+  "allowance_price": "0.05",
+  "historical_prices": [
+    "0.05"
+  ],
+  "compliance_deadline_days": 1,
+  "benchmark_emission_factor": "0.05",
+  "actual_emission_factor": "0.05"
+}

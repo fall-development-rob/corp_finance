@@ -1,0 +1,10 @@
+{
+  "institution_name": "EXAMPLE",
+  "hqla": "<HqlaPortfolio>",
+  "cash_outflows": [
+    "<CashOutflow>"
+  ],
+  "cash_inflows": [
+    "<CashInflow>"
+  ]
+}

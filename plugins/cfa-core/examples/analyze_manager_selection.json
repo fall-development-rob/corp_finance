@@ -1,0 +1,12 @@
+{
+  "manager_name": "EXAMPLE",
+  "funds": [
+    "<FundRecord>"
+  ],
+  "qualitative_scores": [
+    "<QualitativeFactor>"
+  ],
+  "benchmark_quartiles": [
+    "<BenchmarkQuartile>"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "company_name": "EXAMPLE",
+  "sector": "EXAMPLE",
+  "environmental": "<EnvironmentalMetrics>",
+  "social": "<SocialMetrics>",
+  "governance": "<GovernanceMetrics>"
+}

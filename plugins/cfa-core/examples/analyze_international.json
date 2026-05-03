@@ -1,0 +1,13 @@
+{
+  "domestic_country": "EXAMPLE",
+  "foreign_country": "EXAMPLE",
+  "spot_exchange_rate": "0.05",
+  "domestic_inflation": "0.05",
+  "foreign_inflation": "0.05",
+  "domestic_interest_rate": "0.05",
+  "foreign_interest_rate": "0.05",
+  "domestic_gdp_growth": "0.05",
+  "foreign_gdp_growth": "0.05",
+  "current_account_pct_gdp": "0.05",
+  "years_forward": 1
+}

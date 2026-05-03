@@ -1,0 +1,10 @@
+{
+  "tranches": [
+    "<CoverageTestTranche>"
+  ],
+  "pool_par": "0.05",
+  "defaulted_par": "0.05",
+  "interest_income": "0.05",
+  "senior_fees": "0.05",
+  "reference_rate": "0.05"
+}

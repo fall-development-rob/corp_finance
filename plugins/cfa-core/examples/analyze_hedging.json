@@ -1,0 +1,21 @@
+{
+  "hedge_type": "<HedgeType>",
+  "exposure_currency": "EXAMPLE",
+  "hedge_currency": "EXAMPLE",
+  "notional_amount": "0.05",
+  "hedge_notional": "0.05",
+  "hedge_instrument": "<HedgeInstrument>",
+  "exposure_changes": [
+    "0.05"
+  ],
+  "hedge_changes": [
+    "0.05"
+  ],
+  "risk_free_rate_domestic": "0.05",
+  "risk_free_rate_foreign": "0.05",
+  "spot_rate": "0.05",
+  "forward_rate": "0.05",
+  "volatility": "0.05",
+  "tenor_months": 1,
+  "confidence_level": "0.05"
+}

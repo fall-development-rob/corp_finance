@@ -1,0 +1,15 @@
+{
+  "current_price": "0.05",
+  "shares_outstanding": "0.05",
+  "earnings_per_share": "0.05",
+  "earnings_growth_rate": "0.05",
+  "book_value_per_share": "0.05",
+  "revenue_per_share": "0.05",
+  "dividend_per_share": "0.05",
+  "peer_multiples": [
+    "<PeerMultiple>"
+  ],
+  "cost_of_equity": "0.05",
+  "terminal_growth": "0.05",
+  "projection_years": 1
+}

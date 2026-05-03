@@ -1,0 +1,12 @@
+{
+  "bond_name": "EXAMPLE",
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "maturity_years": "0.05",
+  "green_bond_yield": "0.05",
+  "conventional_yield": "0.05",
+  "use_of_proceeds": [
+    "<GreenProject>"
+  ],
+  "framework": "<GreenBondFramework>"
+}

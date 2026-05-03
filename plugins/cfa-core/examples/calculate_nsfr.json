@@ -1,0 +1,9 @@
+{
+  "institution_name": "EXAMPLE",
+  "available_funding": [
+    "<FundingSource>"
+  ],
+  "required_funding": [
+    "<FundingRequirement>"
+  ]
+}

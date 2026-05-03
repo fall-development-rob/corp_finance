@@ -1,0 +1,20 @@
+{
+  "concession_name": "EXAMPLE",
+  "remaining_years": 1,
+  "current_annual_revenue": "0.05",
+  "revenue_growth_rate": "0.05",
+  "opex_margin": "0.05",
+  "capex_maintenance": "0.05",
+  "handback_cost": "0.05",
+  "handback_years_before_end": 1,
+  "discount_rate": "0.05",
+  "terminal_value_approach": "EXAMPLE",
+  "reversion_value": "0.05",
+  "extension_probability": "0.05",
+  "extension_years": 1,
+  "outstanding_debt": "0.05",
+  "debt_rate": "0.05",
+  "annual_debt_service": "0.05",
+  "tax_rate": "0.05",
+  "regulatory_risk_premium": "0.05"
+}

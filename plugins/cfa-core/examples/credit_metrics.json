@@ -1,0 +1,17 @@
+{
+  "revenue": "2000000",
+  "ebitda": "500000",
+  "ebit": "400000",
+  "interest_expense": "60000",
+  "depreciation_amortisation": "100000",
+  "total_debt": "1500000",
+  "cash": "200000",
+  "total_assets": "3000000",
+  "current_assets": "400000",
+  "current_liabilities": "250000",
+  "total_equity": "1000000",
+  "retained_earnings": "500000",
+  "working_capital": "150000",
+  "operating_cash_flow": "350000",
+  "capex": "100000"
+}

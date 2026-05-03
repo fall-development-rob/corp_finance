@@ -1,0 +1,8 @@
+{
+  "institution_name": "EXAMPLE",
+  "capital": "<CapitalStructure>",
+  "credit_exposures": [
+    "<CreditExposure>"
+  ],
+  "operational_risk": "<OperationalRiskInput>"
+}

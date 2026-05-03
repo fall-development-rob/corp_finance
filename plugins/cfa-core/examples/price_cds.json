@@ -1,0 +1,9 @@
+{
+  "reference_entity": "EXAMPLE",
+  "notional": "0.05",
+  "spread_bps": "0.05",
+  "recovery_rate": "0.05",
+  "risk_free_rate": "0.05",
+  "maturity_years": 1,
+  "payment_frequency": 1
+}

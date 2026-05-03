@@ -1,0 +1,14 @@
+{
+  "position_value": "0.05",
+  "cost_basis": "0.05",
+  "annual_dividend_yield": "0.05",
+  "stock_volatility": "0.05",
+  "risk_free_rate": "0.05",
+  "investment_horizon": 1,
+  "tax_rate_ltcg": "0.05",
+  "tax_rate_stcg": "0.05",
+  "collar_put_strike_pct": "0.05",
+  "collar_call_strike_pct": "0.05",
+  "exchange_fund_diversification_pct": "0.05",
+  "prepaid_forward_advance_pct": "0.05"
+}

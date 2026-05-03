@@ -1,0 +1,17 @@
+{
+  "total_commitment": "0.05",
+  "drawdown_schedule": [
+    "0.05"
+  ],
+  "distribution_schedule": [
+    "0.05"
+  ],
+  "fund_life_years": 1,
+  "growth_rate": "0.05",
+  "management_fee_pct": "0.05",
+  "carry_pct": "0.05",
+  "preferred_return": "0.05",
+  "public_index_returns": [
+    "0.05"
+  ]
+}

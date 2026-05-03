@@ -1,0 +1,14 @@
+{
+  "local_currency_yield": "0.05",
+  "hard_currency_yield": "0.05",
+  "spot_fx_rate": "0.05",
+  "forward_fx_rate": "0.05",
+  "local_inflation": "0.05",
+  "us_inflation": "0.05",
+  "sovereign_spread": "0.05",
+  "local_bond_duration": "0.05",
+  "hard_bond_duration": "0.05",
+  "fx_volatility": "0.05",
+  "investment_amount": "0.05",
+  "hedging_cost": "0.05"
+}

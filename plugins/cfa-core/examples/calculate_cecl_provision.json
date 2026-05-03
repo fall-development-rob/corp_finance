@@ -1,0 +1,7 @@
+{
+  "segments": [
+    "<LoanSegment>"
+  ],
+  "scenario_weights": "<ScenarioWeights>",
+  "discount_rate": "0.05"
+}

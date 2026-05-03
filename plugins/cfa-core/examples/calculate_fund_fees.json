@@ -1,0 +1,16 @@
+{
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "management_fee_basis": "<ManagementFeeBasis>",
+  "performance_fee_rate": "0.05",
+  "hurdle_rate": "0.05",
+  "catch_up_rate": "0.05",
+  "waterfall_type": "<WaterfallType>",
+  "gp_commitment_pct": "0.05",
+  "clawback": false,
+  "fund_life_years": 1,
+  "investment_period_years": 1,
+  "gross_irr_assumption": "0.05",
+  "gross_moic_assumption": "0.05",
+  "annual_fund_expenses": "0.05"
+}

@@ -1,0 +1,19 @@
+{
+  "entity_name": "EXAMPLE",
+  "entity_type": "EXAMPLE",
+  "jurisdiction_of_incorporation": "EXAMPLE",
+  "jurisdiction_of_tax_residence": "EXAMPLE",
+  "gross_income": "0.05",
+  "passive_income": "0.05",
+  "total_assets": "0.05",
+  "passive_assets": "0.05",
+  "is_publicly_traded": false,
+  "is_government_entity": false,
+  "is_international_org": false,
+  "is_pension_fund": false,
+  "controlling_persons": [
+    "<ControllingPerson>"
+  ],
+  "has_us_controlling_persons": false,
+  "is_sponsored": false
+}

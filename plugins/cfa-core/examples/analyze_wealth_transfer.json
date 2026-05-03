@@ -1,0 +1,13 @@
+{
+  "estate_value": "0.05",
+  "annual_exclusion": "0.05",
+  "lifetime_exemption": "0.05",
+  "estate_tax_rate": "0.05",
+  "gst_tax_rate": "0.05",
+  "num_beneficiaries": 1,
+  "transfer_years": 1,
+  "asset_growth_rate": "0.05",
+  "grantor_trust_assets": "0.05",
+  "grat_annuity_rate": "0.05",
+  "section_7520_rate": "0.05"
+}

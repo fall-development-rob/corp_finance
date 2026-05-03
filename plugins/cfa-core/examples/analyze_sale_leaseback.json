@@ -1,0 +1,12 @@
+{
+  "description": "EXAMPLE",
+  "standard": "<LeaseStandard>",
+  "asset_carrying_value": "0.05",
+  "sale_price": "0.05",
+  "fair_value": "0.05",
+  "lease_term_months": 1,
+  "monthly_lease_payment": "0.05",
+  "incremental_borrowing_rate": "0.05",
+  "useful_life_remaining_months": 1,
+  "qualifies_as_sale": false
+}

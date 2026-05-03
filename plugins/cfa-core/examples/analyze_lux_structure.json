@@ -1,0 +1,15 @@
+{
+  "fund_name": "EXAMPLE",
+  "structure_type": "EXAMPLE",
+  "domicile": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "carried_interest_rate": "0.05",
+  "target_investor_base": [
+    "EXAMPLE"
+  ],
+  "aifmd_full_scope": false,
+  "ucits_compliant": false,
+  "subscription_tax_exempt": false,
+  "management_company_location": "EXAMPLE"
+}

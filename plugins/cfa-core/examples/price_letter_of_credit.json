@@ -1,0 +1,13 @@
+{
+  "lc_type": "<LcType>",
+  "face_amount": "0.05",
+  "currency": "EXAMPLE",
+  "tenor_days": 1,
+  "issuing_bank_rating": "EXAMPLE",
+  "applicant_country": "EXAMPLE",
+  "beneficiary_country": "EXAMPLE",
+  "issuance_fee_bps": "0.05",
+  "drawing_count": 1,
+  "is_confirmed": false,
+  "is_at_sight": false
+}

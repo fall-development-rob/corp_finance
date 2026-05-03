@@ -1,0 +1,16 @@
+{
+  "asset_a_name": "EXAMPLE",
+  "asset_b_name": "EXAMPLE",
+  "asset_a_prices": [
+    "0.05"
+  ],
+  "asset_b_prices": [
+    "0.05"
+  ],
+  "lookback_period": 1,
+  "entry_z_score": "0.05",
+  "exit_z_score": "0.05",
+  "stop_loss_z_score": "0.05",
+  "capital": "0.05",
+  "transaction_cost_bps": "0.05"
+}

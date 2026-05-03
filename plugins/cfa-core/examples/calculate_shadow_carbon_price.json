@@ -1,0 +1,8 @@
+{
+  "projects": [
+    "<CarbonProject>"
+  ],
+  "carbon_price": "0.05",
+  "discount_rate": "0.05",
+  "carbon_price_escalation": "0.05"
+}

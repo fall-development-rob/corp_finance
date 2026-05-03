@@ -1,0 +1,7 @@
+{
+  "constituents": [
+    "<IndexConstituent>"
+  ],
+  "weighting_method": "EXAMPLE",
+  "cap_weight": "0.05"
+}

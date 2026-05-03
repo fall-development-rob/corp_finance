@@ -1,0 +1,14 @@
+{
+  "fund_name": "EXAMPLE",
+  "fund_purpose": "EXAMPLE",
+  "fund_size": "0.05",
+  "gp_jurisdiction": "EXAMPLE",
+  "management_fee_rate": "0.05",
+  "carried_interest_rate": "0.05",
+  "fund_term_years": 1,
+  "responsible_person": "EXAMPLE",
+  "audit_waiver": false,
+  "target_investors": [
+    "EXAMPLE"
+  ]
+}

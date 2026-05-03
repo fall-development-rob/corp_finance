@@ -1,0 +1,20 @@
+{
+  "net_income": "0.05",
+  "total_assets": "0.05",
+  "prior_total_assets": "0.05",
+  "cfo": "0.05",
+  "prior_net_income": "0.05",
+  "prior_cfo": "0.05",
+  "current_long_term_debt": "0.05",
+  "prior_long_term_debt": "0.05",
+  "current_current_assets": "0.05",
+  "current_current_liabilities": "0.05",
+  "prior_current_assets": "0.05",
+  "prior_current_liabilities": "0.05",
+  "shares_outstanding": "0.05",
+  "prior_shares_outstanding": "0.05",
+  "current_gross_margin": "0.05",
+  "prior_gross_margin": "0.05",
+  "current_asset_turnover": "0.05",
+  "prior_asset_turnover": "0.05"
+}

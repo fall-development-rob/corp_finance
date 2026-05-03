@@ -1,0 +1,16 @@
+{
+  "fund_name": "EXAMPLE",
+  "structure_type": "EXAMPLE",
+  "fund_strategy": "EXAMPLE",
+  "fund_size": "0.05",
+  "management_fee_rate": "0.05",
+  "performance_fee_rate": "0.05",
+  "hurdle_rate": "0.05",
+  "high_water_mark": false,
+  "master_feeder": false,
+  "feeder_jurisdictions": [
+    "<FeederInfo>"
+  ],
+  "service_providers": "<ServiceProviders>",
+  "cima_registered": false
+}

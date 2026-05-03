@@ -1,0 +1,16 @@
+{
+  "current_age": 1,
+  "retirement_age": 1,
+  "life_expectancy": 1,
+  "current_savings": "0.05",
+  "annual_income": "0.05",
+  "annual_savings": "0.05",
+  "savings_growth_rate": "0.05",
+  "pre_retirement_return": "0.05",
+  "post_retirement_return": "0.05",
+  "inflation_rate": "0.05",
+  "desired_replacement_ratio": "0.05",
+  "social_security_annual": "0.05",
+  "withdrawal_strategy": "<WithdrawalStrategy>",
+  "tax_rate_retirement": "0.05"
+}

@@ -1,0 +1,12 @@
+{
+  "company": "<CompanyMetrics>",
+  "peers": [
+    "<CompanyMetrics>"
+  ],
+  "higher_is_better": [
+    "EXAMPLE"
+  ],
+  "lower_is_better": [
+    "EXAMPLE"
+  ]
+}

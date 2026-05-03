@@ -1,0 +1,7 @@
+{
+  "face_value": "0.05",
+  "coupon_rate": "0.05",
+  "coupon_frequency": 1,
+  "ytm": "0.05",
+  "years_to_maturity": "0.05"
+}

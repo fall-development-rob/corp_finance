@@ -1,0 +1,13 @@
+{
+  "group_name": "EXAMPLE",
+  "operating_jurisdictions": [
+    "<OperatingEntity>"
+  ],
+  "holding_jurisdiction_candidates": [
+    "<HoldingCandidate>"
+  ],
+  "ultimate_parent": "<ParentEntity>",
+  "pe_risk_factors": [
+    "<PeRiskFactor>"
+  ]
+}

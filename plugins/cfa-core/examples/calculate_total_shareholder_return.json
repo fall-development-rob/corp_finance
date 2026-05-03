@@ -1,0 +1,9 @@
+{
+  "beginning_price": "0.05",
+  "ending_price": "0.05",
+  "dividends_received": "0.05",
+  "buyback_yield": "0.05",
+  "shares_beginning": "0.05",
+  "shares_ending": "0.05",
+  "holding_period_years": "0.05"
+}

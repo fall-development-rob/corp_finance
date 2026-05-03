@@ -1,0 +1,13 @@
+{
+  "source_standard": "<AccountingStandard>",
+  "target_standard": "<AccountingStandard>",
+  "revenue": "0.05",
+  "ebitda": "0.05",
+  "ebit": "0.05",
+  "net_income": "0.05",
+  "total_assets": "0.05",
+  "total_debt": "0.05",
+  "total_equity": "0.05",
+  "inventory": "0.05",
+  "ppe_net": "0.05"
+}

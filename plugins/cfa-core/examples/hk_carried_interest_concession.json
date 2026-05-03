@@ -1,0 +1,9 @@
+{
+  "fund_type": "EXAMPLE",
+  "carried_interest_amount": "0.05",
+  "fund_certified": false,
+  "avg_holding_period_months": 1,
+  "arms_length_terms": false,
+  "hk_employees": 1,
+  "qualifying_transactions_pct": "0.05"
+}

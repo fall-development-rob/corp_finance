@@ -1,0 +1,12 @@
+{
+  "current_receivables": "0.05",
+  "prior_receivables": "0.05",
+  "current_revenue": "0.05",
+  "prior_revenue": "0.05",
+  "current_deferred_revenue": "0.05",
+  "prior_deferred_revenue": "0.05",
+  "allowance_for_doubtful": "0.05",
+  "revenue_segments": [
+    "<SegmentRevenue>"
+  ]
+}

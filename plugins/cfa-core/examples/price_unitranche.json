@@ -1,0 +1,18 @@
+{
+  "deal_name": "EXAMPLE",
+  "total_commitment": "0.05",
+  "borrower_ebitda": "0.05",
+  "borrower_revenue": "0.05",
+  "first_out_pct": "0.05",
+  "first_out_spread_bps": "0.05",
+  "last_out_spread_bps": "0.05",
+  "base_rate": "0.05",
+  "oid_pct": "0.05",
+  "upfront_fee_pct": "0.05",
+  "commitment_fee_bps": "0.05",
+  "drawn_pct": "0.05",
+  "maturity_years": "0.05",
+  "amortization_pct": "0.05",
+  "call_protection_years": 1,
+  "call_premium_pct": "0.05"
+}

@@ -1,0 +1,10 @@
+{
+  "spot_price": "0.05",
+  "risk_free_rate": "0.05",
+  "dividend_yield": "0.05",
+  "market_quotes": [
+    "<VolQuote>"
+  ],
+  "interpolation_method": "<InterpolationMethod>",
+  "extrapolation": false
+}

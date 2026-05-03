@@ -1,0 +1,19 @@
+{
+  "adviser_name": "EXAMPLE",
+  "sec_registered": false,
+  "nfa_registered": false,
+  "total_regulatory_aum": "0.05",
+  "fund_count": 1,
+  "funds": [
+    "<FormPfFund>"
+  ],
+  "fiscal_year_end": "EXAMPLE",
+  "reporting_date": "EXAMPLE",
+  "counterparties": [
+    "<CounterpartyInfo>"
+  ],
+  "otc_bilateral_pct": "0.05",
+  "otc_cleared_pct": "0.05",
+  "exchange_traded_pct": "0.05",
+  "commodity_pool": false
+}

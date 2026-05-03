@@ -1,0 +1,10 @@
+{
+  "assets": [
+    "<MomentumAsset>"
+  ],
+  "lookback_months": 1,
+  "skip_months": 1,
+  "rebalance_frequency": "EXAMPLE",
+  "top_n": 1,
+  "risk_free_rate": "0.05"
+}

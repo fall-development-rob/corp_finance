@@ -1,0 +1,13 @@
+{
+  "company_name": "EXAMPLE",
+  "revenue": "0.05",
+  "scope1_emissions": "0.05",
+  "scope2_emissions": "0.05",
+  "scope3_categories": [
+    "<Scope3Category>"
+  ],
+  "carbon_price": "0.05",
+  "reduction_target_pct": "0.05",
+  "baseline_year_emissions": "0.05",
+  "target_year": 1
+}

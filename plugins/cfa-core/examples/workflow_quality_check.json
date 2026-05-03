@@ -1,0 +1,13 @@
+{
+  "workflow_id": "EXAMPLE",
+  "output_sections": [
+    "EXAMPLE"
+  ],
+  "tool_calls": [
+    "<ToolCallRecord>"
+  ],
+  "has_scenarios": false,
+  "has_risk_section": false,
+  "has_confidentiality": false,
+  "has_citations": false
+}
