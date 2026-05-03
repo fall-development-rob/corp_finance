@@ -361,12 +361,16 @@ def main() -> int:
     OUT.write_text("".join(out))
 
     # Also dump a JSON manifest so other tooling can introspect what's covered.
+    # See plugins/cfa-core/docs/SCHEMA-VERSIONING.md for the bump policy —
+    # this version is updated by hand when wire-format-affecting changes land.
     MANIFEST.write_text(
         json.dumps(
             {
+                "schema_version": "1.0.0",
                 "generated_from": str(NAPI.relative_to(REPO)),
                 "tool_count": len(napi_inputs),
                 "schema_count": len(schemas),
+                "tools": sorted(schemas.keys()),
                 "missing": [{"tool": t, "struct": s} for t, s in missing],
             },
             indent=2,
