@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
+# Equivalent: `cargo run -p cfa-codegen -- lint-skills [--check]`
 """Link cfa-core skills and commands to the tools they reference.
 
 Walks `plugins/cfa-core/skills/*/SKILL.md` and `plugins/cfa-core/commands/cfa/*.md`,

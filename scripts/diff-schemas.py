@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
+# Equivalent: `cargo run -p cfa-codegen -- diff-schemas <a> <b>`
 """Diff two `schemas.json` snapshots and classify changes per the cfa-core
 schema versioning policy (plugins/cfa-core/docs/SCHEMA-VERSIONING.md).
 

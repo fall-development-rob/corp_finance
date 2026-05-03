@@ -1,22 +1,16 @@
 {
-  "asset_names": [
-    "EXAMPLE"
-  ],
   "market_cap_weights": [
-    "0.05"
+    "<AssetWeight>"
   ],
   "covariance_matrix": [
     [
       "0.05"
     ]
   ],
-  "risk_free_rate": "0.05",
   "risk_aversion": "0.05",
   "tau": "0.05",
   "views": [
     "<View>"
   ],
-  "view_confidences": [
-    "0.05"
-  ]
+  "risk_free_rate": "0.05"
 }
