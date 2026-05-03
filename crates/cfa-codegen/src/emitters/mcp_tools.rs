@@ -1,120 +1,16 @@
-#!/usr/bin/env python3
-# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
-# Equivalent: `cargo run -p cfa-codegen -- mcp-tools`
-"""Generate plugins/cfa-core/mcp/src/tools.ts from packages/bindings/src/lib.rs.
+//! Emit `plugins/cfa-core/mcp/src/tools.ts` from parsed NAPI items.
+//!
+//! Mirrors `scripts/gen-mcp-tools.py`. The HEADER and FOOTER constants
+//! contain the hand-written TypeScript runtime (passthrough schema,
+//! profile telemetry, cfa_pipeline, cfa_assumptions, cfa_estimate_runtime,
+//! cfa_profile). The middle section is generated from the NAPI item list:
+//! a section comment per `// --- ... --- ` block, then one
+//! `registerTool(...)` call per binding, followed by the legacy aliases.
 
-Mirrors gen-wasm-bindings.py: extracts (function_name, section_title) pairs
-and emits a TypeScript module that registers every WASM export as an MCP tool
-with a section-derived default description.
+use crate::data::descriptions;
+use crate::parsers::napi::Item;
 
-Per-tool descriptions can be overridden in DESCRIPTION_OVERRIDES below for
-the most-used tools; everything else gets a generic description that includes
-the domain (so Claude's tool discovery still finds it via keyword match).
-"""
-from __future__ import annotations
-
-import re
-import sys
-from pathlib import Path
-
-REPO = Path(__file__).resolve().parent.parent
-NAPI = REPO / "packages" / "bindings" / "src" / "lib.rs"
-OUT = REPO / "plugins" / "cfa-core" / "mcp" / "src" / "tools.ts"
-
-# Hand-written rich descriptions for the most-used tools.
-# Everything else falls back to "<domain>: <function name>".
-DESCRIPTION_OVERRIDES: dict[str, str] = {
-    "calculate_wacc": (
-        "Weighted Average Cost of Capital via CAPM. Inputs: risk_free_rate, "
-        "equity_risk_premium, beta, cost_of_debt, tax_rate, debt_weight, "
-        "equity_weight. Optional: size_premium, country_risk_premium, "
-        "specific_risk_premium, unlevered_beta, target_debt_equity (Hamada). "
-        "Returns wacc, cost_of_equity, after_tax_cost_of_debt, levered_beta."
-    ),
-    "build_dcf": (
-        "Discounted Cash Flow valuation. Inputs: base_revenue, currency, "
-        "revenue_growth_rates[], ebitda_margin, capex_as_pct_revenue, "
-        "nwc_as_pct_revenue, tax_rate, wacc, terminal_method (GordonGrowth | "
-        "ExitMultiple), terminal_growth_rate, shares_outstanding, net_debt. "
-        "Returns enterprise_value, equity_value, per-share value, year-by-year "
-        "projections."
-    ),
-    "comps_analysis": (
-        "Trading comparables across peer set. Computes EV/EBITDA, EV/Revenue, "
-        "P/E, P/B, PEG mean/median/high/low and derives implied target "
-        "valuations."
-    ),
-    "credit_metrics": (
-        "Standard credit metrics: leverage (Debt/EBITDA, Net Debt/EBITDA), "
-        "coverage (interest, EBIT, DSCR), liquidity (current, quick), and "
-        "synthetic rating (AAA→D)."
-    ),
-    "debt_capacity": (
-        "Maximum sustainable debt at target rating given EBITDA, interest rate, "
-        "tax rate, and rating-grade leverage thresholds."
-    ),
-    "covenant_compliance": (
-        "Maintenance covenant headroom test: leverage, coverage, and DSCR vs. "
-        "covenant levels, with EBITDA cushion calculation."
-    ),
-    "altman_zscore": (
-        "Altman Z-Score distress prediction (manufacturing/private/non-mfg "
-        "models). Returns score and zone (Safe / Grey / Distress)."
-    ),
-    "build_lbo": (
-        "Full LBO model with sources & uses, pro-forma capital structure, "
-        "debt schedule, equity returns, and IRR/MOIC waterfall."
-    ),
-    "calculate_waterfall": (
-        "European or American waterfall: return-of-capital → preferred return "
-        "→ catch-up → carried interest. Per-LP and GP cash splits."
-    ),
-    "price_bond": (
-        "Bond pricing from yield: clean/dirty price, accrued interest, "
-        "DV01. Supports semi-annual / annual / monthly compounding."
-    ),
-    "price_option": (
-        "Option pricing: Black-Scholes (European), CRR binomial (American). "
-        "Returns price + Greeks (delta, gamma, theta, vega, rho)."
-    ),
-}
-
-# Function descriptions to skip (declared elsewhere or wrapper-shaped).
-SKIP: set[str] = {
-    "scenario_analysis",  # Wrapper-shaped, takes extra args. v0.3 work item.
-}
-
-# Friendly aliases preserved from v0.1 so existing skills/commands keep working.
-# Each entry registers an additional tool name pointing to the same WASM export.
-LEGACY_ALIASES: dict[str, str] = {
-    "wacc_calculator": "calculate_wacc",
-    "dcf_model": "build_dcf",
-}
-
-NAPI_RE = re.compile(
-    r"#\[napi\]\s+"
-    r"pub\s+fn\s+(\w+)\s*\(\s*input_json\s*:\s*String\s*\)\s*->\s*NapiResult<String>\s*\{\s*"
-    r"let\s+input\s*:\s*([\w:]+)\s*=\s*"
-    r"serde_json::from_str\(\s*&input_json\s*\)\s*\.map_err\(\s*to_napi_error\s*\)\s*\?\s*;\s*"
-    r"let\s+output\s*=\s*"
-    r"([\w:]+)\s*\(\s*&input\s*,?\s*\)\s*\.map_err\(\s*to_napi_error\s*\)\s*\?\s*;\s*"
-    r"serde_json::to_string\(\s*&output\s*\)\s*\.map_err\(\s*to_napi_error\s*\)\s*"
-    r"\}",
-    re.DOTALL,
-)
-
-SECTION_RE = re.compile(
-    r"// -+\s*\n// ([^\n]+)\s*\n// -+",
-    re.MULTILINE,
-)
-
-
-def humanise(name: str) -> str:
-    """`calculate_credit_metrics` → `Calculate credit metrics`."""
-    return name.replace("_", " ").capitalize()
-
-
-HEADER = """/**
+pub const HEADER: &str = r#"/**
  * cfa-core MCP tool registry.
  *
  * GENERATED FROM packages/bindings/src/lib.rs by scripts/gen-mcp-tools.py.
@@ -629,9 +525,9 @@ function registerProfileTool(server: McpServer) {
 
 export function registerAllTools(server: McpServer, wasm: WasmExports): number {
   let count = 0;
-"""
+"#;
 
-FOOTER = """
+pub const FOOTER: &str = r#"
   // --- Built-in: cfa_assumptions (T2.2 conversation-scoped store) ---
   registerAssumptionTools(server); count += 3;
 
@@ -646,64 +542,106 @@ FOOTER = """
 
   return count;
 }
-"""
+"#;
 
+/// Capitalise the first letter; rest stays as-is. Matches Python `str.capitalize()`
+/// behaviour with snake-cased input being a lower-cased token stream where
+/// only the first char becomes uppercase.
+fn humanise(name: &str) -> String {
+    // Python: name.replace("_", " ").capitalize()
+    // capitalize() lowercases everything then upper-cases the first char.
+    let lowered = name.replace('_', " ").to_lowercase();
+    let mut chars = lowered.chars();
+    match chars.next() {
+        Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
 
-def main() -> int:
-    src = NAPI.read_text()
+/// Render the body that goes between HEADER and FOOTER: section comments,
+/// `registerTool(...)` lines, and the legacy alias block.
+pub fn emit(items: &[Item]) -> String {
+    let mut out = String::with_capacity(64 * 1024);
+    out.push_str(HEADER);
 
-    matches: list[tuple[int, str, tuple]] = []
-    for m in NAPI_RE.finditer(src):
-        matches.append((m.start(), "tool", (m.group(1),)))
-    for m in SECTION_RE.finditer(src):
-        matches.append((m.start(), "section", (m.group(1).strip(),)))
-    matches.sort(key=lambda t: t[0])
+    let mut current_section = String::from("Uncategorised");
+    let skip_set: std::collections::HashSet<&str> = descriptions::SKIP.iter().copied().collect();
 
-    out: list[str] = [HEADER]
-    current_section = "Uncategorised"
-    tool_count = 0
+    for item in items {
+        match item {
+            Item::Section(s) => {
+                current_section = s.title.clone();
+                out.push_str(&format!("\n  // --- {} ---\n", s.title));
+            }
+            Item::Tool(t) => {
+                if skip_set.contains(t.name.as_str()) {
+                    continue;
+                }
+                let description = match descriptions::lookup(&t.name) {
+                    Some(d) => d.to_string(),
+                    None => format!("{}: {}.", current_section, humanise(&t.name)),
+                };
+                let escaped = escape_template_literal(&description);
+                out.push_str(&format!(
+                    "  registerTool(server, wasm, \"{}\", `{}`); count++;\n",
+                    t.name, escaped
+                ));
+            }
+        }
+    }
 
-    for _, kind, payload in matches:
-        if kind == "section":
-            (title,) = payload
-            current_section = title
-            out.append(f'\n  // --- {title} ---\n')
-        else:
-            (name,) = payload
-            if name in SKIP:
-                continue
-            description = DESCRIPTION_OVERRIDES.get(
-                name,
-                f"{current_section}: {humanise(name)}.",
-            )
-            # Escape backticks for template literal safety.
-            esc = description.replace("\\", "\\\\").replace("`", "\\`")
-            out.append(
-                f'  registerTool(server, wasm, "{name}", `{esc}`); count++;\n'
-            )
-            tool_count += 1
+    // Legacy aliases are a constant slice today, but keep the conditional
+    // for parity with the Python control flow (Python: `if LEGACY_ALIASES:`).
+    #[allow(clippy::const_is_empty)]
+    if !descriptions::LEGACY_ALIASES.is_empty() {
+        out.push_str(
+            "\n  // --- Legacy v0.1 aliases (kept for skill/command compatibility) ---\n",
+        );
+        for (alias, target) in descriptions::LEGACY_ALIASES {
+            // Same fallback chain as Python:
+            // overrides[alias] -> overrides[target] -> "Alias for <target>".
+            let description = match descriptions::lookup(alias) {
+                Some(d) => d.to_string(),
+                None => match descriptions::lookup(target) {
+                    Some(d) => d.to_string(),
+                    None => format!("Alias for {}", target),
+                },
+            };
+            let escaped = escape_template_literal(&description);
+            out.push_str(&format!(
+                "  registerTool(server, wasm, \"{}\", `{}`, \"{}\"); count++;\n",
+                alias, escaped, target
+            ));
+        }
+    }
 
-    if LEGACY_ALIASES:
-        out.append("\n  // --- Legacy v0.1 aliases (kept for skill/command compatibility) ---\n")
-        for alias, target in LEGACY_ALIASES.items():
-            description = DESCRIPTION_OVERRIDES.get(
-                alias,
-                DESCRIPTION_OVERRIDES.get(target, f"Alias for {target}"),
-            )
-            esc = description.replace("\\", "\\\\").replace("`", "\\`")
-            out.append(
-                f'  registerTool(server, wasm, "{alias}", `{esc}`, "{target}"); count++;\n'
-            )
+    out.push_str(FOOTER);
+    out
+}
 
-    out.append(FOOTER)
-    OUT.write_text("".join(out))
+/// Escape a description for embedding inside a TS backtick template literal.
+/// Order: backslashes first, then backticks. Matches Python:
+///   esc = description.replace("\\", "\\\\").replace("`", "\\`")
+fn escape_template_literal(s: &str) -> String {
+    s.replace('\\', "\\\\").replace('`', "\\`")
+}
 
-    print(f"Wrote {OUT.relative_to(REPO)}")
-    print(f"  Tools registered: {tool_count}")
-    print(f"  Aliases         : {len(LEGACY_ALIASES)}")
-    print(f"  Skipped         : {len(SKIP)}")
-    return 0
+#[cfg(test)]
+mod tests {
+    use super::*;
 
+    #[test]
+    fn humanise_matches_python_capitalize() {
+        assert_eq!(humanise("calculate_wacc"), "Calculate wacc");
+        assert_eq!(humanise("price_bond"), "Price bond");
+        assert_eq!(humanise("ALREADY_UPPER"), "Already upper");
+    }
 
-if __name__ == "__main__":
-    sys.exit(main())
+    #[test]
+    fn escapes_template_literal_chars() {
+        assert_eq!(escape_template_literal("a`b"), "a\\`b");
+        assert_eq!(escape_template_literal(r"a\b"), r"a\\b");
+        // Order matters: backslash before backtick.
+        assert_eq!(escape_template_literal(r"a\`b"), r"a\\\`b");
+    }
+}

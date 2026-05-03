@@ -4,6 +4,7 @@ members = [
     "crates/corp-finance-core",
     "crates/corp-finance-cli",
     "crates/corp-finance-wasm",
+    "crates/cfa-codegen",
     "packages/bindings",
 ]
 

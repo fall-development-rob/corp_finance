@@ -1,10 +1,7 @@
 {
-  "nominal_yield": "0.05",
-  "real_yield": "0.05",
-  "nominal_yield_curve": [
-    "<YieldPoint>"
-  ],
-  "real_yield_curve": [
-    "<YieldPoint>"
-  ]
+  "product_name": "EXAMPLE",
+  "selling_price": "0.05",
+  "variable_cost_per_unit": "0.05",
+  "fixed_costs": "0.05",
+  "current_volume": "0.05"
 }

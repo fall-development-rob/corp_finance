@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
+# Equivalent: `cargo run -p cfa-codegen -- examples`
 """Generate plugins/cfa-core/examples/<tool>.json for every cfa-core MCP tool.
 
 Auto-generation walks the schemas.json manifest produced by gen-zod-schemas.py

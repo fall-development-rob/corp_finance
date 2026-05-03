@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: use crates/cfa-codegen instead. Will be removed in v0.3.
+# Equivalent: `cargo run -p cfa-codegen -- zod-schemas`
 """Generate plugins/cfa-core/mcp/src/schemas.ts from corp-finance-core source.
 
 For each Input struct used by a NAPI binding, walks the Rust source, extracts
