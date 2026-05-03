@@ -1,0 +1,11 @@
+{
+  "generated_from": "packages/bindings/src/lib.rs",
+  "tool_count": 244,
+  "schema_count": 243,
+  "missing": [
+    {
+      "tool": "analyze_mbs",
+      "struct": "MbsAnalyticsInput"
+    }
+  ]
+}
