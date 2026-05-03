@@ -17,6 +17,21 @@ pub const EXTERNAL_TOOL_PREFIXES: &[&str] = &[
     "morningstar_", // cfa-pro: Morningstar
     "moodys_",      // cfa-pro: Moody's
     "pitchbook_",   // cfa-pro: PitchBook
+    // cfa-data geopolitical/alternative sources
+    "acled_",       // cfa-data: ACLED conflict events
+    "gdelt_",       // cfa-data: GDELT news tone
+    "ucdp_",        // cfa-data: UCDP battle deaths
+    "gdacs_",       // cfa-data: GDACS disaster alerts
+    "usgs_",        // cfa-data: USGS earthquakes
+    "eonet_",       // cfa-data: NASA EONET natural events
+    "firms_",       // cfa-data: NASA FIRMS fire detection
+    "eia_",         // cfa-data: EIA petroleum/electricity
+    "wto_",         // cfa-data: WTO tariffs/trade
+    "usaspending_", // cfa-data: USASpending federal contracts
+    "coingecko_",   // cfa-data: CoinGecko fear/greed/stablecoin
+    "polymarket_",  // cfa-data: Polymarket prediction markets
+    "unhcr_",       // cfa-data: UNHCR displacement statistics
+    "openmeteo_",   // cfa-data: Open-Meteo climate anomalies
 ];
 
 /// Tokens that look like tool names but aren't (variable names, prose).
@@ -49,6 +64,8 @@ pub const KNOWN_NON_TOOLS: &[&str] = &[
     "gp",
     "lp",
     "p&l",
+    "rust_decimal", // Rust crate name, not a tool
+    "wacc_input",   // input struct name, not a tool
 ];
 
 /// Aliases also accepted as valid tool references.
