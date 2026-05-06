@@ -4,10 +4,10 @@
 //! All arithmetic uses `rust_decimal::Decimal` — never `f64`.
 //! Discount factors are built by iterative multiplication (never `powd`).
 
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

@@ -1,9 +1,9 @@
+use crate::compat::Instant;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use statrs::distribution::{LogNormal, Normal, Triangular, Uniform};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{ComputationMetadata, ComputationOutput};

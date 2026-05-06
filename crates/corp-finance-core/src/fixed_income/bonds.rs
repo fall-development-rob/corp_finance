@@ -3,11 +3,11 @@
 //! Supports multiple day count conventions, accrued interest, clean/dirty pricing,
 //! callable bond yield-to-call (YTC) via Newton's method, and yield-to-worst (YTW).
 
+use crate::compat::Instant;
 use chrono::{Datelike, NaiveDate};
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

@@ -1,6 +1,6 @@
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

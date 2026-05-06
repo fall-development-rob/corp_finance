@@ -1,6 +1,6 @@
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use super::metrics::CreditMetricsOutput;
 use crate::{types::*, CorpFinanceError, CorpFinanceResult};

@@ -11,10 +11,10 @@
 //! 4. **Refunding analysis** — advance refunding savings, escrow cost,
 //!    net PV savings, payback period.
 
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

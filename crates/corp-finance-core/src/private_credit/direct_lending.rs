@@ -4,11 +4,11 @@
 //! credit fund returns, and loan syndication. All math uses `rust_decimal::Decimal`
 //! for institutional-grade precision.
 
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use rust_decimal::MathematicalOps;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

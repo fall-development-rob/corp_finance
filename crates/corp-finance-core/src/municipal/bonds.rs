@@ -4,10 +4,10 @@
 //! federal/state adjustments, de minimis tax rule analysis, callable bond
 //! yield-to-call / yield-to-worst, and muni vs. taxable spread comparisons.
 
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};

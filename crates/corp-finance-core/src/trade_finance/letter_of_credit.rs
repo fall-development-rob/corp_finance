@@ -13,10 +13,10 @@
 //! All arithmetic uses `rust_decimal::Decimal`. Day-count convention is
 //! Actual/360 (money-market standard for trade finance).
 
+use crate::compat::Instant;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
-use crate::compat::Instant;
 
 use crate::error::CorpFinanceError;
 use crate::types::{with_metadata, ComputationOutput, Money, Rate};
