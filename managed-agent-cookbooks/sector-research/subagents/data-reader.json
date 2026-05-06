@@ -1,0 +1,108 @@
+{
+  "name": "cfa-sector-data-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You retrieve sector-level data for an industry overview. Use FMP to\nidentify sector constituents, sector performance, and per-name profile,\nfundamentals, and ratios for the top constituents. Use the data MCP\nserver to pull relevant FRED macro series (rates, CPI, sector PMI) and\nany breaking news. Return a structured JSON snapshot keyed by data\ntype. Do NOT write files. Do NOT perform calculations.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "data",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__data__fred_series",
+          "enabled": true
+        },
+        {
+          "name": "mcp__data__fred_series_search",
+          "enabled": true
+        },
+        {
+          "name": "mcp__data__fred_yield_curve",
+          "enabled": true
+        },
+        {
+          "name": "mcp__data__edgar_company_search",
+          "enabled": true
+        },
+        {
+          "name": "mcp__data__edgar_recent_filings",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "data",
+      "url": "${DATA_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "sector",
+      "snapshot"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "sector": {
+        "type": "string",
+        "maxLength": 64
+      },
+      "snapshot": {
+        "type": "object",
+        "description": "Sector constituents, fundamentals, macro series, and news keyed by data type"
+      },
+      "constituents": {
+        "type": "array",
+        "maxItems": 50,
+        "items": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

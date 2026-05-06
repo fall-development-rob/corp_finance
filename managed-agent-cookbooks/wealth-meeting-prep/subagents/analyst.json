@@ -1,0 +1,102 @@
+{
+  "name": "cfa-wealth-analyst-worker",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the wealth management analyst worker. You receive a client\nportfolio snapshot and run: tax-loss harvesting opportunities, retirement\nplan readiness, mean-variance / modern portfolio theory rebalancing,\nrisk-parity allocation, and drift vs target weights. Use only cfa-core\nMCP tools — never derive numbers from text. Return structured JSON with\nactionable rebalance trades, harvest candidates, retirement projections,\nand tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__tax_loss_harvesting",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__retirement_planning",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__estate_planning",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__mean_variance_optimization",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__black_litterman_portfolio",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__risk_parity",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__factor_risk_budget",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__tail_risk_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__risk_adjusted_returns",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__risk_metrics",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__kelly_sizing",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__direct_indexing",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__concentrated_stock",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__wealth_transfer",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    },
+    {
+      "from_skill": "corp-finance-tools-risk"
+    }
+  ],
+  "callable_agents": []
+}

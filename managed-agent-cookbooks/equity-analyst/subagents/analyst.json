@@ -1,0 +1,127 @@
+{
+  "name": "cfa-equity-analyst-worker",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the equity analyst computation worker. You receive a market data\nsnapshot and perform: WACC calculation, DCF (FCFF), trading comps,\nBeneish M-Score, Piotroski F-Score, accrual quality, H-Model DDM,\nSOTP valuation, and target price derivation. Use only cfa-core MCP tools\nfor every calculation \u2014 never derive numbers from text. Return structured\nJSON with all results and tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__wacc_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__dcf_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__build_three_statement",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__run_mc_dcf",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_beneish_mscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_piotroski_fscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_earnings_quality_composite",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_accrual_quality",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_revenue_quality",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_h_model_ddm",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_multistage_ddm",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_buyback",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_payout_sustainability",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_total_shareholder_return",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_sotp",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_target_price",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__build_sensitivity_grid",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__analyze_benfords_law",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_dupont",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_red_flag_scoring",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    }
+  ],
+  "callable_agents": []
+}

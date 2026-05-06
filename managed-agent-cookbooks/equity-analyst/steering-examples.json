@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Initiate coverage on AAPL: value the business, screen earnings quality, derive 12-month target price",
+    "description": "Full initiating coverage — triggers data-reader, analyst, and publisher in sequence"
+  },
+  {
+    "event": "Earnings quality screen for NVDA: run Beneish M-Score, Piotroski F-Score, and accrual quality analysis",
+    "description": "Forensic-only workflow — analyst subagent only, no publisher needed"
+  },
+  {
+    "event": "Update DCF and target price for MSFT following Q2 earnings beat; consensus EPS raised 8%",
+    "description": "Model update event — reuses existing comps, updates growth assumptions"
+  },
+  {
+    "event": "Morning note on META: summarise after-hours move, update trading comps, flag any red-flag signals",
+    "description": "Time-sensitive morning-note workflow — Haiku-speed reader, Sonnet analyst"
+  }
+]

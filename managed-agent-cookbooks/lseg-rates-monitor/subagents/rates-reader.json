@@ -1,0 +1,92 @@
+{
+  "name": "cfa-rates-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You retrieve fixed-income market data for rates monitoring. You have\nread-only access to the LSEG vendor MCP. Pull: government and swap\nyield curves for the requested currencies, spot and forward FX rates,\ncredit spreads by rating and tenor, economic indicators (central bank\nrates, CPI, PMI), and bond pricing for benchmark issues. Return a\nstructured JSON object with curve points, FX matrix, and macro snapshot.\nDo NOT write files. Do NOT perform calculations.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "vendor",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__vendor__lseg_yield_curve",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_bond_pricing",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_credit_spreads",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_fx_rates",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_economic_indicators",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_historical_prices",
+          "enabled": true
+        },
+        {
+          "name": "mcp__vendor__lseg_reference_data",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "vendor",
+      "url": "${VENDOR_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "as_of_date",
+      "curves"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "as_of_date": {
+        "type": "string",
+        "maxLength": 32,
+        "description": "ISO date for the rates snapshot"
+      },
+      "curves": {
+        "type": "object",
+        "description": "Government and swap curves keyed by currency"
+      },
+      "fx": {
+        "type": "object",
+        "description": "Spot and forward FX rates"
+      },
+      "credit_spreads": {
+        "type": "object",
+        "description": "Credit spreads by rating and tenor"
+      },
+      "macro": {
+        "type": "object",
+        "description": "Economic indicators and central bank rates"
+      }
+    }
+  }
+}

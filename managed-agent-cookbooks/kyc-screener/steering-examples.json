@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Onboard prospective LP ACME-CAPITAL-PARTNERS-LP (Cayman): full KYC/AML risk screen with BO walk-through",
+    "description": "Full LP onboarding screen — triggers identity-reader, screener, and reporter in sequence"
+  },
+  {
+    "event": "Refresh annual KYC for existing counterparty NORDIC-PENSION-FUND: re-screen sanctions and PEP only",
+    "description": "Refresh-only workflow — screener subagent on sanctions_screening + kyc_risk_assessment"
+  },
+  {
+    "event": "Enhanced due diligence on subject MARITIME-SHIPPING-GMBH following adverse-media hit",
+    "description": "EDD workflow — emphasises sanctions_screening with adverse media, country_risk_assessment, full FATF 5-dimension scoring"
+  },
+  {
+    "event": "Country-risk re-assessment for all LPs domiciled in jurisdictions newly added to FATF grey list",
+    "description": "Bulk country re-screen — screener subagent on country_risk_assessment + kyc_risk_assessment"
+  },
+  {
+    "event": "FATCA/CRS classification for new LP STRATA-FAMILY-OFFICE-LLC; determine FFI/NFFE/active-passive status",
+    "description": "Tax classification only — screener subagent on entity_classification + fatca_crs_reporting"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Reconcile GL to subledger for Fund Alpha Q3 close: classify breaks, recompute NAV, produce adjusted balances",
+    "description": "Full quarterly GL reconciliation — triggers ledger-reader, reconciler, and publisher in sequence"
+  },
+  {
+    "event": "Cash and accrual reconciliation for Master Fund Beta Q1: tie GL to custodian, identify FX rate breaks",
+    "description": "Cash/accrual focus with FX classification — standard quarter-end workflow"
+  },
+  {
+    "event": "Investigate $42K unexplained variance in Fund Gamma Q2 management fee accrual; produce break trace",
+    "description": "Targeted break trace — reconciler subagent only, root-causes a single material variance"
+  },
+  {
+    "event": "Q4 close GL recon for Fund Delta: include WHT validation on dividend income and GP carry computation",
+    "description": "Year-end close with withholding tax and GP economics validation"
+  },
+  {
+    "event": "Reconcile expense accruals for Fund Epsilon Q2; recompute working-capital position and flag stale accruals",
+    "description": "Expense-only reconciliation with working capital roll-forward"
+  }
+]

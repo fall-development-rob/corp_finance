@@ -1,0 +1,24 @@
+{
+  "name": "cfa-equity-publisher",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured analysis JSON from the analyst subagent and\nproduce a formatted equity research note. Output the report as a markdown\nfile to ./out/<ticker>-research-note.md. The report must include:\nexecutive summary, valuation table (base/bull/bear), earnings quality\nflags, dividend analysis, and a recommendation with target price.\nDo not recalculate any numbers \u2014 only format what you receive.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

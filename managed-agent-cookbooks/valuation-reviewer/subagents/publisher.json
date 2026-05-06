@@ -1,0 +1,24 @@
+{
+  "name": "cfa-val-publisher",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured review JSON from the reviewer subagent and\nproduce a formatted GP valuation review document. Output the report as\na markdown file to ./out/<fund>-valuation-review.md. The report must\ninclude: fund summary, per-portco valuation table (GP mark vs\nindependent mark vs variance %), portcos flagged for material variance\n(>10%), methodology notes, and an overall sign-off recommendation.\nDo not recalculate any numbers — only format what you receive.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

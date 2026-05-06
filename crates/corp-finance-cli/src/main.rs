@@ -78,6 +78,7 @@ use commands::jurisdiction::{
 use commands::lease_accounting::{LeaseClassificationArgs, SaleLeasebackArgs};
 use commands::ma::MergerArgs;
 use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
+use commands::managed_agent::ManagedAgentArgs;
 use commands::market_microstructure::{OptimalExecutionArgs, SpreadAnalysisArgs};
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::mortgage_analytics::{MbsAnalyticsArgs, PrepaymentArgs};
@@ -579,6 +580,8 @@ enum Commands {
     WorkflowQualityCheck(WorkflowQualityCheckArgs),
     /// Generate audit trail for workflow execution
     WorkflowAudit(WorkflowAuditArgs),
+    /// Managed-agent cookbook tooling (validate / deploy / orchestrate)
+    ManagedAgent(ManagedAgentArgs),
     /// Print version information
     Version,
 }
@@ -874,6 +877,15 @@ fn main() {
             commands::workflows::run_workflow_quality_check(args)
         }
         Commands::WorkflowAudit(args) => commands::workflows::run_workflow_audit(args),
+        Commands::ManagedAgent(args) => {
+            use commands::managed_agent::ManagedAgentCommands;
+            match args.command {
+                ManagedAgentCommands::Validate(a) => commands::managed_agent::run_validate(a),
+                ManagedAgentCommands::CheckAll(a) => commands::managed_agent::run_check_all(a),
+                ManagedAgentCommands::Deploy(a) => commands::managed_agent::run_deploy(a),
+                ManagedAgentCommands::Orchestrate(a) => commands::managed_agent::run_orchestrate(a),
+            }
+        }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

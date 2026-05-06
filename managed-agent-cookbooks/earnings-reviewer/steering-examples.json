@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Review NVDA Q2 earnings: parse transcript, refresh DCF on updated guidance, run earnings-quality screens, derive new 12-month target",
+    "description": "Full earnings reaction — triggers transcript-reader, analyst, publisher"
+  },
+  {
+    "event": "Earnings quality flags only for TSLA Q4: Beneish, Piotroski, accrual quality, red-flag composite — no DCF refresh needed",
+    "description": "Forensic-only workflow — analyst subagent only, no publisher needed"
+  },
+  {
+    "event": "MSFT Q1 earnings note: focus on Azure deceleration scenarios, run sensitivity grid on cloud growth and margins, refresh target",
+    "description": "Earnings update with scenario emphasis — sensitivity_grid + scenario_analysis + target_price"
+  },
+  {
+    "event": "Quick earnings reaction for AAPL Q4 beat: transcript pull, comps update, refreshed target — write ./out/AAPL-Q4-earnings-note.md",
+    "description": "Time-sensitive same-day note — Haiku reader, Sonnet analyst, Haiku publisher"
+  },
+  {
+    "event": "META Q3 earnings audit: 10-Q and 8-K reconciliation, full earnings-quality composite, accrual and revenue quality, red-flag scoring",
+    "description": "Deep earnings audit — EDGAR + cfa-core forensics suite"
+  }
+]

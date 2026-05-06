@@ -34,3 +34,9 @@ impl From<serde_json::Error> for CorpFinanceError {
         CorpFinanceError::SerializationError(e.to_string())
     }
 }
+
+impl From<String> for CorpFinanceError {
+    fn from(msg: String) -> Self {
+        CorpFinanceError::SerializationError(msg)
+    }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Audit Q3 2026 LP statement for fund APEX-FUND-IV: reconcile commitments, calls, distributions, fees, NAV",
+    "description": "Full quarterly LP capital account audit — triggers statement-reader, auditor, and reporter in sequence"
+  },
+  {
+    "event": "Validate management fee + carry waterfall for fund SUMMIT-GROWTH-III Q4 statement against LPA terms",
+    "description": "Fee waterfall focused — auditor subagent only on fund_fee_calculator and gp_economics"
+  },
+  {
+    "event": "Reconcile LP capital account for fund MERIDIAN-CREDIT-II Q2 against side-letter rebates and equalisation amounts",
+    "description": "Side-letter and equalisation focus — emphasises nav_calculator with side-letter overrides"
+  },
+  {
+    "event": "Year-end UBTI/ECI screening for tax-exempt LP positions across funds APEX-FUND-IV, SUMMIT-GROWTH-III",
+    "description": "Tax-exempt LP screen — emphasises ubti_screening and withholding_tax across multiple funds"
+  },
+  {
+    "event": "Vintage-cohort J-curve check on fund APEX-FUND-IV Q3: is the fund tracking ahead/behind its 2022 vintage peer set",
+    "description": "J-curve cohort comparison — emphasises j_curve_model and commitment_pacing"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Prepare quarterly review meeting brief for client SMITH-FAMILY: portfolio drift, rebalance proposals, TLH candidates",
+    "description": "Full quarterly review — triggers portfolio-reader, analyst, and brief-writer in sequence"
+  },
+  {
+    "event": "Run year-end tax-loss harvesting screen for client JONES-2024 across taxable brokerage accounts",
+    "description": "TLH-only workflow — analyst subagent only, no full meeting brief needed"
+  },
+  {
+    "event": "Retirement readiness check for client DOE-RET: project funded ratio at age 65, stress test sequence-of-returns risk",
+    "description": "Retirement-only workflow — emphasises retirement_planning + tail_risk_analysis"
+  },
+  {
+    "event": "Annual review for client GARCIA-IRA: rebalance to target weights, refresh risk-parity allocation, refresh MPT efficient frontier",
+    "description": "Standard annual review — full pipeline, MPT and risk-parity emphasis"
+  },
+  {
+    "event": "Concentrated stock advisory for client LEE-EXEC holding 40% of NW in single employer equity",
+    "description": "Concentrated stock workflow — uses concentrated_stock and wealth_transfer tools"
+  }
+]

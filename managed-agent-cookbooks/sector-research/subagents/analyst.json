@@ -1,0 +1,91 @@
+{
+  "name": "cfa-sector-analyst-worker",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the sector research computation worker. You receive a sector\ndata snapshot and produce: trading comps benchmarking across\nconstituents, target price derivation for the top names, sensitivity\nanalysis on growth and discount rates, and supporting valuation /\ncredit metrics. Use only cfa-core MCP tools for every number. Return\nstructured JSON with all results and explicit tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_target_price",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__build_sensitivity_grid",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__run_scenario_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__wacc_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__dcf_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_sotp",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_dupont",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_piotroski_fscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_beneish_mscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_earnings_quality_composite",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    }
+  ],
+  "callable_agents": []
+}

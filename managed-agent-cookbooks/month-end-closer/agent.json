@@ -1,0 +1,59 @@
+{
+  "name": "cfa-month-end-closer",
+  "model": "claude-opus-4-7",
+  "system": {
+    "file": "../../../.claude/agents/cfa/esg-regulatory-analyst.md",
+    "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Every variance above materiality must be explained by underlying activity, not by restating the number. Always-comment lines (revenue, management fees, carried interest, net income, cash) are reported regardless of variance size.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": true
+      }
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-analyst-core"
+    },
+    {
+      "from_skill": "workflow-fund-admin"
+    }
+  ],
+  "callable_agents": [
+    {
+      "manifest": "./subagents/tb-reader.json"
+    },
+    {
+      "manifest": "./subagents/closer.json"
+    },
+    {
+      "manifest": "./subagents/reporter.json"
+    }
+  ]
+}

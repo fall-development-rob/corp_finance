@@ -1,0 +1,24 @@
+{
+  "name": "cfa-pitch-deck-author",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured analysis JSON from the modeler subagent and\nproduce a pitch deck outline. Write the markdown outline to\n./out/<target>-pitchdeck.md. The deck must include: cover, executive\nsummary, market overview, target positioning, valuation summary\n(comps + DCF + SOTP), merger / accretion analysis, sensitivity grid,\nsources & uses, transaction structure, and risks. Do not recalculate\nany numbers — only format what you receive into slide-ready sections.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Run month-end close pack for Acme Holdings April 2026: TB variance, accrual schedule, working-capital roll-forward, variance commentary",
+    "description": "Full corporate month-end close — triggers tb-reader, closer, and reporter in sequence"
+  },
+  {
+    "event": "Q1 2026 close for Beta Operating Company: produce variance commentary vs budget and prior quarter, flag stale accruals",
+    "description": "Quarter-end close with budget variance focus"
+  },
+  {
+    "event": "Variance commentary only for Gamma Capital January 2026 — use existing TB and budget; no roll-forward needed",
+    "description": "Targeted variance workflow — closer subagent only, no full close pack"
+  },
+  {
+    "event": "Year-end close pack for Delta Corp 2025: include three-statement articulation, scenario analysis on revenue, DuPont decomposition for ROE commentary",
+    "description": "Year-end close with full analytical pack and three-statement check"
+  },
+  {
+    "event": "Working-capital roll-forward only for Epsilon Industries March 2026; identify stale accruals and break-even sensitivity at -10% revenue",
+    "description": "Working capital and break-even sensitivity sub-workflow"
+  }
+]

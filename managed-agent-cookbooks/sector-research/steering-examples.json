@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Sector overview on US semiconductors: rank top 10 constituents by EV/EBITDA, derive target prices for the top 3, flag macro risk from 10Y rates",
+    "description": "Full sector workflow — triggers data-reader (FMP + FRED + EDGAR), analyst, publisher"
+  },
+  {
+    "event": "Industry note on European banks: comps benchmarking, sensitivity to deposit beta, NIM scenario analysis",
+    "description": "Sector note with banking-specific lens — analyst runs comps + sensitivity + scenario_analysis"
+  },
+  {
+    "event": "Software sector update post-Fed pivot: refresh comps multiples, rerun WACC at 200bps lower, update top-pick target prices",
+    "description": "Macro-triggered refresh — data-reader pulls FRED rates, analyst reruns wacc + dcf + target_price"
+  },
+  {
+    "event": "Initiate sector research on US healthcare REITs: constituents, FFO multiples, screening for earnings quality",
+    "description": "New sector coverage — full pipeline including Piotroski/Beneish/composite earnings quality screens"
+  },
+  {
+    "event": "Energy sector quarterly review: oil-rate sensitivity, top names by Altman Z and DuPont decomposition, write to ./out/energy-research-note.md",
+    "description": "Quarterly review — comps + dupont + credit_metrics, publisher writes the markdown note"
+  }
+]

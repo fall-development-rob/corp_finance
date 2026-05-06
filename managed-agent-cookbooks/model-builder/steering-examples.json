@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Build a full three-statement + DCF model for AAPL with 5-year projections, Monte Carlo valuation, and 3 scenarios",
+    "description": "Full model build — triggers data-reader, modeler, exporter; markdown-tabular output"
+  },
+  {
+    "event": "LBO model for take-private of GPS at 7.5x EBITDA: sources & uses, multi-tranche debt schedule, IRR/MOIC sensitivity",
+    "description": "LBO-only build — modeler runs build_lbo + sources_and_uses + build_debt_schedule + sensitivity_grid"
+  },
+  {
+    "event": "Three-statement model only for SHOP: integrate IS/BS/CF, validate balance sheet ties, no DCF",
+    "description": "Three-statement isolation — build_three_statement only, exporter writes markdown tables"
+  },
+  {
+    "event": "DCF + Monte Carlo only for COST: WACC calc, FCFF projection, 10,000-iteration MC, 90% confidence interval",
+    "description": "Stochastic valuation focus — wacc_calculator + dcf_model + run_mc_dcf"
+  },
+  {
+    "event": "Comprehensive model for ABNB including base/bull/bear scenarios, sensitivity grids on growth and margin, target price",
+    "description": "Full scenario-driven model — run_scenario_analysis + build_sensitivity_grid + calculate_target_price"
+  }
+]

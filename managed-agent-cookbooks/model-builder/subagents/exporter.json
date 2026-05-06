@@ -1,0 +1,24 @@
+{
+  "name": "cfa-model-exporter",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured model output JSON from the modeler subagent\nand produce a markdown-tabular model summary. Output the report as a\nmarkdown file to ./out/<ticker>-model.md. Excel export is NOT\navailable — deliver markdown tables only. The summary must include:\nassumptions table, three-statement projections (IS / BS / CF, 5 years),\nDCF summary with WACC and terminal value, Monte Carlo distribution\n(median, 90% CI), LBO returns table (IRR/MOIC by case), debt schedule\n(by tranche), sensitivity grids, and base / bull / bear scenarios. Do\nnot recalculate any numbers — only format what you receive.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

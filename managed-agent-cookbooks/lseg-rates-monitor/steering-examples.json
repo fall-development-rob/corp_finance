@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Daily rates monitor for 2026-05-06: pull LSEG UST, Bund, Gilt curves, fit Nelson-Siegel-Svensson, decompose 2s10s and credit spreads, produce commentary",
+    "description": "Standard daily rates monitor — triggers rates-reader, analyst, and publisher in sequence"
+  },
+  {
+    "event": "Pre-FOMC rates snapshot: USD curve only, with scenario analysis on +25bps / hold / -25bps and DV01 impact across the curve",
+    "description": "Event-driven snapshot — focuses on USD curve and scenario sensitivity"
+  },
+  {
+    "event": "FX carry update for G10 pairs: pull spot and 3M/12M forwards, derive implied rate differentials, flag carry-to-vol ranking changes",
+    "description": "FX-focused workflow with implied rate differentials"
+  },
+  {
+    "event": "Swap pricing check: 5Y USD IRS at par rate, mark-to-market existing 7Y trade at +20bps, compute DV01 hedge ratio",
+    "description": "Swap pricing and hedge ratio workflow — analyst subagent only"
+  },
+  {
+    "event": "Repo specials and term structure for 2026-05-06: identify benchmark issues trading special, build short-dated repo curve",
+    "description": "Repo-focused workflow for collateral and short-rate desks"
+  }
+]

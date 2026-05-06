@@ -1,0 +1,94 @@
+{
+  "name": "cfa-val-package-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You parse the GP-supplied valuation package JSON for a PE fund. For\neach portfolio company, extract: financials (revenue, EBITDA, net debt),\nGP-reported fair value mark, last-round/transaction price, and stated\nvaluation methodology. Run cfa-core trading comps and a sanity DCF on\neach portco using available inputs. Return a structured JSON keyed by\nportco. Do NOT write files. Do NOT issue final marks — only assemble\nthe input package for the reviewer.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__dcf_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__wacc_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "fund",
+      "portcos"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "fund": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "portcos": {
+        "type": "array",
+        "maxItems": 50,
+        "items": {
+          "type": "object",
+          "description": "Per-portfolio-company financials, GP mark, and preliminary indicative ranges"
+        }
+      }
+    }
+  }
+}

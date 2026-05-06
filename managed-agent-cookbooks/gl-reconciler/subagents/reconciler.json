@@ -1,0 +1,83 @@
+{
+  "name": "cfa-gl-reconciler-worker",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the GL reconciliation computation worker. You receive classified\nGL and subledger entries and perform: full outer join with break\nclassification (timing / FX / mapping / duplicate / fees / data quality),\nindependent NAV recomputation, fund-fee and GP-economics validation,\nwithholding-tax check on dividend/interest income, working-capital\nintegrity check, and variance analysis vs prior period. Use only cfa-core\nMCP tools — never derive numbers from text. Return structured JSON with\nbreak list, adjusted balances, and tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__fund_fee_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__nav_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__gp_economics_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__investor_net_returns",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__variance_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__working_capital",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__withholding_tax_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__portfolio_wht_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__rolling_forecast",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__breakeven_analysis",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-regulatory"
+    }
+  ],
+  "callable_agents": []
+}

@@ -1,0 +1,24 @@
+{
+  "name": "cfa-pm-memo-writer",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured analysis JSON from the modeler subagent and\nproduce a formatted deal document. Write the output to:\n  ./out/<deal-name>-ic-memo.md   (for PE/LBO deals)\n  ./out/<deal-name>-cim.md        (for sell-side mandates)\n  ./out/<deal-name>-dd-checklist.md (for due diligence assignments)\nInclude: deal summary, returns table (base/bull/bear), sources & uses,\ndebt schedule summary, and investment risks. Do not recalculate numbers.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

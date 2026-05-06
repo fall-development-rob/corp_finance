@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Build a sell-side pitch deck for SNOW: comps vs hyperscalers, DCF, SOTP, and 100bps WACC sensitivity",
+    "description": "Full pitch deck workflow — triggers data-reader, modeler, deck-author"
+  },
+  {
+    "event": "Pitch deck for acquisition of CRWD by a strategic: merger model with $20B equity raise, accretion/dilution at 0/25/50% synergy capture",
+    "description": "Strategic M&A pitch — modeler runs analyze_merger + analyze_dilution + sensitivity_grid"
+  },
+  {
+    "event": "Banker pitch for take-private of XYZ at 8x EBITDA: build LBO returns, sources & uses, and trading comps benchmarking",
+    "description": "Sponsor pitch — LBO + comps + sources/uses; deck-author writes pitchdeck.md"
+  },
+  {
+    "event": "Refresh the pitchdeck math for ABC after Q3 print: update comps multiples and rerun SOTP / target price",
+    "description": "Update-only refresh — reuses prior structure, modeler reruns comps + sotp + target_price"
+  }
+]

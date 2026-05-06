@@ -1,0 +1,74 @@
+{
+  "name": "cfa-private-markets-analyst",
+  "model": "claude-opus-4-7",
+  "system": {
+    "file": "../../../.claude/agents/cfa/private-markets-analyst.md",
+    "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call \u2014 never from LLM generation. Base / bull / bear exit scenarios are mandatory.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-analyst-core"
+    },
+    {
+      "from_skill": "workflow-private-equity"
+    },
+    {
+      "from_skill": "workflow-investment-banking"
+    }
+  ],
+  "callable_agents": [
+    {
+      "manifest": "./subagents/deal-reader.json"
+    },
+    {
+      "manifest": "./subagents/modeler.json"
+    },
+    {
+      "manifest": "./subagents/memo-writer.json"
+    }
+  ]
+}

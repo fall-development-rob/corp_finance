@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Review Q3 2026 GP valuation package for fund APEX-FUND-IV: 14 portfolio companies, mark-to-market each",
+    "description": "Full quarterly valuation review — triggers package-reader, reviewer, and publisher in sequence"
+  },
+  {
+    "event": "Validate GP-reported fair value of portco MERIDIAN-HEALTH against trading comps and DCF",
+    "description": "Single-portco validation — reviewer subagent only, no full package"
+  },
+  {
+    "event": "Year-end audit-prep valuation review for fund SUMMIT-GROWTH-III; flag any portco with >10% variance to GP marks",
+    "description": "Audit-tier review — emphasises variance flagging and methodology disclosure"
+  },
+  {
+    "event": "Review GP-reported uplift on portco BLUEWAVE-SOFTWARE following Series D round; sanity-check against DCF + comps",
+    "description": "Round-driven mark review — sanity DCF and comps cross-check"
+  }
+]

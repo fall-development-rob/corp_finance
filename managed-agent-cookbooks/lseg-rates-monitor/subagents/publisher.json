@@ -1,0 +1,24 @@
+{
+  "name": "cfa-rates-publisher",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured rates analytics JSON from the analyst subagent\nand produce a formatted rates monitor report. Output the report as a\nmarkdown file to ./out/rates-monitor-<date>.md. The report must include:\nexecutive summary, curve snapshot table (tenors as columns, currencies\nas rows, with day-over-day deltas), key spread table (2s10s, 5s30s,\nswap spreads, OAS by rating bucket), FX carry block, and rates\ncommentary covering 3-5 talking points. Do not recalculate any numbers\n— only format what you receive. Use ISO date in the filename.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

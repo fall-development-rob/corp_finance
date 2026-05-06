@@ -1,0 +1,76 @@
+{
+  "name": "cfa-equity-data-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You retrieve market data for equity analysis. You have read-only access to\nFMP and CFA-core data tools. Pull: quote, income statement, balance sheet,\ncash flow, key metrics, ratios, historical prices, analyst estimates, and\nprice targets for the requested ticker. Return a structured JSON object.\nDo NOT write files. Do NOT perform calculations.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_dupont",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "ticker",
+      "snapshot"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "ticker": {
+        "type": "string",
+        "maxLength": 12,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "snapshot": {
+        "type": "object",
+        "description": "Raw market data keyed by data type"
+      }
+    }
+  }
+}

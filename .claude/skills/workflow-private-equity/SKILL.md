@@ -284,6 +284,109 @@ Proactive deal origination pipeline.
 4. **Funnel**: Universe (50-100) -> Long list (15-25) -> Short list (5-10) -> Active DD (2-3) -> Exclusive (1)
 5. **Prioritisation**: rank by attractiveness (market position, growth, margins) and feasibility (availability, pricing, competitive dynamics)
 
+## AI Readiness Assessment
+
+<!-- Adapted from: plugins/vertical-plugins/private-equity/skills/ai-readiness/SKILL.md (anthropics/financial-services) -->
+
+Cross-portfolio diagnostic that identifies, gates, and ranks AI opportunities by annualised EBITDA impact. Run during quarterly portfolio reviews, annual planning cycles, or when the operating partner is building a value-creation initiative around technology.
+
+### Core Principle
+
+Rank by dollars, not excitement. A back-office automation that saves $400k at a $40m revenue company beats a flashy customer-facing chatbot every time. Hold period and data quality together determine urgency: a company exiting in 18 months needs a faster payback than one with a 5-year runway.
+
+### Three-Gate Evaluation (per company)
+
+Apply all three gates before scoring. A single "No" stalls the opportunity to "Wait" status — record the specific blocker so it can be re-evaluated next quarter.
+
+| Gate | Question | Pass Condition |
+|------|----------|----------------|
+| **G1 — Data Availability** | Can clean, structured inputs be sourced without a multi-month data-engineering programme? | Usable data exists today or within 30 days at negligible cost |
+| **G2 — Internal Ownership** | Is there a named manager with authority, budget, and motivation to drive this to completion? | Owner identified; role confirmed; incentive aligned to the outcome |
+| **G3 — Pilot Feasibility** | Can a meaningful test be run within 30 days using off-the-shelf tools? | Pilot scoped, tooling selected, no IT procurement blocker |
+
+A quick win with no internal owner dies in 90 days. Gate 2 is the binding constraint in the majority of portfolio situations.
+
+### Per-Company Scoring Rubric
+
+Score each opportunity 1–5 on four dimensions. Multiply dimension scores to produce a raw opportunity score, then normalise across the portfolio to produce a ranking.
+
+| Dimension | 1 (Low) | 3 (Medium) | 5 (High) |
+|-----------|---------|-----------|---------|
+| **EBITDA Impact** | <$100k annualised | $100k–$500k | >$500k |
+| **Implementation Speed** | >6 months to measurable result | 2–6 months | <60 days |
+| **Data Readiness** | Requires significant cleansing/integration | Partial — some work required | Clean and accessible today |
+| **Ownership Strength** | No clear owner | Owner identified, limited mandate | Named owner with budget and accountability |
+
+To quantify EBITDA impact, call `mcp__cfa-core__analyze_working_capital` for operational efficiency baselines and `mcp__cfa-core__build_sensitivity_grid` to stress-test impact estimates across optimistic/base/conservative scenarios.
+
+### Operational Focus Areas
+
+Prioritise opportunities in these zones, roughly in order of typical payback speed:
+
+1. **Back-office automation**: invoice processing, contract abstraction, expense coding, GL reconciliation — fastest to pilot, easiest to measure
+2. **Revenue-facing workflows**: proposal drafting, ticket triage, call summarisation, lead scoring
+3. **Sector-specific operations**: field-service scheduling, code generation (software portfolio), clinical documentation (healthcare), demand forecasting (consumer/retail)
+4. **Strategic and planning processes**: board reporting automation, market intelligence aggregation, competitor monitoring
+
+### EBITDA-Impact Ranking Output Table
+
+Produce one summary table covering all portfolio companies assessed. Sort descending by Annualised EBITDA Impact.
+
+```
+| Company | Use Case | Gate Status | EBITDA Impact (ann.) | Speed to Result | Score | Priority |
+|---------|----------|-------------|----------------------|-----------------|-------|----------|
+| Co A    | AP automation | GO       | $420k                | 45 days         | 189   | 1        |
+| Co B    | Ticket triage | GO       | $310k                | 60 days         | 150   | 2        |
+| Co C    | Demand forecast | WAIT — G1 | $550k             | 90 days         | —     | Blocked  |
+```
+
+Gate status: **GO** (all three gates pass), **WAIT** (one or more gates fail — record blocker), **PASS** (opportunity assessed and declined — record reason).
+
+### Cross-Portfolio Replay Identification
+
+After completing individual company assessments, scan for patterns where the same solution can be deployed across multiple companies with minimal incremental effort.
+
+Replay criteria:
+- Two or more companies in the same sector or with comparable workflow structures
+- Same tooling or vendor can serve both with configuration-only changes
+- Combined EBITDA impact justifies a portfolio-wide negotiated contract or shared implementation resource
+
+Document each replay candidate with: (a) companies included, (b) combined EBITDA impact, (c) shared implementation cost saving vs individual deployments, (d) recommended sequencing (lead company first, followers within 60–90 days).
+
+Call `mcp__cfa-core__analyze_strategy` to frame the replay as a portfolio-level operational lever alongside financial value creation initiatives.
+
+### Deliverable Structure (Operating Partner)
+
+Produce a one-page executive summary plus supporting detail. Structure:
+
+**One-Page Summary**
+- Portfolio snapshot: number of companies assessed, GO / WAIT / PASS breakdown
+- Top 3 ranked opportunities with headline EBITDA impact and owner name
+- Replay candidates with aggregate impact
+- Recommended next step for each GO opportunity (kickoff date, pilot scope, success metric)
+
+**Supporting Detail (one section per company)**
+- Gate assessment with pass/fail rationale
+- Scored opportunity table (all use cases considered, not just top-ranked)
+- Implementation sketch: tooling, data requirements, owner, 30-day pilot design
+- Risk flags: data privacy constraints, IT change-freeze windows, integration complexity
+
+**Portfolio Roll-Up**
+- Total addressable EBITDA impact if all GO opportunities are executed
+- Expected capture rate (apply 60–70% probability to GO opportunities; 0% to WAIT)
+- Impact on portfolio EBITDA bridge alongside VCP initiatives
+- Call `mcp__cfa-core__analyze_working_capital` and `mcp__cfa-core__build_sensitivity_grid` to validate the roll-up figures against each company's financial baseline
+
+### Workflow Selection Integration
+
+| Request | Workflow | Output | Key Tools |
+|---------|----------|--------|-----------|
+| "AI readiness scan" | AI Readiness Assessment | 1-page summary + per-company detail | `analyze_working_capital`, `build_sensitivity_grid`, `analyze_strategy` |
+| "Which portfolio companies are ready for AI?" | AI Readiness Assessment | Gate assessment + ranked table | `analyze_working_capital`, `build_sensitivity_grid` |
+| "Find AI replays across the portfolio" | AI Readiness Assessment (Replay step) | Replay candidates with combined impact | `analyze_strategy` |
+
+---
+
 ## Quality Standards
 
 - LBO returns: target 20-25% IRR / 2.5-3.0x MOIC for a typical mid-market buyout

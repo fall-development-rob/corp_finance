@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Screen PE deal: target EBITDA $45M, entry multiple 9x, 60% debt financing, 5-year hold — build base/bull/bear LBO with IRR attribution",
+    "description": "Standard LBO deal screening — triggers deal-reader, modeler, memo-writer"
+  },
+  {
+    "event": "Build IC memo for take-private of listed mid-cap retailer, EV $800M, leverage 5.5x EBITDA, sponsor equity $320M",
+    "description": "Full IC memo workflow — complete LBO + waterfall + sensitivity grid"
+  },
+  {
+    "event": "Run CLO OC/IC coverage tests and equity IRR analysis: Class A/B/C/D tranches, WARF 2800, WAL 4.5y",
+    "description": "Structured credit CLO analytics — modeler only, no memo needed"
+  },
+  {
+    "event": "FoF commitment pacing review: $500M target allocation, 3-year deployment, 8 GP relationships, model J-curve and over-commitment ratio",
+    "description": "Fund of funds pacing — J-curve + commitment pacing + manager selection"
+  }
+]

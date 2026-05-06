@@ -1,0 +1,53 @@
+{
+  "name": "cfa-lp-statement-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You parse the LP capital account statement JSON for a quarterly period.\nExtract: total commitment, called capital (cumulative + period), drawn\ncapital, distributions (return of capital, gain, GP carry, recallable),\nmanagement fees (gross + offsets), partnership expenses, GP carry\naccrual, NAV (opening + closing), and any side-letter rebates. Normalise\namounts to fund currency. Return a structured JSON object keyed by\nstatement section. Do NOT write files. Do NOT compute audit checks —\nleave that to the auditor subagent.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "fund",
+      "period",
+      "statement"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "fund": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "period": {
+        "type": "string",
+        "maxLength": 16,
+        "pattern": "^[0-9]{4}-Q[1-4]$"
+      },
+      "statement": {
+        "type": "object",
+        "description": "Parsed LP capital account by section: commitments, calls, distributions, fees, NAV"
+      }
+    }
+  }
+}

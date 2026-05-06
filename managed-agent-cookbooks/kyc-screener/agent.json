@@ -1,0 +1,59 @@
+{
+  "name": "cfa-kyc-screener",
+  "model": "claude-opus-4-7",
+  "system": {
+    "file": "../../../.claude/agents/cfa/esg-regulatory-analyst.md",
+    "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every risk score must originate from a tool call — never from LLM generation. Final SDD/CDD/EDD recommendation must be supported by tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": true
+      }
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-analyst-regulatory"
+    },
+    {
+      "from_skill": "workflow-operations-kyc"
+    }
+  ],
+  "callable_agents": [
+    {
+      "manifest": "./subagents/identity-reader.json"
+    },
+    {
+      "manifest": "./subagents/screener.json"
+    },
+    {
+      "manifest": "./subagents/reporter.json"
+    }
+  ]
+}

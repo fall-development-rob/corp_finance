@@ -1,0 +1,103 @@
+{
+  "name": "cfa-sp-credit-scorer",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the credit research computation worker. You receive issuer\nfinancials, S&P ratings, capital structure, and transcript excerpts and\nperform: full credit ratio suite (leverage, coverage, cash flow,\nliquidity) with synthetic rating, debt capacity sizing under multi-\nconstraint optimisation, covenant compliance with headroom, Altman\nZ-Score (and Ohlson/Zmijewski/Springate variants), Merton structural\nPD via iterative solve, intensity-model hazard rates from CDS spreads,\nlogistic-regression scorecard (WoE/IV), PD calibration and validation\n(AUC-ROC, Gini, Brier, HL, PSI), CDS pricing, and CVA/DVA. Compare the\nsynthetic rating to the S&P actual rating and explicitly flag any\ndivergence. Use only cfa-core MCP tools — never derive numbers from\ntext. Return structured JSON with all results, divergence flag, and\ntool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__debt_capacity",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__covenant_compliance",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__altman_zscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__zscore_models",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_spreads",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_scorecard",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_merton",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_intensity_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_calibration",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_scoring_validation",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__cds_pricing",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__cva_calculation",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__peer_benchmarking",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__red_flag_scoring",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    }
+  ],
+  "callable_agents": []
+}

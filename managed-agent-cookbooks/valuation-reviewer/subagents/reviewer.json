@@ -1,0 +1,115 @@
+{
+  "name": "cfa-val-reviewer",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the valuation review worker. For each portfolio company in the\npackage you receive, independently mark-to-market via cfa-core MCP\ntools: DCF (FCFF), trading comps, sum-of-the-parts (where appropriate),\nLBO floor (for control deals), 12-month target price, sensitivity grid,\nand H-Model DDM (for cash-paying portcos). Compare each independent\nmark to the GP-reported mark and flag variance >10%. Use only cfa-core\nMCP tools — never derive numbers from text. Return structured JSON\nwith per-portco results, GP-vs-independent variance, and tool-call\nprovenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__dcf_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__wacc_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__lbo_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__sotp_valuation",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__target_price",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__sensitivity_matrix",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__scenario_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__h_model_ddm",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__multistage_ddm",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__monte_carlo_dcf",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__three_statement_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__returns_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__sources_uses",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__debt_schedule",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__waterfall_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__altman_zscore",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    }
+  ],
+  "callable_agents": []
+}

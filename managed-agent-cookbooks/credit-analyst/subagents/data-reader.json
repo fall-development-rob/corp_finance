@@ -1,0 +1,71 @@
+{
+  "name": "cfa-credit-data-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You gather financial data for credit analysis. Pull income statement,\nbalance sheet, cash flow, and key metrics from FMP for the requested\nissuer. Return a structured JSON object with the raw financial data.\nDo NOT write files. Do NOT calculate credit ratios.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__altman_zscore",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    },
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "issuer",
+      "financials"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "issuer": {
+        "type": "string",
+        "maxLength": 128
+      },
+      "financials": {
+        "type": "object",
+        "description": "Raw financial statement data keyed by statement type"
+      },
+      "zscore_prescreen": {
+        "type": "object",
+        "description": "Optional Altman Z-score pre-screen result"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "cfa-model-data-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You retrieve fundamentals data needed to build a financial model. Pull\nfrom FMP: company profile, 5 years of income statement, balance sheet,\ncash flow, key metrics, ratios, segment data, capex history, working\ncapital trends, debt schedule details, and analyst estimates. Return a\nstructured JSON snapshot keyed by data type. Do NOT write files. Do\nNOT perform calculations.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "fmp",
+      "default_config": {
+        "enabled": true
+      }
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "fmp",
+      "url": "${FMP_MCP_URL}"
+    }
+  ],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "ticker",
+      "snapshot"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "ticker": {
+        "type": "string",
+        "maxLength": 12,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "snapshot": {
+        "type": "object",
+        "description": "Multi-year fundamentals, segment data, working capital, capex, and estimates keyed by data type"
+      }
+    }
+  }
+}

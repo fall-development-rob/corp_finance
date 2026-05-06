@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Full credit analysis on Ford Motor Company: credit metrics, synthetic rating, Z-Score, Merton PD, covenant compliance, and debt capacity",
+    "description": "Full credit opinion workflow — triggers data-reader, credit-scorer, reporter"
+  },
+  {
+    "event": "CDS pricing and CVA calculation for BBB-rated counterparty: 5-year CDS spread 150bps, recovery 40%, notional $50M",
+    "description": "Credit derivatives workflow — credit-scorer only (no data pull needed)"
+  },
+  {
+    "event": "Credit portfolio VaR for 20-name investment-grade portfolio: Gaussian copula, 99% confidence, ratings AA through BB, HHI concentration check",
+    "description": "Portfolio credit analytics — credit-scorer only, generates JSON summary"
+  },
+  {
+    "event": "Distress screen across high-yield issuer watchlist: Altman Z-Score original + private variants, flag any below 1.81",
+    "description": "Batch distress screening — data-reader + credit-scorer for each issuer"
+  }
+]

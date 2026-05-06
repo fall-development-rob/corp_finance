@@ -222,6 +222,9 @@ pub mod workflows;
 #[cfg(feature = "institutional_real_estate")]
 pub mod institutional_real_estate;
 
+#[cfg(feature = "managed_agent")]
+pub mod managed_agent;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

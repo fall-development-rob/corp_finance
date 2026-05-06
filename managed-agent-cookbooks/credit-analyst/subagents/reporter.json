@@ -1,0 +1,24 @@
+{
+  "name": "cfa-credit-reporter",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured credit analysis JSON from the credit-scorer\nsubagent and produce a formatted credit opinion. Write the report to:\n  ./out/<issuer>-credit-opinion.md\nThe report must include: executive summary, credit metrics table\n(with synthetic vs actual rating comparison), Z-Score distress flag,\nPD estimates (Merton + intensity model), covenant headroom table,\ndebt capacity sizing, and credit risk recommendation (hold/reduce/avoid).\nDo not recalculate any numbers \u2014 only format what you receive.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

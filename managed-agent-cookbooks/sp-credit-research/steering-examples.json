@@ -1,0 +1,22 @@
+[
+  {
+    "event": "Initiate credit coverage on Acme Corp: pull S&P tearsheet, rating history, latest earnings transcript, compute full credit suite, produce credit note",
+    "description": "Full credit initiation — triggers data-reader, credit-scorer, and publisher in sequence"
+  },
+  {
+    "event": "Refresh credit view on Beta Industries after S&P downgrade to BB+: re-run synthetic rating, recheck covenants, reprice CDS at new spread",
+    "description": "Rating-action driven update — focuses on synthetic vs actual divergence and CDS reprice"
+  },
+  {
+    "event": "Earnings transcript credit screen for Gamma Holdings Q1: extract guidance changes, recompute leverage and coverage, flag covenant headroom",
+    "description": "Transcript-driven workflow — Capital IQ + cfa-core covenant compliance"
+  },
+  {
+    "event": "Distress check on Delta Industries: Altman Z-Score, Merton PD, intensity model from CDS spreads, recovery analysis",
+    "description": "Distress and PD workflow — credit-scorer subagent with full PD suite"
+  },
+  {
+    "event": "Covenant compliance test for Epsilon Corp credit facility: pull latest financials, test against incurrence and maintenance covenants, headroom waterfall",
+    "description": "Targeted covenant test for a single credit facility"
+  }
+]

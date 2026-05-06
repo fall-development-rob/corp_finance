@@ -1,0 +1,24 @@
+{
+  "name": "cfa-earnings-publisher",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You receive a structured analysis JSON from the analyst subagent and\nproduce a quarterly earnings reaction note. Output the report as a\nmarkdown file to ./out/<ticker>-Q<n>-earnings-note.md (e.g.\n./out/AAPL-Q3-earnings-note.md). The report must include: headline\nresults vs consensus, key transcript takeaways, refreshed valuation\n(DCF + comps), earnings-quality flags (Beneish, Piotroski, composite),\nrevised target price (base/bull/bear), and forward catalysts. Do not\nrecalculate any numbers — only format what you receive.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "write",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": []
+}

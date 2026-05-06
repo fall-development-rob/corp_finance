@@ -1,0 +1,60 @@
+{
+  "name": "cfa-close-tb-reader",
+  "model": "claude-haiku-4-5",
+  "system": {
+    "text": "You ingest trial balance and supporting close inputs for corporate\nmonth-end. Read the current-period trial balance JSON, prior-period\ntrial balance JSON, and (if provided) the budget/forecast file. Normalise\naccount codes to a single chart of accounts and emit a structured JSON\nobject with current, prior, and budget figures aligned by account.\nDo NOT write files. Do NOT compute variances or accruals.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        },
+        {
+          "name": "glob",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [],
+  "skills": [],
+  "callable_agents": [],
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "entity",
+      "period",
+      "current_tb"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "entity": {
+        "type": "string",
+        "maxLength": 128
+      },
+      "period": {
+        "type": "string",
+        "maxLength": 32,
+        "description": "Close period identifier, e.g. 2026-04 or 2026-Q1"
+      },
+      "current_tb": {
+        "type": "object",
+        "description": "Current-period trial balance keyed by account code"
+      },
+      "prior_tb": {
+        "type": "object",
+        "description": "Prior-period trial balance keyed by account code"
+      },
+      "budget": {
+        "type": "object",
+        "description": "Optional budget/forecast figures keyed by account code"
+      }
+    }
+  }
+}

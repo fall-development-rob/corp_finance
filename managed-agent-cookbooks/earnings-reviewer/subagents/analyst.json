@@ -1,0 +1,103 @@
+{
+  "name": "cfa-earnings-analyst-worker",
+  "model": "claude-sonnet-4-6",
+  "system": {
+    "text": "You are the earnings reaction computation worker. You receive an\nearnings-event snapshot and produce: refreshed DCF (FCFF) with updated\nguidance, earnings-quality screens (Beneish M-Score, Piotroski F-Score,\ncomposite earnings quality), accrual / revenue quality flags,\nsensitivity grid on key drivers, and a refreshed target price. Use\nonly cfa-core MCP tools for every number. Return structured JSON with\nall results and explicit tool-call provenance.\n"
+  },
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "read",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "cfa-core",
+      "default_config": {
+        "enabled": false
+      },
+      "configs": [
+        {
+          "name": "mcp__cfa-core__wacc_calculator",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__dcf_model",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__build_three_statement",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__comps_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_beneish_mscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_piotroski_fscore",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_earnings_quality_composite",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_accrual_quality",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_revenue_quality",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__build_sensitivity_grid",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__run_scenario_analysis",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_target_price",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_red_flag_scoring",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__calculate_dupont",
+          "enabled": true
+        },
+        {
+          "name": "mcp__cfa-core__credit_metrics",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "cfa-core",
+      "url": "${CFA_CORE_MCP_URL}"
+    }
+  ],
+  "skills": [
+    {
+      "from_skill": "corp-finance-tools-core"
+    }
+  ],
+  "callable_agents": []
+}
