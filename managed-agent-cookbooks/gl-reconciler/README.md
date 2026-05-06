@@ -1,5 +1,7 @@
 # gl-reconciler cookbook
 
+> **Tier:** `CoreOnly` — cfa-core only
+
 Headless deployment of the CFA GL Reconciler managed agent for fund-administration
 general-ledger reconciliation.
 

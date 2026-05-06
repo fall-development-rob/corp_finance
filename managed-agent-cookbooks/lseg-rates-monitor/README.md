@@ -1,5 +1,7 @@
 # lseg-rates-monitor cookbook
 
+> **Tier:** `PaidVendor` — cfa-core + LSEG (paid OAuth2)
+
 Headless deployment of the CFA Fixed Income Rates Monitor managed agent.
 
 ## What it does

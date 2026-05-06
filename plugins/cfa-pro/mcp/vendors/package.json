@@ -1,7 +1,7 @@
 {
   "name": "@robotixai/vendor-mcp-server",
   "version": "1.0.0",
-  "description": "Unified vendor data MCP server — LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook",
+  "description": "[PAID — vendor subscriptions required] cfa-pro vendor MCP server — wraps the paid institutional data vendors (LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook). Each vendor requires its own commercial subscription and API credentials.",
   "type": "module",
   "main": "dist/index.js",
   "bin": { "vendor-mcp-server": "dist/index.js" },

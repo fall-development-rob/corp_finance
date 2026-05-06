@@ -1,5 +1,7 @@
 # lp-statement-auditor cookbook
 
+> **Tier:** `CoreOnly` — cfa-core only
+
 Headless deployment of the CFA LP Statement Auditor managed agent.
 
 ## What it does

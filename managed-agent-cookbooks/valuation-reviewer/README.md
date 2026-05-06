@@ -1,5 +1,7 @@
 # valuation-reviewer cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP (free tier)
+
 Headless deployment of the CFA PE Valuation Reviewer managed agent.
 
 ## What it does

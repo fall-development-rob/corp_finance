@@ -14,9 +14,11 @@ use std::collections::HashMap;
 use std::io::{self, BufRead};
 
 use corp_finance_core::managed_agent::deploy;
+use corp_finance_core::managed_agent::list;
 use corp_finance_core::managed_agent::orchestrate;
+use corp_finance_core::managed_agent::sync;
 use corp_finance_core::managed_agent::types::{
-    CheckAllInput, DeployInput, OrchestrateInput, ValidateInput,
+    CheckAllInput, CookbookTier, DeployInput, ListInput, OrchestrateInput, SyncInput, ValidateInput,
 };
 use corp_finance_core::managed_agent::validate;
 
@@ -37,6 +39,10 @@ pub enum ManagedAgentCommands {
     Deploy(DeployArgs),
     /// Stdin event-loop router: validates handoff_request events and prints routing decisions
     Orchestrate(OrchestrateArgs),
+    /// Coverage/freshness audit between cookbooks and skills (no network)
+    Sync(SyncArgs),
+    /// List cookbooks grouped by cost tier (no I/O — registry-only)
+    List(ListArgs),
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +109,32 @@ pub struct DeployArgs {
 }
 
 // ---------------------------------------------------------------------------
+// SyncArgs
+// ---------------------------------------------------------------------------
+
+#[derive(Args)]
+pub struct SyncArgs {
+    /// Path to the managed-agent-cookbooks directory
+    #[arg(long, default_value = "managed-agent-cookbooks")]
+    pub cookbooks_root: String,
+
+    /// Path to the skills directory
+    #[arg(long, default_value = ".claude/skills")]
+    pub skills_root: String,
+}
+
+// ---------------------------------------------------------------------------
+// ListArgs
+// ---------------------------------------------------------------------------
+
+#[derive(Args)]
+pub struct ListArgs {
+    /// Filter by cost tier: `core-only`, `freemium`, or `paid-vendor`. Omit to show all.
+    #[arg(long)]
+    pub tier: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
 // OrchestrateArgs
 // ---------------------------------------------------------------------------
 
@@ -164,6 +196,33 @@ pub fn run_deploy(args: DeployArgs) -> Result<Value, Box<dyn std::error::Error>>
         env_vars,
     };
     let result = deploy::build_deploy_payload(&input)?;
+    Ok(serde_json::to_value(result)?)
+}
+
+pub fn run_sync(args: SyncArgs) -> Result<Value, Box<dyn std::error::Error>> {
+    let input = SyncInput {
+        cookbooks_root: abs_path(&args.cookbooks_root),
+        skills_root: abs_path(&args.skills_root),
+    };
+    let result = sync::sync_skills(&input)?;
+    Ok(serde_json::to_value(result)?)
+}
+
+pub fn run_list(args: ListArgs) -> Result<Value, Box<dyn std::error::Error>> {
+    let tier = match args.tier.as_deref() {
+        None => None,
+        Some("core-only") | Some("core_only") => Some(CookbookTier::CoreOnly),
+        Some("freemium") => Some(CookbookTier::Freemium),
+        Some("paid-vendor") | Some("paid_vendor") => Some(CookbookTier::PaidVendor),
+        Some(other) => {
+            return Err(format!(
+                "unknown tier '{}'; expected core-only | freemium | paid-vendor",
+                other
+            )
+            .into())
+        }
+    };
+    let result = list::list_cookbooks(&ListInput { tier })?;
     Ok(serde_json::to_value(result)?)
 }
 

@@ -1,5 +1,12 @@
 # CFA Managed-Agent Cookbooks
 
+**These are deployment examples for the Anthropic Managed Agents API.** The CFA
+system runs end-to-end without them via the plugin, CLI, skills, and MCP servers
+— see [`docs/VENDOR_FREE_PATH.md`](../docs/VENDOR_FREE_PATH.md). Cookbooks let
+you deploy a remote managed agent to `/v1/agents` for one specific workflow
+(equity research, IC memo, GL recon, etc.) when you want that workflow running
+headless behind an HTTP endpoint instead of in a local Claude Code session.
+
 Each subdirectory defines one deployable CFA managed agent. Pattern adapted from
 `anthropics/financial-services managed-agent-cookbooks/` and rewritten to use
 our deterministic Rust tooling — no Python.
@@ -99,23 +106,25 @@ ANTHROPIC_API_KEY=sk-ant-... scripts/deploy-managed-agent.sh <slug> --apply
 
 ## Available cookbooks
 
-| Slug | Domain | Skills | Subagents |
-|------|--------|--------|-----------|
-| `equity-analyst` | Equity research | corp-finance-analyst-core | data-reader, analyst, publisher |
-| `private-markets-analyst` | PE / IB | corp-finance-analyst-core | deal-reader, modeler, memo-writer |
-| `credit-analyst` | Credit | corp-finance-analyst-core | data-reader, credit-scorer, reporter |
-| `pitch-deck-builder` | IB pitch | workflow-investment-banking | data-reader, modeler, deck-author |
-| `sector-research` | Sector ER | workflow-equity-research | data-reader, analyst, publisher |
-| `earnings-reviewer` | Earnings | workflow-equity-research | transcript-reader, analyst, publisher |
-| `model-builder` | DCF/LBO | corp-finance-tools-core | data-reader, modeler, exporter |
-| `wealth-meeting-prep` | Wealth | workflow-wealth-management | portfolio-reader, analyst, brief-writer |
-| `valuation-reviewer` | PE marks | workflow-private-equity | package-reader, reviewer, publisher |
-| `lp-statement-auditor` | Fund admin | workflow-fund-admin | statement-reader, auditor, reporter |
-| `gl-reconciler` | Fund admin | workflow-fund-admin | ledger-reader, reconciler, publisher |
-| `month-end-closer` | Close ops | workflow-fund-admin | tb-reader, closer, reporter |
-| `kyc-screener` | AML/KYC | workflow-operations-kyc | identity-reader, screener, reporter |
-| `lseg-rates-monitor` | Rates / FX | vendor-lseg | rates-reader, analyst, publisher |
-| `sp-credit-research` | Credit research | vendor-sp-global | data-reader, credit-scorer, publisher |
+Tier reflects the cost-tier registry in `crates/corp-finance-core/src/managed_agent/types.rs`. CoreOnly = `cfa-core` only, no feeds. Freemium = free public data and/or FMP free tier. PaidVendor = commercial subscription required.
+
+| Slug | Tier | Domain | Skills | Subagents |
+|------|------|--------|--------|-----------|
+| `gl-reconciler` | CoreOnly | Fund admin | workflow-fund-admin | ledger-reader, reconciler, publisher |
+| `kyc-screener` | CoreOnly | AML/KYC | workflow-operations-kyc | identity-reader, screener, reporter |
+| `lp-statement-auditor` | CoreOnly | Fund admin | workflow-fund-admin | statement-reader, auditor, reporter |
+| `model-builder` | CoreOnly | DCF/LBO | corp-finance-tools-core | data-reader, modeler, exporter |
+| `month-end-closer` | CoreOnly | Close ops | workflow-fund-admin | tb-reader, closer, reporter |
+| `credit-analyst` | Freemium | Credit | corp-finance-analyst-core | data-reader, credit-scorer, reporter |
+| `earnings-reviewer` | Freemium | Earnings | workflow-equity-research | transcript-reader, analyst, publisher |
+| `equity-analyst` | Freemium | Equity research | corp-finance-analyst-core | data-reader, analyst, publisher |
+| `pitch-deck-builder` | Freemium | IB pitch | workflow-investment-banking | data-reader, modeler, deck-author |
+| `private-markets-analyst` | Freemium | PE / IB | corp-finance-analyst-core | deal-reader, modeler, memo-writer |
+| `sector-research` | Freemium | Sector ER | workflow-equity-research | data-reader, analyst, publisher |
+| `valuation-reviewer` | Freemium | PE marks | workflow-private-equity | package-reader, reviewer, publisher |
+| `wealth-meeting-prep` | Freemium | Wealth | workflow-wealth-management | portfolio-reader, analyst, brief-writer |
+| `lseg-rates-monitor` | PaidVendor | Rates / FX | vendor-lseg | rates-reader, analyst, publisher |
+| `sp-credit-research` | PaidVendor | Credit research | vendor-sp-global | data-reader, credit-scorer, publisher |
 
 ## Security tiers
 

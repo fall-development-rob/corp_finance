@@ -74,6 +74,8 @@ import { registerIndexConstructionTools } from "./tools/index_construction.js";
 import { registerInstitutionalRealEstateTools } from "./tools/institutional_real_estate.js";
 import { registerFinancialForensicsTools } from "./tools/financial_forensics.js";
 import { registerWorkflowTools } from "./tools/workflows.js";
+import { registerManagedAgentTools } from "./tools/managed_agent.js";
+import { registerMcpServerTools } from "./tools/mcp_servers.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -153,6 +155,8 @@ registerIndexConstructionTools(server);
 registerInstitutionalRealEstateTools(server);
 registerFinancialForensicsTools(server);
 registerWorkflowTools(server);
+registerManagedAgentTools(server);
+registerMcpServerTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

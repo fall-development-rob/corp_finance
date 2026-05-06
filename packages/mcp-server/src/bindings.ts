@@ -251,5 +251,12 @@ export const workflowDescribe = b.workflowDescribe;
 export const workflowList = b.workflowList;
 export const workflowQualityCheck = b.workflowQualityCheck;
 export const workflowValidate = b.workflowValidate;
+export const managedAgentList = b.managedAgentList;
+export const mcpServerList = b.mcpServerList;
+export const managedAgentValidate = b.managedAgentValidate;
+export const managedAgentCheckAll = b.managedAgentCheckAll;
+export const managedAgentSync = b.managedAgentSync;
+export const managedAgentDeploy = b.managedAgentDeploy;
+export const managedAgentOrchestrate = b.managedAgentOrchestrate;
 
 export default pkg;

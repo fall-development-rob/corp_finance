@@ -1,5 +1,7 @@
 # wealth-meeting-prep cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP (free tier)
+
 Headless deployment of the CFA Wealth Meeting Prep managed agent.
 
 ## What it does

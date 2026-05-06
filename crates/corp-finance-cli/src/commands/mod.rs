@@ -35,6 +35,7 @@ pub mod ma;
 pub mod macro_economics;
 pub mod managed_agent;
 pub mod market_microstructure;
+pub mod mcp;
 pub mod monte_carlo;
 pub mod mortgage_analytics;
 pub mod municipal;

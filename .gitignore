@@ -51,3 +51,4 @@ docs/QUICK-REFERENCE-AAPL.md
 
 # Turborepo
 .turbo/
+scripts/__pycache__/

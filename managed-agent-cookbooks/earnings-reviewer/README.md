@@ -1,5 +1,7 @@
 # earnings-reviewer cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP + data (FRED/EDGAR free)
+
 Headless deployment of the CFA Earnings Reviewer managed agent.
 
 ## What it does

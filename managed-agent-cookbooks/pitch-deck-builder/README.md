@@ -1,5 +1,7 @@
 # pitch-deck-builder cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP (free tier)
+
 Headless deployment of the CFA Pitch Deck Builder managed agent.
 
 ## What it does

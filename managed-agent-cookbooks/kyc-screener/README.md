@@ -1,5 +1,7 @@
 # kyc-screener cookbook
 
+> **Tier:** `CoreOnly` — cfa-core only
+
 Headless deployment of the CFA KYC/AML Screener managed agent.
 
 ## What it does

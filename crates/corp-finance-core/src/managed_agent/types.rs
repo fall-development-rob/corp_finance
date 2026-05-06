@@ -11,27 +11,149 @@ use std::collections::HashMap;
 // Allowlisted slugs
 // ---------------------------------------------------------------------------
 
-/// Canonical agent slugs that may be deployed.
+/// Cost tier for a managed-agent cookbook.
+///
+/// Lets users discover which cookbooks they can run without paying for
+/// any vendor data subscription.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CookbookTier {
+    /// Runs against `cfa-core` only. No data feeds, no vendor APIs, no FMP.
+    /// User supplies inputs as JSON. Always free to run.
+    CoreOnly,
+    /// Runs against `cfa-core` + free public data sources (FRED, EDGAR, FIGI,
+    /// YF, WB, geopolitical) and/or FMP (which has a free tier). No paid
+    /// vendor subscription required.
+    Freemium,
+    /// Requires a paid vendor subscription (LSEG, S&P Global, FactSet,
+    /// Morningstar, Moody's, PitchBook, Aiera, Daloopa). User must supply
+    /// vendor API credentials at deploy time.
+    PaidVendor,
+}
+
+/// One row of the canonical cookbook registry: slug + cost tier + the
+/// upstream MCP servers it expects (for documentation; runtime config
+/// lives in each cookbook's `agent.json`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CookbookRegistryEntry {
+    pub slug: &'static str,
+    pub tier: CookbookTier,
+    /// Short tag for the vendor / data dependency, e.g. "cfa-core only",
+    /// "cfa-core + FMP", "cfa-core + LSEG (paid)".
+    pub dependencies: &'static str,
+}
+
+/// Canonical cookbook registry — slug, tier, dependency tag.
+///
+/// Keep alphabetically grouped by tier so the `list` CLI output is stable.
+pub const COOKBOOK_REGISTRY: &[CookbookRegistryEntry] = &[
+    // ---- CoreOnly: cfa-core only, user supplies inputs ----
+    CookbookRegistryEntry {
+        slug: "gl-reconciler",
+        tier: CookbookTier::CoreOnly,
+        dependencies: "cfa-core only",
+    },
+    CookbookRegistryEntry {
+        slug: "kyc-screener",
+        tier: CookbookTier::CoreOnly,
+        dependencies: "cfa-core only",
+    },
+    CookbookRegistryEntry {
+        slug: "lp-statement-auditor",
+        tier: CookbookTier::CoreOnly,
+        dependencies: "cfa-core only",
+    },
+    CookbookRegistryEntry {
+        slug: "model-builder",
+        tier: CookbookTier::CoreOnly,
+        dependencies: "cfa-core (user supplies fundamentals JSON)",
+    },
+    CookbookRegistryEntry {
+        slug: "month-end-closer",
+        tier: CookbookTier::CoreOnly,
+        dependencies: "cfa-core only",
+    },
+    // ---- Freemium: cfa-core + FMP and/or free public data ----
+    CookbookRegistryEntry {
+        slug: "credit-analyst",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    CookbookRegistryEntry {
+        slug: "earnings-reviewer",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP + data (FRED/EDGAR free)",
+    },
+    CookbookRegistryEntry {
+        slug: "equity-analyst",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    CookbookRegistryEntry {
+        slug: "pitch-deck-builder",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    CookbookRegistryEntry {
+        slug: "private-markets-analyst",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    CookbookRegistryEntry {
+        slug: "sector-research",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP + data (FRED free)",
+    },
+    CookbookRegistryEntry {
+        slug: "valuation-reviewer",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    CookbookRegistryEntry {
+        slug: "wealth-meeting-prep",
+        tier: CookbookTier::Freemium,
+        dependencies: "cfa-core + FMP (free tier)",
+    },
+    // ---- PaidVendor: requires vendor subscription ----
+    CookbookRegistryEntry {
+        slug: "lseg-rates-monitor",
+        tier: CookbookTier::PaidVendor,
+        dependencies: "cfa-core + LSEG (paid OAuth2)",
+    },
+    CookbookRegistryEntry {
+        slug: "sp-credit-research",
+        tier: CookbookTier::PaidVendor,
+        dependencies: "cfa-core + S&P Global (paid Bearer) + FMP fallback",
+    },
+];
+
+/// Canonical agent slugs that may be deployed. Derived from `COOKBOOK_REGISTRY`
+/// so the two are kept in sync. Order: CoreOnly, then Freemium, then PaidVendor.
 pub const ALLOWED_SLUGS: &[&str] = &[
-    // Phase 23 (original 3 analyst orchestrators)
-    "equity-analyst",
-    "private-markets-analyst",
-    "credit-analyst",
-    // Phase 24 — adopted from anthropics/financial-services upstream
-    "pitch-deck-builder",
-    "sector-research",
-    "earnings-reviewer",
-    "model-builder",
-    "wealth-meeting-prep",
-    "valuation-reviewer",
-    "lp-statement-auditor",
-    // Phase 24 — adapted from upstream skip-list to fit our deterministic pattern
+    // CoreOnly
     "gl-reconciler",
-    "month-end-closer",
     "kyc-screener",
+    "lp-statement-auditor",
+    "model-builder",
+    "month-end-closer",
+    // Freemium
+    "credit-analyst",
+    "earnings-reviewer",
+    "equity-analyst",
+    "pitch-deck-builder",
+    "private-markets-analyst",
+    "sector-research",
+    "valuation-reviewer",
+    "wealth-meeting-prep",
+    // PaidVendor
     "lseg-rates-monitor",
     "sp-credit-research",
 ];
+
+/// Look up the registry entry for a slug, if any.
+pub fn cookbook_registry_entry(slug: &str) -> Option<&'static CookbookRegistryEntry> {
+    COOKBOOK_REGISTRY.iter().find(|e| e.slug == slug)
+}
 
 // ---------------------------------------------------------------------------
 // Manifest types  (deserialise agent.json)
@@ -207,6 +329,79 @@ pub struct CheckAllOutput {
     pub passed: usize,
     pub failed: usize,
     pub outcomes: Vec<CookbookOutcome>,
+}
+
+// ---------------------------------------------------------------------------
+// Sync types — coverage/freshness audit between cookbooks and skills.
+//
+// Pattern note: in this repo, cookbooks reference skills by slug; the skill
+// content lives in `.claude/skills/<slug>/SKILL.md` and is resolved at deploy
+// time (no bundled copies). `sync_skills` therefore does NOT copy files —
+// it audits which skills are referenced by which cookbooks, flags references
+// that don't resolve to a real `SKILL.md`, and flags skills on disk that no
+// cookbook references (orphans).
+// ---------------------------------------------------------------------------
+
+/// Input for `sync::sync_skills`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SyncInput {
+    /// Absolute path to the cookbooks root.
+    pub cookbooks_root: String,
+    /// Absolute path to the skills root.
+    pub skills_root: String,
+}
+
+/// A single missing-skill record (referenced by a cookbook but not on disk).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SkillUsage {
+    pub cookbook: String,
+    pub skill: String,
+}
+
+/// Output of `sync::sync_skills`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SyncOutput {
+    pub cookbooks_root: String,
+    pub skills_root: String,
+    pub total_cookbooks: usize,
+    pub total_skills: usize,
+    /// Map of `skill_slug` → list of cookbook slugs that reference it.
+    /// Sorted alphabetically by skill, then by cookbook within each list.
+    pub skill_usage: HashMap<String, Vec<String>>,
+    /// Skills referenced by cookbooks that don't resolve to `<skills_root>/<slug>/SKILL.md`.
+    pub missing_skills: Vec<SkillUsage>,
+    /// Skills present on disk that no cookbook references.
+    pub orphan_skills: Vec<String>,
+}
+
+// ---------------------------------------------------------------------------
+// List types — enumerate cookbooks by cost tier (no I/O, just registry).
+// ---------------------------------------------------------------------------
+
+/// Input for `list::list_cookbooks`. If `tier` is `None`, all cookbooks are
+/// returned grouped by tier. If set, only that tier's cookbooks are returned.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ListInput {
+    /// Optional filter by cost tier.
+    pub tier: Option<CookbookTier>,
+}
+
+/// One row in `ListOutput`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListEntry {
+    pub slug: String,
+    pub tier: CookbookTier,
+    pub dependencies: String,
+}
+
+/// Output of `list::list_cookbooks`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListOutput {
+    pub total: usize,
+    pub core_only: usize,
+    pub freemium: usize,
+    pub paid_vendor: usize,
+    pub entries: Vec<ListEntry>,
 }
 
 // ---------------------------------------------------------------------------

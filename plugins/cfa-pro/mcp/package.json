@@ -1,7 +1,7 @@
 {
   "name": "@robotixai/fmp-mcp-server",
   "version": "2.0.0",
-  "description": "Financial Modeling Prep market data as MCP tools",
+  "description": "[FREEMIUM] cfa-pro FMP MCP server — Financial Modeling Prep market data as MCP tools. Requires an FMP API key; free tier available, paid plans unlock higher rate limits and premium endpoints.",
   "repository": {
     "type": "git",
     "url": "https://github.com/fall-development-rob/corp_finance.git",

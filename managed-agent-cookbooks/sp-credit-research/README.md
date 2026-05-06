@@ -1,5 +1,7 @@
 # sp-credit-research cookbook
 
+> **Tier:** `PaidVendor` — cfa-core + S&P Global (paid Bearer) + FMP fallback
+
 Headless deployment of the CFA Credit Research managed agent backed by the
 S&P Global vendor MCP server.
 

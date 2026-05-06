@@ -2629,3 +2629,76 @@ pub fn workflow_audit(input_json: String) -> NapiResult<String> {
         corp_finance_core::workflows::audit::generate_audit_trail(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Managed-agent cookbook tooling (validate / check-all / list / sync /
+// deploy / orchestrate). Pattern mirrors workflow_* above.
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn managed_agent_list(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::ListInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::managed_agent::list::list_cookbooks(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn managed_agent_validate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::ValidateInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::managed_agent::validate::validate_manifest(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn managed_agent_check_all(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::CheckAllInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::managed_agent::validate::validate_all(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn managed_agent_sync(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::SyncInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::managed_agent::sync::sync_skills(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn managed_agent_deploy(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::DeployInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::managed_agent::deploy::build_deploy_payload(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn managed_agent_orchestrate(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::managed_agent::types::OrchestrateInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output = corp_finance_core::managed_agent::orchestrate::route_event(&input)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// MCP-server tier registry. Pure data — lets users discover which MCP
+// servers are free vs paid-vendor without paying for any subscription.
+// ---------------------------------------------------------------------------
+
+#[napi]
+pub fn mcp_server_list(input_json: String) -> NapiResult<String> {
+    let input: corp_finance_core::mcp_servers::types::McpListInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let output =
+        corp_finance_core::mcp_servers::list::list_servers(&input).map_err(to_napi_error)?;
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

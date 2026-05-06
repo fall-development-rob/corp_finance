@@ -1,5 +1,7 @@
 # private-markets-analyst cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP (free tier)
+
 Headless deployment of the CFA Private Markets Analyst managed agent.
 
 ## What it does

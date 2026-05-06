@@ -1,7 +1,7 @@
 {
   "name": "@robotixai/data-mcp-server",
   "version": "1.0.0",
-  "description": "Unified free data MCP server — FRED, EDGAR, FIGI, Yahoo Finance, World Bank, ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, USASpending, Polymarket, CoinGecko, UNHCR, Open-Meteo",
+  "description": "[FREE] cfa-data MCP server — public/free data sources only (FRED, EDGAR, FIGI, Yahoo Finance, World Bank, ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, USASpending, Polymarket, CoinGecko, UNHCR, Open-Meteo). Some sources require a free API key (FRED, ACLED, NASA FIRMS, EIA); the rest need no auth. No paid subscriptions required.",
   "repository": {
     "type": "git",
     "url": "https://github.com/fall-development-rob/corp_finance.git",

@@ -1,5 +1,7 @@
 # sector-research cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP + data (FRED free)
+
 Headless deployment of the CFA Sector Research managed agent.
 
 ## What it does

@@ -1,5 +1,7 @@
 # model-builder cookbook
 
+> **Tier:** `CoreOnly` — cfa-core (user supplies fundamentals JSON)
+
 Headless deployment of the CFA Model Builder managed agent.
 
 ## What it does

@@ -1,5 +1,7 @@
 # month-end-closer cookbook
 
+> **Tier:** `CoreOnly` — cfa-core only
+
 Headless deployment of the CFA Month-End Closer managed agent for corporate close
 orchestration.
 

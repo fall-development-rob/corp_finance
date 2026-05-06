@@ -5,7 +5,7 @@ Institutional-grade corporate finance toolkit for Claude Code. Pure-compute, dec
 ## What's included
 
 - **80+ MCP tools** (WASM-compiled Rust): WACC, DCF, comps, LBO, credit metrics, debt capacity, covenant tests, bond pricing/yield/duration, yield-curve bootstrapping, options/forwards/swaps, three-statement modelling, portfolio analytics
-- **14 skills**: 8 corp-finance domain skills + 6 workflow skills (equity research, IB, PE, wealth management, financial analysis, deal documents)
+- **38 skills**: 8 corp-finance domain skills + 12 workflow skills (equity research, IB, PE, wealth management, financial analysis, deal documents, fund admin, KYC, model audit, clean-data, PPTX/XLSX authoring) + 6 free public data skills (EDGAR, FRED, FIGI, World Bank, Yahoo Finance, mtnewswire) + 6 FMP freemium skills + 4 geopolitical data skills + cfa-managed-agent + specflow
 - **9 specialist agents**: chief-analyst, equity, credit, fixed-income, derivatives, macro, quant-risk, esg-regulatory, private-markets
 - **Slash commands**: `/cfa:bond-analysis`, `/cfa:credit-analysis`, `/cfa:derivatives-valuation`, `/cfa:property-valuation`, `/cfa:acquisition-model`, `/cfa:jurisdiction-comparison`, `/cfa:fund-migration`, `/cfa:financial-plan`, plus document workflows (`/cfa:cim`, `/cfa:ic-memo`, `/cfa:dd-checklist`, `/cfa:value-creation`, `/cfa:teaser`, `/cfa:pitch-deck`, `/cfa:buyer-list`)
 

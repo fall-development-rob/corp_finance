@@ -80,6 +80,7 @@ use commands::ma::MergerArgs;
 use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
 use commands::managed_agent::ManagedAgentArgs;
 use commands::market_microstructure::{OptimalExecutionArgs, SpreadAnalysisArgs};
+use commands::mcp::McpArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::mortgage_analytics::{MbsAnalyticsArgs, PrepaymentArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
@@ -582,6 +583,8 @@ enum Commands {
     WorkflowAudit(WorkflowAuditArgs),
     /// Managed-agent cookbook tooling (validate / deploy / orchestrate)
     ManagedAgent(ManagedAgentArgs),
+    /// MCP-server tier registry (list servers by cost tier — free vs paid-vendor)
+    Mcp(McpArgs),
     /// Print version information
     Version,
 }
@@ -884,6 +887,14 @@ fn main() {
                 ManagedAgentCommands::CheckAll(a) => commands::managed_agent::run_check_all(a),
                 ManagedAgentCommands::Deploy(a) => commands::managed_agent::run_deploy(a),
                 ManagedAgentCommands::Orchestrate(a) => commands::managed_agent::run_orchestrate(a),
+                ManagedAgentCommands::Sync(a) => commands::managed_agent::run_sync(a),
+                ManagedAgentCommands::List(a) => commands::managed_agent::run_list(a),
+            }
+        }
+        Commands::Mcp(args) => {
+            use commands::mcp::McpCommands;
+            match args.command {
+                McpCommands::List(a) => commands::mcp::run_list(a),
             }
         }
         Commands::Version => {

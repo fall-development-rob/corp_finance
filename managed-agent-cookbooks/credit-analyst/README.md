@@ -1,5 +1,7 @@
 # credit-analyst cookbook
 
+> **Tier:** `Freemium` — cfa-core + FMP (free tier)
+
 Headless deployment of the CFA Credit Analyst managed agent.
 
 ## What it does

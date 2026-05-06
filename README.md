@@ -4,6 +4,8 @@ Institutional-grade corporate finance calculations exposed as an MCP (Model Cont
 
 All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings, a TypeScript MCP interface, and 9 specialist AI agents that route, coordinate, and synthesise across 200+ tools.
 
+**Runs end-to-end with zero paid vendor subscriptions.** The `cfa-core` MCP server (~206 tools), the CLI, the 49 skills, and the 9 specialist agents all work offline on user-supplied JSON. Free public data feeds (FRED, EDGAR, FIGI, YF, WB) and the FMP free tier plug in additively. Paid vendors (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook) are opt-in. See [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md).
+
 > **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** — Full technical documentation, module reference, data source catalogue, and architecture details.
 
 ## Architecture
@@ -11,9 +13,10 @@ All financial math runs in 128-bit decimal precision via Rust, with Node.js bind
 ```
 crates/corp-finance-core    Rust library — 72 domain modules, all in Decimal
 crates/corp-finance-cli     Rust CLI — 72 subcommands
-packages/mcp-server         206 corp-finance MCP tools (Zod-validated)
-packages/data-mcp-server    121 data tools (FRED, EDGAR, FIGI, Yahoo Finance, World Bank, geopolitical)
-packages/vendor-mcp-server  87 vendor tools (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook)
+packages/mcp-server         206 corp-finance MCP tools (Zod-validated, offline)
+packages/data-mcp-server    121 data tools — free public sources (FRED, EDGAR, FIGI, Yahoo Finance, World Bank, geopolitical)
+packages/fmp-mcp-server     ~180 FMP tools (free tier with API key)
+packages/vendor-mcp-server  87 vendor tools — paid (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook)
 packages/agents             9-analyst pipeline with HNSW routing and swarm coordination
 ```
 
@@ -94,18 +97,24 @@ cfa analyze -i
 
 ## Data Sources
 
-| Package | Tools | Sources |
-|---------|-------|---------|
-| data-mcp-server | 121 | FRED, EDGAR, FIGI, Yahoo Finance, World Bank (26), ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, Polymarket, CoinGecko, UNHCR, Open-Meteo |
-| vendor-mcp-server | 87 | LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook |
-| fmp-mcp-server | 180+ | Financial Modeling Prep (quotes, financials, technicals, news) |
+| Package | Tools | Cost | Sources |
+|---------|-------|------|---------|
+| mcp-server (cfa-core) | 206 | Free, offline | Pure Rust compute, no network calls |
+| data-mcp-server | 121 | Free (3 free signups) | FRED, EDGAR, FIGI, Yahoo Finance, World Bank, UCDP, GDELT, GDACS, USGS, WTO, Polymarket, CoinGecko, UNHCR, Open-Meteo (no key); ACLED, NASA FIRMS, EIA (free signup) |
+| fmp-mcp-server | 180+ | Freemium | Financial Modeling Prep (quotes, financials, technicals, news) |
+| vendor-mcp-server | 87 | Paid | LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook |
 
-> See the **[Data Sources](https://github.com/fall-development-rob/corp_finance/wiki/Data-Sources)** wiki page for the full tool breakdown and authentication requirements.
+> See [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) for what runs without paid feeds, and the **[Data Sources](https://github.com/fall-development-rob/corp_finance/wiki/Data-Sources)** wiki page for the full tool breakdown and authentication requirements.
+
+## Deployment examples
+
+`managed-agent-cookbooks/` ships 15 deployment templates for the [Anthropic Managed Agents API](https://docs.anthropic.com/) (`/v1/agents`) — equity research, IC memo, GL recon, KYC, model audit, etc. Cookbooks are **examples**, not the primary product; the local plugin / CLI / skills / MCP servers above already cover every workflow. 13 of 15 cookbooks are CoreOnly or Freemium tier (no paid subscription); 2 require LSEG or S&P. List by tier with `cfa managed-agent list --tier=core-only`. See [`managed-agent-cookbooks/README.md`](managed-agent-cookbooks/README.md).
 
 ## Documentation
 
 | Resource | Description |
 |----------|-------------|
+| [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) | What runs without paid feeds, and how to add free / paid layers |
 | **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** | Full technical reference |
 | `docs/adr/` | Architecture Decision Records (ADR-001 to ADR-013) |
 | `docs/prd/` | Product Requirements Documents |

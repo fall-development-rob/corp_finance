@@ -248,3 +248,10 @@ export declare function workflowDescribe(inputJson: string): NapiResult
 export declare function workflowValidate(inputJson: string): NapiResult
 export declare function workflowQualityCheck(inputJson: string): NapiResult
 export declare function workflowAudit(inputJson: string): NapiResult
+export declare function managedAgentList(inputJson: string): NapiResult
+export declare function managedAgentValidate(inputJson: string): NapiResult
+export declare function managedAgentCheckAll(inputJson: string): NapiResult
+export declare function managedAgentSync(inputJson: string): NapiResult
+export declare function managedAgentDeploy(inputJson: string): NapiResult
+export declare function managedAgentOrchestrate(inputJson: string): NapiResult
+export declare function mcpServerList(inputJson: string): NapiResult
