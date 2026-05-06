@@ -108,11 +108,6 @@ function setupEnv(): void {
 
   const mcpServerPath = join(__cliDir, '..', '..', '..', 'mcp-server', 'dist', 'index.js');
   ensureMcpConfig(mcpServerPath);
-
-  process.env.ENABLE_CLAUDE_FLOW_MCP = 'false';
-  process.env.ENABLE_FLOW_NEXUS_MCP = 'false';
-  process.env.ENABLE_AGENTIC_PAYMENTS_MCP = 'false';
-  process.env.ENABLE_CLAUDE_FLOW_SDK = 'false';
 }
 
 // ── CLI class ───────────────────────────────────────────────────────
