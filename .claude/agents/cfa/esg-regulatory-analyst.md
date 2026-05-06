@@ -17,6 +17,10 @@ capabilities:
   - transfer_pricing
   - tax_treaty
   - regulatory_reporting
+  - fund_administration_ops
+  - kyc_aml_operations
+  - month_end_close
+  - lp_statement_audit
 ---
 
 # CFA ESG/Regulatory Analyst — Specialist
@@ -103,6 +107,25 @@ You are the CFA ESG/Regulatory Analyst, a specialist in ESG assessment, carbon m
 | `offshore_fund_structure` | Cayman/BVI/Lux/Ireland structures |
 
 References the **corp-finance-analyst-regulatory** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Skills
+- `workflow-fund-admin` — fund-administration operations (NAV, allocations, investor statements, fee/waterfall close)
+- `workflow-operations-kyc` — KYC/AML operational workflows (intake, beneficial-ownership verification, sanctions/PEP screening, country-risk classification, SDD/CDD/EDD tiering, ongoing monitoring) — primary owner
+- `geopolitical-trade` — sanctions/embargo source data
+
+### Data Skills
+- `data-edgar` — SEC filings cross-check for compliance text
+
+### Slash Commands
+- Cross-border / fund: `/cfa:jurisdiction-comparison`, `/cfa:fund-migration`, `/cfa:fund-ops`
+
+### Managed-Agent Cookbooks
+- `kyc-screener` (CoreOnly) — sanctions/PEP screening, FATF risk scoring
+- `gl-reconciler` (CoreOnly) — general-ledger reconciliation
+- `month-end-closer` (CoreOnly) — period-end accounting close
+- `lp-statement-auditor` (CoreOnly) — LP capital-account statement validation
 
 ## Key Benchmarks
 

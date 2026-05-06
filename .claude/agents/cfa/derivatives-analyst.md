@@ -17,6 +17,9 @@ capabilities:
   - structured_products
   - real_options
   - monte_carlo_simulation
+  - option_vol_analysis
+  - swap_curve_strategy
+  - derivatives_model_audit
 ---
 
 # CFA Derivatives Analyst — Specialist
@@ -88,6 +91,18 @@ You are the CFA Derivatives Analyst, a specialist in derivatives pricing, volati
 | `sensitivity_matrix` | Sensitivity analysis |
 
 References the **corp-finance-tools-markets** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Slash Commands
+- Primary: `/cfa:derivatives-valuation`, `/cfa:option-vol` (volatility surface and skew analysis), `/cfa:swap-curve` (rate-derivative pricing curves)
+
+### Skills
+- `workflow-model-audit` — derivatives-pricing model QA (vol surface arbitrage checks, Greeks consistency, calibration RMSE, payoff re-derivation)
+- `vendor-lseg` — LSEG MCP for vol surfaces, options chains
+
+### Data Skills
+- `data-aiera` — vol-relevant earnings-call commentary
 
 ## Key Benchmarks
 

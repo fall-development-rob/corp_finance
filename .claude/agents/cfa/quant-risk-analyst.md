@@ -21,6 +21,9 @@ capabilities:
   - portfolio_rebalancing
   - tax_loss_harvesting
   - client_reporting
+  - investment_proposals
+  - data_hygiene_prep
+  - portfolio_monitoring
 ---
 
 # CFA Quant/Risk Analyst — Specialist
@@ -107,6 +110,19 @@ You are the CFA Quant/Risk Analyst, a specialist in quantitative risk management
 | `kelly_sizing` | Optimal position sizing |
 
 References the **corp-finance-analyst-risk** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Skills
+- `workflow-wealth-management` — client meeting prep, financial planning, rebalancing, TLH, client reports, proposals (primary wealth-management owner)
+- `workflow-clean-data-xls` — pre-modelling data hygiene (outlier detection, unit/sign/currency reconciliation, period alignment) before factor models, optimisation, or attribution runs
+
+### Slash Commands
+- Wealth: `/cfa:client-review`, `/cfa:client-report`, `/cfa:financial-plan`, `/cfa:proposal`, `/cfa:rebalance`, `/cfa:tlh`
+- Portfolio: `/cfa:portfolio` (portfolio monitoring; shared with private-markets-analyst for portco level, quant-risk owns multi-asset/factor level)
+
+### Managed-Agent Cookbooks
+- `wealth-meeting-prep` (Freemium: cfa-core + FMP)
 
 ## Key Benchmarks
 

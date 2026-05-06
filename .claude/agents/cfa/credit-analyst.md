@@ -14,6 +14,7 @@ capabilities:
   - credit_derivatives
   - credit_portfolio_analytics
   - rating_migration
+  - acquirer_credit_assessment
 ---
 
 # CFA Credit Analyst — Specialist
@@ -75,6 +76,21 @@ You are the CFA Credit Analyst, a specialist in credit risk assessment and fixed
 | `sensitivity_matrix` | Sensitivity analysis |
 
 References the **corp-finance-analyst-core** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Slash Commands
+- Core: `/cfa:credit-analysis`, `/cfa:bond-analysis`
+- Acquirer / cross-domain credit (when assessing post-deal credit impact): `/cfa:lbo`, `/cfa:dcf`, `/cfa:merger-model`
+
+### Data Skills
+- `data-mtnewswire` — credit-event news (downgrades, defaults, restructurings, covenant breaches)
+- `data-aiera` — covenant-relevant management commentary in earnings calls
+- `data-edgar` — 10-K/10-Q covenant text + footnote tracking
+
+### Managed-Agent Cookbooks
+- `credit-analyst` (Freemium: cfa-core + FMP)
+- `sp-credit-research` (PaidVendor: cfa-core + S&P Global Bearer auth + FMP fallback)
 
 ## Credit Metrics by Rating (Approximate)
 

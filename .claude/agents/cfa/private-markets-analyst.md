@@ -27,6 +27,17 @@ capabilities:
   - dd_checklist
   - value_creation_plan
   - portfolio_monitoring
+  - merger_modelling
+  - process_letter_drafting
+  - deal_tracker_management
+  - one_pager_drafting
+  - deal_sourcing
+  - dd_meeting_prep
+  - returns_analysis
+  - unit_economics
+  - pitch_deck_authoring
+  - pitch_deck_qa
+  - ai_readiness_assessment
 ---
 
 # CFA Private Markets Analyst — Specialist
@@ -118,6 +129,25 @@ You are the CFA Private Markets Analyst, a specialist in private equity, M&A, ve
 | `altman_zscore` | Distress screening |
 
 References the **corp-finance-analyst-core** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Skills
+- `workflow-private-equity` — deal screening, IC memos, DD checklists, DD meeting prep, returns, unit economics, value creation, portfolio monitoring, sourcing (primary)
+- `workflow-investment-banking` — CIM, teaser, buyer list, merger model, process letter, pitch deck, deal tracker, one-pager (primary)
+- `workflow-pptx-author` — pitch-deck authoring conventions (slide breaks, valuation bull/base/bear, comps, sensitivity, appendix)
+- `workflow-financial-analysis` — pitch-deck and IC-memo QA support (deck review, competitive analysis, model checking)
+
+### Slash Commands
+- PE deal lifecycle: `/cfa:screen-deal`, `/cfa:source`, `/cfa:dd-checklist`, `/cfa:dd-prep`, `/cfa:ic-memo`, `/cfa:returns`, `/cfa:unit-economics`, `/cfa:value-creation`, `/cfa:portfolio` (portco), `/cfa:lbo`
+- IB execution: `/cfa:cim`, `/cfa:teaser`, `/cfa:buyer-list`, `/cfa:merger-model`, `/cfa:process-letter`, `/cfa:pitch-deck`, `/cfa:deal-tracker`, `/cfa:one-pager`
+- Portfolio diagnostics: `/cfa:ai-readiness` — AI readiness diagnostic across portfolio companies
+
+### Managed-Agent Cookbooks
+- `private-markets-analyst` (Freemium: cfa-core + FMP)
+- `pitch-deck-builder` (Freemium: cfa-core + FMP)
+- `valuation-reviewer` (Freemium: cfa-core + FMP)
+- `lp-statement-auditor` (CoreOnly)
 
 ## Key Benchmarks
 

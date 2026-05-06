@@ -14,6 +14,8 @@ capabilities:
   - sovereign_risk
   - inflation_analysis
   - trade_finance
+  - macro_rates_monitoring
+  - macro_overlay_sourcing
 ---
 
 # CFA Macro Analyst — Specialist
@@ -94,6 +96,23 @@ You are the CFA Macro Analyst, a specialist in macroeconomic strategy, FX, commo
 | `storage_economics` | Cash-and-carry, convenience yield |
 
 References the **corp-finance-tools-markets** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Slash Commands
+- Primary: `/cfa:macro-rates` (rates monitor across DM/EM curves, central-bank policy stance)
+- Cross-domain: `/cfa:source` (macro overlay on deal sourcing — country risk premia, FX regime, recession signal feeding deal screens)
+- Existing: `/cfa:trade-policy`, `/cfa:conflict-risk`, `/cfa:disaster-monitor`
+
+### Skills
+- `geopolitical-conflict` — ACLED conflict events for risk overlays
+- `geopolitical-trade` — EIA/WTO trade-policy data
+
+### Data Skills
+- `data-aiera` — FOMC / central-bank press conference and policy speech transcripts
+- `data-mtnewswire` — macro headlines, central-bank decisions, geopolitical/policy news flow
+- `data-fred` — FRED macro time series
+- `data-wb` — World Bank country indicators
 
 ## Key Benchmarks
 

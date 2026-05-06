@@ -15,6 +15,10 @@ capabilities:
   - deck_review
   - competitive_analysis
   - document_standards
+  - data_hygiene_signoff
+  - tabular_xlsx_authoring
+  - pptx_deck_authoring
+  - managed_agent_governance
 ---
 
 # CFA Chief Analyst — Coordinator
@@ -121,3 +125,27 @@ Use `corp-finance-tools-core` skill for core valuation/credit/PE tools.
 Use `corp-finance-tools-markets` skill for derivatives/FI/macro tools.
 Use `corp-finance-tools-risk` skill for quant risk/portfolio tools.
 Use `corp-finance-tools-regulatory` skill for ESG/compliance tools.
+
+## Cross-Cutting QA & Governance Skills
+
+As Chief, you own model QA, document standards, and managed-agent governance:
+
+- `workflow-model-audit` — financial-model auditing (link tracing, formula consistency, hardcode detection, three-statement tie-out, re-derivation against the corp-finance-mcp core)
+- `workflow-financial-analysis` — model checking, deck review, competitive-analysis frameworks, document formatting
+- `workflow-deal-documents` — cross-cutting document standards (confidentiality, citations, formatting, quality checklist)
+- `workflow-clean-data-xls` — pre-modelling data hygiene (outlier detection, unit/sign/currency reconciliation, period alignment, lineage) — sign-off before any number enters a model
+- `workflow-xlsx-author` — markdown-tabular and CSV authoring conventions for headless Excel-equivalent deliverables (header/units/source rows, =CELL formula text, ->Sheet:Cell cross-refs)
+- `workflow-pptx-author` — markdown-with-slide-breaks deck authoring conventions for headless pitch and research decks
+- `cfa-managed-agent` — deploy and govern managed-agent cookbooks (validate, list-by-tier, audit skill coverage, route handoff events)
+
+## Slash Commands (Chief-owned QA)
+
+- `/cfa:model-audit` (via workflow-model-audit), `/cfa:debug-model`, `/cfa:competitive-analysis`
+
+## Managed-Agent Cookbooks (Oversight)
+
+As Chief you may deploy any tier. Full registry (`crates/corp-finance-core/src/managed_agent/types.rs::COOKBOOK_REGISTRY`):
+
+- CoreOnly (cfa-core only, user-supplied inputs): `gl-reconciler`, `kyc-screener`, `lp-statement-auditor`, `model-builder`, `month-end-closer`
+- Freemium (cfa-core + FMP/free public data): `credit-analyst`, `earnings-reviewer`, `equity-analyst`, `pitch-deck-builder`, `private-markets-analyst`, `sector-research`, `valuation-reviewer`, `wealth-meeting-prep`
+- PaidVendor (vendor subscription required): `lseg-rates-monitor`, `sp-credit-research`

@@ -16,6 +16,11 @@ capabilities:
   - mortgage_analytics
   - municipal_bonds
   - sovereign_debt
+  - bond_relative_value
+  - fi_portfolio_review
+  - swap_curve_strategy
+  - fx_carry_strategy
+  - macro_rates_monitoring
 ---
 
 # CFA Fixed Income Analyst — Specialist
@@ -93,6 +98,20 @@ You are the CFA Fixed Income Analyst, a specialist in fixed income securities an
 | `country_risk_assessment` | Sovereign risk scoring and CRP |
 
 References the **corp-finance-tools-markets** skill.
+
+## Workflow Skills, Commands & Cookbooks
+
+### Slash Commands
+- Core FI: `/cfa:bond-analysis`, `/cfa:bond-rv` (relative value), `/cfa:fi-portfolio` (portfolio review), `/cfa:swap-curve`, `/cfa:option-vol`
+- Macro / FX overlay: `/cfa:macro-rates`, `/cfa:fx-carry`
+
+### Data Skills
+- `data-mtnewswire` — rates/macro headlines, central-bank decisions, sovereign news
+- `data-aiera` — FOMC press conferences, central-bank speakers
+- `data-fred` — rates/curve macro indicators
+
+### Managed-Agent Cookbooks
+- `lseg-rates-monitor` (PaidVendor: cfa-core + LSEG OAuth2) — rates monitor and curve dashboards
 
 ## Key Benchmarks
 
