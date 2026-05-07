@@ -3207,21 +3207,82 @@ pub fn chief_pattern_detect(input_json: String) -> NapiResult<String> {
     serde_json::to_string(&ChiefPatternDetectOutput { entities }).map_err(to_napi_error)
 }
 
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 2: audit-backed agent invocation bindings (ADR-021).
+//
+// `agent_invoke_record` replaces the Phase 27 stub with a full
+// record_invocation_with_audit call that persists both the event file and
+// the companion .audit.json under caller-supplied manifest_root.
+// `agent_invoke_complete` is new — it calls complete_invocation_with_audit.
+// Both return InvocationAuditPaths (event_path, audit_path, surface_audit_hash).
+// ---------------------------------------------------------------------------
+
+/// Flat wire input for `agent_invoke_record` (Phase 29 Wave 2).
+///
+/// Builds an `AgentInvocation` in-process from the primitive fields rather
+/// than requiring the caller to pre-assemble the struct.
 #[derive(serde::Deserialize)]
 struct AgentInvokeRecordInput {
-    invocation: corp_finance_core::multi_agent::AgentInvocation,
-}
-
-#[derive(serde::Serialize)]
-struct AgentInvokeRecordOutput {
-    ok: bool,
+    invocation_id: String,
+    target_agent: String,
+    input_summary: String,
+    parent_invocation_id: Option<String>,
+    tenant_id: Option<String>,
+    manifest_root: String,
 }
 
 #[napi]
 pub fn agent_invoke_record(input_json: String) -> NapiResult<String> {
     let input: AgentInvokeRecordInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
-    corp_finance_core::multi_agent::record_invocation(&input.invocation).map_err(to_napi_error)?;
-    serde_json::to_string(&AgentInvokeRecordOutput { ok: true }).map_err(to_napi_error)
+    let invocation_id = uuid::Uuid::parse_str(&input.invocation_id).map_err(to_napi_error)?;
+    let parent_id = input
+        .parent_invocation_id
+        .as_deref()
+        .map(uuid::Uuid::parse_str)
+        .transpose()
+        .map_err(to_napi_error)?;
+    let invocation = corp_finance_core::multi_agent::AgentInvocation {
+        invocation_id,
+        target_agent: input.target_agent,
+        parent_invocation_id: parent_id,
+        input_summary: input.input_summary,
+        tenant_id: input.tenant_id,
+        ts: chrono::Utc::now(),
+        status: corp_finance_core::multi_agent::InvocationStatus::Pending,
+    };
+    let paths = corp_finance_core::multi_agent::record_invocation_with_audit(
+        &invocation,
+        std::path::Path::new(&input.manifest_root),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&paths).map_err(to_napi_error)
+}
+
+/// Wire input for `agent_invoke_complete` (Phase 29 Wave 2).
+#[derive(serde::Deserialize)]
+struct AgentInvokeCompleteInput {
+    invocation_id: String,
+    output_summary: String,
+    #[serde(default)]
+    entities: Vec<corp_finance_core::multi_agent::EntityRef>,
+    tenant_id: Option<String>,
+    manifest_root: String,
+}
+
+#[napi]
+pub fn agent_invoke_complete(input_json: String) -> NapiResult<String> {
+    let input: AgentInvokeCompleteInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let invocation_id = uuid::Uuid::parse_str(&input.invocation_id).map_err(to_napi_error)?;
+    let paths = corp_finance_core::multi_agent::complete_invocation_with_audit(
+        invocation_id,
+        &input.output_summary,
+        &input.entities,
+        input.tenant_id.as_deref(),
+        std::path::Path::new(&input.manifest_root),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&paths).map_err(to_napi_error)
 }
 
 #[derive(serde::Deserialize)]

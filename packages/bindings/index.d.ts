@@ -269,6 +269,7 @@ export declare function chiefPlanEmit(inputJson: string): NapiResult
 export declare function chiefPlanReplan(inputJson: string): NapiResult
 export declare function chiefPatternDetect(inputJson: string): NapiResult
 export declare function agentInvokeRecord(inputJson: string): NapiResult
+export declare function agentInvokeComplete(inputJson: string): NapiResult
 export declare function agentTraceGet(inputJson: string): NapiResult
 export declare function tenantProvision(inputJson: string): NapiResult
 export declare function tenantResolveCli(inputJson: string): NapiResult

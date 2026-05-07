@@ -40,6 +40,7 @@
 //! the crate root (`lib.rs`). Internal files do not repeat the gate.
 
 pub mod agent_invoke;
+pub mod audit_writer;
 pub mod budget;
 pub mod entity_graph;
 pub mod goap_adapter;
@@ -50,8 +51,12 @@ pub mod types;
 mod tests;
 
 pub use agent_invoke::{
-    complete_invocation, no_cycles_in_chain, record_invocation, validate_target_agent,
-    REGISTERED_CFA_AGENTS,
+    complete_invocation, complete_invocation_with_audit, no_cycles_in_chain, record_invocation,
+    record_invocation_with_audit, validate_target_agent, REGISTERED_CFA_AGENTS,
+};
+pub use audit_writer::{
+    invocation_event_path, write_invocation_completed, write_invocation_started,
+    InvocationAuditPaths,
 };
 pub use budget::{check_budget, BudgetVerdict, PlanBudget};
 pub use entity_graph::{extract_entities_from_text, EntityGraph};

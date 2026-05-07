@@ -90,11 +90,11 @@ const AgentInvocationSchema = z.object({
   ),
 });
 
-export const AgentInvokeRecordSchema = z.object({
-  invocation: AgentInvocationSchema.describe(
-    "AgentInvocation aggregate to record at the chief -> specialist boundary."
-  ),
-});
+// Phase 29 Wave 2: AgentInvokeRecordSchema moved to schemas/agent_invoke.ts
+// with the flat input shape that `bindings.agentInvokeRecord` now expects
+// (`{ invocation_id, target_agent, input_summary, parent_invocation_id?,
+// tenant_id?, manifest_root }`). The old `{ invocation: AgentInvocation }`
+// envelope is gone alongside the corresponding tool registration.
 
 export const AgentTraceGetSchema = z.object({
   invocation_id: z

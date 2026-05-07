@@ -3,17 +3,22 @@ import {
   chiefPlanEmit,
   chiefPlanReplan,
   chiefPatternDetect,
-  agentInvokeRecord,
   agentTraceGet,
 } from "../bindings.js";
 import {
   ChiefPlanEmitSchema,
   ChiefPlanReplanSchema,
   ChiefPatternDetectSchema,
-  AgentInvokeRecordSchema,
   AgentTraceGetSchema,
 } from "../schemas/multi_agent.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
+
+// Phase 29 Wave 2: `agent_invoke_record` moved to `tools/agent_invoke.ts`.
+// The new tool covers the same RUF-ORC-001 / MAC-INV-002 / MAC-INV-003 contract
+// surface and additionally writes the `.audit.json` companion at the manifest
+// root. The old binding signature (`{ invocation: AgentInvocation }` -> `{ ok }`)
+// was replaced by the flat `{ invocation_id, target_agent, ... }` ->
+// `InvocationAuditPaths` shape in `agent_invoke.ts`.
 
 export function registerMultiAgentTools(server: McpServer) {
   server.tool(
@@ -45,17 +50,6 @@ export function registerMultiAgentTools(server: McpServer) {
     async (params) => {
       const validated = ChiefPatternDetectSchema.parse(coerceNumbers(params));
       const result = chiefPatternDetect(JSON.stringify(validated));
-      return wrapResponse(result);
-    }
-  );
-
-  server.tool(
-    "agent_invoke_record",
-    "Record an Agent-tool delegation at the chief -> specialist boundary, validating the target slug and parent-chain acyclicity. Input: AgentInvocation aggregate. Output: persisted invocation_id and started-event envelope. RUF-ORC-001 / MAC-INV-002 / MAC-INV-003.",
-    AgentInvokeRecordSchema.shape,
-    async (params) => {
-      const validated = AgentInvokeRecordSchema.parse(coerceNumbers(params));
-      const result = agentInvokeRecord(JSON.stringify(validated));
       return wrapResponse(result);
     }
   );

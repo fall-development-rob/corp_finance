@@ -277,6 +277,9 @@ export const chiefPlanReplan = b.chiefPlanReplan;
 export const chiefPatternDetect = b.chiefPatternDetect;
 export const agentInvokeRecord = b.agentInvokeRecord;
 export const agentTraceGet = b.agentTraceGet;
+
+// Phase 29 wave 2: audit-backed agent invocation surfaces (ADR-021).
+export const agentInvokeComplete = b.agentInvokeComplete;
 export const tenantProvision = b.tenantProvision;
 export const tenantResolveCli = b.tenantResolveCli;
 export const tenantScopedPath = b.tenantScopedPath;

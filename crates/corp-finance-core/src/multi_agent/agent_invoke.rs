@@ -12,6 +12,9 @@
 //! the surface wrappers (ADR-017). For v1 we just construct the event
 //! envelopes; downstream wiring lives in the Phase 26 audit layer.
 
+use std::path::Path;
+
+use crate::multi_agent::audit_writer::InvocationAuditPaths;
 use crate::multi_agent::types::{AgentInvocation, EntityRef};
 use crate::CorpFinanceResult;
 use uuid::Uuid;
@@ -177,6 +180,44 @@ pub fn complete_invocation(
     Ok(())
 }
 
+/// Record an `agent_invocation_started` domain event **and** persist the
+/// companion `.audit.json` file pair under `manifest_root`.
+///
+/// Delegates to [`record_invocation`] first for validation (unknown slug
+/// returns `InvalidInput` before any I/O). On success, calls
+/// [`crate::multi_agent::audit_writer::write_invocation_started`] and
+/// returns the paths of the written files.
+pub fn record_invocation_with_audit(
+    invocation: &AgentInvocation,
+    manifest_root: &Path,
+) -> CorpFinanceResult<InvocationAuditPaths> {
+    record_invocation(invocation)?;
+    crate::multi_agent::audit_writer::write_invocation_started(manifest_root, invocation)
+}
+
+/// Record an `agent_invocation_completed` domain event **and** persist the
+/// companion `.audit.json` file pair under `manifest_root`.
+///
+/// Delegates to [`complete_invocation`] first, then calls
+/// [`crate::multi_agent::audit_writer::write_invocation_completed`] and
+/// returns the paths of the written files.
+pub fn complete_invocation_with_audit(
+    invocation_id: Uuid,
+    output_summary: &str,
+    entities: &[EntityRef],
+    tenant_id: Option<&str>,
+    manifest_root: &Path,
+) -> CorpFinanceResult<InvocationAuditPaths> {
+    complete_invocation(invocation_id, output_summary, entities)?;
+    crate::multi_agent::audit_writer::write_invocation_completed(
+        manifest_root,
+        invocation_id,
+        output_summary,
+        entities,
+        tenant_id,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -262,5 +303,47 @@ mod tests {
         let entities: Vec<EntityRef> = Vec::new();
         let result = complete_invocation(inv.invocation_id, "summary", &entities);
         assert!(result.is_ok());
+    }
+
+    /// Test 7: unknown slug is rejected before any I/O is attempted.
+    #[test]
+    fn record_invocation_with_audit_validates_target_agent() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut inv = mk("cfa-equity-analyst", None);
+        inv.target_agent = "not-a-cfa-agent".into();
+        let result = record_invocation_with_audit(&inv, dir.path());
+        assert!(result.is_err(), "unknown slug must return Err");
+    }
+
+    /// Test 8: known slug writes both event and audit files.
+    #[test]
+    fn record_invocation_with_audit_writes_files_for_known_slug() {
+        let dir = tempfile::tempdir().unwrap();
+        let inv = mk("cfa-fixed-income-analyst", None);
+        let paths = record_invocation_with_audit(&inv, dir.path()).unwrap();
+        assert!(paths.event_path.exists(), "event file must exist");
+        assert!(paths.audit_path.exists(), "audit companion must exist");
+    }
+
+    /// Test 9: completed event path filename contains `.completed.` infix.
+    #[test]
+    fn complete_invocation_with_audit_writes_completed_phase() {
+        let dir = tempfile::tempdir().unwrap();
+        let inv = mk("cfa-macro-analyst", None);
+        // Record started first so complete_invocation validation passes.
+        let entities: Vec<EntityRef> = Vec::new();
+        let paths = complete_invocation_with_audit(
+            inv.invocation_id,
+            "macro summary",
+            &entities,
+            inv.tenant_id.as_deref(),
+            dir.path(),
+        )
+        .unwrap();
+        let name = paths.event_path.file_name().unwrap().to_string_lossy();
+        assert!(
+            name.contains(".completed."),
+            "filename must contain .completed. infix"
+        );
     }
 }

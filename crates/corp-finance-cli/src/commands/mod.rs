@@ -1,3 +1,4 @@
+pub mod agent_invoke;
 pub mod aml_compliance;
 pub mod audit;
 pub mod bank_analytics;

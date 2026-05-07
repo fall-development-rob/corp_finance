@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use std::process;
 
+use commands::agent_invoke::AgentInvokeArgs;
 use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
 use commands::audit::AuditArgs;
 use commands::bank_analytics::{
@@ -622,6 +623,8 @@ enum Commands {
     Drift(DriftArgs),
     /// Golden-set freeze / restore / list with ed25519 signing.
     GoldenSet(GoldenSetArgs),
+    /// Record or complete an agent invocation event with audit companion (Phase 29).
+    AgentInvoke(AgentInvokeArgs),
     /// Print version information
     Version,
 }
@@ -745,6 +748,13 @@ fn command_name(cmd: &Commands) -> String {
                 GoldenSetCommands::Freeze(_) => "golden-set.freeze".to_string(),
                 GoldenSetCommands::Restore(_) => "golden-set.restore".to_string(),
                 GoldenSetCommands::List(_) => "golden-set.list".to_string(),
+            }
+        }
+        Commands::AgentInvoke(args) => {
+            use commands::agent_invoke::AgentInvokeCommands;
+            match &args.command {
+                AgentInvokeCommands::Record(_) => "agent-invoke.record".to_string(),
+                AgentInvokeCommands::Complete(_) => "agent-invoke.complete".to_string(),
             }
         }
         Commands::Version => "version".to_string(),
@@ -1168,6 +1178,13 @@ fn main() {
                 GoldenSetCommands::Freeze(a) => commands::golden_set::run_freeze(a),
                 GoldenSetCommands::Restore(a) => commands::golden_set::run_restore(a),
                 GoldenSetCommands::List(a) => commands::golden_set::run_list(a),
+            }
+        }
+        Commands::AgentInvoke(args) => {
+            use commands::agent_invoke::AgentInvokeCommands;
+            match args.command {
+                AgentInvokeCommands::Record(a) => commands::agent_invoke::run_record(a),
+                AgentInvokeCommands::Complete(a) => commands::agent_invoke::run_complete(a),
             }
         }
         Commands::Version => {
