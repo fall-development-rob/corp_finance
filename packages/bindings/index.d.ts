@@ -288,3 +288,11 @@ export declare function attestList(inputJson: string): NapiResult
 export declare function attestRevoke(inputJson: string): NapiResult
 export declare function attestCheck(inputJson: string): NapiResult
 export declare function writeXlsxWorkbook(inputJson: string): NapiResult
+/**
+ * Render a corporate-finance compute result into a WorkbookSpec JSON string.
+ *
+ * Accepts `{ "kind": "dcf"|"comps"|"lbo"|"three_statement", "result_json": "<serialised output>" }`.
+ * Returns the WorkbookSpec as a JSON string — the caller should pipe the result
+ * directly into `write_xlsx_workbook` to produce a .xlsx file (composable two-step).
+ */
+export declare function renderOfficeTemplate(inputJson: string): NapiResult
