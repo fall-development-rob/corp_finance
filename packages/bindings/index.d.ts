@@ -296,3 +296,4 @@ export declare function writeXlsxWorkbook(inputJson: string): NapiResult
  * directly into `write_xlsx_workbook` to produce a .xlsx file (composable two-step).
  */
 export declare function renderOfficeTemplate(inputJson: string): NapiResult
+export declare function writeWordDoc(inputJson: string): NapiResult

@@ -171,3 +171,53 @@ pub struct WriteWorkbookResult {
     pub sha256: String,
     pub sheet_count: usize,
 }
+
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 7 — Word / .docx types
+// ---------------------------------------------------------------------------
+
+/// A styled text run within a paragraph.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TextRun {
+    pub text: String,
+    #[serde(default)]
+    pub bold: bool,
+    #[serde(default)]
+    pub italic: bool,
+}
+
+/// A single content block within a document section.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum DocBlock {
+    Heading { level: u8, text: String },
+    Paragraph { runs: Vec<TextRun> },
+    Table { headers: Vec<String>, rows: Vec<Vec<String>> },
+    BulletList { items: Vec<String> },
+    NumberedList { items: Vec<String> },
+    PageBreak,
+}
+
+/// A contiguous section of content blocks.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DocSection {
+    pub blocks: Vec<DocBlock>,
+}
+
+/// Top-level description of a Word document to be written.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WordDocSpec {
+    pub sections: Vec<DocSection>,
+    #[serde(default)]
+    pub properties: WorkbookProperties,
+}
+
+/// Returned by [`crate::office::docx::write_word_doc`] on success.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WriteDocResult {
+    pub output_path: PathBuf,
+    pub bytes_written: u64,
+    /// SHA-256 of the written file, 64 lowercase hex chars.
+    pub sha256: String,
+    pub section_count: usize,
+}

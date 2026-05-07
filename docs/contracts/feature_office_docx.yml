@@ -1,0 +1,142 @@
+# Feature Contract: Office OOXML Serialization — .docx Write Surface (Phase 29 Wave 7)
+# Enforces architectural invariants for the office/.docx write surface
+# ADR: docs/adr/ADR-022-office-docx-serialization.md
+
+contracts:
+  - id: DOCX-001
+    name: "office_docx_write MCP tool must not accept a docx input parameter"
+    description: >
+      The office surface is write-only. No MCP tool in packages/mcp-server/src/tools/
+      may define a parameter whose name or description implies reading an existing .docx
+      file (e.g., 'docx_path', 'input_docx', 'document_path' used as input).
+      WriteDocResult.output_path is the only docx path that may appear in MCP
+      tool output schemas.
+    scope:
+      - "packages/mcp-server/src/tools/"
+    check: >
+      grep -rn 'input.*\.docx\|docx.*input\|read.*docx\|load.*docx\|open.*docx'
+        packages/mcp-server/src/tools/ returns no matches
+    enforcement: build-time
+    severity: error
+
+  - id: DOCX-002
+    name: "NAPI writeWordDoc must use single-string JSON envelope"
+    description: >
+      The NAPI binding writeWordDoc must accept exactly one string argument
+      (the JSON envelope { spec, output_path }) and return a string (JSON-encoded
+      WriteDocResult). This matches the established NAPI boundary pattern.
+      No additional function parameters are permitted.
+    scope:
+      - "packages/bindings/src/lib.rs"
+    check: >
+      grep -n 'writeWordDoc' packages/bindings/src/lib.rs must show a
+      single-argument fn signature accepting a String/&str; no second parameter present
+    enforcement: build-time
+    severity: error
+
+  - id: DOCX-003
+    name: "office feature is opt-in via Cargo feature flag"
+    description: >
+      docx-rs must appear under the [features] office section in
+      corp-finance-core/Cargo.toml as an optional dependency, not as an always-on dep.
+      No new feature flag is introduced; docx-rs is gated behind the existing office feature.
+    scope:
+      - "crates/corp-finance-core/Cargo.toml"
+    check: >
+      grep -A20 '\[features\]' crates/corp-finance-core/Cargo.toml |
+        grep 'office' shows docx-rs as an optional feature member
+    enforcement: build-time
+    severity: error
+
+  - id: DOCX-004
+    name: "DocBlock tagged enum uses serde type discriminant"
+    description: >
+      The DocBlock enum must use serde's tagged representation with discriminant key "type"
+      so the JSON wire form is { "type": "Heading", ... } etc. This matches the serde
+      tagged-enum pattern used across the codebase.
+    scope:
+      - "crates/corp-finance-core/src/office/"
+    check: >
+      grep -n 'tag = "type"\|serde(tag' crates/corp-finance-core/src/office/ --include='*.rs' -r
+        returns at least one match on the DocBlock enum definition
+    enforcement: review
+    severity: warning
+
+  - id: DOCX-005
+    name: "CLI office docx subcommand is feature-gated"
+    description: >
+      The corp-finance-cli office docx write subcommand must be compiled only when
+      the office feature is enabled. A bare `cargo build --workspace` without
+      --features office must not expose the office docx subcommand.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+    check: >
+      grep -n 'office' crates/corp-finance-cli/src/main.rs shows cfg(feature = "office")
+      guard on the office docx subcommand registration
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: DOCX-INV-001
+    name: "Terminal-deliverable invariant — no docx reader in any MCP tool"
+    description: >
+      Documents are terminal deliverables. No MCP tool, NAPI binding, or CLI subcommand
+      reads a .docx file back as input. WriteDocResult { output_path, bytes_written,
+      sha256, section_count } is the only system-of-record handle after a write.
+    check: >
+      grep -rn '\.docx' packages/mcp-server/src/tools/ |
+        grep -v 'output_path\|WriteDoc\|bytes_written\|sha256\|section_count\|# \|//'
+        returns no matches
+    severity: error
+
+  - id: DOCX-INV-002
+    name: "sha256 stability — identical spec produces identical bytes"
+    description: >
+      Writing the same WordDocSpec twice must produce byte-identical .docx output,
+      yielding the same sha256 digest. This is asserted by the unit test
+      `write_doc_sha256_stability` in the office module test suite.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'write_doc_sha256_stability'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office write_doc_sha256_stability exits 0.
+    severity: error
+
+  - id: DOCX-INV-003
+    name: "Zip integrity — output starts with PK magic bytes"
+    description: >
+      Every .docx file produced by write_word_doc must begin with the OOXML/ZIP magic
+      bytes PK\x03\x04 (hex: 50 4B 03 04). The unit test `write_doc_zip_magic_bytes`
+      asserts this by reading the first four bytes of the output file after a write.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'write_doc_zip_magic_bytes\|PK\\x03\\x04\|0x50.*0x4B.*0x03.*0x04'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office write_doc_zip_magic_bytes exits 0.
+    severity: error
+
+  - id: DOCX-INV-004
+    name: "Section validation — empty sections list is rejected with InvalidInput"
+    description: >
+      An empty sections Vec must be rejected with InvalidInput before any docx_rs
+      build call. Validation occurs in write_word_doc before any bytes are written.
+      The corresponding unit test for the empty-sections rejection case must pass
+      under `cargo test --features office`.
+    check: >
+      In crates/corp-finance-core/src/office/, grep for 'sections' or 'InvalidInput'
+      confirms validation logic; the unit test for the empty-sections rejection case
+      passes under `cargo test --features office`.
+    severity: error
+
+  - id: DOCX-INV-005
+    name: "Heading level bounds — DocBlock::Heading.level must be in 1..=3"
+    description: >
+      DocBlock::Heading.level must be validated as 1..=3 before any docx_rs build call.
+      Out-of-range values (0, 4, and above) are rejected with InvalidInput before write.
+      The unit tests for out-of-range level rejection (level 0, level 4) must pass
+      under `cargo test --features office`.
+    check: >
+      In crates/corp-finance-core/src/office/, grep for 'level\|Heading\|InvalidInput'
+      confirms heading-level validation logic; unit tests for level 0 and level 4
+      rejection pass under `cargo test --features office`.
+    severity: error

@@ -3987,3 +3987,24 @@ pub fn render_office_template(input_json: String) -> NapiResult<String> {
             .map_err(to_napi_error)?;
     serde_json::to_string(&workbook).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Office — Word / .docx writer (Phase 29 Wave 7)
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct WriteWordDocInput {
+    spec: corp_finance_core::office::WordDocSpec,
+    output_path: String,
+}
+
+#[napi]
+pub fn write_word_doc(input_json: String) -> NapiResult<String> {
+    let input: WriteWordDocInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let result = corp_finance_core::office::write_word_doc(
+        &input.spec,
+        std::path::Path::new(&input.output_path),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&result).map_err(to_napi_error)
+}

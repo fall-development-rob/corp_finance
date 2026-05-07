@@ -630,7 +630,7 @@ enum Commands {
     AgentInvoke(AgentInvokeArgs),
     /// Federation v2 trust attestation management (Phase 29 Wave 4).
     Attest(AttestArgs),
-    /// Office / OOXML serialisation — xlsx write (Phase 29 Wave 6).
+    /// Office / OOXML serialisation — xlsx write (Wave 6) and docx write (Wave 7).
     #[cfg(feature = "office")]
     Office(OfficeArgs),
     /// Print version information
@@ -777,10 +777,13 @@ fn command_name(cmd: &Commands) -> String {
         }
         #[cfg(feature = "office")]
         Commands::Office(args) => {
-            use commands::office::{OfficeCommands, XlsxCommands};
+            use commands::office::{DocxCommands, OfficeCommands, XlsxCommands};
             match &args.command {
                 OfficeCommands::Xlsx(x) => match &x.command {
                     XlsxCommands::Write(_) => "office.xlsx.write".to_string(),
+                },
+                OfficeCommands::Docx(d) => match &d.command {
+                    DocxCommands::Write(_) => "office.docx.write".to_string(),
                 },
                 OfficeCommands::RenderTemplate(_) => "office.render_template".to_string(),
             }
@@ -1218,10 +1221,13 @@ fn main() {
         Commands::Attest(args) => commands::attest::run_attest(args),
         #[cfg(feature = "office")]
         Commands::Office(args) => {
-            use commands::office::{OfficeCommands, XlsxCommands};
+            use commands::office::{DocxCommands, OfficeCommands, XlsxCommands};
             match args.command {
                 OfficeCommands::Xlsx(x) => match x.command {
                     XlsxCommands::Write(a) => commands::office::run_xlsx_write(a),
+                },
+                OfficeCommands::Docx(d) => match d.command {
+                    DocxCommands::Write(a) => commands::office::run_docx_write(a),
                 },
                 OfficeCommands::RenderTemplate(a) => commands::office::run_render_template(a),
             }

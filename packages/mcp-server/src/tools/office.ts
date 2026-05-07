@@ -1,9 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { writeXlsxWorkbook, renderOfficeTemplate } from "../bindings.js";
+import { writeXlsxWorkbook, renderOfficeTemplate, writeWordDoc } from "../bindings.js";
 import {
   WriteXlsxWorkbookInputSchema,
   WriteWorkbookResultSchema,
   RenderTemplateInputSchema,
+  WriteWordDocInputSchema,
+  WriteDocResultSchema,
 } from "../schemas/office.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
@@ -31,6 +33,18 @@ export function registerOfficeTools(server: McpServer) {
       const validated = RenderTemplateInputSchema.parse(params);
       const workbookJson = renderOfficeTemplate(JSON.stringify(validated));
       return wrapResponse(String(workbookJson));
+    }
+  );
+
+  server.tool(
+    "office_docx_write",
+    "Serialise a WordDocSpec to a .docx file on disk and return WriteDocResult { output_path, bytes_written, sha256, section_count }. Documents are terminal deliverables — the result struct is the system-of-record handle, not the file contents. Phase 29 Wave 7.",
+    WriteWordDocInputSchema.shape,
+    async (params) => {
+      const validated = WriteWordDocInputSchema.parse(coerceNumbers(params));
+      const resultJson = writeWordDoc(JSON.stringify(validated));
+      const parsed = WriteDocResultSchema.parse(JSON.parse(String(resultJson)));
+      return wrapResponse(JSON.stringify(parsed));
     }
   );
 }

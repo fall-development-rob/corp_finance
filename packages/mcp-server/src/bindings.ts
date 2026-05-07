@@ -305,4 +305,7 @@ export const attestCheck = b.attestCheck;
 export const writeXlsxWorkbook = b.writeXlsxWorkbook;
 export const renderOfficeTemplate = b.renderOfficeTemplate;
 
+// Phase 29 wave 7: office docx writer.
+export const writeWordDoc = b.writeWordDoc;
+
 export default pkg;

@@ -115,3 +115,62 @@ export const WriteWorkbookResultSchema = z.object({
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
   sheet_count: z.number().int().nonnegative(),
 });
+
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 7 — Word / .docx schemas
+// ---------------------------------------------------------------------------
+
+export const TextRunSchema = z.object({
+  text: z.string(),
+  bold: z.boolean().default(false),
+  italic: z.boolean().default(false),
+});
+
+export const DocBlockSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("heading"),
+    level: z.number().int().min(1).max(3),
+    text: z.string().min(1),
+  }),
+  z.object({
+    kind: z.literal("paragraph"),
+    runs: z.array(TextRunSchema),
+  }),
+  z.object({
+    kind: z.literal("table"),
+    headers: z.array(z.string()),
+    rows: z.array(z.array(z.string())),
+  }),
+  z.object({
+    kind: z.literal("bullet_list"),
+    items: z.array(z.string()),
+  }),
+  z.object({
+    kind: z.literal("numbered_list"),
+    items: z.array(z.string()),
+  }),
+  z.object({
+    kind: z.literal("page_break"),
+  }),
+]);
+
+export const DocSectionSchema = z.object({
+  blocks: z.array(DocBlockSchema),
+});
+
+export const WordDocSpecSchema = z.object({
+  sections: z.array(DocSectionSchema).min(1),
+  properties: WorkbookPropertiesSchema.default({}),
+});
+
+export const WriteWordDocInputSchema = z.object({
+  spec: WordDocSpecSchema,
+  output_path: z.string().min(1),
+});
+
+export const WriteDocResultSchema = z.object({
+  output_path: z.string().min(1),
+  bytes_written: z.number().int().nonnegative(),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  section_count: z.number().int().nonnegative(),
+});
