@@ -1,0 +1,177 @@
+name: Rust Quality
+
+# Focused Rust quality checks beyond the cookbooks gate.
+# Runs full integration tests, doc build, benchmark compile-only,
+# and optional cargo-audit / cargo-deny if a deny.toml is present.
+# Matrix: ubuntu-latest + macos-latest. Windows is intentionally skipped
+# because the wasm bindings are excluded on Windows.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  RUSTDOCFLAGS: -Dwarnings
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Full integration test suite (stable). Matrix across Linux + macOS.
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry, git, and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.os }}-cargo-rust-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-cargo-rust-
+
+      - name: cargo test (workspace, all features, integration + unit)
+        run: cargo test --workspace --all-features
+
+  # ---------------------------------------------------------------------------
+  # Doc build — catches missing-docs and broken intra-doc links.
+  # Uses nightly to surface unstable lints when available, but falls back
+  # cleanly on stable rustdoc if nightly is unavailable.
+  # ---------------------------------------------------------------------------
+  docs:
+    name: cargo doc
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable + nightly)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install nightly toolchain (best-effort)
+        run: rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update || true
+
+      - name: Cache cargo registry, git, and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ubuntu-latest-cargo-docs-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ubuntu-latest-cargo-docs-
+
+      - name: cargo doc (workspace, all features, no deps)
+        run: cargo doc --workspace --all-features --no-deps
+
+  # ---------------------------------------------------------------------------
+  # Benchmark compile-only check. Uses --no-run so we never burn CI time
+  # actually running benchmarks; we just want to know they still compile.
+  # ---------------------------------------------------------------------------
+  bench-compile:
+    name: cargo bench --no-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry, git, and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ubuntu-latest-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ubuntu-latest-cargo-bench-
+
+      # `cargo bench --no-run` is a no-op when no benchmarks exist, but
+      # surfaces compile errors immediately when they do.
+      - name: cargo bench --no-run (compile-only)
+        run: cargo bench --workspace --all-features --no-run
+
+  # ---------------------------------------------------------------------------
+  # Vulnerability scan — runs cargo-audit if installable; soft-fail if
+  # the tool itself fails to install (rate limits, transient).
+  # ---------------------------------------------------------------------------
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: cargo audit
+        run: cargo audit
+
+  # ---------------------------------------------------------------------------
+  # License / dep policy via cargo-deny — only runs if deny.toml exists.
+  # ---------------------------------------------------------------------------
+  deny:
+    name: cargo deny check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for deny.toml
+        id: deny_cfg
+        shell: bash
+        run: |
+          if [ -f deny.toml ] || [ -f .cargo/deny.toml ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "deny.toml not present — skipping cargo deny."
+          fi
+
+      - name: Install Rust toolchain (stable)
+        if: steps.deny_cfg.outputs.present == 'true'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-deny
+        if: steps.deny_cfg.outputs.present == 'true'
+        run: cargo install cargo-deny --locked
+
+      - name: cargo deny check
+        if: steps.deny_cfg.outputs.present == 'true'
+        run: cargo deny check

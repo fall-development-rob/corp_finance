@@ -2702,3 +2702,411 @@ pub fn mcp_server_list(input_json: String) -> NapiResult<String> {
         corp_finance_core::mcp_servers::list::list_servers(&input).map_err(to_napi_error)?;
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Memory bindings (Phase 26 — ADR-016).
+//
+// HNSW + BM25 hybrid retrieval over `RunSummary` records, plus portable
+// `.cfa-session` archive save/restore. The HNSW and BM25 indexes are
+// serialised to disk between calls (HNSW via the gzip+JSON envelope written
+// by `HnswMemoryIndex::save_to`; BM25 is rebuilt from the HNSW summary side
+// store on each call — Phase 26 BM25 is in-RAM only, see module docs).
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct MemoryIngestInput {
+    run_summary: corp_finance_core::memory::RunSummary,
+    /// Optional path to a persisted HNSW index (gzip+JSON envelope). When
+    /// supplied, the index is loaded from disk, the new summary is appended,
+    /// and the index is rewritten in place. When omitted, only the
+    /// in-process side store is exercised — useful for tests / dry runs.
+    #[serde(default)]
+    hnsw_path: Option<String>,
+    /// Embedding dimensionality used when creating a fresh index. Required
+    /// when `hnsw_path` does not yet exist.
+    #[serde(default)]
+    embedding_dim: Option<usize>,
+}
+
+#[derive(serde::Serialize)]
+struct MemoryIngestOutput {
+    run_id: uuid::Uuid,
+    indexed_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[napi]
+pub fn surface_memory_ingest(input_json: String) -> NapiResult<String> {
+    let input: MemoryIngestInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let run_id = input.run_summary.run_id;
+
+    if let Some(path_str) = input.hnsw_path.as_deref() {
+        let path = std::path::Path::new(path_str);
+        let mut idx = if path.exists() {
+            corp_finance_core::memory::HnswMemoryIndex::load_from(path).map_err(to_napi_error)?
+        } else {
+            let dim = input
+                .embedding_dim
+                .unwrap_or(input.run_summary.embedding.len());
+            corp_finance_core::memory::HnswMemoryIndex::new(dim)
+        };
+        idx.ingest(&input.run_summary).map_err(to_napi_error)?;
+        idx.save_to(path).map_err(to_napi_error)?;
+    }
+
+    let output = MemoryIngestOutput {
+        run_id,
+        indexed_at: chrono::Utc::now(),
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct MemoryFindInput {
+    query: corp_finance_core::memory::MemoryQuery,
+    /// Optional path to a persisted HNSW index. When omitted the result is
+    /// an empty hit list (no in-process state survives between calls).
+    #[serde(default)]
+    hnsw_path: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct MemoryHit {
+    run_summary: corp_finance_core::memory::RunSummary,
+    score: f32,
+}
+
+#[derive(serde::Serialize)]
+struct MemoryFindOutput {
+    hits: Vec<MemoryHit>,
+}
+
+#[napi]
+pub fn surface_memory_find(input_json: String) -> NapiResult<String> {
+    let input: MemoryFindInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+
+    // Hybrid retrieval: HNSW for embeddings, BM25 for text. Phase 26 BM25 is
+    // in-RAM only and rebuilt from the HNSW side store on each call so the
+    // two retrievers operate over the same `RunSummary` corpus.
+    let mut hits: Vec<MemoryHit> = Vec::new();
+
+    if let Some(path_str) = input.hnsw_path.as_deref() {
+        let path = std::path::Path::new(path_str);
+        if path.exists() {
+            let idx = corp_finance_core::memory::HnswMemoryIndex::load_from(path)
+                .map_err(to_napi_error)?;
+            let surface_filter = input.query.surface;
+            let tenant_filter = input.query.tenant_id.clone();
+            let filter = |s: &corp_finance_core::memory::RunSummary| -> bool {
+                if let Some(want) = surface_filter {
+                    if s.surface != want {
+                        return false;
+                    }
+                }
+                if let Some(ref want) = tenant_filter {
+                    if s.tenant_id.as_deref() != Some(want.as_str()) {
+                        return false;
+                    }
+                }
+                true
+            };
+
+            // Vector recall.
+            if let Some(ref emb) = input.query.embedding {
+                for (s, d) in idx.query(emb, input.query.limit, filter) {
+                    hits.push(MemoryHit {
+                        run_summary: s,
+                        score: d,
+                    });
+                }
+            }
+
+            // Text recall via BM25 over the same side store.
+            if let Some(ref text) = input.query.text {
+                let mut bm25 =
+                    corp_finance_core::memory::BM25MemoryIndex::new().map_err(to_napi_error)?;
+                // We don't have direct access to the side store, so re-run
+                // the embedding query with a permissive filter just to walk
+                // the records. Skip this branch when only text is supplied
+                // (no embedding) — the v1 retriever degrades gracefully.
+                if let Some(ref emb) = input.query.embedding {
+                    let walk = idx.query(emb, idx.len(), |_| true);
+                    for (s, _) in &walk {
+                        bm25.ingest(s).map_err(to_napi_error)?;
+                    }
+                    let results = bm25
+                        .query(text, input.query.limit, input.query.tenant_id.as_deref())
+                        .map_err(to_napi_error)?;
+                    for s in results {
+                        // BM25 scores are not exposed by the v1 wrapper;
+                        // emit 0.0 as a stable placeholder so the hit list
+                        // stays well-typed. Vector hits dominate ranking.
+                        hits.push(MemoryHit {
+                            run_summary: s,
+                            score: 0.0,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // Cap to limit and dedupe by run_id (vector + text recall can overlap).
+    let mut seen: std::collections::HashSet<uuid::Uuid> = std::collections::HashSet::new();
+    let mut deduped: Vec<MemoryHit> = Vec::with_capacity(hits.len());
+    for h in hits {
+        if seen.insert(h.run_summary.run_id) {
+            deduped.push(h);
+            if deduped.len() >= input.query.limit {
+                break;
+            }
+        }
+    }
+
+    let output = MemoryFindOutput { hits: deduped };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct SessionSaveInput {
+    session: corp_finance_core::memory::CfaSession,
+    path: String,
+}
+
+#[derive(serde::Serialize)]
+struct SessionSaveOutput {
+    path: String,
+    sha256: String,
+}
+
+#[napi]
+pub fn surface_session_save(input_json: String) -> NapiResult<String> {
+    let input: SessionSaveInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let path = std::path::PathBuf::from(&input.path);
+    corp_finance_core::memory::save_session(&input.session, &path).map_err(to_napi_error)?;
+    // SHA-256 of the on-disk archive — useful as a content fingerprint for
+    // the audit manifest.
+    let sha256 =
+        corp_finance_core::audit::audit_manifest::sha256_file(&path).map_err(to_napi_error)?;
+    let output = SessionSaveOutput {
+        path: input.path,
+        sha256,
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct SessionRestoreInput {
+    path: String,
+}
+
+#[derive(serde::Serialize)]
+struct SessionRestoreOutput {
+    session: corp_finance_core::memory::CfaSession,
+}
+
+#[napi]
+pub fn surface_session_restore(input_json: String) -> NapiResult<String> {
+    let input: SessionRestoreInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let path = std::path::PathBuf::from(&input.path);
+    let session = corp_finance_core::memory::restore_session(&path).map_err(to_napi_error)?;
+    let output = SessionRestoreOutput { session };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Audit bindings (Phase 26 — ADR-017 §1).
+//
+// djb2 surface-event audit hashing. The hash is the identity primitive for
+// "did the surface event manifest change between this run and that run".
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct SurfaceAuditInput {
+    manifest: corp_finance_core::audit::SurfaceManifest,
+}
+
+#[derive(serde::Serialize)]
+struct SurfaceAuditOutput {
+    surface_audit_hash: String,
+}
+
+#[napi]
+pub fn surface_audit_compute(input_json: String) -> NapiResult<String> {
+    let input: SurfaceAuditInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let hash = corp_finance_core::audit::compute_surface_audit_hash(&input.manifest);
+    let output = SurfaceAuditOutput {
+        surface_audit_hash: hash,
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Cost bindings (Phase 26 — ADR-017 §3).
+//
+// rusqlite-backed per-surface cost ledger plus budget set / get / threshold
+// checking. The ledger path is supplied per call; the binding opens the
+// SQLite handle, runs the operation, and closes it. No global state.
+// ---------------------------------------------------------------------------
+
+/// Wire form for `CostFilter` (the underlying type does not derive serde).
+#[derive(serde::Deserialize, Default)]
+struct CostFilterWire {
+    #[serde(default)]
+    surface: Option<corp_finance_core::cost::Surface>,
+    #[serde(default)]
+    tier: Option<corp_finance_core::cost::TierTag>,
+    #[serde(default)]
+    tenant_id: Option<String>,
+    #[serde(default)]
+    since: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(default)]
+    until: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl From<CostFilterWire> for corp_finance_core::cost::CostFilter {
+    fn from(w: CostFilterWire) -> Self {
+        corp_finance_core::cost::CostFilter {
+            surface: w.surface,
+            tier: w.tier,
+            tenant_id: w.tenant_id,
+            since: w.since,
+            until: w.until,
+        }
+    }
+}
+
+/// Wire form for `BudgetFilter` (the underlying type does not derive serde).
+#[derive(serde::Deserialize, Default)]
+struct BudgetFilterWire {
+    #[serde(default)]
+    surface_filter: Option<corp_finance_core::cost::Surface>,
+    #[serde(default)]
+    tier_filter: Option<corp_finance_core::cost::TierTag>,
+    #[serde(default)]
+    period: Option<corp_finance_core::cost::BudgetPeriod>,
+}
+
+impl From<BudgetFilterWire> for corp_finance_core::cost::BudgetFilter {
+    fn from(w: BudgetFilterWire) -> Self {
+        corp_finance_core::cost::BudgetFilter {
+            surface_filter: w.surface_filter,
+            tier_filter: w.tier_filter,
+            period: w.period,
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct CostSummaryInput {
+    ledger_path: String,
+    #[serde(default)]
+    filter: CostFilterWire,
+    group_by: corp_finance_core::cost::GroupBy,
+}
+
+#[derive(serde::Serialize)]
+struct CostSummaryOutput {
+    summary: corp_finance_core::cost::CostSummary,
+}
+
+#[napi]
+pub fn surface_cost_summary(input_json: String) -> NapiResult<String> {
+    let input: CostSummaryInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let ledger =
+        corp_finance_core::cost::CostLedger::open(std::path::Path::new(&input.ledger_path))
+            .map_err(to_napi_error)?;
+    let filter: corp_finance_core::cost::CostFilter = input.filter.into();
+    let summary = corp_finance_core::cost::summary(&ledger, &filter, input.group_by)
+        .map_err(to_napi_error)?;
+    let output = CostSummaryOutput { summary };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct CostBudgetSetInput {
+    ledger_path: String,
+    budget: corp_finance_core::cost::CostBudget,
+}
+
+#[derive(serde::Serialize)]
+struct CostBudgetSetOutput {
+    ok: bool,
+}
+
+#[napi]
+pub fn surface_cost_budget_set(input_json: String) -> NapiResult<String> {
+    let input: CostBudgetSetInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let ledger =
+        corp_finance_core::cost::CostLedger::open(std::path::Path::new(&input.ledger_path))
+            .map_err(to_napi_error)?;
+    corp_finance_core::cost::set_budget(&ledger, &input.budget).map_err(to_napi_error)?;
+    let output = CostBudgetSetOutput { ok: true };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct CostBudgetGetInput {
+    ledger_path: String,
+    #[serde(default)]
+    filter: BudgetFilterWire,
+}
+
+#[derive(serde::Serialize)]
+struct CostBudgetGetOutput {
+    budget: Option<corp_finance_core::cost::CostBudget>,
+    status: Option<corp_finance_core::cost::BudgetStatus>,
+}
+
+#[napi]
+pub fn surface_cost_budget_get(input_json: String) -> NapiResult<String> {
+    let input: CostBudgetGetInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let ledger =
+        corp_finance_core::cost::CostLedger::open(std::path::Path::new(&input.ledger_path))
+            .map_err(to_napi_error)?;
+    let filter: corp_finance_core::cost::BudgetFilter = input.filter.into();
+    let budget = corp_finance_core::cost::get_budget(&ledger, &filter).map_err(to_napi_error)?;
+    let status = match &budget {
+        Some(b) => {
+            Some(corp_finance_core::cost::check_threshold(&ledger, b).map_err(to_napi_error)?)
+        }
+        None => None,
+    };
+    let output = CostBudgetGetOutput { budget, status };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Security bindings (Phase 26 — ADR-017 §5).
+//
+// 14-category PII scanner + 4-kind prompt-injection detector. Both are pure
+// functions over `&str`; spans are byte offsets and the result is sorted by
+// `span_start` ascending.
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct ScanInput {
+    text: String,
+}
+
+#[derive(serde::Serialize)]
+struct ScanOutput {
+    findings: Vec<corp_finance_core::security::Finding>,
+}
+
+#[napi]
+pub fn surface_pii_scan(input_json: String) -> NapiResult<String> {
+    let input: ScanInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let mut findings = corp_finance_core::security::scan_for_pii(&input.text);
+    findings.extend(corp_finance_core::security::detect_injection(&input.text));
+    findings.sort_by_key(|f| f.span_start);
+    let output = ScanOutput { findings };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[napi]
+pub fn surface_injection_detect(input_json: String) -> NapiResult<String> {
+    let input: ScanInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let findings = corp_finance_core::security::detect_injection(&input.text);
+    let output = ScanOutput { findings };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}

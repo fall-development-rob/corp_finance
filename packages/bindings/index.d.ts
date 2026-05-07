@@ -255,3 +255,13 @@ export declare function managedAgentSync(inputJson: string): NapiResult
 export declare function managedAgentDeploy(inputJson: string): NapiResult
 export declare function managedAgentOrchestrate(inputJson: string): NapiResult
 export declare function mcpServerList(inputJson: string): NapiResult
+export declare function surfaceMemoryIngest(inputJson: string): NapiResult
+export declare function surfaceMemoryFind(inputJson: string): NapiResult
+export declare function surfaceSessionSave(inputJson: string): NapiResult
+export declare function surfaceSessionRestore(inputJson: string): NapiResult
+export declare function surfaceAuditCompute(inputJson: string): NapiResult
+export declare function surfaceCostSummary(inputJson: string): NapiResult
+export declare function surfaceCostBudgetSet(inputJson: string): NapiResult
+export declare function surfaceCostBudgetGet(inputJson: string): NapiResult
+export declare function surfacePiiScan(inputJson: string): NapiResult
+export declare function surfaceInjectionDetect(inputJson: string): NapiResult

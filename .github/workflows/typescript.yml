@@ -1,0 +1,114 @@
+name: TypeScript CI
+
+# TypeScript-specific CI: install, typecheck (tsc --noEmit) and run tests
+# (where present) for each MCP server package independently.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  typecheck-and-test:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Each MCP server package is exercised independently. Test scripts
+        # that print "skip — no tests yet" are valid no-ops; only fmp-mcp-server
+        # currently has a real vitest suite.
+        package:
+          - data-mcp-server
+          - fmp-mcp-server
+          - mcp-server
+          - vendor-mcp-server
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm modules for ${{ matrix.package }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            packages/${{ matrix.package }}/node_modules
+          key: ${{ runner.os }}-npm-${{ matrix.package }}-${{ hashFiles(format('packages/{0}/package-lock.json', matrix.package), format('packages/{0}/package.json', matrix.package)) }}
+          restore-keys: |
+            ${{ runner.os }}-npm-${{ matrix.package }}-
+
+      # mcp-server has a file: dependency on packages/bindings — build that first
+      # so npm ci can resolve it. We do not need the native .node here; tsc
+      # only needs the index.js / index.d.ts shim that `napi build` produces,
+      # but `npm run build` in bindings will attempt cargo work. For typecheck
+      # we instead `npm install` (no build script) which is sufficient because
+      # the bindings package.json declares "main"/"types" pointing at files
+      # that exist in the repo (committed via napi build).
+      - name: Prepare bindings (mcp-server only)
+        if: matrix.package == 'mcp-server'
+        shell: bash
+        working-directory: packages/bindings
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+          else
+            npm install --no-audit --no-fund --ignore-scripts
+          fi
+
+      - name: Install dependencies
+        shell: bash
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Typecheck (tsc --noEmit)
+        shell: bash
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          # Prefer the package-defined script if it exists.
+          if node -e "process.exit(require('./package.json').scripts?.typecheck ? 0 : 1)" 2>/dev/null; then
+            npm run typecheck
+          else
+            npx tsc --noEmit
+          fi
+
+      - name: Run tests (if defined and not a stub)
+        shell: bash
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          # Skip when no test script, or when the script is the placeholder
+          # "skip — no tests yet" stub. Otherwise run npm test.
+          TEST_SCRIPT=$(node -e "console.log(require('./package.json').scripts?.test || '')")
+          if [ -z "$TEST_SCRIPT" ]; then
+            echo "No test script defined; skipping."
+            exit 0
+          fi
+          if echo "$TEST_SCRIPT" | grep -q "skip — no tests yet"; then
+            echo "Test script is the placeholder stub; skipping."
+            exit 0
+          fi
+          npm test

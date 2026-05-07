@@ -76,6 +76,10 @@ import { registerFinancialForensicsTools } from "./tools/financial_forensics.js"
 import { registerWorkflowTools } from "./tools/workflows.js";
 import { registerManagedAgentTools } from "./tools/managed_agent.js";
 import { registerMcpServerTools } from "./tools/mcp_servers.js";
+import { registerMemoryTools } from "./tools/memory.js";
+import { registerAuditTools } from "./tools/audit.js";
+import { registerCostTools } from "./tools/cost.js";
+import { registerSecurityTools } from "./tools/security.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -157,6 +161,10 @@ registerFinancialForensicsTools(server);
 registerWorkflowTools(server);
 registerManagedAgentTools(server);
 registerMcpServerTools(server);
+registerMemoryTools(server);
+registerAuditTools(server);
+registerCostTools(server);
+registerSecurityTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

@@ -7,6 +7,7 @@ use colored::Colorize;
 use std::process;
 
 use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
+use commands::audit::AuditArgs;
 use commands::bank_analytics::{
     CamelsRatingArgs, CeclProvisioningArgs, DepositBetaArgs, LoanBookArgs, NimAnalysisArgs,
 };
@@ -23,6 +24,7 @@ use commands::clo_analytics::{
 use commands::commodity_trading::{CommoditySpreadArgs, StorageEconomicsArgs};
 use commands::compliance::{BestExecutionArgs, GipsReportArgs};
 use commands::convertibles::{ConvertibleAnalysisArgs, ConvertiblePricingArgs};
+use commands::cost::CostArgs;
 use commands::credit::{AltmanArgs, CovenantArgs, CreditArgs, DebtCapacityArgs};
 use commands::credit_derivatives::{CdsArgs, CvaArgs};
 use commands::credit_portfolio::{MigrationArgs, PortfolioCreditRiskArgs};
@@ -81,6 +83,7 @@ use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
 use commands::managed_agent::ManagedAgentArgs;
 use commands::market_microstructure::{OptimalExecutionArgs, SpreadAnalysisArgs};
 use commands::mcp::McpArgs;
+use commands::memory::MemoryArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::mortgage_analytics::{MbsAnalyticsArgs, PrepaymentArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
@@ -107,6 +110,8 @@ use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::risk_budgeting::{FactorRiskBudgetArgs, TailRiskArgs};
 use commands::scenarios::SensitivityArgs;
 use commands::securitization::{AbsMbsArgs, TranchingArgs};
+use commands::security::SecurityArgs;
+use commands::session::SessionArgs;
 use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
 use commands::substance_requirements::{EconomicSubstanceArgs, JurisdictionSubstanceTestArgs};
@@ -585,6 +590,16 @@ enum Commands {
     ManagedAgent(ManagedAgentArgs),
     /// MCP-server tier registry (list servers by cost tier — free vs paid-vendor)
     Mcp(McpArgs),
+    /// Cost ledger summaries and budget management
+    Cost(CostArgs),
+    /// Memory index find / ingest (HNSW + BM25)
+    Memory(MemoryArgs),
+    /// CFA-session archive save / restore (.cfa-session)
+    Session(SessionArgs),
+    /// Audit manifest write (`<output>.audit.json`)
+    Audit(AuditArgs),
+    /// PII / prompt-injection scanning
+    Security(SecurityArgs),
     /// Print version information
     Version,
 }
@@ -597,8 +612,104 @@ pub enum OutputFormat {
     Minimal,
 }
 
+/// Canonical surface-event id for the active `Commands` variant.
+///
+/// Used as the `cfa.cli.subcommand` value on the root tracing span.  For
+/// grouped commands (e.g. `cfa cost summary`) returns the dotted
+/// `<group>.<verb>` form; for flat commands returns the lowercased variant
+/// name.
+fn command_name(cmd: &Commands) -> String {
+    match cmd {
+        Commands::Cost(args) => {
+            use commands::cost::{CostBudgetCommands, CostCommands};
+            match &args.command {
+                CostCommands::Summary(_) => "cost.summary".to_string(),
+                CostCommands::Budget(b) => match b {
+                    CostBudgetCommands::Set(_) => "cost.budget.set".to_string(),
+                    CostBudgetCommands::Get(_) => "cost.budget.get".to_string(),
+                },
+            }
+        }
+        Commands::Memory(args) => {
+            use commands::memory::MemoryCommands;
+            match &args.command {
+                MemoryCommands::Find(_) => "memory.find".to_string(),
+                MemoryCommands::Ingest(_) => "memory.ingest".to_string(),
+            }
+        }
+        Commands::Session(args) => {
+            use commands::session::SessionCommands;
+            match &args.command {
+                SessionCommands::Save(_) => "session.save".to_string(),
+                SessionCommands::Restore(_) => "session.restore".to_string(),
+            }
+        }
+        Commands::Audit(args) => {
+            use commands::audit::AuditCommands;
+            match &args.command {
+                AuditCommands::Write(_) => "audit.write".to_string(),
+            }
+        }
+        Commands::Security(args) => {
+            use commands::security::SecurityCommands;
+            match &args.command {
+                SecurityCommands::Scan(_) => "security.scan".to_string(),
+            }
+        }
+        Commands::ManagedAgent(args) => {
+            use commands::managed_agent::ManagedAgentCommands;
+            match &args.command {
+                ManagedAgentCommands::Validate(_) => "managed-agent.validate".to_string(),
+                ManagedAgentCommands::CheckAll(_) => "managed-agent.check-all".to_string(),
+                ManagedAgentCommands::Deploy(_) => "managed-agent.deploy".to_string(),
+                ManagedAgentCommands::Orchestrate(_) => "managed-agent.orchestrate".to_string(),
+                ManagedAgentCommands::Sync(_) => "managed-agent.sync".to_string(),
+                ManagedAgentCommands::List(_) => "managed-agent.list".to_string(),
+            }
+        }
+        Commands::Mcp(args) => {
+            use commands::mcp::McpCommands;
+            match &args.command {
+                McpCommands::List(_) => "mcp.list".to_string(),
+            }
+        }
+        Commands::Version => "version".to_string(),
+        // Flat single-verb subcommands: best-effort lowercase variant name.
+        // Falls back to the second `argv` token (the subcommand) when
+        // available, otherwise the canonical fixed strings below.
+        Commands::Wacc(_) => "wacc".to_string(),
+        Commands::Dcf(_) => "dcf".to_string(),
+        Commands::Comps(_) => "comps".to_string(),
+        Commands::CreditMetrics(_) => "credit-metrics".to_string(),
+        Commands::DebtCapacity(_) => "debt-capacity".to_string(),
+        Commands::CovenantTest(_) => "covenant-test".to_string(),
+        Commands::Returns(_) => "returns".to_string(),
+        Commands::Sensitivity(_) => "sensitivity".to_string(),
+        Commands::Sharpe(_) => "sharpe".to_string(),
+        Commands::Risk(_) => "risk".to_string(),
+        Commands::Kelly(_) => "kelly".to_string(),
+        Commands::Lbo(_) => "lbo".to_string(),
+        Commands::Waterfall(_) => "waterfall".to_string(),
+        Commands::Merger(_) => "merger".to_string(),
+        // Default: best-effort use argv[1] as the subcommand label.
+        _ => std::env::args().nth(1).unwrap_or_else(|| "cli".to_string()),
+    }
+}
+
 fn main() {
+    // Install the global tracing subscriber (idempotent).  Errors are
+    // surfaced on stderr but never fatal — observability must not block CLI
+    // execution.
+    if let Err(e) = corp_finance_core::observability::init_for_cli() {
+        eprintln!("[cfa] tracing init failed: {}", e);
+    }
+
     let cli = Cli::parse();
+
+    // Open a root CLI span for the duration of the dispatch.  The span
+    // closes when `_root_span` drops at end of `main`.
+    let subcmd_name = command_name(&cli.command);
+    let _root_span = corp_finance_core::observability::cli_span(&subcmd_name).entered();
 
     let result: Result<serde_json::Value, Box<dyn std::error::Error>> = match cli.command {
         Commands::Wacc(args) => commands::valuation::run_wacc(args),
@@ -895,6 +1006,42 @@ fn main() {
             use commands::mcp::McpCommands;
             match args.command {
                 McpCommands::List(a) => commands::mcp::run_list(a),
+            }
+        }
+        Commands::Cost(args) => {
+            use commands::cost::{CostBudgetCommands, CostCommands};
+            match args.command {
+                CostCommands::Summary(a) => commands::cost::run_summary(a),
+                CostCommands::Budget(b) => match b {
+                    CostBudgetCommands::Set(a) => commands::cost::run_budget_set(a),
+                    CostBudgetCommands::Get(a) => commands::cost::run_budget_get(a),
+                },
+            }
+        }
+        Commands::Memory(args) => {
+            use commands::memory::MemoryCommands;
+            match args.command {
+                MemoryCommands::Find(a) => commands::memory::run_find(a),
+                MemoryCommands::Ingest(a) => commands::memory::run_ingest(a),
+            }
+        }
+        Commands::Session(args) => {
+            use commands::session::SessionCommands;
+            match args.command {
+                SessionCommands::Save(a) => commands::session::run_save(a),
+                SessionCommands::Restore(a) => commands::session::run_restore(a),
+            }
+        }
+        Commands::Audit(args) => {
+            use commands::audit::AuditCommands;
+            match args.command {
+                AuditCommands::Write(a) => commands::audit::run_write(a),
+            }
+        }
+        Commands::Security(args) => {
+            use commands::security::SecurityCommands;
+            match args.command {
+                SecurityCommands::Scan(a) => commands::security::run_scan(a),
             }
         }
         Commands::Version => {

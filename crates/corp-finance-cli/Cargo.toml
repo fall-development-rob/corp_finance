@@ -22,3 +22,7 @@ colored = "2"
 rust_decimal = "1"
 rust_decimal_macros = "1"
 atty = "0.2"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v7", "serde"] }
+sha2 = "0.10"
+flate2 = "1"

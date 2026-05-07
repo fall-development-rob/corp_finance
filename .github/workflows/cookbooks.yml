@@ -1,0 +1,162 @@
+name: Cookbooks CI
+
+# Main user-visible CI gate. Runs on every PR and push to main.
+# Stages:
+#   1. Build the Rust workspace (all features).
+#   2. Run all unit tests (--lib).
+#   3. Clippy (-D warnings) and rustfmt --check.
+#   4. Validate every managed-agent cookbook (15/15 must pass).
+#   5. Smoke-test cookbooks via scripts/test-cookbooks.sh (15/15 validate + dry-run deploy).
+#   6. Build all four TypeScript MCP servers.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  NODE_VERSION: "20"
+
+jobs:
+  cookbooks:
+    name: Cookbooks gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable + clippy + rustfmt)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache cargo registry, git, and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-cookbooks-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-cookbooks-
+
+      - name: Cache npm modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            packages/data-mcp-server/node_modules
+            packages/fmp-mcp-server/node_modules
+            packages/mcp-server/node_modules
+            packages/vendor-mcp-server/node_modules
+          key: ${{ runner.os }}-npm-cookbooks-${{ hashFiles('packages/*/package-lock.json', 'packages/*/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-cookbooks-
+
+      # ---------------------------------------------------------------------
+      # Rust workspace: build, test (unit only), clippy, fmt
+      # ---------------------------------------------------------------------
+      - name: cargo build (workspace, all features)
+        run: cargo build --workspace --all-features
+
+      - name: cargo test --lib (workspace, all features)
+        run: cargo test --workspace --all-features --lib
+
+      - name: cargo clippy (-D warnings)
+        run: cargo clippy --workspace --all-features -- -D warnings
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      # ---------------------------------------------------------------------
+      # Managed-agent cookbooks: 15/15 must pass validate + dry-run deploy
+      # ---------------------------------------------------------------------
+      - name: managed-agent check-all (15/15 validate)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p corp-finance-cli --quiet -- managed-agent check-all \
+            > /tmp/check-all.json
+          # Print summary for log readability
+          cat /tmp/check-all.json
+          # Contract: top-level "ok": true. Match compact + pretty JSON.
+          if ! grep -Eq '"ok":[[:space:]]*true' /tmp/check-all.json; then
+            echo "::error::managed-agent check-all reported ok=false"
+            exit 1
+          fi
+
+      - name: scripts/test-cookbooks.sh (15/15 validate + dry-run deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./scripts/test-cookbooks.sh
+
+      # ---------------------------------------------------------------------
+      # TypeScript MCP servers: build all four
+      # ---------------------------------------------------------------------
+      - name: Build packages/data-mcp-server
+        shell: bash
+        working-directory: packages/data-mcp-server
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Build packages/fmp-mcp-server
+        shell: bash
+        working-directory: packages/fmp-mcp-server
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Build packages/mcp-server
+        shell: bash
+        working-directory: packages/mcp-server
+        run: |
+          set -euo pipefail
+          # mcp-server depends on @robotixai/corp-finance-bindings via file: link
+          # Build the bindings package first so npm ci can resolve it.
+          if [ -d ../bindings ]; then
+            (cd ../bindings && npm ci && npm run build)
+          fi
+          npm ci
+          npm run build
+
+      - name: Build packages/vendor-mcp-server
+        shell: bash
+        working-directory: packages/vendor-mcp-server
+        run: |
+          set -euo pipefail
+          # vendor-mcp-server has no package-lock.json — use npm install.
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+          npm run build
+
+      - name: Upload check-all output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: managed-agent-check-all
+          path: /tmp/check-all.json
+          if-no-files-found: ignore
+          retention-days: 7

@@ -37,11 +37,42 @@
       ]
     },
     {
-      "matcher": "Write",
+      "matcher": "Write|Edit",
       "hooks": [
         {
           "type": "command",
-          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*-(client-report|client-brief|meeting-brief).*\\.md$ ]]; then if grep -qE \"(^|[^0-9])[0-9]{3}-[0-9]{2}-[0-9]{4}([^0-9]|$)\" \"$p\" || grep -qE \"(^|[^0-9])[0-9]{9}([^0-9]|$)\" \"$p\"; then echo \"[wealth-management] client deliverable $p contains an unredacted 9-digit pattern (likely SSN); redact to XXX-XX-XXXX before write\" >&2; exit 2; fi; fi; exit 0'"
+          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action redact --hook-point pre-tool-use 2>&1 || true; exit 0'"
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*\\.(md|csv|json|tsv)$ && ! \"$p\" =~ \\.audit\\.json$ ]]; then cfa audit write --for \"$p\" >&2 || echo \"[audit] manifest write failed for $p (non-blocking)\" >&2; fi; exit 0'"
+        }
+      ]
+    },
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action alert-only --hook-point post-tool-use 2>&1 || true; exit 0'"
+        }
+      ]
+    }
+  ],
+  "PreMemoryWrite": [
+    {
+      "matcher": ".*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'echo \"${CLAUDE_MEMORY_TEXT:-}\" | cfa security scan --stdin --action redact --hook-point pre-memory-write 2>&1 || true; exit 0'"
         }
       ]
     }

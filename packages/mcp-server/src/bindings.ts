@@ -259,4 +259,16 @@ export const managedAgentSync = b.managedAgentSync;
 export const managedAgentDeploy = b.managedAgentDeploy;
 export const managedAgentOrchestrate = b.managedAgentOrchestrate;
 
+// Phase 26: native memory / audit / cost / security surfaces (ADR-016 / ADR-017).
+export const surfaceMemoryIngest = b.surfaceMemoryIngest;
+export const surfaceMemoryFind = b.surfaceMemoryFind;
+export const surfaceSessionSave = b.surfaceSessionSave;
+export const surfaceSessionRestore = b.surfaceSessionRestore;
+export const surfaceAuditCompute = b.surfaceAuditCompute;
+export const surfaceCostSummary = b.surfaceCostSummary;
+export const surfaceCostBudgetSet = b.surfaceCostBudgetSet;
+export const surfaceCostBudgetGet = b.surfaceCostBudgetGet;
+export const surfacePiiScan = b.surfacePiiScan;
+export const surfaceInjectionDetect = b.surfaceInjectionDetect;
+
 export default pkg;
