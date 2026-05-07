@@ -294,4 +294,11 @@ export const learnReplayRun = b.learnReplayRun;
 export const learnDriftDetect = b.learnDriftDetect;
 export const learnGoldenSetFreeze = b.learnGoldenSetFreeze;
 
+// Phase 29 wave 4: trust attestation surfaces (ADR-019 v2, RUF-FED-006..009).
+export const attestIssue = b.attestIssue;
+export const attestVerify = b.attestVerify;
+export const attestList = b.attestList;
+export const attestRevoke = b.attestRevoke;
+export const attestCheck = b.attestCheck;
+
 export default pkg;

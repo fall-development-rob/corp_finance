@@ -32,6 +32,7 @@
 //! single sources of truth for translating an upstream tier label into a
 //! federation `TrustTier` (RUF-FED-009 / FED-INV-007).
 
+pub mod attestation;
 pub mod pii_redaction;
 pub mod session;
 pub mod tenant;
@@ -41,8 +42,13 @@ pub mod types;
 #[cfg(test)]
 mod tests;
 
+pub use attestation::{
+    check_capability, init_attestation_schema, is_revoked, issue_attestation,
+    list_attestations_by_subject, load_attestation, revoke_attestation, save_attestation,
+    status_with_revocations, verify_attestation,
+};
 pub use pii_redaction::{apply_policy, default_policy_for_tier, redact_text, RedactionResult};
-pub use session::{close_session, open_session, record_payload};
+pub use session::{close_session, open_authenticated_session, open_session, record_payload};
 pub use tenant::{
     enforce_isolation, provision_tenant, resolve_tenant_for_cli, resolve_tenant_for_mcp,
     resolve_tenant_for_plugin, tenant_scoped_path, ResourceKind,
@@ -52,8 +58,8 @@ pub use trust_score::{
     ThreatSeverity,
 };
 pub use types::{
-    FederatedSession, PIIRedactionPolicy, RedactionAction, Tenant, TenantContext, TrustScore,
-    TrustTier,
+    AttestationRevocation, AttestationStatus, FederatedSession, PIIRedactionPolicy,
+    RedactionAction, Tenant, TenantContext, TrustAttestation, TrustScore, TrustTier,
 };
 
 use crate::managed_agent::types::CookbookTier;

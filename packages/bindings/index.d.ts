@@ -282,3 +282,8 @@ export declare function learnTrajectoryRetrieve(inputJson: string): NapiResult
 export declare function learnReplayRun(inputJson: string): NapiResult
 export declare function learnDriftDetect(inputJson: string): NapiResult
 export declare function learnGoldenSetFreeze(inputJson: string): NapiResult
+export declare function attestIssue(inputJson: string): NapiResult
+export declare function attestVerify(inputJson: string): NapiResult
+export declare function attestList(inputJson: string): NapiResult
+export declare function attestRevoke(inputJson: string): NapiResult
+export declare function attestCheck(inputJson: string): NapiResult

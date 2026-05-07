@@ -1,5 +1,6 @@
 pub mod agent_invoke;
 pub mod aml_compliance;
+pub mod attest;
 pub mod audit;
 pub mod bank_analytics;
 pub mod behavioral;

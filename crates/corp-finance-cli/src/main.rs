@@ -8,6 +8,7 @@ use std::process;
 
 use commands::agent_invoke::AgentInvokeArgs;
 use commands::aml_compliance::{KycRiskArgs, SanctionsScreeningArgs};
+use commands::attest::AttestArgs;
 use commands::audit::AuditArgs;
 use commands::bank_analytics::{
     CamelsRatingArgs, CeclProvisioningArgs, DepositBetaArgs, LoanBookArgs, NimAnalysisArgs,
@@ -625,6 +626,8 @@ enum Commands {
     GoldenSet(GoldenSetArgs),
     /// Record or complete an agent invocation event with audit companion (Phase 29).
     AgentInvoke(AgentInvokeArgs),
+    /// Federation v2 trust attestation management (Phase 29 Wave 4).
+    Attest(AttestArgs),
     /// Print version information
     Version,
 }
@@ -755,6 +758,16 @@ fn command_name(cmd: &Commands) -> String {
             match &args.command {
                 AgentInvokeCommands::Record(_) => "agent-invoke.record".to_string(),
                 AgentInvokeCommands::Complete(_) => "agent-invoke.complete".to_string(),
+            }
+        }
+        Commands::Attest(args) => {
+            use commands::attest::AttestSubcommand;
+            match &args.command {
+                AttestSubcommand::Issue(_) => "attest.issue".to_string(),
+                AttestSubcommand::Verify(_) => "attest.verify".to_string(),
+                AttestSubcommand::List(_) => "attest.list".to_string(),
+                AttestSubcommand::Revoke(_) => "attest.revoke".to_string(),
+                AttestSubcommand::Check(_) => "attest.check".to_string(),
             }
         }
         Commands::Version => "version".to_string(),
@@ -1187,6 +1200,7 @@ fn main() {
                 AgentInvokeCommands::Complete(a) => commands::agent_invoke::run_complete(a),
             }
         }
+        Commands::Attest(args) => commands::attest::run_attest(args),
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

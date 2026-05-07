@@ -17,6 +17,59 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+// ---------------------------------------------------------------------------
+// Trust attestation types (Phase 29 Wave 4, ADR-019 v2)
+// ---------------------------------------------------------------------------
+
+/// A signed claim that the issuer tenant grants the subject tenant a set of
+/// capabilities for a fixed time window. Verifiable offline by anyone with
+/// the issuer's ed25519 verifying key.
+///
+/// Canonical signing payload (must match exactly across issue/verify):
+///
+/// ```text
+/// v1|<issuer_tenant>|<subject_tenant>|<capabilities_csv_sorted>|<issued_at_rfc3339>|<expires_at_rfc3339>
+/// ```
+///
+/// The `capabilities` vector is sorted lexicographically before being CSV-joined
+/// for the canonical payload, but the field on the wire keeps the caller's order.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TrustAttestation {
+    pub attestation_id: Uuid,
+    pub issuer_tenant: String,
+    pub subject_tenant: String,
+    pub capabilities: Vec<String>,
+    pub issued_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+    /// hex-encoded ed25519 signature (128 hex chars / 64 bytes raw)
+    pub signature: String,
+    /// hex-encoded ed25519 verifying key (64 hex chars / 32 bytes raw)
+    pub public_key: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AttestationStatus {
+    /// signature valid, current time is within [issued_at, expires_at], not revoked
+    Valid,
+    /// signature valid, current time > expires_at
+    Expired,
+    /// listed in attestation_revocations
+    Revoked,
+    /// signature does not verify against public_key on canonical payload
+    BadSignature,
+    /// canonical-payload-internal mismatch (e.g. expected_issuer mismatches stored issuer)
+    IssuerMismatch,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AttestationRevocation {
+    pub attestation_id: Uuid,
+    pub revoked_at: DateTime<Utc>,
+    pub revoked_by: String,
+    pub reason: String,
+}
+
 use crate::security::types::PiiCategory;
 
 // ---------------------------------------------------------------------------

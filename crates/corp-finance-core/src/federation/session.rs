@@ -1,22 +1,24 @@
-//! Federated session lifecycle aggregate (v2-relevant; v1 stub).
+//! Federated session lifecycle aggregate (Phase 29 Wave 4 — authenticated).
 //!
 //! The DDD declares the `FederatedSession` aggregate with a state machine
 //! `Initiated -> Authenticated -> Authorised -> Active` plus `Hold` /
 //! `Failed` transitions and a both-peer-signed handshake gate for
-//! `Trusted` (PaidVendor) federation. v1 ships the type and three
-//! lifecycle helpers (`open_session`, `close_session`, `record_payload`)
-//! so callers can declare sessions; the actual handshake stack lands in
-//! v2 with `rustls` + `ed25519-dalek`.
+//! `Trusted` (PaidVendor) federation.
+//!
+//! - `open_session` — unauthenticated entry point (v1); used by tests and
+//!   callers that have already authenticated out-of-band.
+//! - `open_authenticated_session` — ed25519 challenge-response handshake
+//!   (Phase 29 Wave 4); verifies the peer's signature over a caller-supplied
+//!   nonce before returning a session.
 
 use chrono::Utc;
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use uuid::{Timestamp, Uuid};
 
-use super::types::FederatedSession;
+use crate::error::CorpFinanceError;
+use crate::CorpFinanceResult;
 
-// TODO(v2): mTLS + ed25519 challenge-response handshake. Today we
-// generate a fresh session id and timestamp; v2 will accept a peer
-// certificate, run the rustls handshake, and verify a signed nonce
-// before the session is allowed to record any payloads.
+use super::types::FederatedSession;
 
 /// Open a new federated session targeting `peer_id`.
 ///
@@ -47,4 +49,27 @@ pub fn close_session(session: &mut FederatedSession) {
 /// with a saturating add so the aggregate cannot panic on overflow.
 pub fn record_payload(session: &mut FederatedSession) {
     session.payload_count = session.payload_count.saturating_add(1);
+}
+
+/// Open a session only after verifying that `peer_id`'s signature over
+/// `nonce` matches `peer_public_key`. The signature is the peer's
+/// challenge response; the nonce is caller-generated and one-time-use
+/// (caller is responsible for freshness).
+///
+/// Returns `Err(InvalidInput)` when the signature doesn't verify; `Ok` with
+/// a populated `FederatedSession` otherwise.
+pub fn open_authenticated_session(
+    peer_id: &str,
+    nonce: &[u8],
+    challenge_signature: &[u8; 64],
+    peer_public_key: &VerifyingKey,
+) -> CorpFinanceResult<FederatedSession> {
+    let sig = Signature::from_bytes(challenge_signature);
+    peer_public_key
+        .verify(nonce, &sig)
+        .map_err(|_| CorpFinanceError::InvalidInput {
+            field: "challenge_signature".into(),
+            reason: format!("ed25519 verify failed for peer '{}'", peer_id),
+        })?;
+    Ok(open_session(peer_id))
 }

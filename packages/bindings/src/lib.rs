@@ -3754,3 +3754,201 @@ pub fn learn_golden_set_freeze(input_json: String) -> NapiResult<String> {
     .map_err(to_napi_error)?;
     serde_json::to_string(&LearnGoldenSetFreezeOutput { golden_set }).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 4: trust attestation bindings (ADR-019 v2, RUF-FED-006..009).
+//
+// Five NAPI bindings covering cross-tenant trust attestation:
+//   attest_issue   — issue + persist a signed attestation
+//   attest_verify  — load + crypto-verify + revocation-check
+//   attest_list    — list all attestations for a subject tenant
+//   attest_revoke  — record a revocation tombstone
+//   attest_check   — check whether a subject has a granted capability
+// ---------------------------------------------------------------------------
+
+/// Open (or create) the SQLite attestation database at `path`, initialising
+/// the schema on first use. Creates parent directories as needed.
+fn open_attestation_db(path: &str) -> NapiResult<rusqlite::Connection> {
+    let pb = std::path::PathBuf::from(path);
+    if let Some(parent) = pb.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| napi::Error::from_reason(e.to_string()))?;
+    }
+    let conn =
+        rusqlite::Connection::open(&pb).map_err(|e| napi::Error::from_reason(e.to_string()))?;
+    corp_finance_core::federation::attestation::init_attestation_schema(&conn)
+        .map_err(to_napi_error)?;
+    Ok(conn)
+}
+
+#[derive(serde::Deserialize)]
+struct AttestIssueInput {
+    issuer_tenant: String,
+    subject_tenant: String,
+    capabilities: Vec<String>,
+    #[serde(default = "default_valid_for_hours")]
+    valid_for_hours: i64,
+    db_path: String,
+    keys_dir: String,
+}
+
+fn default_valid_for_hours() -> i64 {
+    24
+}
+
+#[napi]
+pub fn attest_issue(input_json: String) -> NapiResult<String> {
+    let input: AttestIssueInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let keys_dir = std::path::Path::new(&input.keys_dir);
+    let (signing_key, _vk) =
+        corp_finance_core::self_learning::ensure_keypair(keys_dir).map_err(to_napi_error)?;
+    let valid_for = chrono::Duration::hours(input.valid_for_hours);
+    let attestation = corp_finance_core::federation::attestation::issue_attestation(
+        &input.issuer_tenant,
+        &input.subject_tenant,
+        input.capabilities,
+        valid_for,
+        &signing_key,
+    )
+    .map_err(to_napi_error)?;
+    let conn = open_attestation_db(&input.db_path)?;
+    corp_finance_core::federation::attestation::save_attestation(&conn, &attestation)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&attestation).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AttestVerifyInput {
+    attestation_id: String,
+    expected_issuer: String,
+    db_path: String,
+}
+
+#[derive(serde::Serialize)]
+struct AttestVerifyOutput {
+    attestation_id: String,
+    expected_issuer: String,
+    status: corp_finance_core::federation::types::AttestationStatus,
+}
+
+#[napi]
+pub fn attest_verify(input_json: String) -> NapiResult<String> {
+    let input: AttestVerifyInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let id = uuid::Uuid::parse_str(&input.attestation_id).map_err(to_napi_error)?;
+    let conn = open_attestation_db(&input.db_path)?;
+    let attestation = corp_finance_core::federation::attestation::load_attestation(&conn, id)
+        .map_err(to_napi_error)?
+        .ok_or_else(|| napi::Error::from_reason(format!("attestation {} not found", id)))?;
+    let status = corp_finance_core::federation::attestation::status_with_revocations(
+        &conn,
+        &attestation,
+        &input.expected_issuer,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&AttestVerifyOutput {
+        attestation_id: input.attestation_id,
+        expected_issuer: input.expected_issuer,
+        status,
+    })
+    .map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AttestListInput {
+    subject_tenant: String,
+    db_path: String,
+}
+
+#[derive(serde::Serialize)]
+struct AttestListOutput {
+    subject_tenant: String,
+    count: usize,
+    attestations: Vec<corp_finance_core::federation::types::TrustAttestation>,
+}
+
+#[napi]
+pub fn attest_list(input_json: String) -> NapiResult<String> {
+    let input: AttestListInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let conn = open_attestation_db(&input.db_path)?;
+    let attestations = corp_finance_core::federation::attestation::list_attestations_by_subject(
+        &conn,
+        &input.subject_tenant,
+    )
+    .map_err(to_napi_error)?;
+    let count = attestations.len();
+    serde_json::to_string(&AttestListOutput {
+        subject_tenant: input.subject_tenant,
+        count,
+        attestations,
+    })
+    .map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AttestRevokeInput {
+    attestation_id: String,
+    revoked_by: String,
+    reason: String,
+    db_path: String,
+}
+
+#[derive(serde::Serialize)]
+struct AttestRevokeOutput {
+    attestation_id: String,
+    revoked_by: String,
+    reason: String,
+    revoked_at: String,
+}
+
+#[napi]
+pub fn attest_revoke(input_json: String) -> NapiResult<String> {
+    let input: AttestRevokeInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let id = uuid::Uuid::parse_str(&input.attestation_id).map_err(to_napi_error)?;
+    let conn = open_attestation_db(&input.db_path)?;
+    corp_finance_core::federation::attestation::revoke_attestation(
+        &conn,
+        id,
+        &input.revoked_by,
+        &input.reason,
+    )
+    .map_err(to_napi_error)?;
+    let revoked_at = chrono::Utc::now().to_rfc3339();
+    serde_json::to_string(&AttestRevokeOutput {
+        attestation_id: input.attestation_id,
+        revoked_by: input.revoked_by,
+        reason: input.reason,
+        revoked_at,
+    })
+    .map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AttestCheckInput {
+    subject_tenant: String,
+    capability: String,
+    db_path: String,
+}
+
+#[derive(serde::Serialize)]
+struct AttestCheckOutput {
+    subject_tenant: String,
+    capability: String,
+    granted: bool,
+}
+
+#[napi]
+pub fn attest_check(input_json: String) -> NapiResult<String> {
+    let input: AttestCheckInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let conn = open_attestation_db(&input.db_path)?;
+    let granted = corp_finance_core::federation::attestation::check_capability(
+        &conn,
+        &input.subject_tenant,
+        &input.capability,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&AttestCheckOutput {
+        subject_tenant: input.subject_tenant,
+        capability: input.capability,
+        granted,
+    })
+    .map_err(to_napi_error)
+}
