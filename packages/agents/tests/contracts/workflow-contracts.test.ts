@@ -127,9 +127,14 @@ describe('WORKFLOW-007: No computation in workflow skills', () => {
 });
 
 describe('WORKFLOW-INV-001: Workflow skill count', () => {
-  it('exactly 6 workflow skills exist', () => {
+  // Phase 20 consolidated 41 upstream skills to 6. Subsequent waves added 6
+  // more domain-specific authoring/ops/QA skills (clean-data-xls, deal-documents,
+  // model-audit, operations-kyc, pptx-author, xlsx-author), bringing the total
+  // to 12. The invariant guards against unbounded growth — bump deliberately
+  // when a new workflow skill lands.
+  it('exactly 12 workflow skills exist', () => {
     const workflowDirs = readdirSync(skillsDir).filter(d => d.startsWith('workflow-'));
-    expect(workflowDirs.length).toBe(6);
+    expect(workflowDirs.length).toBe(12);
   });
 });
 
