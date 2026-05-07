@@ -55,6 +55,14 @@ import { registerCoinGeckoTools } from './alternative/coingecko/tools.js';
 import { registerUnhcrTools } from './alternative/unhcr/tools.js';
 import { registerOpenMeteoTools } from './alternative/openmeteo/tools.js';
 
+// Chronograph (Phase 29 Wave 5 — closed-source PE / VC portfolio monitoring,
+// credential-required graceful degradation behind CHRONOGRAPH_API_KEY)
+import { registerChronographTools } from './chronograph/tools/portfolios.js';
+
+// Egnyte (Phase 29 Wave 5 — closed-source enterprise content / deal rooms,
+// credential-required graceful degradation behind EGNYTE_DOMAIN + EGNYTE_API_KEY)
+import { registerEgnyteTools } from './egnyte/tools/files.js';
+
 const server = new McpServer({
   name: 'data-sources',
   version: '1.0.0',
@@ -112,6 +120,12 @@ registerPolymarketTools(server);
 registerCoinGeckoTools(server);
 registerUnhcrTools(server);
 registerOpenMeteoTools(server);
+
+// Chronograph (4 tools — credential-required graceful degradation)
+registerChronographTools(server);
+
+// Egnyte (4 tools — credential-required graceful degradation)
+registerEgnyteTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

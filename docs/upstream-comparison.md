@@ -23,7 +23,7 @@ Side-by-side functionality comparison after Phases 26 → 29 Wave 2.
 | Compliance reporting | Yes | Partial (KYC) |
 | Specflow contracts + ADRs / DDDs / PRDs | Yes | No |
 | MS Office / M365 integration | Planned | Yes |
-| Closed-source vendor MCPs (Chronograph / Egnyte) | Planned | Yes |
+| Closed-source vendor MCPs (Chronograph / Egnyte) | Yes (graceful-degradation skeletons; activate on credentials) | Yes |
 
 ## Domain coverage
 
