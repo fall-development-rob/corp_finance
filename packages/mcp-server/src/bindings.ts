@@ -283,4 +283,12 @@ export const tenantScopedPath = b.tenantScopedPath;
 export const piiRedactApply = b.piiRedactApply;
 export const trustScoreCompute = b.trustScoreCompute;
 
+// Phase 28 wave 2: self-learning surfaces (ADR-020 / RUF-LEARN-001..013).
+export const learnTrajectoryCapture = b.learnTrajectoryCapture;
+export const learnTrajectoryComplete = b.learnTrajectoryComplete;
+export const learnTrajectoryRetrieve = b.learnTrajectoryRetrieve;
+export const learnReplayRun = b.learnReplayRun;
+export const learnDriftDetect = b.learnDriftDetect;
+export const learnGoldenSetFreeze = b.learnGoldenSetFreeze;
+
 export default pkg;

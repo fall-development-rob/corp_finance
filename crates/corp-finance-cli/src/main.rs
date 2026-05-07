@@ -40,6 +40,7 @@ use commands::dividend_policy::{
     BuybackArgs, HModelDdmArgs, MultistageDdmArgs, PayoutSustainabilityArgs,
     TotalShareholderReturnArgs,
 };
+use commands::drift::DriftArgs;
 use commands::earnings_quality::{
     AccrualQualityArgs, BeneishArgs, EarningsQualityCompositeArgs, PiotroskiArgs,
     RevenueQualityArgs,
@@ -66,6 +67,7 @@ use commands::fund_of_funds::{
 use commands::fx_commodities::{
     CommodityCurveArgs, CommodityForwardArgs, CrossRateArgs, FxForwardArgs,
 };
+use commands::golden_set::GoldenSetArgs;
 use commands::index_construction::{
     IndexRebalancingArgs, IndexReconstitutionArgs, IndexWeightingArgs, SmartBetaArgs,
     TrackingErrorArgs,
@@ -78,6 +80,7 @@ use commands::jurisdiction::{
     FundFeesArgs, GaapIfrsArgs, GpEconomicsArgs, InvestorNetReturnsArgs, NavArgs,
     UbtiScreeningArgs, WhtArgs,
 };
+use commands::learn::LearnArgs;
 use commands::lease_accounting::{LeaseClassificationArgs, SaleLeasebackArgs};
 use commands::ma::MergerArgs;
 use commands::macro_economics::{InternationalArgs, MonetaryPolicyArgs};
@@ -107,6 +110,7 @@ use commands::real_assets::{ProjectFinanceArgs, PropertyValuationArgs};
 use commands::real_options::{DecisionTreeArgs, RealOptionArgs};
 use commands::regulatory::{AlmArgs, LcrArgs, NsfrArgs, RegulatoryCapitalArgs};
 use commands::regulatory_reporting::{AifmdReportingArgs, SecCftcReportingArgs};
+use commands::replay::ReplayArgs;
 use commands::repo_financing::{CollateralArgs, RepoAnalyticsArgs};
 use commands::restructuring::{DistressedDebtArgs, RecoveryArgs};
 use commands::risk_budgeting::{FactorRiskBudgetArgs, TailRiskArgs};
@@ -609,6 +613,15 @@ enum Commands {
     Entities(EntitiesArgs),
     /// Multi-tenant federation (list tenants / scope tenant paths)
     Tenant(TenantArgs),
+    /// Self-learning trajectory store, k-means clustering, and similar
+    /// retrieval (Phase 28).
+    Learn(LearnArgs),
+    /// Replay-driven contract tests over signed golden sets (Phase 28).
+    Replay(ReplayArgs),
+    /// Byte-diff + structural-diff drift detection between two outputs.
+    Drift(DriftArgs),
+    /// Golden-set freeze / restore / list with ed25519 signing.
+    GoldenSet(GoldenSetArgs),
     /// Print version information
     Version,
 }
@@ -701,6 +714,37 @@ fn command_name(cmd: &Commands) -> String {
             match &args.command {
                 TenantCommands::List(_) => "tenant.list".to_string(),
                 TenantCommands::Scope(_) => "tenant.scope".to_string(),
+            }
+        }
+        Commands::Learn(args) => {
+            use commands::learn::{LearnCommands, LearnTrajectoryCommands};
+            match &args.command {
+                LearnCommands::Trajectory(t) => match t {
+                    LearnTrajectoryCommands::Show(_) => "learn.trajectory.show".to_string(),
+                },
+                LearnCommands::Cluster(_) => "learn.cluster".to_string(),
+                LearnCommands::Similar(_) => "learn.similar".to_string(),
+            }
+        }
+        Commands::Replay(args) => {
+            use commands::replay::ReplayCommands;
+            match &args.command {
+                ReplayCommands::Run(_) => "replay.run".to_string(),
+                ReplayCommands::Verify(_) => "replay.verify".to_string(),
+            }
+        }
+        Commands::Drift(args) => {
+            use commands::drift::DriftCommands;
+            match &args.command {
+                DriftCommands::Check(_) => "drift.check".to_string(),
+            }
+        }
+        Commands::GoldenSet(args) => {
+            use commands::golden_set::GoldenSetCommands;
+            match &args.command {
+                GoldenSetCommands::Freeze(_) => "golden-set.freeze".to_string(),
+                GoldenSetCommands::Restore(_) => "golden-set.restore".to_string(),
+                GoldenSetCommands::List(_) => "golden-set.list".to_string(),
             }
         }
         Commands::Version => "version".to_string(),
@@ -1093,6 +1137,37 @@ fn main() {
             match args.command {
                 TenantCommands::List(a) => commands::tenant::run_list(a),
                 TenantCommands::Scope(a) => commands::tenant::run_scope(a),
+            }
+        }
+        Commands::Learn(args) => {
+            use commands::learn::{LearnCommands, LearnTrajectoryCommands};
+            match args.command {
+                LearnCommands::Trajectory(t) => match t {
+                    LearnTrajectoryCommands::Show(a) => commands::learn::run_trajectory_show(a),
+                },
+                LearnCommands::Cluster(a) => commands::learn::run_cluster(a),
+                LearnCommands::Similar(a) => commands::learn::run_similar(a),
+            }
+        }
+        Commands::Replay(args) => {
+            use commands::replay::ReplayCommands;
+            match args.command {
+                ReplayCommands::Run(a) => commands::replay::run_replay_cmd(a),
+                ReplayCommands::Verify(a) => commands::replay::run_verify(a),
+            }
+        }
+        Commands::Drift(args) => {
+            use commands::drift::DriftCommands;
+            match args.command {
+                DriftCommands::Check(a) => commands::drift::run_check(a),
+            }
+        }
+        Commands::GoldenSet(args) => {
+            use commands::golden_set::GoldenSetCommands;
+            match args.command {
+                GoldenSetCommands::Freeze(a) => commands::golden_set::run_freeze(a),
+                GoldenSetCommands::Restore(a) => commands::golden_set::run_restore(a),
+                GoldenSetCommands::List(a) => commands::golden_set::run_list(a),
             }
         }
         Commands::Version => {

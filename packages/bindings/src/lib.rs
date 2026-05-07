@@ -2836,13 +2836,15 @@ pub fn surface_memory_find(input_json: String) -> NapiResult<String> {
                     let results = bm25
                         .query(text, input.query.limit, input.query.tenant_id.as_deref())
                         .map_err(to_napi_error)?;
-                    for s in results {
-                        // BM25 scores are not exposed by the v1 wrapper;
-                        // emit 0.0 as a stable placeholder so the hit list
-                        // stays well-typed. Vector hits dominate ranking.
+                    // Phase 28 cleanup widened the BM25 query return type
+                    // from `Vec<RunSummary>` to `Vec<BM25Hit>` so the
+                    // tantivy-emitted relevance score is no longer dropped
+                    // on the wire. Map each hit's `bm25_score` straight onto
+                    // `MemoryHit::score` so JS callers can rank by it.
+                    for hit in results {
                         hits.push(MemoryHit {
-                            run_summary: s,
-                            score: 0.0,
+                            run_summary: hit.run_summary,
+                            score: hit.bm25_score,
                         });
                     }
                 }
@@ -3428,4 +3430,266 @@ pub fn trust_score_compute(input_json: String) -> NapiResult<String> {
         input.integrity_score,
     );
     serde_json::to_string(&TrustScoreComputeOutput { score }).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Self-Learning bindings (Phase 28 — ADR-020).
+//
+// Six NAPI bindings covering the self-learning surface:
+// trajectory capture / completion / retrieval, replay-driven contract
+// tests, drift detection, and golden-set freeze. All cross the JSON
+// string boundary; types that are not `Serialize` upstream
+// (`ReplayResult`, `ReplayFailure`, `TrajectoryFilter`) are mirrored by
+// wire-friendly DTOs declared inline.
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct LearnTrajectoryCaptureInput {
+    surface: corp_finance_core::surface::Surface,
+    surface_event_id: String,
+    step: corp_finance_core::self_learning::SurfaceEventRef,
+}
+
+#[derive(serde::Serialize)]
+struct LearnTrajectoryCaptureOutput {
+    ok: bool,
+}
+
+#[napi]
+pub fn learn_trajectory_capture(input_json: String) -> NapiResult<String> {
+    let input: LearnTrajectoryCaptureInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    corp_finance_core::self_learning::capture_trajectory_step(
+        input.surface,
+        &input.surface_event_id,
+        input.step,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&LearnTrajectoryCaptureOutput { ok: true }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct LearnTrajectoryCompleteInput {
+    surface: corp_finance_core::surface::Surface,
+    surface_event_id: String,
+    #[serde(default)]
+    eval_grade: Option<corp_finance_core::self_learning::EvalGrade>,
+}
+
+#[derive(serde::Serialize)]
+struct LearnTrajectoryCompleteOutput {
+    trajectory: corp_finance_core::self_learning::Trajectory,
+}
+
+#[napi]
+pub fn learn_trajectory_complete(input_json: String) -> NapiResult<String> {
+    let input: LearnTrajectoryCompleteInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let trajectory = corp_finance_core::self_learning::complete_trajectory(
+        input.surface,
+        &input.surface_event_id,
+        input.eval_grade,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&LearnTrajectoryCompleteOutput { trajectory }).map_err(to_napi_error)
+}
+
+/// Wire-friendly mirror of `self_learning::trajectory::TrajectoryFilter`.
+///
+/// The upstream type is intentionally not `Deserialize` (it's a builder).
+/// Callers pass the three filter dimensions directly; the binding
+/// reconstructs the filter via the builder API.
+#[derive(serde::Deserialize, Default)]
+struct TrajectoryFilterDto {
+    #[serde(default)]
+    surface: Option<corp_finance_core::surface::Surface>,
+    #[serde(default)]
+    eval_grade_min: Option<corp_finance_core::self_learning::EvalGrade>,
+    #[serde(default)]
+    tenant_id: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct LearnTrajectoryRetrieveInput {
+    query_embedding: Vec<f32>,
+    #[serde(default)]
+    filter: TrajectoryFilterDto,
+    limit: usize,
+}
+
+#[derive(serde::Serialize)]
+struct LearnTrajectoryRetrieveOutput {
+    trajectories: Vec<corp_finance_core::self_learning::Trajectory>,
+}
+
+#[napi]
+pub fn learn_trajectory_retrieve(input_json: String) -> NapiResult<String> {
+    let input: LearnTrajectoryRetrieveInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let mut filter = corp_finance_core::self_learning::TrajectoryFilter::new();
+    if let Some(s) = input.filter.surface {
+        filter = filter.with_surface(s);
+    }
+    if let Some(g) = input.filter.eval_grade_min {
+        filter = filter.with_eval_grade_min(g);
+    }
+    if let Some(t) = input.filter.tenant_id {
+        filter = filter.with_tenant_id(t);
+    }
+    let trajectories = corp_finance_core::self_learning::retrieve_similar(
+        &input.query_embedding,
+        &filter,
+        input.limit,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&LearnTrajectoryRetrieveOutput { trajectories }).map_err(to_napi_error)
+}
+
+/// One pre-recorded `(input_id, output)` pair supplied by the JS caller.
+///
+/// The Rust replay API takes a dispatcher closure; the NAPI boundary
+/// cannot ferry a JS callable across into Rust as a `Fn`, so v1 accepts a
+/// flat list of recorded outputs and the binding builds the closure as a
+/// HashMap lookup keyed on `input_id` (UUID rendered as string).
+#[derive(serde::Deserialize)]
+struct ReplayRecordedOutput {
+    input_id: String,
+    output: serde_json::Value,
+}
+
+#[derive(serde::Deserialize)]
+struct LearnReplayRunInput {
+    golden_set: corp_finance_core::self_learning::GoldenSet,
+    #[serde(default)]
+    recorded_outputs: Vec<ReplayRecordedOutput>,
+}
+
+/// Wire-friendly mirror of `self_learning::replay::ReplayFailure`.
+///
+/// Upstream is not `Serialize`. We project it onto string-keyed JSON.
+#[derive(serde::Serialize)]
+struct ReplayFailureDto {
+    input_id: uuid::Uuid,
+    expected_digest: String,
+    actual_digest: String,
+    structural_delta: Option<corp_finance_core::self_learning::DriftReport>,
+}
+
+/// Wire-friendly mirror of `self_learning::replay::ReplayResult`.
+#[derive(serde::Serialize)]
+struct ReplayResultDto {
+    passed: usize,
+    failed: usize,
+    failures: Vec<ReplayFailureDto>,
+}
+
+#[derive(serde::Serialize)]
+struct LearnReplayRunOutput {
+    result: ReplayResultDto,
+}
+
+#[napi]
+pub fn learn_replay_run(input_json: String) -> NapiResult<String> {
+    let input: LearnReplayRunInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    // Build a lookup keyed on the `input_id` UUID rendered as string.
+    let mut recorded: std::collections::HashMap<String, serde_json::Value> =
+        std::collections::HashMap::with_capacity(input.recorded_outputs.len());
+    for rec in input.recorded_outputs {
+        recorded.insert(rec.input_id, rec.output);
+    }
+    let golden_set = input.golden_set;
+    let result = corp_finance_core::self_learning::run_replay(&golden_set, |input_value| {
+        // Identify the current input by matching `input_json` against the
+        // golden inputs. This is the dispatcher-replacement path: the
+        // closure receives `&input.input_json`, so we walk `golden_set.inputs`
+        // for a value match and use the matching `input_id` as the lookup
+        // key into `recorded`.
+        let id = golden_set
+            .inputs
+            .iter()
+            .find(|gi| &gi.input_json == input_value)
+            .map(|gi| gi.input_id.to_string());
+        match id.and_then(|k| recorded.get(&k).cloned()) {
+            Some(out) => Ok(out),
+            None => Err(
+                corp_finance_core::error::CorpFinanceError::InsufficientData(
+                    "no recorded_outputs entry for replay input".into(),
+                ),
+            ),
+        }
+    })
+    .map_err(to_napi_error)?;
+    let dto = ReplayResultDto {
+        passed: result.passed,
+        failed: result.failed,
+        failures: result
+            .failures
+            .into_iter()
+            .map(|f| ReplayFailureDto {
+                input_id: f.input_id,
+                expected_digest: f.expected_digest,
+                actual_digest: f.actual_digest,
+                structural_delta: f.structural_delta,
+            })
+            .collect(),
+    };
+    serde_json::to_string(&LearnReplayRunOutput { result: dto }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct LearnDriftDetectInput {
+    baseline: serde_json::Value,
+    current: serde_json::Value,
+    tolerance_pct: f64,
+}
+
+#[derive(serde::Serialize)]
+struct LearnDriftDetectOutput {
+    report: corp_finance_core::self_learning::DriftReport,
+}
+
+#[napi]
+pub fn learn_drift_detect(input_json: String) -> NapiResult<String> {
+    let input: LearnDriftDetectInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let report = corp_finance_core::self_learning::detect_drift(
+        &input.baseline,
+        &input.current,
+        input.tolerance_pct,
+    );
+    serde_json::to_string(&LearnDriftDetectOutput { report }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct LearnGoldenSetFreezeInput {
+    surface: corp_finance_core::surface::Surface,
+    surface_event_id: String,
+    inputs: Vec<corp_finance_core::self_learning::GoldenInput>,
+    output_dir: String,
+    /// Directory that holds `signing.key` / `verifying.key`. Per
+    /// `RUF-LEARN-007`, the keypair is generated on first run if absent.
+    signing_key_path: String,
+}
+
+#[derive(serde::Serialize)]
+struct LearnGoldenSetFreezeOutput {
+    golden_set: corp_finance_core::self_learning::GoldenSet,
+}
+
+#[napi]
+pub fn learn_golden_set_freeze(input_json: String) -> NapiResult<String> {
+    let input: LearnGoldenSetFreezeInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let keys_dir = std::path::PathBuf::from(&input.signing_key_path);
+    let (signing_key, _vk) =
+        corp_finance_core::self_learning::ensure_keypair(&keys_dir).map_err(to_napi_error)?;
+    let output_dir = std::path::PathBuf::from(&input.output_dir);
+    let golden_set = corp_finance_core::self_learning::freeze_golden_set(
+        input.surface,
+        &input.surface_event_id,
+        input.inputs,
+        &output_dir,
+        &signing_key,
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&LearnGoldenSetFreezeOutput { golden_set }).map_err(to_napi_error)
 }

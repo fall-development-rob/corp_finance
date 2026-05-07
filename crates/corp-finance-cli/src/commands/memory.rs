@@ -17,7 +17,7 @@ use clap::{Args, Subcommand};
 use serde_json::{json, Value};
 
 use corp_finance_core::memory::types::{RunSummary, Surface};
-use corp_finance_core::memory::{BM25MemoryIndex, HnswMemoryIndex};
+use corp_finance_core::memory::{BM25Hit, BM25MemoryIndex, HnswMemoryIndex};
 
 /// Top-level arg group for the `memory` subcommand group.
 #[derive(Args)]
@@ -179,15 +179,25 @@ pub fn run_find(args: MemoryFindArgs) -> Result<Value, Box<dyn std::error::Error
             bm25.ingest(s)?;
         }
         let text = args.text.as_deref().unwrap_or("");
-        let raw = bm25.query(text, args.limit, tenant.as_deref())?;
-        let filtered: Vec<RunSummary> = raw
+        let raw: Vec<BM25Hit> = bm25.query(text, args.limit, tenant.as_deref())?;
+        // Phase 28 Wave 2: bm25 query now returns `Vec<BM25Hit>` carrying
+        // the tantivy BM25 score alongside the canonical `RunSummary`.
+        // Apply the surface filter and emit a wire-friendly response that
+        // preserves the score on each hit.
+        let hits: Vec<Value> = raw
             .into_iter()
-            .filter(|s| match surface_filter {
-                Some(want) => s.surface == want,
+            .filter(|h| match surface_filter {
+                Some(want) => h.run_summary.surface == want,
                 None => true,
             })
+            .map(|h| {
+                json!({
+                    "run_summary": h.run_summary,
+                    "score": h.bm25_score,
+                })
+            })
             .collect();
-        Ok(json!({ "mode": "text", "results": filtered }))
+        Ok(json!({ "mode": "text", "hits": hits }))
     }
 }
 

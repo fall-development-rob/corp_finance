@@ -275,3 +275,9 @@ export declare function tenantResolveCli(inputJson: string): NapiResult
 export declare function tenantScopedPath(inputJson: string): NapiResult
 export declare function piiRedactApply(inputJson: string): NapiResult
 export declare function trustScoreCompute(inputJson: string): NapiResult
+export declare function learnTrajectoryCapture(inputJson: string): NapiResult
+export declare function learnTrajectoryComplete(inputJson: string): NapiResult
+export declare function learnTrajectoryRetrieve(inputJson: string): NapiResult
+export declare function learnReplayRun(inputJson: string): NapiResult
+export declare function learnDriftDetect(inputJson: string): NapiResult
+export declare function learnGoldenSetFreeze(inputJson: string): NapiResult
