@@ -80,6 +80,8 @@ import { registerMemoryTools } from "./tools/memory.js";
 import { registerAuditTools } from "./tools/audit.js";
 import { registerCostTools } from "./tools/cost.js";
 import { registerSecurityTools } from "./tools/security.js";
+import { registerMultiAgentTools } from "./tools/multi_agent.js";
+import { registerFederationTools } from "./tools/federation.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -165,6 +167,8 @@ registerMemoryTools(server);
 registerAuditTools(server);
 registerCostTools(server);
 registerSecurityTools(server);
+registerMultiAgentTools(server);
+registerFederationTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

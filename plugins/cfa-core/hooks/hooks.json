@@ -41,7 +41,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action redact --hook-point pre-tool-use 2>&1 || true; exit 0'"
+          "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action redact --hook-point pre-tool-use 2>&1 || true; exit 0'"
         }
       ]
     }
@@ -52,7 +52,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*\\.(md|csv|json|tsv)$ && ! \"$p\" =~ \\.audit\\.json$ ]]; then cfa audit write --for \"$p\" >&2 || echo \"[audit] manifest write failed for $p (non-blocking)\" >&2; fi; exit 0'"
+          "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*\\.(md|csv|json|tsv)$ && ! \"$p\" =~ \\.audit\\.json$ ]]; then cfa audit write --for \"$p\" >&2 || echo \"[audit] manifest write failed for $p (non-blocking)\" >&2; fi; exit 0'"
         }
       ]
     },
@@ -61,7 +61,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action alert-only --hook-point post-tool-use 2>&1 || true; exit 0'"
+          "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action alert-only --hook-point post-tool-use 2>&1 || true; exit 0'"
         }
       ]
     }
@@ -72,7 +72,18 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash -c 'echo \"${CLAUDE_MEMORY_TEXT:-}\" | cfa security scan --stdin --action redact --hook-point pre-memory-write 2>&1 || true; exit 0'"
+          "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; echo \"${CLAUDE_MEMORY_TEXT:-}\" | cfa security scan --stdin --action redact --hook-point pre-memory-write 2>&1 || true; exit 0'"
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": ".*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'if [[ -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then tid=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\"; if [[ -n \"$tid\" ]]; then echo \"[cfa] tenant context: $tid\" >&2; fi; fi; exit 0'"
         }
       ]
     }

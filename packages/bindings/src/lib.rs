@@ -3110,3 +3110,322 @@ pub fn surface_injection_detect(input_json: String) -> NapiResult<String> {
     let output = ScanOutput { findings };
     serde_json::to_string(&output).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Multi-agent coordination bindings (Phase 27 — ADR-018).
+//
+// Five NAPI bindings covering the chief-analyst orchestration surface:
+// plan emission, replanning, entity-graph pattern detection, agent-tool
+// invocation recording, and (stub) trace lookup. All cross the JSON-string
+// boundary; petgraph-backed `EntityGraph` is reconstructed from a
+// wire-friendly `EntityGraphPayload` because petgraph types are not
+// `Serialize`.
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct ChiefPlanEmitInput {
+    goal: String,
+}
+
+#[derive(serde::Serialize)]
+struct ChiefPlanEmitOutput {
+    plan: corp_finance_core::multi_agent::GoapPlan,
+}
+
+#[napi]
+pub fn chief_plan_emit(input_json: String) -> NapiResult<String> {
+    let input: ChiefPlanEmitInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let catalogue = corp_finance_core::multi_agent::load_action_catalogue();
+    let plan =
+        corp_finance_core::multi_agent::plan(&input.goal, &catalogue).map_err(to_napi_error)?;
+    serde_json::to_string(&ChiefPlanEmitOutput { plan }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct ChiefPlanReplanInput {
+    plan: corp_finance_core::multi_agent::GoapPlan,
+    failed_step: uuid::Uuid,
+    reason: String,
+}
+
+#[derive(serde::Serialize)]
+struct ChiefPlanReplanOutput {
+    plan: corp_finance_core::multi_agent::GoapPlan,
+    replan_count: u8,
+}
+
+#[napi]
+pub fn chief_plan_replan(input_json: String) -> NapiResult<String> {
+    let input: ChiefPlanReplanInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let mut plan = input.plan;
+    corp_finance_core::multi_agent::replan(&mut plan, input.failed_step, &input.reason)
+        .map_err(to_napi_error)?;
+    let replan_count = plan.replan_count;
+    let output = ChiefPlanReplanOutput { plan, replan_count };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+/// Wire-friendly representation of an `EntityGraph` for the JS boundary.
+///
+/// The in-process `EntityGraph` wraps a `petgraph::Graph` whose internal
+/// types are not `Serialize`. Callers therefore pass a flat list of
+/// entities and directed relations; the binding rebuilds the graph in
+/// memory via `EntityGraph::add_relation` before running the query.
+#[derive(serde::Deserialize)]
+struct EntityGraphPayload {
+    #[serde(default)]
+    entities: Vec<corp_finance_core::multi_agent::EntityRef>,
+    #[serde(default)]
+    relations: Vec<corp_finance_core::multi_agent::EntityRelation>,
+}
+
+#[derive(serde::Deserialize)]
+struct ChiefPatternDetectInput {
+    graph: EntityGraphPayload,
+    threshold: usize,
+}
+
+#[derive(serde::Serialize)]
+struct ChiefPatternDetectOutput {
+    entities: Vec<corp_finance_core::multi_agent::EntityRef>,
+}
+
+#[napi]
+pub fn chief_pattern_detect(input_json: String) -> NapiResult<String> {
+    let input: ChiefPatternDetectInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let mut graph = corp_finance_core::multi_agent::EntityGraph::new();
+    for entity in input.graph.entities {
+        graph.add_entity(entity);
+    }
+    for rel in input.graph.relations {
+        graph.add_relation(rel.from, rel.to, rel.kind);
+    }
+    let entities = graph.pattern_detected(input.threshold);
+    serde_json::to_string(&ChiefPatternDetectOutput { entities }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AgentInvokeRecordInput {
+    invocation: corp_finance_core::multi_agent::AgentInvocation,
+}
+
+#[derive(serde::Serialize)]
+struct AgentInvokeRecordOutput {
+    ok: bool,
+}
+
+#[napi]
+pub fn agent_invoke_record(input_json: String) -> NapiResult<String> {
+    let input: AgentInvokeRecordInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    corp_finance_core::multi_agent::record_invocation(&input.invocation).map_err(to_napi_error)?;
+    serde_json::to_string(&AgentInvokeRecordOutput { ok: true }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct AgentTraceGetInput {
+    invocation_id: uuid::Uuid,
+}
+
+/// `AgentTraceGet` is a v1 stub that always returns `null`.
+///
+/// Phase 27 records invocations through `record_invocation` but does not
+/// own a trace store; trace persistence belongs to the audit / memory
+/// pipeline (Phase 28 follow-up). The shape is fixed so JS callers can
+/// rely on `{ invocation, status }` once the backing store ships.
+#[derive(serde::Serialize)]
+struct AgentTraceGetOutput {
+    invocation: Option<corp_finance_core::multi_agent::AgentInvocation>,
+    status: Option<corp_finance_core::multi_agent::InvocationStatus>,
+}
+
+#[napi]
+pub fn agent_trace_get(input_json: String) -> NapiResult<String> {
+    // TODO(phase-28): wire to AgentDB / memory module trace store. For v1 we
+    // accept the request shape and return null so the JS surface contract is
+    // stable.
+    let input: AgentTraceGetInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let _ = input.invocation_id;
+    let output = AgentTraceGetOutput {
+        invocation: None,
+        status: None,
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+// ---------------------------------------------------------------------------
+// Federation bindings (Phase 27 — ADR-019).
+//
+// Five NAPI bindings covering the multi-tenant simple-tenancy surface:
+// tenant provisioning, CLI surface resolution, tenant-scoped path
+// composition, outbound PII redaction, and behavioral trust scoring.
+// `RedactionResult` is not `Serialize` upstream, so the binding maps it
+// onto a wire-friendly `RedactionResultDto`.
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct TenantProvisionInput {
+    tenant: corp_finance_core::federation::Tenant,
+    base_dir: String,
+}
+
+#[derive(serde::Serialize)]
+struct TenantProvisionOutput {
+    context: corp_finance_core::federation::TenantContext,
+}
+
+#[napi]
+pub fn tenant_provision(input_json: String) -> NapiResult<String> {
+    let input: TenantProvisionInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let context = corp_finance_core::federation::provision_tenant(
+        &input.tenant,
+        std::path::Path::new(&input.base_dir),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&TenantProvisionOutput { context }).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct TenantResolveCliInput {
+    args: Vec<String>,
+}
+
+#[derive(serde::Serialize)]
+struct TenantResolveCliOutput {
+    context: Option<corp_finance_core::federation::TenantContext>,
+}
+
+#[napi]
+pub fn tenant_resolve_cli(input_json: String) -> NapiResult<String> {
+    let input: TenantResolveCliInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let context = corp_finance_core::federation::resolve_tenant_for_cli(&input.args);
+    serde_json::to_string(&TenantResolveCliOutput { context }).map_err(to_napi_error)
+}
+
+/// Wire-friendly mirror of `federation::tenant::ResourceKind`. The upstream
+/// enum is `Copy`-only and not `Serialize` to keep the trait surface small;
+/// we map the four-variant DTO onto it at the binding boundary.
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum ResourceKindDto {
+    Output,
+    Memory,
+    CostLedger,
+    Session,
+    Audit,
+}
+
+impl From<ResourceKindDto> for corp_finance_core::federation::ResourceKind {
+    fn from(value: ResourceKindDto) -> Self {
+        use corp_finance_core::federation::ResourceKind;
+        match value {
+            ResourceKindDto::Output => ResourceKind::Output,
+            ResourceKindDto::Memory => ResourceKind::Memory,
+            ResourceKindDto::CostLedger => ResourceKind::CostLedger,
+            ResourceKindDto::Session => ResourceKind::Session,
+            ResourceKindDto::Audit => ResourceKind::Audit,
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct TenantScopedPathInput {
+    context: corp_finance_core::federation::TenantContext,
+    kind: ResourceKindDto,
+    name: String,
+}
+
+#[derive(serde::Serialize)]
+struct TenantScopedPathOutput {
+    path: String,
+}
+
+#[napi]
+pub fn tenant_scoped_path(input_json: String) -> NapiResult<String> {
+    let input: TenantScopedPathInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let path = corp_finance_core::federation::tenant_scoped_path(
+        &input.context,
+        input.kind.into(),
+        &input.name,
+    );
+    let output = TenantScopedPathOutput {
+        path: path.to_string_lossy().into_owned(),
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+/// Wire-friendly mirror of `federation::pii_redaction::RedactionResult`.
+///
+/// The upstream type is `Debug + Clone + PartialEq + Eq` only (no
+/// `Serialize`); the DTO flattens its `HashMap<PiiCategory, usize>` into
+/// a string-keyed map for JSON friendliness.
+#[derive(serde::Serialize)]
+struct RedactionResultDto {
+    redacted_text: String,
+    findings_count: usize,
+    action_taken: corp_finance_core::federation::RedactionAction,
+    by_category: std::collections::HashMap<String, usize>,
+}
+
+impl From<corp_finance_core::federation::RedactionResult> for RedactionResultDto {
+    fn from(value: corp_finance_core::federation::RedactionResult) -> Self {
+        let by_category = value
+            .by_category
+            .into_iter()
+            .map(|(cat, count)| (cat.as_str().to_string(), count))
+            .collect();
+        Self {
+            redacted_text: value.redacted_text,
+            findings_count: value.findings_count,
+            action_taken: value.action_taken,
+            by_category,
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct PiiRedactApplyInput {
+    text: String,
+    policy: corp_finance_core::federation::PIIRedactionPolicy,
+}
+
+#[derive(serde::Serialize)]
+struct PiiRedactApplyOutput {
+    redaction: RedactionResultDto,
+}
+
+#[napi]
+pub fn pii_redact_apply(input_json: String) -> NapiResult<String> {
+    let input: PiiRedactApplyInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let result = corp_finance_core::federation::apply_policy(&input.text, &input.policy)
+        .map_err(to_napi_error)?;
+    let output = PiiRedactApplyOutput {
+        redaction: result.into(),
+    };
+    serde_json::to_string(&output).map_err(to_napi_error)
+}
+
+#[derive(serde::Deserialize)]
+struct TrustScoreComputeInput {
+    success_rate: f32,
+    uptime: f32,
+    threat_score: f32,
+    integrity_score: f32,
+}
+
+#[derive(serde::Serialize)]
+struct TrustScoreComputeOutput {
+    score: corp_finance_core::federation::TrustScore,
+}
+
+#[napi]
+pub fn trust_score_compute(input_json: String) -> NapiResult<String> {
+    let input: TrustScoreComputeInput = serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let score = corp_finance_core::federation::compute_trust_score(
+        input.success_rate,
+        input.uptime,
+        input.threat_score,
+        input.integrity_score,
+    );
+    serde_json::to_string(&TrustScoreComputeOutput { score }).map_err(to_napi_error)
+}

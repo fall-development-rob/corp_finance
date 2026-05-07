@@ -48,6 +48,7 @@ use commands::emerging_markets::{
     CapitalControlsArgs, CountryRiskPremiumArgs, EmBondAnalysisArgs, EmEquityPremiumArgs,
     PoliticalRiskArgs,
 };
+use commands::entities::EntitiesArgs;
 use commands::equity_research::{SotpArgs, TargetPriceArgs};
 use commands::esg::{CarbonFootprintArgs, EsgScoreArgs, GreenBondArgs, SllArgs};
 use commands::fatca_crs::{EntityClassificationArgs, FatcaCrsReportingArgs};
@@ -92,6 +93,7 @@ use commands::onshore_structures::{UkEuFundArgs, UsFundArgs};
 use commands::pe::{LboArgs, ReturnsArgs, WaterfallArgs};
 use commands::pension::{LdiStrategyArgs, PensionFundingArgs};
 use commands::performance_attribution::{BrinsonArgs, FactorAttributionArgs};
+use commands::plan::PlanArgs;
 use commands::portfolio::{KellyArgs, RiskArgs, SharpeArgs};
 use commands::portfolio_optimization::{BlackLittermanPortfolioArgs, MeanVarianceArgs};
 use commands::private_credit::{DirectLoanArgs, SyndicationArgs, UnitrancheArgs};
@@ -116,6 +118,7 @@ use commands::sovereign::{CountryRiskArgs, SovereignBondArgs};
 use commands::structured_products::{ExoticProductArgs, StructuredNoteArgs};
 use commands::substance_requirements::{EconomicSubstanceArgs, JurisdictionSubstanceTestArgs};
 use commands::tax_treaty::{TreatyNetworkArgs, TreatyOptArgs};
+use commands::tenant::TenantArgs;
 use commands::three_statement::ThreeStatementArgs;
 use commands::trade_finance::{LetterOfCreditArgs, SupplyChainFinanceArgs};
 use commands::transfer_pricing::{BepsArgs, IntercompanyArgs};
@@ -600,6 +603,12 @@ enum Commands {
     Audit(AuditArgs),
     /// PII / prompt-injection scanning
     Security(SecurityArgs),
+    /// Multi-agent A* planner (build / replan a GoapPlan)
+    Plan(PlanArgs),
+    /// Entity extraction and entity-graph pattern detection
+    Entities(EntitiesArgs),
+    /// Multi-tenant federation (list tenants / scope tenant paths)
+    Tenant(TenantArgs),
     /// Print version information
     Version,
 }
@@ -671,6 +680,27 @@ fn command_name(cmd: &Commands) -> String {
             use commands::mcp::McpCommands;
             match &args.command {
                 McpCommands::List(_) => "mcp.list".to_string(),
+            }
+        }
+        Commands::Plan(args) => {
+            use commands::plan::PlanCommands;
+            match &args.command {
+                PlanCommands::Show(_) => "plan.show".to_string(),
+                PlanCommands::Replan(_) => "plan.replan".to_string(),
+            }
+        }
+        Commands::Entities(args) => {
+            use commands::entities::EntitiesCommands;
+            match &args.command {
+                EntitiesCommands::List(_) => "entities.list".to_string(),
+                EntitiesCommands::Graph(_) => "entities.graph".to_string(),
+            }
+        }
+        Commands::Tenant(args) => {
+            use commands::tenant::TenantCommands;
+            match &args.command {
+                TenantCommands::List(_) => "tenant.list".to_string(),
+                TenantCommands::Scope(_) => "tenant.scope".to_string(),
             }
         }
         Commands::Version => "version".to_string(),
@@ -1042,6 +1072,27 @@ fn main() {
             use commands::security::SecurityCommands;
             match args.command {
                 SecurityCommands::Scan(a) => commands::security::run_scan(a),
+            }
+        }
+        Commands::Plan(args) => {
+            use commands::plan::PlanCommands;
+            match args.command {
+                PlanCommands::Show(a) => commands::plan::run_show(a),
+                PlanCommands::Replan(a) => commands::plan::run_replan(a),
+            }
+        }
+        Commands::Entities(args) => {
+            use commands::entities::EntitiesCommands;
+            match args.command {
+                EntitiesCommands::List(a) => commands::entities::run_list(a),
+                EntitiesCommands::Graph(a) => commands::entities::run_graph(a),
+            }
+        }
+        Commands::Tenant(args) => {
+            use commands::tenant::TenantCommands;
+            match args.command {
+                TenantCommands::List(a) => commands::tenant::run_list(a),
+                TenantCommands::Scope(a) => commands::tenant::run_scope(a),
             }
         }
         Commands::Version => {

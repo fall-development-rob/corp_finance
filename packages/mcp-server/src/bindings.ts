@@ -271,4 +271,16 @@ export const surfaceCostBudgetGet = b.surfaceCostBudgetGet;
 export const surfacePiiScan = b.surfacePiiScan;
 export const surfaceInjectionDetect = b.surfaceInjectionDetect;
 
+// Phase 27 wave 2: multi-agent coordination + federation surfaces (ADR-018 / ADR-019).
+export const chiefPlanEmit = b.chiefPlanEmit;
+export const chiefPlanReplan = b.chiefPlanReplan;
+export const chiefPatternDetect = b.chiefPatternDetect;
+export const agentInvokeRecord = b.agentInvokeRecord;
+export const agentTraceGet = b.agentTraceGet;
+export const tenantProvision = b.tenantProvision;
+export const tenantResolveCli = b.tenantResolveCli;
+export const tenantScopedPath = b.tenantScopedPath;
+export const piiRedactApply = b.piiRedactApply;
+export const trustScoreCompute = b.trustScoreCompute;
+
 export default pkg;

@@ -265,3 +265,13 @@ export declare function surfaceCostBudgetSet(inputJson: string): NapiResult
 export declare function surfaceCostBudgetGet(inputJson: string): NapiResult
 export declare function surfacePiiScan(inputJson: string): NapiResult
 export declare function surfaceInjectionDetect(inputJson: string): NapiResult
+export declare function chiefPlanEmit(inputJson: string): NapiResult
+export declare function chiefPlanReplan(inputJson: string): NapiResult
+export declare function chiefPatternDetect(inputJson: string): NapiResult
+export declare function agentInvokeRecord(inputJson: string): NapiResult
+export declare function agentTraceGet(inputJson: string): NapiResult
+export declare function tenantProvision(inputJson: string): NapiResult
+export declare function tenantResolveCli(inputJson: string): NapiResult
+export declare function tenantScopedPath(inputJson: string): NapiResult
+export declare function piiRedactApply(inputJson: string): NapiResult
+export declare function trustScoreCompute(inputJson: string): NapiResult
