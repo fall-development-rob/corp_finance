@@ -147,6 +147,44 @@ contracts:
       - "crates/corp-finance-core/src/self_learning/"
     enforcement: integration-test
     severity: error
+  - id: RUF-LEARN-014
+    name: "Replay supports flag-mode argv rendering"
+    description: "When --argv-mode flags is set, replay_golden_set renders a top-level JSON input object as --kebab-key value argv pairs and dispatches the subprocess successfully. Boolean values emit the flag name only (true) or omit it (false); arrays emit repeated flag pairs; nested objects are rejected."
+    given: "a goldenset whose input is {\"ticker\":\"AAPL\",\"horizon_years\":5} and whose target subcommand accepts --ticker and --horizon-years flags"
+    when: "cfa replay run --argv-mode flags is invoked against that goldenset"
+    then: "the renderer produces [\"--ticker\",\"AAPL\",\"--horizon-years\",\"5\"] and the subprocess dispatches and exits successfully"
+    scope:
+      - "crates/corp-finance-cli/src/commands/replay.rs"
+      - "scripts/replay-golden-set.sh"
+    enforcement: integration-test
+    severity: error
+    refs: [ADR-020]
+    status: implemented
+  - id: RUF-LEARN-015
+    name: "Replay supports template-mode argv rendering"
+    description: "When --argv-mode template and --argv-template are set, replay_golden_set substitutes {key} placeholders in the template string with the corresponding top-level JSON scalar values, then whitespace-splits the result into argv. Unknown keys in the template cause a hard error before subprocess invocation."
+    given: "an argv template \"--ticker {ticker} --output {output}\" and an input map {\"ticker\":\"MSFT\",\"output\":\"json\"}"
+    when: "cfa replay run --argv-mode template --argv-template \"--ticker {ticker} --output {output}\" is invoked against that goldenset"
+    then: "the renderer produces [\"--ticker\",\"MSFT\",\"--output\",\"json\"] and the subprocess dispatches successfully; substituting an unknown key causes the run to fail before any subprocess is invoked"
+    scope:
+      - "crates/corp-finance-cli/src/commands/replay.rs"
+      - "scripts/replay-golden-set.sh"
+    enforcement: integration-test
+    severity: error
+    refs: [ADR-020]
+    status: implemented
+  - id: RUF-LEARN-016
+    name: "Multi-word targets dispatch correctly"
+    description: "When --target contains a multi-word string (e.g. \"workflow audit\"), replay splits the target on whitespace before appending the rendered argv, producing the correct argv vector for the subprocess."
+    given: "cfa replay run --target \"workflow audit\" with input {\"ticker\":\"JPM\"} and --argv-mode flags"
+    when: "the dispatcher assembles the subprocess argv"
+    then: "argv is [\"workflow\",\"audit\",\"--ticker\",\"JPM\"] and the subprocess invocation succeeds"
+    scope:
+      - "crates/corp-finance-cli/src/commands/replay.rs"
+    enforcement: integration-test
+    severity: error
+    refs: [ADR-020]
+    status: implemented
 
 invariants:
   - id: RUF-LEARN-INV-001
@@ -185,3 +223,12 @@ invariants:
   - id: RUF-LEARN-INV-012
     name: "Trajectory storage reuses Phase 26 native memory store"
     check: "self_learning::trajectory_repo points at the ADR-016 native HNSW + BM25 + petgraph store"
+  - id: RUF-LEARN-INV-013
+    name: "Flag-mode rejects nested objects"
+    check: "replay dispatcher in flags mode returns a hard error (not a panic) when any top-level JSON value is itself an object; no subprocess is invoked"
+  - id: RUF-LEARN-INV-014
+    name: "Template-mode rejects unknown keys"
+    check: "replay dispatcher in template mode returns a hard error when the template references a key not present in the top-level input JSON; no subprocess is invoked"
+  - id: RUF-LEARN-INV-015
+    name: "stdin mode preserves backwards compatibility"
+    check: "with --argv-mode stdin (or no --argv-mode flag), replay behaviour is identical to the Phase 28 baseline: input JSON is written to subprocess stdin and no argv flags are injected; existing golden-sets require no migration"

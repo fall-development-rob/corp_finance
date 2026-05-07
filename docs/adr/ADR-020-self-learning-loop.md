@@ -198,6 +198,28 @@ The cookbook registry is a deploy-time artefact catalogue, not a runtime action 
 | Crate upgrade breaks A* or signing | `pathfinding` and `ed25519-dalek` are version-pinned in `Cargo.toml`; major-version bumps go through a dedicated PR that runs the replay-driven contract tests. |
 | Replay harness boundary | Replay invokes CLI binaries and MCP tool handlers directly with golden-set inputs; the wrappers from ADR-015 / ADR-017 are the same code production traffic exercises. No separate replay code path. |
 
+## Wave 3 Amendment (2026-05-07): replay argv-mode expansion
+
+### Context
+
+The original ADR-020 replay dispatcher (Phase 28) fed golden-set inputs to subprocess stdin because the first batch of replayable surface events were stdin-fed CLI subcommands. Post-Phase-28 coverage analysis showed that the majority of `cfa` subcommands consume flag-based argv, not stdin JSON. The stdin-only dispatcher therefore covered only a small fraction of CLI surface events, leaving most subcommands outside the replay safety net.
+
+### Decision
+
+Extend `cfa replay run` with an `--argv-mode <stdin|flags|template>` flag (default `stdin`) and a companion `--argv-template <STRING>` flag (required when mode is `template`).
+
+- **stdin** (default) — unchanged; JSON written to subprocess stdin. All existing golden-sets work without modification.
+- **flags** — top-level JSON object keys are kebab-cased and emitted as `--key value` argv pairs. Boolean values emit the flag name only (true) or omit it (false); arrays emit repeated pairs; nested objects are rejected with a hard error before subprocess invocation.
+- **template** — `{key}` placeholders in the template string are substituted with top-level JSON scalars, then whitespace-split into argv; unknown keys are a hard error before subprocess invocation.
+
+Additionally, multi-word `--target` strings (e.g. `--target "workflow audit"`) are split on whitespace before being prepended to the rendered argv vector.
+
+### Consequences
+
+Replay coverage extends to every CLI subcommand regardless of its input shape. Template mode handles edge cases (positional args, repeated flags) that flags-mode cannot express. Backwards compatibility is preserved: stdin remains the default and no existing golden-set requires migration.
+
+New contract identifiers covering this amendment: RUF-LEARN-014, RUF-LEARN-015, RUF-LEARN-016 (feature contracts) and RUF-LEARN-INV-013, RUF-LEARN-INV-014, RUF-LEARN-INV-015 (invariants).
+
 ## Related Decisions
 
 - ADR-015: Native Orchestration Umbrella (Phase 26 — pins the four runtime surfaces; trajectory capture is wired at those wrappers)
