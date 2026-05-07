@@ -1,10 +1,10 @@
 //! Shared value types for the Observability bounded context.
 //!
 //! Per `docs/ddd/domain-audit-observability.md`, the `Surface` enum is shared
-//! kernel between Memory, Audit, Cost, and Observability contexts. This module
-//! defines a local copy used by span helpers; once the audit/memory modules
-//! are wired into `lib.rs` post-Phase-26, the duplicates collapse into a
-//! single shared kernel re-export.
+//! kernel between Memory, Audit, Cost, and Observability contexts. As of the
+//! Phase-27 cleanup, the canonical definition lives in
+//! `corp_finance_core::surface::Surface` and this module re-exports it for
+//! backward compatibility.
 //!
 //! The canonical attribute names below follow ADR-017 §4 (Structured Traces).
 //! Every span emitted from a CFA surface event MUST set `cfa.surface` and
@@ -13,36 +13,14 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Origin surface of a CFA event. Mirrors the enum used in
-/// `corp_finance_core::audit::surface_audit::Surface` and (forthcoming)
-/// `corp_finance_core::memory::types::Surface` — kept locally to avoid a
-/// circular feature dependency before lib.rs wiring lands.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Surface {
-    /// `cfa <subcommand>` — invoked by `crates/corp-finance-cli/src/main.rs`.
-    Cli,
-    /// MCP `server.tool(...)` handler — invoked by any of the four
-    /// `packages/*-mcp-server/` crates.
-    Mcp,
-    /// Slash-command emission resolved against `.claude/skills/*` skill body.
-    Skill,
-    /// Plugin hook fire — `plugins/cfa-core/hooks/hooks.json` (`PreToolUse`,
-    /// `PostToolUse`, `PreMemoryWrite`, `Write`, `Edit`).
-    Plugin,
-}
-
-impl Surface {
-    /// Stable, lowercase string used as the `cfa.surface` span attribute value.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            Surface::Cli => "cli",
-            Surface::Mcp => "mcp",
-            Surface::Skill => "skill",
-            Surface::Plugin => "plugin",
-        }
-    }
-}
+/// Origin surface of a CFA event.
+///
+/// Re-exported from the shared kernel `corp_finance_core::surface::Surface`
+/// (Phase 27 cleanup). The local path
+/// `corp_finance_core::observability::types::Surface` (and the
+/// `observability::Surface` re-export via `mod.rs`) is preserved for
+/// backward compatibility with span helpers and the MCP/CLI wrappers.
+pub use crate::surface::Surface;
 
 /// Lightweight context propagated alongside a span. Spans themselves are
 /// owned by the `tracing` runtime; `SpanContext` is the value-type that

@@ -1,5 +1,6 @@
 pub mod compat;
 pub mod error;
+pub mod surface;
 pub mod time_value;
 pub mod types;
 
@@ -243,6 +244,12 @@ pub mod security;
 
 #[cfg(feature = "memory")]
 pub mod memory;
+
+#[cfg(feature = "federation")]
+pub mod federation;
+
+#[cfg(feature = "multi_agent")]
+pub mod multi_agent;
 
 pub use error::CorpFinanceError;
 pub use types::*;

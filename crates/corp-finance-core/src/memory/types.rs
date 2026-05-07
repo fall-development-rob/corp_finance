@@ -12,33 +12,12 @@ use uuid::Uuid;
 
 /// Runtime surface that produced a `RunSummary`.
 ///
-/// Matches ADR-015's four-surface model: every CFA runtime event lands on
-/// exactly one of these four surfaces.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Surface {
-    /// `cfa <subcommand>` — CLI invocation.
-    Cli,
-    /// `server.tool(...)` handler — MCP tool execution.
-    Mcp,
-    /// Slash command or `.claude/skills/*` — skill invocation. Captured via
-    /// the MCP wrapper through which the LLM ultimately executes.
-    Skill,
-    /// `plugins/cfa-core/hooks/hooks.json` — plugin hook fire.
-    Plugin,
-}
-
-impl Surface {
-    /// Lower-case display token used in serialisation and BM25 index fields.
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Surface::Cli => "cli",
-            Surface::Mcp => "mcp",
-            Surface::Skill => "skill",
-            Surface::Plugin => "plugin",
-        }
-    }
-}
+/// Re-exported from the shared kernel `corp_finance_core::surface::Surface`
+/// (Phase 27 cleanup). Matches ADR-015's four-surface model: every CFA
+/// runtime event lands on exactly one of these four surfaces. The local
+/// path `corp_finance_core::memory::Surface` is preserved for backward
+/// compatibility with existing call sites.
+pub use crate::surface::Surface;
 
 /// Canonical entity kinds extracted from `RunSummary` text.
 ///

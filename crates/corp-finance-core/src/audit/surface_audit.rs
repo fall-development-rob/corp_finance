@@ -7,15 +7,11 @@
 //!
 //! ## `Surface` enum
 //!
-//! The `Surface` enum is duplicated locally here rather than imported from
-//! `corp_finance_core::memory::types::Surface`. Reason: the memory module is
-//! gated behind a separate `memory` Cargo feature; the audit module must
-//! remain compilable with only `audit` enabled (and not `memory`). The
-//! duplication is intentional — the canonical wire form of the enum is
-//! `serde(rename_all = "snake_case")` with variants `Cli`, `Mcp`, `Skill`,
-//! `Plugin` (per `docs/ddd/domain-audit-observability.md` §Value Objects).
-//! Both copies must serialize to identical JSON so cross-context audit
-//! reconciliation works.
+//! Re-exported from the shared kernel `corp_finance_core::surface::Surface`
+//! (Phase 27 cleanup). The previous local duplicate was collapsed into the
+//! shared kernel; the wire form is byte-identical
+//! (`serde(rename_all = "snake_case")` over variants `Cli`, `Mcp`, `Skill`,
+//! `Plugin`) so existing audit hashes remain stable.
 //!
 //! ## Hash format
 //!
@@ -25,25 +21,10 @@
 use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------------------
-// Surface (duplicated local copy — see module docs for rationale)
+// Surface — re-exported from the shared kernel (Phase 27 cleanup).
 // ---------------------------------------------------------------------------
 
-/// One of the four CFA runtime surfaces (ADR-015).
-///
-/// Duplicated here to keep the `audit` Cargo feature compilable independently
-/// of `memory`. See module-level docstring above.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Surface {
-    /// `cfa <subcommand>` — the CLI binary.
-    Cli,
-    /// MCP `server.tool(...)` handler invocation.
-    Mcp,
-    /// Slash command and `.claude/skills/*` invoked via the Skill tool.
-    Skill,
-    /// Plugin hook fire (PreToolUse, PostToolUse, Write, Edit).
-    Plugin,
-}
+pub use crate::surface::Surface;
 
 // ---------------------------------------------------------------------------
 // Surface manifest (input to the hash)

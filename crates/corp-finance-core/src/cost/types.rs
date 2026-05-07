@@ -14,41 +14,16 @@ use crate::managed_agent::types::CookbookTier;
 use crate::mcp_servers::types::McpServerTier;
 
 // ---------------------------------------------------------------------------
-// Surface — mirrors the four CFA runtime surfaces from ADR-015.
+// Surface — re-exported from the shared kernel (Phase 27 cleanup).
 // ---------------------------------------------------------------------------
 
-/// A CFA runtime surface.  Mirrors the canonical surface enum used by the
-/// memory module (kept local here to avoid a hard cross-module dep until the
-/// shared kernel is consolidated).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Surface {
-    Cli,
-    Mcp,
-    Skill,
-    Plugin,
-}
-
-impl Surface {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Surface::Cli => "cli",
-            Surface::Mcp => "mcp",
-            Surface::Skill => "skill",
-            Surface::Plugin => "plugin",
-        }
-    }
-
-    pub fn parse(s: &str) -> Option<Self> {
-        match s {
-            "cli" => Some(Surface::Cli),
-            "mcp" => Some(Surface::Mcp),
-            "skill" => Some(Surface::Skill),
-            "plugin" => Some(Surface::Plugin),
-            _ => None,
-        }
-    }
-}
+/// A CFA runtime surface.
+///
+/// Re-exported from the shared kernel `corp_finance_core::surface::Surface`
+/// (Phase 27 cleanup). The previous local duplicate was collapsed into the
+/// shared kernel; `Surface::as_str` and `Surface::parse` now live on the
+/// shared type.
+pub use crate::surface::Surface;
 
 // ---------------------------------------------------------------------------
 // TierTag — flattened union of CookbookTier and McpServerTier for the ledger.
