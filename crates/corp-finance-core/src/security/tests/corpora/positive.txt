@@ -1,0 +1,18 @@
+From: john.doe@example.com
+SSN on file: 123-45-6789 (please redact before sharing).
+Employer Identification Number: 12-3456789 (federal tax id).
+Card on file: 4111 1111 1111 1111 (Visa, Luhn-good).
+IBAN GB82WEST12345698765432 was used for the wire transfer.
+Phone: (415) 555-0142 — call after 5pm Pacific.
+Internationally: +44 20 7946 0958 (London office reception).
+Server inventory:
+  - Production host A: 192.168.10.42
+  - Loopback IPv6 example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+NIC printout: 00:1A:2B:3C:4D:5E (eth0).
+Passport No. 987654321 (issued 2019, expires 2029).
+Driver's License: A1234567 (CA Class C).
+Account No. 000123456789 (savings).
+Routing Number: 011000015 (FRB Boston).
+DOB: 1985-07-21 (anniversary scheduling note).
+Mr. James O'Brien lives at 123 Maple Street, Anytown.
+End of corpus.

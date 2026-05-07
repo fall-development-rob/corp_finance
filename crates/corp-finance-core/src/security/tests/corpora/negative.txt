@@ -1,0 +1,46 @@
+Coverage initiation note for ACME Corp (Ticker: ACME).
+We model the WACC at 8.5% and assume terminal growth of 2.0%.
+The company's revenue grew 12% year over year, with an operating margin of 22%.
+ACME's CUSIP is 037833100 and ISIN is US0378331005.
+The LEI on file is 549300VBWWV6BYQOWM67.
+Price target: $145.00 (12-month). Upside vs. current price of $118.20: roughly 23%.
+Net debt / EBITDA stands at 1.4x, comfortably below the 3.0x covenant.
+We use a 2-stage DCF: 5 years of explicit forecast, then a Gordon terminal.
+Sensitivity table: WACC 7.5-9.5%, terminal growth 1.5-2.5%.
+Historical free cash flow conversion has averaged 86% over the last 5 years.
+Working capital requirements track at 9% of revenue.
+Capex intensity normalises at 4% of revenue post-2027.
+Bull case assumes accelerating share gains in the cloud segment.
+Base case: industry-average growth, mild margin expansion.
+Bear case: pricing pressure from new entrants compresses gross margin 200bps.
+Comparable peers: BETA, GAMMA, DELTA, EPSILON, ZETA.
+Trading multiples: 14x forward EPS, 8.5x EV/EBITDA.
+Precedent transactions: 11x EBITDA average over 2021-2024.
+We initiate coverage with a Buy rating.
+Conviction: high. Liquidity: ample. Catalysts: Q3 earnings, capital markets day.
+Risks: cyclical end-market exposure, FX translation, regulatory overhang.
+ESG considerations: Scope 1+2 emissions trending down 8% YoY.
+Governance: independent chair, staggered board reform proposed for 2027.
+Dividend history: 12 consecutive years of increases.
+Buyback: $2bn authorisation, $750m remaining.
+Capital allocation: 40% reinvestment, 35% returns, 25% optionality.
+Consensus revenue (FY26): $12.4bn (range $11.8bn-$12.9bn).
+Consensus EBITDA: $3.1bn. Margin: 25.0%.
+Consensus EPS: $5.85. P/E: 20.2x.
+Forecast revenue (FY26): $12.7bn. Above consensus by 2.4%.
+Forecast EBITDA: $3.25bn. Margin: 25.6%.
+Forecast EPS: $6.10. Above consensus by 4.3%.
+Sensitivity: a 100bps WACC change shifts intrinsic value by roughly 9%.
+A 50bps change in terminal growth shifts intrinsic value by roughly 4%.
+Scenario weighting: Bull 25%, Base 55%, Bear 20%.
+Probability-weighted target price: $148.50.
+Implied upside vs. current: 25.6%.
+Time horizon: 12 months.
+Last updated: Q4 fieldwork concluded.
+Working hypothesis: cloud transition continues to surprise on the upside.
+Open questions: timing of margin reinflection in Industrial segment.
+Next steps: management call, channel checks, customer survey.
+Independent reviewer: senior research lead.
+Quality gate: model audit complete.
+Citations: see annotated bibliography.
+Document classification: research, internal distribution.

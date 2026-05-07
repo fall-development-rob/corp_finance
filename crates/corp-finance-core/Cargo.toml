@@ -82,7 +82,15 @@ institutional_real_estate = []
 managed_agent = []
 scenarios = ["dep:rand", "dep:statrs"]
 monte_carlo = ["scenarios"]
-full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "scenarios", "monte_carlo", "derivatives", "quant_risk", "restructuring", "real_assets", "fx_commodities", "securitization", "venture", "esg", "regulatory", "insurance", "private_credit", "fpa", "wealth", "crypto", "trade_finance", "structured_products", "municipal", "credit_derivatives", "convertibles", "lease_accounting", "pension", "sovereign", "real_options", "equity_research", "commodity_trading", "quant_strategies", "treasury", "infrastructure", "behavioral", "performance_attribution", "credit_portfolio", "macro_economics", "compliance", "onshore_structures", "offshore_structures", "transfer_pricing", "tax_treaty", "fatca_crs", "substance_requirements", "regulatory_reporting", "aml_compliance", "volatility_surface", "portfolio_optimization", "risk_budgeting", "market_microstructure", "interest_rate_models", "mortgage_analytics", "inflation_linked", "repo_financing", "capital_allocation", "credit_scoring", "clo_analytics", "fund_of_funds", "earnings_quality", "dividend_policy", "carbon_markets", "bank_analytics", "private_wealth", "emerging_markets", "index_construction", "financial_forensics", "workflows", "institutional_real_estate", "managed_agent"]
+memory = ["dep:hnsw_rs", "dep:tantivy", "dep:petgraph", "dep:flate2", "dep:uuid", "dep:sha2"]
+audit = ["dep:sha2", "dep:uuid"]
+cost = ["dep:rusqlite", "dep:uuid"]
+observability = ["dep:tracing", "dep:tracing-subscriber", "dep:uuid"]
+security = ["dep:regex"]
+multi_agent = ["dep:petgraph", "dep:pathfinding"]
+federation = ["dep:rusqlite"]
+self_learning = ["memory", "multi_agent", "dep:pathfinding"]
+full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "scenarios", "monte_carlo", "derivatives", "quant_risk", "restructuring", "real_assets", "fx_commodities", "securitization", "venture", "esg", "regulatory", "insurance", "private_credit", "fpa", "wealth", "crypto", "trade_finance", "structured_products", "municipal", "credit_derivatives", "convertibles", "lease_accounting", "pension", "sovereign", "real_options", "equity_research", "commodity_trading", "quant_strategies", "treasury", "infrastructure", "behavioral", "performance_attribution", "credit_portfolio", "macro_economics", "compliance", "onshore_structures", "offshore_structures", "transfer_pricing", "tax_treaty", "fatca_crs", "substance_requirements", "regulatory_reporting", "aml_compliance", "volatility_surface", "portfolio_optimization", "risk_budgeting", "market_microstructure", "interest_rate_models", "mortgage_analytics", "inflation_linked", "repo_financing", "capital_allocation", "credit_scoring", "clo_analytics", "fund_of_funds", "earnings_quality", "dividend_policy", "carbon_markets", "bank_analytics", "private_wealth", "emerging_markets", "index_construction", "financial_forensics", "workflows", "institutional_real_estate", "managed_agent", "memory", "audit", "cost", "observability", "security", "multi_agent", "federation", "self_learning"]
 
 [dependencies]
 rust_decimal = { version = "1", features = ["serde-with-str", "maths"] }
@@ -94,6 +102,21 @@ chrono = { version = "0.4", features = ["serde"] }
 rand = { version = "0.8", optional = true }
 statrs = { version = "0.17", optional = true }
 
+# Phase 26 — Memory + Audit + Cost + Observability + Security (native, surface-only)
+hnsw_rs = { version = "0.3", optional = true }
+tantivy = { version = "0.22", optional = true }
+petgraph = { version = "0.6", optional = true }
+flate2 = { version = "1", optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"], optional = true }
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+regex = { version = "1", optional = true }
+uuid = { version = "1", features = ["v7", "serde"], optional = true }
+sha2 = { version = "0.10", optional = true }
+
+# Phase 27/28 — Multi-agent + Federation + Self-learning (native)
+pathfinding = { version = "4", optional = true }
+
 # WASM compatibility: std::time::Instant panics on wasm32-unknown-unknown.
 # web-time provides a drop-in Instant backed by performance.now() in the browser
 # and a JS-host clock in Node. Pulled in only for wasm32 builds.
@@ -102,3 +125,4 @@ web-time = "1"
 
 [dev-dependencies]
 pretty_assertions = "1"
+tempfile = "3"

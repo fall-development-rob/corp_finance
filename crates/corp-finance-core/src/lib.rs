@@ -225,9 +225,24 @@ pub mod institutional_real_estate;
 #[cfg(feature = "managed_agent")]
 pub mod managed_agent;
 
+#[cfg(feature = "audit")]
+pub mod audit;
+
+#[cfg(feature = "observability")]
+pub mod observability;
+
 /// MCP-server tier registry — pure data, always available (no feature gate).
 /// Lets users discover which MCP servers are free vs. paid-vendor.
 pub mod mcp_servers;
+
+#[cfg(feature = "cost")]
+pub mod cost;
+
+#[cfg(feature = "security")]
+pub mod security;
+
+#[cfg(feature = "memory")]
+pub mod memory;
 
 pub use error::CorpFinanceError;
 pub use types::*;
