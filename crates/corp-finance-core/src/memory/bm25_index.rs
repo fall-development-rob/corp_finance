@@ -31,6 +31,20 @@ use crate::CorpFinanceResult;
 /// Default writer heap size — 50 MB is plenty for the v1 in-RAM index.
 const WRITER_HEAP_BYTES: usize = 50_000_000;
 
+/// A BM25 hit returned from [`BM25MemoryIndex::query`]: the canonical
+/// `RunSummary` plus the tantivy-emitted BM25 relevance score for the
+/// originating query.
+///
+/// The score is the unnormalised BM25 score returned by tantivy's
+/// `TopDocs` collector; it is positive and increases with relevance, but
+/// is not directly comparable across distinct queries (it depends on
+/// query term IDF which differs per call).
+#[derive(Debug, Clone, PartialEq)]
+pub struct BM25Hit {
+    pub run_summary: RunSummary,
+    pub bm25_score: f32,
+}
+
 /// In-memory BM25 inverted index over `RunSummary` records.
 pub struct BM25MemoryIndex {
     index: Index,
@@ -103,14 +117,33 @@ impl BM25MemoryIndex {
 
     /// BM25 query with optional tenant filter.
     ///
-    /// Returns up to `limit` matching `RunSummary` records. The tenant
-    /// filter is applied post-retrieval to keep the query parser simple.
+    /// Returns up to `limit` matching [`BM25Hit`] records, each carrying
+    /// the canonical `RunSummary` plus the tantivy-emitted BM25 score.
+    /// Hits are ordered by descending `bm25_score` (most relevant first).
+    /// The tenant filter is applied post-retrieval to keep the query
+    /// parser simple.
+    ///
+    // TODO(Phase-28-Wave-2): adjust callers for the `BM25Hit` shape.
+    // Phase 28 cleanup widened the return type from `Vec<RunSummary>` to
+    // `Vec<BM25Hit>` so the tantivy BM25 score is no longer dropped on
+    // the floor (Phase 26 NAPI agent's TODO). Known downstream callers
+    // that need updating in the Wave 2 NAPI / CLI pass:
+    //   - `packages/bindings/src/lib.rs::surface_memory_find` (~line 2836)
+    //     — currently iterates `for s in results` expecting `RunSummary`;
+    //     replace with `for hit in results` and read `hit.run_summary` /
+    //     `hit.bm25_score`. The placeholder `score: 0.0` can become the
+    //     real BM25 score now.
+    //   - `crates/corp-finance-cli/src/commands/memory.rs::run_find`
+    //     (~line 182) — the `raw` iteration needs `.into_iter().map(|h|
+    //     h.run_summary)` to recover the existing filter pipeline shape.
+    // Both are out of scope for the Phase 28 cleanup pass per the task
+    // contract; the Wave 2 agent owns the caller wiring.
     pub fn query(
         &self,
         query_text: &str,
         limit: usize,
         filter_tenant: Option<&str>,
-    ) -> CorpFinanceResult<Vec<RunSummary>> {
+    ) -> CorpFinanceResult<Vec<BM25Hit>> {
         if query_text.trim().is_empty() {
             return Ok(Vec::new());
         }
@@ -128,8 +161,8 @@ impl BM25MemoryIndex {
             .search(&q, &TopDocs::with_limit(over))
             .map_err(tantivy_to_cf)?;
 
-        let mut out: Vec<RunSummary> = Vec::with_capacity(limit);
-        for (_score, addr) in hits {
+        let mut out: Vec<BM25Hit> = Vec::with_capacity(limit);
+        for (score, addr) in hits {
             let stored: TantivyDocument = searcher.doc(addr).map_err(tantivy_to_cf)?;
             let run_id_str = match stored.get_first(self.f_run_id) {
                 Some(v) => owned_str(v).unwrap_or_default(),
@@ -145,7 +178,10 @@ impl BM25MemoryIndex {
                         continue;
                     }
                 }
-                out.push(summary.clone());
+                out.push(BM25Hit {
+                    run_summary: summary.clone(),
+                    bm25_score: score,
+                });
                 if out.len() >= limit {
                     break;
                 }
@@ -193,6 +229,25 @@ mod tests {
         idx.ingest(&s).unwrap();
         let res = idx.query("apple revenue", 5, None).unwrap();
         assert!(!res.is_empty());
-        assert_eq!(res[0].run_id, s.run_id);
+        assert_eq!(res[0].run_summary.run_id, s.run_id);
+    }
+
+    #[test]
+    fn bm25_score_is_nonzero_for_relevant_hits() {
+        let mut idx = BM25MemoryIndex::new().unwrap();
+        idx.ingest(&mk_summary(
+            "AAPL Q3 earnings beat consensus on iPhone revenue",
+            "earnings",
+        ))
+        .unwrap();
+        let hits = idx.query("earnings", 10, None).unwrap();
+        assert!(!hits.is_empty());
+        // tantivy emits a positive BM25 score for any matching document;
+        // a zero score would mean the score plumbing was lost.
+        assert!(
+            hits[0].bm25_score > 0.0,
+            "expected positive BM25 score, got {}",
+            hits[0].bm25_score
+        );
     }
 }

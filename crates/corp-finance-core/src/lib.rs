@@ -251,6 +251,9 @@ pub mod federation;
 #[cfg(feature = "multi_agent")]
 pub mod multi_agent;
 
+#[cfg(feature = "self_learning")]
+pub mod self_learning;
+
 pub use error::CorpFinanceError;
 pub use types::*;
 

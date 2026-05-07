@@ -14,7 +14,6 @@ use std::collections::HashSet;
 
 use crate::memory::bm25_index::BM25MemoryIndex;
 use crate::memory::cfa_session::round_trip_test_helper;
-use crate::memory::entity_graph::{extract_entities_from_text, EntityGraph};
 use crate::memory::hnsw_index::HnswMemoryIndex;
 use crate::memory::types::{CfaSession, EntityKind, EntityRef, MemoryQuery, RunSummary, Surface};
 
@@ -343,18 +342,32 @@ fn ruf_mem_inv_003_session_round_trip_invariant_holds_for_empty_and_populated() 
     assert_eq!(populated, r2);
 }
 
-// RUF-MEM-INV-004 — boundary discipline (entity extraction stays in-module)
+// RUF-MEM-INV-004 — boundary discipline (entity extraction lives in
+// `multi_agent::entity_graph`; the Phase 26 in-memory stub was removed in
+// Phase 28 cleanup once multi_agent landed as the canonical owner).
+#[cfg(feature = "multi_agent")]
 #[test]
-fn ruf_mem_inv_004_entity_extraction_lives_in_memory_module() {
+fn ruf_mem_inv_004_entity_extraction_lives_in_multi_agent_module() {
+    use crate::multi_agent::entity_graph::{extract_entities_from_text, EntityGraph};
+    use crate::multi_agent::types::RelationKind;
+
     let ents = extract_entities_from_text("AAPL traded with CUSIP 037833100 today");
-    let kinds: HashSet<EntityKind> = ents.iter().map(|e| e.kind).collect();
-    assert!(kinds.contains(&EntityKind::Ticker));
-    assert!(kinds.contains(&EntityKind::Cusip));
-    // Graph stub also lives in-module.
+    let kinds: HashSet<crate::multi_agent::types::EntityKind> =
+        ents.iter().map(|e| e.kind).collect();
+    assert!(kinds.contains(&crate::multi_agent::types::EntityKind::Ticker));
+    assert!(kinds.contains(&crate::multi_agent::types::EntityKind::Cusip));
+    // Multi-agent graph carries the same nodes; co-occurrence is now
+    // tracked through `RelationKind::MentionedTogether` edges instead of
+    // the per-entity counter the Phase 26 stub used.
     let mut g = EntityGraph::new();
-    let run = uuid::Uuid::now_v7();
-    for e in ents {
-        g.add_entity(e, run);
+    for i in 0..ents.len() {
+        for j in (i + 1)..ents.len() {
+            g.add_relation(
+                ents[i].clone(),
+                ents[j].clone(),
+                RelationKind::MentionedTogether,
+            );
+        }
     }
     assert!(g.node_count() >= 2);
 }
@@ -404,7 +417,8 @@ fn bm25_keyword_query_supports_hybrid_retrieval() {
     .unwrap();
     let hits = bm.query("apple revenue", 5, None).unwrap();
     assert!(!hits.is_empty());
-    assert!(hits[0].summary_text.contains("Apple"));
+    assert!(hits[0].run_summary.summary_text.contains("Apple"));
+    assert!(hits[0].bm25_score > 0.0);
 }
 
 // ---------------------------------------------------------------------------

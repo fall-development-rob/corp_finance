@@ -1,8 +1,7 @@
 //! `petgraph`-backed entity graph for the multi-agent coordination
-//! bounded context. Supersedes the Phase 26 stub at
-//! [`crate::memory::entity_graph`]; the stub is left in place for
-//! backwards compatibility with existing memory tests and will be cleaned
-//! up in a follow-up pass.
+//! bounded context. This is the canonical owner of entity extraction and
+//! the entity graph; the Phase 26 stub that previously lived at
+//! `crate::memory::entity_graph` was removed in Phase 28 cleanup.
 //!
 //! The graph holds [`EntityRef`] nodes and directed [`RelationKind`]
 //! edges. It is per-session in v1; cross-session entity views are served

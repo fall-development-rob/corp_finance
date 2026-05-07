@@ -126,6 +126,24 @@ impl HnswMemoryIndex {
         self.embedding_dim
     }
 
+    /// Iterate over all `RunSummary` records in the side store.
+    ///
+    /// Used for text-only retrieval (BM25 path) when no embedding is
+    /// supplied; the NAPI `surface_memory_find` binding walks this iterator
+    /// to enumerate candidate records when the caller did not provide a
+    /// query embedding. Order is implementation-defined (`HashMap`
+    /// insertion order, which is randomised); do not rely on it.
+    pub fn summaries_iter(&self) -> impl Iterator<Item = &RunSummary> + '_ {
+        self.summaries.values()
+    }
+
+    /// Number of records currently in the side store. Equivalent to
+    /// [`Self::len`]; provided as a named alias for symmetry with
+    /// [`Self::summaries_iter`].
+    pub fn summaries_count(&self) -> usize {
+        self.summaries.len()
+    }
+
     /// Insert a `RunSummary` into the HNSW graph and the side store.
     ///
     /// Validates dimension and rejects duplicate `run_id`s (RUF-MEM-INV-001
@@ -270,5 +288,22 @@ mod tests {
         let mut idx = HnswMemoryIndex::new(3);
         let s = mk_summary("x", vec![1.0, 0.0]);
         assert!(idx.ingest(&s).is_err());
+    }
+
+    #[test]
+    fn summaries_iter_yields_all_ingested() {
+        let mut idx = HnswMemoryIndex::new(3);
+        idx.ingest(&mk_summary("first", vec![1.0, 0.0, 0.0]))
+            .unwrap();
+        idx.ingest(&mk_summary("second", vec![0.0, 1.0, 0.0]))
+            .unwrap();
+        assert_eq!(idx.summaries_count(), 2);
+        assert_eq!(idx.summaries_iter().count(), 2);
+        let texts: std::collections::HashSet<&str> = idx
+            .summaries_iter()
+            .map(|s| s.summary_text.as_str())
+            .collect();
+        assert!(texts.contains("first"));
+        assert!(texts.contains("second"));
     }
 }

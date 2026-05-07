@@ -89,7 +89,7 @@ observability = ["dep:tracing", "dep:tracing-subscriber", "dep:uuid"]
 security = ["dep:regex"]
 multi_agent = ["dep:petgraph", "dep:pathfinding", "dep:uuid"]
 federation = ["dep:rusqlite", "dep:sha2", "dep:uuid", "security", "managed_agent"]
-self_learning = ["memory", "multi_agent", "dep:pathfinding"]
+self_learning = ["memory", "multi_agent", "dep:pathfinding", "dep:ed25519-dalek", "dep:sha2", "dep:getrandom"]
 full = ["valuation", "credit", "pe", "ma", "portfolio", "fixed_income", "three_statement", "jurisdiction", "scenarios", "monte_carlo", "derivatives", "quant_risk", "restructuring", "real_assets", "fx_commodities", "securitization", "venture", "esg", "regulatory", "insurance", "private_credit", "fpa", "wealth", "crypto", "trade_finance", "structured_products", "municipal", "credit_derivatives", "convertibles", "lease_accounting", "pension", "sovereign", "real_options", "equity_research", "commodity_trading", "quant_strategies", "treasury", "infrastructure", "behavioral", "performance_attribution", "credit_portfolio", "macro_economics", "compliance", "onshore_structures", "offshore_structures", "transfer_pricing", "tax_treaty", "fatca_crs", "substance_requirements", "regulatory_reporting", "aml_compliance", "volatility_surface", "portfolio_optimization", "risk_budgeting", "market_microstructure", "interest_rate_models", "mortgage_analytics", "inflation_linked", "repo_financing", "capital_allocation", "credit_scoring", "clo_analytics", "fund_of_funds", "earnings_quality", "dividend_policy", "carbon_markets", "bank_analytics", "private_wealth", "emerging_markets", "index_construction", "financial_forensics", "workflows", "institutional_real_estate", "managed_agent", "memory", "audit", "cost", "observability", "security", "multi_agent", "federation", "self_learning"]
 
 [dependencies]
@@ -116,6 +116,8 @@ sha2 = { version = "0.10", optional = true }
 
 # Phase 27/28 — Multi-agent + Federation + Self-learning (native)
 pathfinding = { version = "4", optional = true }
+ed25519-dalek = { version = "2", optional = true }
+getrandom = { version = "0.2", optional = true }
 
 # WASM compatibility: std::time::Instant panics on wasm32-unknown-unknown.
 # web-time provides a drop-in Instant backed by performance.now() in the browser

@@ -16,8 +16,12 @@
 //!   side `HashMap<Uuid, RunSummary>` for record retrieval.
 //! - [`bm25_index`] — BM25 keyword inverted index wrapping [`tantivy`].
 //! - [`cfa_session`] — portable session archive (JSON + `flate2` gzip).
-//! - [`entity_graph`] — placeholder graph aggregate (Phase 27 will own this
-//!   fully; see the `// TODO(phase-27)` comments inside).
+//!
+//! Entity graph and tag-based entity extraction live in the multi-agent
+//! coordination context at [`crate::multi_agent::entity_graph`] (Phase 27);
+//! the Phase 26 placeholder stub that previously lived here was removed in
+//! Phase 28 cleanup. Memory tests that exercise entity extraction now reach
+//! into the multi-agent module directly under `cfg(feature = "multi_agent")`.
 //!
 //! ## On-disk persistence format (HNSW + summary side-store)
 //!
@@ -41,15 +45,13 @@
 
 pub mod bm25_index;
 pub mod cfa_session;
-pub mod entity_graph;
 pub mod hnsw_index;
 pub mod types;
 
 #[cfg(test)]
 mod tests;
 
-pub use bm25_index::BM25MemoryIndex;
+pub use bm25_index::{BM25Hit, BM25MemoryIndex};
 pub use cfa_session::{restore as restore_session, round_trip_test_helper, save as save_session};
-pub use entity_graph::{EntityEdge, EntityGraph, EntityNode};
 pub use hnsw_index::HnswMemoryIndex;
 pub use types::{CfaSession, EntityKind, EntityRef, MemoryQuery, RunSummary, Surface};

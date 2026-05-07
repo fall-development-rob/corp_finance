@@ -20,9 +20,11 @@
 //! - [`agent_invoke`] — Claude Code Agent-tool delegation tracking, agent
 //!   slug validation against the registered CFA agent set, and parent-chain
 //!   cycle detection.
-//! - [`entity_graph`] — `petgraph`-backed entity graph that supersedes the
-//!   Phase 26 stub at [`crate::memory::entity_graph`]. Tag-based extractor
-//!   for tickers, CUSIPs, sectors, issuers, and fund identifiers.
+//! - [`entity_graph`] — `petgraph`-backed entity graph that owns entity
+//!   extraction for the platform. Tag-based extractor for tickers, CUSIPs,
+//!   sectors, issuers, and fund identifiers. (The Phase 26 stub that
+//!   previously lived in the memory context was removed in Phase 28
+//!   cleanup; this module is the sole owner.)
 //! - [`goap_adapter`] — action-catalogue adapter exposing the registered
 //!   MCP tools and CFA slash commands as the planner's action space.
 //! - [`planner`] — A* planner over the action catalogue using
