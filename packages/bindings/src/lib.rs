@@ -3952,3 +3952,38 @@ pub fn attest_check(input_json: String) -> NapiResult<String> {
     })
     .map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Office — XLSX writer (Phase 29 Wave 6)
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct WriteXlsxWorkbookInput {
+    spec: corp_finance_core::office::WorkbookSpec,
+    output_path: String,
+}
+
+#[napi]
+pub fn write_xlsx_workbook(input_json: String) -> NapiResult<String> {
+    let input: WriteXlsxWorkbookInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let result = corp_finance_core::office::write_workbook(
+        &input.spec,
+        std::path::Path::new(&input.output_path),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&result).map_err(to_napi_error)
+}
+
+/// Render a corporate-finance compute result into a WorkbookSpec JSON string.
+///
+/// Accepts `{ "kind": "dcf"|"comps"|"lbo"|"three_statement", "result_json": "<serialised output>" }`.
+/// Returns the WorkbookSpec as a JSON string — the caller should pipe the result
+/// directly into `write_xlsx_workbook` to produce a .xlsx file (composable two-step).
+#[napi]
+pub fn render_office_template(input_json: String) -> NapiResult<String> {
+    let workbook =
+        corp_finance_core::office::templates::render_template_from_json(&input_json)
+            .map_err(to_napi_error)?;
+    serde_json::to_string(&workbook).map_err(to_napi_error)
+}

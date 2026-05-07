@@ -301,4 +301,8 @@ export const attestList = b.attestList;
 export const attestRevoke = b.attestRevoke;
 export const attestCheck = b.attestCheck;
 
+// Phase 29 wave 6: office xlsx writer + template renderer.
+export const writeXlsxWorkbook = b.writeXlsxWorkbook;
+export const renderOfficeTemplate = b.renderOfficeTemplate;
+
 export default pkg;

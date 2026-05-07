@@ -10,6 +10,9 @@ description = "CLI for institutional-grade corporate finance calculations"
 name = "cfa"
 path = "src/main.rs"
 
+[features]
+office = ["corp-finance-core/office"]
+
 [dependencies]
 corp-finance-core = { version = "1.0.0", path = "../corp-finance-core", features = ["full"] }
 clap = { version = "4", features = ["derive"] }

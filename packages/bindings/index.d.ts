@@ -287,3 +287,4 @@ export declare function attestVerify(inputJson: string): NapiResult
 export declare function attestList(inputJson: string): NapiResult
 export declare function attestRevoke(inputJson: string): NapiResult
 export declare function attestCheck(inputJson: string): NapiResult
+export declare function writeXlsxWorkbook(inputJson: string): NapiResult

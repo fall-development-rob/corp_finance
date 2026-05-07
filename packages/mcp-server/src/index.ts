@@ -85,6 +85,7 @@ import { registerFederationTools } from "./tools/federation.js";
 import { registerSelfLearningTools } from "./tools/self_learning.js";
 import { registerAgentInvokeTools } from "./tools/agent_invoke.js";
 import { registerAttestTools } from "./tools/attest.js";
+import { registerOfficeTools } from "./tools/office.js";
 
 const server = new McpServer({
   name: "corp-finance-mcp",
@@ -175,6 +176,7 @@ registerFederationTools(server);
 registerSelfLearningTools(server);
 registerAgentInvokeTools(server);
 registerAttestTools(server);
+registerOfficeTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

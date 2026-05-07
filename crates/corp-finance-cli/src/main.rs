@@ -90,6 +90,8 @@ use commands::managed_agent::ManagedAgentArgs;
 use commands::market_microstructure::{OptimalExecutionArgs, SpreadAnalysisArgs};
 use commands::mcp::McpArgs;
 use commands::memory::MemoryArgs;
+#[cfg(feature = "office")]
+use commands::office::OfficeArgs;
 use commands::monte_carlo::{McDcfArgs, MonteCarloArgs};
 use commands::mortgage_analytics::{MbsAnalyticsArgs, PrepaymentArgs};
 use commands::municipal::{MuniAnalysisArgs, MuniBondArgs};
@@ -628,6 +630,9 @@ enum Commands {
     AgentInvoke(AgentInvokeArgs),
     /// Federation v2 trust attestation management (Phase 29 Wave 4).
     Attest(AttestArgs),
+    /// Office / OOXML serialisation — xlsx write (Phase 29 Wave 6).
+    #[cfg(feature = "office")]
+    Office(OfficeArgs),
     /// Print version information
     Version,
 }
@@ -768,6 +773,16 @@ fn command_name(cmd: &Commands) -> String {
                 AttestSubcommand::List(_) => "attest.list".to_string(),
                 AttestSubcommand::Revoke(_) => "attest.revoke".to_string(),
                 AttestSubcommand::Check(_) => "attest.check".to_string(),
+            }
+        }
+        #[cfg(feature = "office")]
+        Commands::Office(args) => {
+            use commands::office::{OfficeCommands, XlsxCommands};
+            match &args.command {
+                OfficeCommands::Xlsx(x) => match &x.command {
+                    XlsxCommands::Write(_) => "office.xlsx.write".to_string(),
+                },
+                OfficeCommands::RenderTemplate(_) => "office.render_template".to_string(),
             }
         }
         Commands::Version => "version".to_string(),
@@ -1201,6 +1216,16 @@ fn main() {
             }
         }
         Commands::Attest(args) => commands::attest::run_attest(args),
+        #[cfg(feature = "office")]
+        Commands::Office(args) => {
+            use commands::office::{OfficeCommands, XlsxCommands};
+            match args.command {
+                OfficeCommands::Xlsx(x) => match x.command {
+                    XlsxCommands::Write(a) => commands::office::run_xlsx_write(a),
+                },
+                OfficeCommands::RenderTemplate(a) => commands::office::run_render_template(a),
+            }
+        }
         Commands::Version => {
             println!("cfa {}", env!("CARGO_PKG_VERSION"));
             return;

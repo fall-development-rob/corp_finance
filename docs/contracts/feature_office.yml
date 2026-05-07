@@ -1,0 +1,143 @@
+# Feature Contract: Office OOXML Serialization (Phase 29 Wave 6)
+# Enforces architectural invariants for the office/.xlsx write surface
+# ADR: docs/adr/ADR-021-office-ooxml-serialization.md
+
+contracts:
+  - id: OFFICE-001
+    name: "office_xlsx_write MCP tool must not accept an xlsx input parameter"
+    description: >
+      The office surface is write-only. No MCP tool in packages/mcp-server/src/tools/
+      may define a parameter whose name or description implies reading an existing .xlsx
+      file (e.g., 'xlsx_path', 'input_xlsx', 'workbook_path' used as input).
+      WriteWorkbookResult.output_path is the only xlsx path that may appear in MCP
+      tool output schemas.
+    scope:
+      - "packages/mcp-server/src/tools/"
+    check: >
+      grep -rn 'input.*\.xlsx\|xlsx.*input\|read.*xlsx\|load.*xlsx\|open.*xlsx'
+        packages/mcp-server/src/tools/ returns no matches
+    enforcement: build-time
+    severity: error
+
+  - id: OFFICE-002
+    name: "NAPI writeXlsxWorkbook must use single-string JSON envelope"
+    description: >
+      The NAPI binding writeXlsxWorkbook must accept exactly one string argument
+      (the JSON envelope { spec, output_path }) and return a string (JSON-encoded
+      WriteWorkbookResult). This matches the established NAPI boundary pattern.
+      No additional function parameters are permitted.
+    scope:
+      - "packages/bindings/src/lib.rs"
+    check: >
+      grep -n 'writeXlsxWorkbook' packages/bindings/src/lib.rs must show a
+      single-argument fn signature accepting a String/&str; no second parameter present
+    enforcement: build-time
+    severity: error
+
+  - id: OFFICE-003
+    name: "office feature is opt-in via Cargo feature flag"
+    description: >
+      rust_xlsxwriter and sha2 must appear under the [features] office section
+      in corp-finance-core/Cargo.toml as optional dependencies, not as always-on deps.
+    scope:
+      - "crates/corp-finance-core/Cargo.toml"
+    check: >
+      grep -A20 '\[features\]' crates/corp-finance-core/Cargo.toml |
+        grep 'office' shows rust_xlsxwriter and sha2 as optional feature members
+    enforcement: build-time
+    severity: error
+
+  - id: OFFICE-004
+    name: "No raw f64 literal in office module except Decimal conversion site"
+    description: >
+      The office module must not introduce f64 arithmetic literals outside the
+      documented Decimal→f64 conversion site (CellValue::Decimal arm). All other
+      numeric handling must use rust_decimal::Decimal or integer types.
+    scope:
+      - "crates/corp-finance-core/src/office/"
+    check: >
+      grep -n 'f64\|as f64' crates/corp-finance-core/src/office/ --include='*.rs' -r
+        returns only matches inside the Decimal variant arm, not elsewhere
+    enforcement: review
+    severity: warning
+
+  - id: OFFICE-005
+    name: "CLI office subcommand is feature-gated"
+    description: >
+      The corp-finance-cli office xlsx write subcommand must be compiled only when
+      the office feature is enabled. A bare `cargo build --workspace` without
+      --features office must not expose the office subcommand.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+    check: >
+      grep -n 'office' crates/corp-finance-cli/src/main.rs shows cfg(feature = "office")
+      guard on the office subcommand registration
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: OFFICE-INV-001
+    name: "Terminal-deliverable invariant — no xlsx reader in any MCP tool"
+    description: >
+      Workbooks are terminal deliverables. No MCP tool, NAPI binding, or CLI subcommand
+      reads a .xlsx file back as input. WriteWorkbookResult { output_path, bytes_written,
+      sha256, sheet_count } is the only system-of-record handle after a write.
+    check: >
+      grep -rn '\.xlsx' packages/mcp-server/src/tools/ |
+        grep -v 'output_path\|WriteWorkbook\|bytes_written\|sha256\|sheet_count\|# \|//'
+        returns no matches
+    severity: error
+
+  - id: OFFICE-INV-002
+    name: "Decimal→f64 conversion is bounded to the CellValue::Decimal arm"
+    description: >
+      The only permitted f64 in the office module is the Decimal→f64 cast inside the
+      CellValue::Decimal match arm. The cast is preceded by a rust_decimal::Decimal
+      parse validation step; overflow or parse failure returns InvalidInput before any
+      f64 value is produced. No other path in the office module produces or accepts f64.
+    check: >
+      In crates/corp-finance-core/src/office/, every occurrence of `as f64` or
+      `to_f64` must be preceded within 5 lines by a Decimal::from_str or
+      Decimal::try_from call; `cargo clippy --features office` emits no float warnings
+      for office/**/*.rs.
+    severity: error
+
+  - id: OFFICE-INV-003
+    name: "sha256 stability — identical spec produces identical bytes"
+    description: >
+      Writing the same WorkbookSpec twice must produce byte-identical .xlsx output,
+      yielding the same sha256 digest. This is asserted by the unit test
+      `write_minimal_workbook_one_sheet_one_row` in the office module test suite.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'write_minimal_workbook_one_sheet_one_row'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office write_minimal_workbook_one_sheet_one_row exits 0.
+    severity: error
+
+  - id: OFFICE-INV-004
+    name: "Sheet name validation — max 31 chars, unique, non-empty list"
+    description: >
+      Sheet names must be validated before any bytes are written: (a) each name is at
+      most 31 characters, (b) names are unique within the workbook, (c) an empty sheets
+      list is rejected with InvalidInput. These checks must occur in write_workbook
+      before the rust_xlsxwriter write call.
+    check: >
+      In crates/corp-finance-core/src/office/, grep for '31' or 'sheet_name' or
+      'unique' confirms validation logic; the corresponding unit tests for each
+      rejection case (too-long name, duplicate name, empty list) pass under
+      `cargo test --features office`.
+    severity: error
+
+  - id: OFFICE-INV-005
+    name: "Zip integrity — output starts with PK magic bytes"
+    description: >
+      Every .xlsx file produced by write_workbook must begin with the OOXML/ZIP magic
+      bytes PK\x03\x04 (hex: 50 4B 03 04). The unit test `zip_magic_bytes_present`
+      asserts this by reading the first four bytes of the output file after a write.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'zip_magic_bytes_present\|PK\\x03\\x04\|0x50.*0x4B.*0x03.*0x04'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office zip_magic_bytes_present exits 0.
+    severity: error

@@ -229,6 +229,9 @@ pub mod managed_agent;
 #[cfg(feature = "audit")]
 pub mod audit;
 
+#[cfg(feature = "office")]
+pub mod office;
+
 #[cfg(feature = "observability")]
 pub mod observability;
 

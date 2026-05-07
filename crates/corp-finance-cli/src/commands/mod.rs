@@ -47,6 +47,8 @@ pub mod mcp;
 pub mod memory;
 pub mod monte_carlo;
 pub mod mortgage_analytics;
+#[cfg(feature = "office")]
+pub mod office;
 pub mod municipal;
 pub mod offshore_structures;
 pub mod onshore_structures;
