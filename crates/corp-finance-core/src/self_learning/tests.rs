@@ -31,8 +31,8 @@ use crate::self_learning::signing::{
 };
 use crate::self_learning::sona::{cluster_trajectories, CLUSTER_TRAINING_FLOOR};
 use crate::self_learning::trajectory::{
-    capture_trajectory_step, complete_trajectory, reset_store_for_tests, retrieve_similar,
-    MAX_TRAJECTORY_STEPS,
+    capture_trajectory_step, complete_trajectory, lock_test_store, reset_store_for_tests,
+    retrieve_similar, MAX_TRAJECTORY_STEPS,
 };
 use crate::self_learning::types::{
     DeltaKind, DriftVerdict, EvalGrade, GoldenInput, SignedManifest, SurfaceEventKind,
@@ -73,6 +73,7 @@ fn traj(id_offset: u8, surface: Surface, grade: EvalGrade, tenant: Option<&str>)
 
 #[test]
 fn ruf_learn_001_trajectory_captured_at_surface_boundary() {
+    let _guard = lock_test_store();
     reset_store_for_tests();
     capture_trajectory_step(Surface::Cli, "ic-memo", step("dcf_model")).unwrap();
     capture_trajectory_step(Surface::Cli, "ic-memo", step("comps_table")).unwrap();
@@ -249,6 +250,7 @@ fn ruf_learn_009_replay_drift_blocks_deploy_in_ci() {
 
 #[test]
 fn ruf_learn_010_trajectory_retrieval_returns_top_k_by_eval_grade() {
+    let _guard = lock_test_store();
     reset_store_for_tests();
     use crate::self_learning::trajectory::persist_with_embedding;
 
@@ -306,6 +308,7 @@ fn ruf_learn_011_dispatcher_failure_recorded_as_replay_failure() {
 
 #[test]
 fn ruf_learn_012_trajectories_persisted_via_phase_26_memory() {
+    let _guard = lock_test_store();
     reset_store_for_tests();
     // The integration boundary: trajectories captured at the surface
     // wrappers are persisted into the local store today, with the
@@ -361,6 +364,7 @@ fn ruf_learn_inv_001_trajectory_step_count_within_max() {
     // Verify the cap trips by mocking with a downward-bounded loop on a
     // local key. This loop is small (under 100 iterations) so it cannot
     // race with other tests that touch the same key — there are none.
+    let _guard = lock_test_store();
     reset_store_for_tests();
     for i in 0..16 {
         capture_trajectory_step(
@@ -387,6 +391,7 @@ fn ruf_learn_inv_001_trajectory_step_count_within_max() {
 
 #[test]
 fn ruf_learn_inv_002_trajectory_immutability_after_completion() {
+    let _guard = lock_test_store();
     reset_store_for_tests();
     capture_trajectory_step(Surface::Cli, "imm", step("a")).unwrap();
     let t1 = complete_trajectory(Surface::Cli, "imm", Some(EvalGrade::Good)).unwrap();
@@ -502,6 +507,7 @@ fn ruf_learn_inv_008_drift_threshold_default_is_5pct() {
 
 #[test]
 fn ruf_learn_inv_009_tenant_scoping_filters_cross_tenant_reads() {
+    let _guard = lock_test_store();
     reset_store_for_tests();
     use crate::self_learning::trajectory::persist_with_embedding;
     let t_a = traj(1, Surface::Cli, EvalGrade::Good, Some("tenant-a"));
@@ -583,6 +589,7 @@ fn ruf_learn_inv_012_trajectory_store_integration_point_documented() {
     // trajectory::retrieve_similar) is the wiring seam. We assert here
     // that the seam exists and is exercised — capture/complete must not
     // panic and must round-trip a trajectory through the store.
+    let _guard = lock_test_store();
     reset_store_for_tests();
     use crate::self_learning::trajectory::persist_with_embedding;
     let t = traj(1, Surface::Cli, EvalGrade::Excellent, Some("local"));
