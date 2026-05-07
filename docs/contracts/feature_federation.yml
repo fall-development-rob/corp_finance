@@ -1,0 +1,205 @@
+# Feature Contract: Multi-Tenant Federation (Phase 27)
+# Enforces architectural rules for tenant isolation at the four CFA surface output
+# boundaries (CLI output paths, MCP handler state, plugin hook outputs, skill output
+# files) and cross-installation collaboration with cryptographic provenance.
+# Source: ADR-019 (multi-tenant federation)
+# Native module dependencies: rustls, ed25519-dalek, rcgen, regex, rusqlite
+#
+# CFA runtime is exclusively four surfaces: CLI (cfa <subcommand>), MCP (server.tool(...)
+# handlers in packages/*-mcp-server/src/), Skills (slash commands + .claude/skills/*),
+# Plugin (hooks at plugins/cfa-core/hooks/hooks.json). Cookbook deploys are CLI invocations
+# (cfa managed-agent deploy) and inherit surface-level tenant scoping; cookbooks themselves
+# are deployment artefacts outside this contract's runtime scope.
+
+contracts:
+  - id: RUF-FED-001
+    name: "Tenant scoping prevents cross-tenant access to surface output paths"
+    description: >
+      Each tenant's out_dir_root is created under <repo>/var/tenants/<tenant_id>/out
+      with POSIX mode 0700. CLI output writes, MCP handler state files, plugin
+      PostToolUse hook outputs, and skill output files all route through this
+      tenant-scoped path. Cross-tenant file system reads are blocked by OS
+      permissions even if higher-layer code has bugs.
+    given: "Tenant lp-acme has out_dir_root /var/tenants/lp-acme/out with mode 0700, populated with CLI/MCP/plugin/skill outputs"
+    when: "A process running as tenant lp-other attempts to read lp-acme's CLI output, MCP state file, plugin output, or skill output"
+    then: "The OS denies access with EACCES; tenant_isolation_enforced event is emitted with boundary='fs' and surface='<surface>'"
+    scope:
+      - "crates/corp-finance-core/src/federation/mod.rs"
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-002
+    name: "PII redaction in BLOCK mode prevents transmission across surface outputs"
+    description: >
+      When a tenant's PII redaction policy sets a given PII type to BLOCK, no
+      outbound federation message may carry data of that type, regardless of
+      which surface produced the data (CLI output, MCP tool return, plugin
+      hook output, or skill emission). The send is aborted before transmission.
+    given: "Tenant policy sets pii_type='ssn' to BLOCK and an outbound federation message contains an SSN value originating from any surface output"
+    when: "The federation session attempts to send"
+    then: "The send aborts; pii_blocked_outbound event is emitted with surface=<source surface>; no bytes leave the installation"
+    scope:
+      - "crates/corp-finance-core/src/federation/pii_redaction.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-003
+    name: "Trust-score downgrade is instantaneous on threat detection"
+    description: >
+      When a peer's behavioral trust score crosses a threshold downward
+      (composition 0.4*success + 0.2*uptime + 0.2*threat + 0.2*integrity,
+      computed natively in federation/trust_score.rs), the affected federated
+      session enters Hold state immediately with no smoothing window. No new
+      outbound surface outputs are accepted while held.
+    given: "An active session with peer trust score 0.95 and a threat detection event"
+    when: "The score drops below the action threshold (e.g., 0.70)"
+    then: "trust_downgrade event is emitted within 100ms; session enters Hold; no new outbound CLI / MCP / plugin / skill outputs are accepted"
+    scope:
+      - "crates/corp-finance-core/src/federation/trust_score.rs"
+      - "crates/corp-finance-core/src/federation/session.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-004
+    name: "Federation handshake fails closed on cert validation error"
+    description: >
+      Any cert validation failure during the federation handshake results in
+      handshake_state=Failed (deny by default). The session never reaches
+      Active.
+    given: "A handshake attempt with an expired peer certificate"
+    when: "Cert validation runs"
+    then: "handshake_state transitions to Failed; federation_handshake_completed event is emitted with outcome='failed'; no session is created"
+    scope:
+      - "crates/corp-finance-core/src/federation/session.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-005
+    name: "Default PII policy for new tenants is BLOCK for all 14 types at every surface boundary"
+    description: >
+      When a tenant is provisioned via cfa tenant init, the default PII
+      redaction policy sets every one of the 14 PII types defined natively at
+      corp_finance_core::observability::security_scan to BLOCK at every
+      surface boundary (CLI output write, MCP tool output, plugin hook output,
+      skill emission). Operators must explicitly relax modes per surface if
+      desired.
+    given: "A new tenant is created via cfa tenant init"
+    when: "PIIRedactionPolicy default constructor runs"
+    then: "All 14 type-mode pairs are BLOCK at every surface boundary; tenant_provisioned event reflects the default policy"
+    scope:
+      - "crates/corp-finance-core/src/federation/pii_redaction.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-FED-006
+    name: "PaidVendor MCP-tool output federation requires both-peer signed handshake"
+    description: >
+      Federation involving an output produced by a PaidVendor MCP tool
+      (TrustTier=Trusted, e.g., a vendor-mcp-server tool from LSEG / Moody's /
+      S&P / FactSet / Morningstar / PitchBook) requires both peers to sign a
+      session-scoped data redistribution agreement before the session reaches
+      Active state. Outputs from CoreOnly or Freemium MCP servers do not
+      require the additional handshake.
+    given: "A federation session attempting to share an MCP tool output from vendor-mcp-server (PaidVendor) with peer signature missing"
+    when: "Session attempts state transition Authorised -> Active"
+    then: "Transition is refused; session remains in Authorised; cross_firm_handshake_required event is surfaced to the operator"
+    scope:
+      - "crates/corp-finance-core/src/federation/session.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-007
+    name: "Env-var substitution at the surface boundary is namespaced by tenant.env_namespace"
+    description: >
+      CLI configuration tokens, MCP server configuration tokens, and plugin
+      hook tokens like {{FMP_API_KEY}} resolve through the tenant's
+      env_namespace prefix (e.g., TENANT_LPACME_FMP_API_KEY for tenant
+      lp-acme). The default tenant 'local' uses bare names for backward
+      compatibility.
+    given: "Tenant lp-acme with env_namespace='TENANT_LPACME_' and a CLI / MCP / plugin token {{FMP_API_KEY}}"
+    when: "The surface wrapper substitutes env vars at startup"
+    then: "The token resolves from TENANT_LPACME_FMP_API_KEY in the environment, not from FMP_API_KEY"
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-008
+    name: "Audit records carry tenant_id and audit_namespace"
+    description: >
+      Every audit record emitted by the Phase 26 audit pipeline from a
+      tenant-scoped surface event (CLI / MCP / plugin / skill) carries the
+      tenant_id and audit_namespace. Cross-tenant audit reads require an
+      explicit operator role; default views filter to the caller's tenant.
+    given: "A surface event under tenant lp-acme produces an audit record"
+    when: "The record is written via the Phase 26 audit pipeline"
+    then: "The record contains tenant_id='lp-acme' and audit_namespace='tenants.lp-acme'; cross-tenant reads require explicit role check"
+    scope:
+      - "crates/corp-finance-core/src/federation/mod.rs"
+      - "crates/corp-finance-core/src/observability/audit.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-FED-009
+    name: "McpServerTier maps to TrustTier via single source of truth"
+    description: >
+      The federation::mcp_server_tier_to_trust_tier function is the only
+      place McpServerTier-to-TrustTier mapping is defined. All other code
+      consumes the mapping via this function. The same applies to the
+      analogous CookbookTier mapping for cookbook-deploy CLI invocations.
+    given: "A static analysis of the codebase"
+    when: "All references to TrustTier mapping are enumerated"
+    then: "Exactly one definition exists in federation/mod.rs for each tier source; all other call sites consume it"
+    scope:
+      - "crates/corp-finance-core/src/federation/mod.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-FED-010
+    name: "Tenant id 'local' is reserved"
+    description: >
+      The default tenant id 'local' is reserved by the platform. Re-registering
+      a tenant with id 'local' is rejected by the registry.
+    given: "An attempt to add a tenant with tenant_id='local' to the registry"
+    when: "The registry validates the entry"
+    then: "The entry is rejected; an error is returned from cfa tenant init; no registry mutation occurs"
+    scope:
+      - "crates/corp-finance-core/src/federation/mod.rs"
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: RUF-FED-INV-001
+    name: "Federation feature flag gates the federation module"
+    description: "The federation Cargo feature gates the federation module; default builds compile without federation symbols across all four surface wrappers"
+    check: "cargo build --workspace produces no federation symbols when federation feature is off"
+
+  - id: RUF-FED-INV-002
+    name: "Federation modules are the only external federation-backend boundary"
+    description: "Only federation/pii_redaction.rs, federation/trust_score.rs, federation/session.rs may import types from any optional external federation backend when the future-proofing cargo feature is enabled. Default v1 builds use the native rustls + ed25519-dalek implementation only."
+    check: "grep -R 'external federation backend imports' crates/corp-finance-core/src returns only the three federation files (and only when the optional feature is on)"
+
+  - id: RUF-FED-INV-003
+    name: "PII type count is 14 at every surface boundary"
+    description: "The PII redaction policy enumerates exactly the 14 PII types defined and owned natively by us at corp_finance_core::observability::security_scan, applied uniformly to CLI / MCP / plugin / skill output boundaries"
+    check: "PIIRedactionPolicy enumerates 14 type-mode pairs"
+
+  - id: RUF-FED-INV-004
+    name: "Trust thresholds match documented values"
+    description: "Trust thresholds for federation actions match: 0.70 (inbound surface output handoff), 0.80 (REDACT/HASH outbound), 0.90 (PASS outbound), 0.95 (PaidVendor MCP-tool output handshake). All four are computed natively in federation/trust_score.rs."
+    check: "trust_threshold_for(action) returns the documented Decimal values for each of the four actions"
+
+  - id: RUF-FED-INV-005
+    name: "TrustTier has exactly three variants"
+    description: "TrustTier enum has exactly the variants Open, Verified, Trusted (mapped from McpServerTier::CoreOnly/Freemium/PaidVendor and equivalently from CookbookTier for cookbook-deploy CLI invocations)"
+    check: "TrustTier enum has 3 variants in domain types"
+
+  - id: RUF-FED-INV-006
+    name: "POSIX 0700 enforced on tenant out_dir_root for all four surfaces"
+    description: "First CFA surface event under a new tenant (CLI invocation, MCP tool call writing state, plugin hook output, or skill emission) creates out_dir_root with POSIX mode 0700"
+    check: "stat <out_dir_root> after first surface event under a new tenant returns mode 0700 on POSIX systems"

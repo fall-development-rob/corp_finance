@@ -1,0 +1,220 @@
+# Feature Contract: Multi-Agent Coordination (Phase 27)
+# Enforces architectural rules for chief-analyst -> specialist coordination, native
+# entity-graph aggregation across specialist outputs, A* plan generation over the
+# MCP-tool + slash-command action space, plan execution, and bounded replanning.
+# Source: ADR-018 (multi-agent coordination), ADR-009 (workflow auditability)
+# Native module dependencies: petgraph, pathfinding
+#
+# CFA runtime is exclusively four surfaces: CLI (cfa <subcommand>), MCP (server.tool(...)
+# handlers in packages/*-mcp-server/src/), Skills (slash commands + .claude/skills/*), Plugin
+# (hooks at plugins/cfa-core/hooks/hooks.json). Specialist agents (cfa-equity-analyst,
+# cfa-credit-analyst, ...) are invoked via Claude Code's Agent tool by the host LLM and
+# execute by calling existing CFA MCP tools and slash commands; CFA does not run a separate
+# multi-agent runtime. Cookbook deploys are CLI invocations (cfa managed-agent deploy) and
+# inherit surface-level instrumentation; cookbooks themselves are deployment artefacts
+# outside this contract's runtime scope.
+
+contracts:
+  - id: RUF-ORC-001
+    name: "Specialist agent invocations are tracked end-to-end"
+    description: >
+      Every Claude Code Agent-tool delegation to a CFA specialist agent
+      (cfa-chief-analyst, cfa-equity-analyst, cfa-credit-analyst,
+      cfa-fixed-income-analyst, cfa-derivatives-analyst, cfa-quant-risk-analyst,
+      cfa-macro-analyst, cfa-private-markets-analyst, cfa-esg-regulatory-analyst)
+      produces an agent_invoked event. All MCP tool calls and slash-command
+      invocations made by that specialist are recorded under the agent's
+      run_id with parent_run_id pointing to the delegating agent.
+    given: "a chief-analyst delegates to cfa-equity-analyst via Claude Code's Agent tool with parent_run_id=R0"
+    when: "the specialist begins executing"
+    then: "an agent_invoked event is emitted with {agent_id: cfa-equity-analyst, run_id: R1, parent_run_id: R0}; every subsequent MCP tool call and slash-command invocation by R1 carries run_id=R1"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/agent_invoke.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-ORC-002
+    name: "Specialist agent identifiers are validated against the registered set"
+    description: >
+      The coordination layer rejects agent_invoked events whose agent_id is
+      not in the registered set under .claude/agents/cfa/. Unknown identifiers
+      raise unknown_specialist with the offending id.
+    given: "an agent_invoked event with agent_id='not-a-real-specialist'"
+    when: "the coordination layer validates the event"
+    then: "the event is rejected; an unknown_specialist event is emitted with the offending id; no run is initiated"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/agent_invoke.rs"
+      - ".claude/agents/cfa/"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-ORC-003
+    name: "Multi-domain queries produce a printable A* plan tree before any specialist runs"
+    description: >
+      When the chief_plan_emit MCP tool is invoked with a multi-domain goal,
+      the A* planner (pathfinding crate) over the action space of registered
+      MCP tools (across the four MCP servers) and registered slash commands
+      (under .claude/commands/cfa/) produces a serialized GoapPlan that is
+      printed to CLI stdout and persisted via Phase 26 memory ingest before
+      any specialist is invoked.
+    given: "an LLM agent invokes chief_plan_emit with a goal touching >=2 specialist domains"
+    when: "build_plan(goal, action_space) is called"
+    then: "a serialized GoapPlan is emitted to stdout and persisted to the Phase 26 native memory store before any sub-agent or downstream MCP tool executes"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/planner.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-ORC-004
+    name: "Native entity-graph extraction succeeds on at least 90 percent of specialist outputs"
+    description: >
+      The multi_agent::entity_graph::extract_entities function runs at every MCP
+      tool handler completion (via the Phase 26 MCP wrapper) and every CLI
+      output write (via the Phase 26 CLI wrapper). It must return at least
+      one entity ref for >= 90% of specialist outputs measured over a 30-day
+      rolling window. Lower rates trigger a quality alert.
+    given: "a 30-day window of specialist-produced surface outputs (MCP tool returns and CLI writes from agent invocations)"
+    when: "extract_entities is called per output"
+    then: "aggregate ratio of (outputs with >= 1 entity ref) / total outputs >= 0.90"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/entity_graph.rs"
+    enforcement: runtime
+    severity: warning
+
+  - id: RUF-ORC-005
+    name: "Cross-specialist entity co-occurrence emits pattern_detected"
+    description: >
+      When >=3 specialist invocations within a configurable window touch the
+      same EntityRef in the native entity graph, a pattern_detected event is
+      emitted and surfaced via cfa patterns.
+    given: "three specialist invocations within the configured window each produce an output containing EntityRef{kind=issuer, id=AAPL}"
+    when: "the entity graph is queried by detect_patterns"
+    then: "exactly one pattern_detected event is emitted referencing AAPL and the three contributing run_ids; cfa patterns surfaces the event"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/entity_graph.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-ORC-006
+    name: "Plan-tree depth never exceeds default ceiling without explicit override"
+    description: >
+      The default plan-tree depth ceiling is 3. A plan-emit call that produces
+      a plan with depth >= 3 must be rejected with reason 'plan_depth_exceeded'
+      unless tenant configuration explicitly raises the ceiling.
+    given: "a chief_plan_emit call producing a plan tree of depth 3 with no tenant override"
+    when: "the planner attempts to finalize the plan"
+    then: "finalization is refused; plan_depth_exceeded event is emitted"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/planner.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-ORC-007
+    name: "Plan-tree cycle detection in action chain"
+    description: >
+      A plan tree whose action chain revisits the same MCP tool or slash
+      command under the same precondition state must be rejected. Self-cyclic
+      plan trees are forbidden.
+    given: "a plan chain [dcf_calc -> wacc_calc -> dcf_calc] where dcf_calc precondition state is unchanged"
+    when: "the planner evaluates the chain"
+    then: "the plan is refused with reason 'plan_cycle_detected'; plan_cycle_detected event is emitted"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/planner.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-ORC-008
+    name: "Budget reservation precedes specialist dispatch"
+    description: >
+      Every accepted specialist invocation (recorded via agent_invoked) must
+      call BudgetLedger::reserve(tenant_id, specialist_id, est_cost) before
+      the specialist begins executing MCP tool calls or slash-command
+      invocations. A failed reservation aborts dispatch.
+    given: "a tenant ledger with available=100 and a specialist invocation with est_cost=200"
+    when: "the coordination layer attempts to record agent_invoked and reserve budget"
+    then: "reserve returns BudgetExhausted; budget_exhausted event is emitted; no agent_invoked is recorded and the specialist does not begin executing"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/budget.rs"
+      - "crates/corp-finance-core/src/multi_agent/agent_invoke.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-ORC-009
+    name: "At most one in-flight specialist invocation per (tenant_id, specialist_id) pair"
+    description: >
+      The coordination layer enforces a per-(tenant, specialist) concurrency
+      limit of 1. A second invocation targeting the same pair queues until
+      the first completes.
+    given: "two agent_invoked events with tenant_id='lp-acme' specialist_id='cfa-credit-analyst' arrive close together"
+    when: "the coordination layer accepts both"
+    then: "the second invocation waits until the first reaches a terminal state; both complete in order"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/agent_invoke.rs"
+    enforcement: runtime
+    severity: error
+
+  - id: RUF-ORC-010
+    name: "Every accepted specialist invocation produces exactly one terminal event"
+    description: >
+      The coordination layer guarantees that every specialist invocation
+      which passes validation results in exactly one of: agent_completed,
+      agent_dispatch_rejected, plan_depth_exceeded, plan_cycle_detected, or
+      budget_exhausted. No invocation is silently dropped.
+    given: "100 accepted specialist invocations flow through the coordination layer"
+    when: "all invocations reach a terminal state"
+    then: "the audit log contains exactly 100 terminal events distributed across the five types"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/agent_invoke.rs"
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: MAC-INV-001
+    name: "Every AgentInvocation carries tenant_id"
+    description: "Every AgentInvocation carries tenant_id (via EntityGraph), enforced at the AgentInvocation aggregate and the federation boundary."
+    check: "AgentInvocation rows lacking tenant_id == 0"
+
+  - id: MAC-INV-002
+    name: "target_agent is in the registered CFA agent set"
+    description: "target_agent must be in the registered CFA agent set under .claude/agents/cfa/."
+    check: "AgentInvocation.target_agent values outside the registered set == 0"
+
+  - id: MAC-INV-003
+    name: "No cycles in the parent agent invocation chain"
+    description: "Cycles in the parent chain are forbidden (cycle detection on registration)."
+    check: "AgentInvocation parent chain cycle count == 0"
+
+  - id: MAC-INV-004
+    name: "EntityRef kind is constrained"
+    description: "EntityRef.kind values are limited to issuer, ticker, fund, property, counterparty."
+    check: "Domain trait EntityKind enum has exactly 5 variants"
+
+  - id: MAC-INV-005
+    name: "Entity references are tenant-scoped unless federation bridges"
+    description: "All nodes and edges share a single tenant_id; cross-tenant entity merge is forbidden unless an explicit federation session bridges (per ADR-019)."
+    check: "EntityGraph rows with mixed tenant_id == 0"
+
+  - id: MAC-INV-006
+    name: "Plan replans are bounded"
+    description: "Replanning is bounded (default max 3 replans per goal)."
+    check: "GoapPlan.replan_count <= max_replans (default 3)"
+
+  - id: MAC-INV-007
+    name: "Plan hash is deterministic given goal + registry version"
+    description: "build_plan(goal, registry).plan_hash is deterministic given the same goal and registry version."
+    check: "build_plan plan_hash determinism property test passes"
+
+  - id: MAC-INV-008
+    name: "Plan emitted for chief-analyst review before execution"
+    description: "A plan must be emitted to stdout for chief-analyst review before any sub-agent or tool is invoked."
+    check: "no MCP tool or slash command in a plan executes before plan_emit completes in chief-analyst coordination"
+
+  - id: MAC-INV-009
+    name: "output_hash is set iff status == Completed"
+    description: "AgentInvocation.output_hash is set if and only if status == Completed."
+    check: "AgentInvocation rows with status==Completed and output_hash unset == 0"
+
+  - id: MAC-INV-010
+    name: "Surface events translated through the multi_agent ACL"
+    description: "Surface events are translated through the corp_finance_core::multi_agent boundary; specialists never see raw MCP/plugin shapes. The multi_agent_coordination Cargo feature gates the coordination modules; default builds compile only the pure route_event. Only multi_agent::entity_graph may import types from any optional external graph backend when that feature is enabled."
+    check: "cargo build --workspace produces no multi_agent::* symbols when multi_agent_coordination feature is off; external graph backend imports outside multi_agent/entity_graph.rs == 0"

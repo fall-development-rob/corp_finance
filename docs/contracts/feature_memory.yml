@@ -1,0 +1,225 @@
+# Feature Contract: Surface Memory (Phase 26)
+# Enforces architectural rules for the memory bounded context.
+# Covers: run_summary.json schema, native HNSW indexing, hybrid retrieval, portable session archive,
+#         retention policy, module boundary discipline.
+# Source: PRD-phase26-memory-audit.md, ADR-015, ADR-016
+# DDD context: docs/ddd/domain-memory.md
+#
+# CFA runtime is exclusively four surfaces: CLI (cfa <subcommand>), MCP (server.tool(...) handlers
+# in packages/*-mcp-server/src/), Skills (slash commands + .claude/skills/*), Plugin (hooks at
+# plugins/cfa-core/hooks/hooks.json). Cookbook deploys are CLI invocations (cfa managed-agent
+# deploy) and inherit surface-level instrumentation; cookbooks themselves are deployment artefacts
+# outside this contract's runtime scope.
+
+contracts:
+  - id: RUF-MEM-001
+    name: "Every surface event emitting structured output produces a run_summary.json with required fields"
+    description: >
+      Every CLI subcommand whose output is structured JSON, every MCP server.tool(...)
+      handler whose return contains a numeric recommendation, and every plugin
+      PostToolUse hook write of a numeric output must emit exactly one
+      run_summary.json. The file must contain the required fields specified
+      in ADR-016: schema_version, run_id, ts, surface (cli|mcp|plugin|skill),
+      surface_event_id, surface_audit_hash, model, sources_hash, status. Missing
+      any required field is an error. The recommendation field, when present,
+      must be in the permitted set declared by the surface entry-point's family.
+    given: "a CFA surface event completes successfully (CLI subcommand returning structured JSON, MCP tool handler returning numeric output, or plugin PostToolUse hook writing a numeric output)"
+    when: "the surface wrapper finalises the run output directory"
+    then: "a run_summary.json exists at the output_dir root with all required fields populated and the recommendation (if present) in the permitted set"
+    scope:
+      - "crates/corp-finance-core/src/memory/run_summary.rs"
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-MEM-002
+    name: "Hybrid retriever returns at least 3 similar past surface events when threshold available"
+    description: >
+      Given at least 3 indexed RunSummary entries that pass the query filters,
+      cfa memory find must return at least 3 results when k>=3. The native
+      hybrid retriever (BM25 via tantivy + vector via hnsw_rs + 1-hop graph
+      via petgraph, fused with reciprocal-rank, then MMR diversity re-ranked)
+      must produce a result set at least as large as the requested k, capped
+      only by the candidate pool. Filters apply to surface and surface_event_id
+      so analysts can search "MCP tool calls of dcf_calc" or "CLI invocations
+      of cfa initiate-coverage" without cross-surface noise.
+    given: "the trajectory index contains at least 3 RunSummary entries matching the query filters (surface, surface_event_id, ticker, ts range)"
+    when: "an LLM agent invokes the surface_memory_find MCP tool, or a CLI user runs cfa memory find, with k=3"
+    then: "the result set contains exactly 3 RunSummary entries, ranked by composite similarity"
+    scope:
+      - "crates/corp-finance-core/src/memory/similar_run_query.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-MEM-003
+    name: "Query filters AND-combine"
+    description: >
+      QueryFilters fields (surface, surface_event_id, ticker, ts_after, ts_before,
+      recommendation, surface_audit_hash_prefix) must be combined with AND
+      semantics. An entry must match every supplied filter to be a candidate.
+      Empty / unset filters do not constrain the candidate set.
+    given: "a SimilarRunQuery with surface=mcp and surface_event_id=dcf_calc and ticker=AAPL supplied"
+    when: "find_similar() is invoked"
+    then: "every entry in results has surface == mcp, surface_event_id == dcf_calc, and ticker == AAPL"
+    scope:
+      - "crates/corp-finance-core/src/memory/similar_run_query.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-MEM-004
+    name: "Indexing failure is non-blocking and recoverable"
+    description: >
+      A failure of TrajectoryIndex::ingest does not mark the surface event as
+      failed; the CLI invocation, MCP tool handler, plugin hook, or skill
+      execution completes with status=completed and a sidecar flag indexed=false
+      is written next to the run_summary.json. An audit_failure event is raised.
+      The reconciliation path must be able to retry ingestion using only the
+      on-disk run_summary.json.
+    given: "a CFA surface event completes successfully and the native HNSW backend is unwritable (e.g. disk full)"
+    when: "TrajectoryIndex::ingest is invoked and fails after 3 retry attempts"
+    then: "the run_summary.json is on disk with an indexed:false sidecar; an audit_failure event is emitted; the surface event status remains completed"
+    scope:
+      - "crates/corp-finance-core/src/memory/trajectory_index.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-MEM-005
+    name: "Portable session archive round-trips without data loss"
+    description: >
+      A CfaSession aggregates the recent set of CLI invocations, MCP tool
+      outputs, plugin hook outputs, and skill emissions for a tenant. Given a
+      CfaSession aggregate, save() followed by restore() must produce a
+      CfaSession aggregate that is field-equal to the original. No fields
+      are dropped, reordered destructively, or coerced. The .cfa-session
+      archive path returned by save() must exist after the call.
+    given: "a CfaSession with non-empty working_notes and at least one captured CLI invocation, one captured MCP tool output, and one captured slash-command emission"
+    when: "session.save() is called, then CfaSession::restore(session_id) is called"
+    then: "the restored aggregate equals the original session under structural equality"
+    scope:
+      - "crates/corp-finance-core/src/memory/cfa_session.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-MEM-006
+    name: "Hot tier retention is 90 days; cold archive retains run_summary.json for 7 years"
+    description: >
+      The TrajectoryIndex hot window is 90 days from RunSummary.ts (regardless
+      of surface). Entries older than 90 days are eligible for eviction from
+      the native HNSW + BM25 indices but the underlying run_summary.json file
+      and its .audit.json companions are retained in cold storage for at least
+      7 years to satisfy SEC books-and-records (17 CFR 240.17a-4) and MiFID II
+      retention requirements.
+    given: "a RunSummary (from any surface) with ts older than 90 days"
+    when: "evict_cold(now) is invoked"
+    then: "the entry is removed from the native HNSW and BM25 indices but the run_summary.json file remains accessible from the cold archive"
+    scope:
+      - "crates/corp-finance-core/src/memory/trajectory_index.rs"
+      - "ADR-016 retention policy"
+    enforcement: integration-test
+    severity: warning
+
+  - id: RUF-MEM-007
+    name: "Recommendation token is in the permitted set for the surface family"
+    description: >
+      The Recommendation value object enforces a permitted-set constraint per
+      surface family (drawn from the surface entry-point spec, e.g. an equity
+      research slash command or an MCP tool that returns BUY/HOLD/SELL).
+      Equity research family: BUY/HOLD/SELL/NOT_RATED. PE: PROCEED/PASS/REVISIT.
+      Wealth: APPROVED/CONDITIONAL/REJECTED. Credit: APPROVE/DECLINE/WATCH.
+      IB: ACCEPT/DECLINE/MODIFY. A RunSummary with a recommendation outside
+      the family's set is rejected at the aggregate boundary.
+    given: "a RunSummary under construction with surface=skill and surface_event_id=cfa:initiate-coverage (equity research family)"
+    when: "the recommendation field is set to a value not in {BUY, HOLD, SELL, NOT_RATED}"
+    then: "the construction returns CorpFinanceError::InvalidInput"
+    scope:
+      - "crates/corp-finance-core/src/memory/run_summary.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-MEM-008
+    name: "Module boundary: no external plugin types leak outside corp_finance_core::memory"
+    description: >
+      The corp_finance_core::memory module owns all memory-backend interactions.
+      No code outside this module imports any external plugin types or
+      constructs external wire-format JSON. Boundary discipline is enforced by
+      import / dependency analysis in CI; default v1 builds use only native
+      crates (hnsw_rs, tantivy, petgraph, flate2).
+    given: "the corp-finance-core crate after build"
+    when: "the boundary check tool scans for external memory-backend imports outside corp_finance_core::memory"
+    then: "zero matches are found; build fails on any match"
+    scope:
+      - "crates/corp-finance-core/src/"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-MEM-009
+    name: "Memory ingest emits the surface_event_indexed integration event"
+    description: >
+      A successful TrajectoryIndex::ingest must emit a surface_event_indexed
+      integration event with payload {run_id, surface, surface_event_id,
+      surface_audit_hash, ts}. The event is consumed by the Audit and Cost
+      contexts. Missing event emission is a contract violation.
+    given: "a successful TrajectoryIndex::ingest from any surface"
+    when: "the ingest call returns Ok"
+    then: "exactly one surface_event_indexed event is observed by the event subscriber within 100 ms"
+    scope:
+      - "crates/corp-finance-core/src/memory/trajectory_index.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-MEM-010
+    name: "k bounds and MMR lambda bounds enforced on SimilarRunQuery"
+    description: >
+      SimilarRunQuery.k must be >= 1. SimilarRunQuery.mmr_lambda must lie in
+      the closed interval [0, 1]. The aggregate rejects out-of-range values
+      at the constructor.
+    given: "a SimilarRunQuery under construction"
+    when: "k = 0 or mmr_lambda outside [0, 1] is supplied"
+    then: "construction returns CorpFinanceError::InvalidInput"
+    scope:
+      - "crates/corp-finance-core/src/memory/similar_run_query.rs"
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: RUF-MEM-INV-001
+    name: "Indexed surface event rate"
+    description: "At least 80% of completed CFA surface events that produce structured output (CLI subcommands, MCP tool handlers, plugin hook writes) must be indexed in the native HNSW + BM25 store (per NFR-26-01)"
+    check: "indexed_surface_events / completed_surface_events >= 0.80 over a rolling 7-day window"
+    metric: "indexing_success_rate"
+    threshold: 0.80
+    enforcement: ci
+
+  - id: RUF-MEM-INV-002
+    name: "Run summary schema version pinned"
+    description: "Every run_summary.json (regardless of source surface) carries schema_version 1.0 in Phase 26"
+    check: "all run_summary.json files have schema_version == '1.0'"
+    metric: "schema_version_consistency"
+    threshold: 1
+    enforcement: ci
+
+  - id: RUF-MEM-INV-003
+    name: "Portable session archive round-trip equality"
+    description: "All CfaSession round-trip tests in the regression suite pass with structural equality"
+    check: "count(session_round_trip_failures) == 0"
+    metric: "session_round_trip_failures"
+    threshold: 0
+    enforcement: ci
+
+  - id: RUF-MEM-INV-004
+    name: "Module boundary discipline"
+    description: "No external memory-backend plugin imports outside corp_finance_core::memory or corp_finance_core::observability; default v1 builds use only native crates"
+    check: "external memory-backend imports in non-boundary modules == 0"
+    metric: "boundary_violations"
+    threshold: 0
+    enforcement: ci
+
+  - id: RUF-MEM-INV-005
+    name: "Memory query latency"
+    description: "p95 latency of cfa memory find over 10k indexed surface events is <= 500 ms (per NFR-26-06)"
+    check: "p95(memory_find_latency_ms) <= 500"
+    metric: "memory_find_p95_ms"
+    threshold: 500
+    enforcement: ci

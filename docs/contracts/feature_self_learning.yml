@@ -1,0 +1,187 @@
+# Feature Contract: Self-Learning Loop (Phase 28). See ADR-020.
+# Native module dependencies: pathfinding (A*), ed25519-dalek (manifest signing).
+# Reuses: Phase 26 native memory store (HNSW + BM25 + petgraph), Phase 27 native entity graph.
+#
+# CFA runtime is exclusively four surfaces: CLI (cfa <subcommand>), MCP (server.tool(...)
+# handlers in packages/*-mcp-server/src/), Skills (slash commands + .claude/skills/*), Plugin
+# (hooks at plugins/cfa-core/hooks/hooks.json). Trajectories are captured at every surface
+# event boundary. The A* planner action space is the union of registered MCP tools across
+# the four MCP servers and registered slash commands under .claude/commands/cfa/. Cookbook
+# deploys are CLI invocations (cfa managed-agent deploy) and inherit surface-level trajectory
+# capture; cookbooks themselves are deployment artefacts outside this contract's runtime scope.
+
+contracts:
+  - id: RUF-LEARN-001
+    name: "Surface events capture trajectory records"
+    description: "Every successful CFA surface event (CLI invocation completion, MCP server.tool handler return, plugin PostToolUse hook fire, slash-command emission) captures a trajectory with required fields {surface, surface_event_id, input_hash, tool_call_sequence, output_hash, eval_grade, tenant_id, run_id, timestamp}."
+    given: "a CFA surface event completes successfully"
+    when: "the surface wrapper's emit hook fires"
+    then: "a Trajectory aggregate is persisted to the Phase 26 native memory store with all required fields populated"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/trajectory.rs"
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-002
+    name: "Trajectory retrieval returns at least 3 candidates per (surface, surface_event_id) pair"
+    description: "When >=10 prior surface events at eval-grade B+ exist for the same (surface, surface_event_id) pair, retrieve_similar_trajectories returns >=3 candidates."
+    given: "a (surface, surface_event_id) pair has >=10 captured trajectories at eval-grade B or higher"
+    when: "a new surface event calls retrieve_similar_trajectories(input, surface, surface_event_id, k=3)"
+    then: "the result contains at least 3 trajectory references"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/mod.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-003
+    name: "Multi-domain queries produce A* plans before any MCP tool or slash command runs"
+    description: "Chief-analyst multi-domain queries produce a plan tree over the MCP-tool + slash-command action space before any downstream surface entry-point is invoked. The planner uses the pathfinding crate's A* implementation."
+    given: "chief-analyst receives a query touching >=2 specialist domains"
+    when: "build_plan(goal, action_space) is called where action_space is the union of registered MCP tools and slash commands"
+    then: "a serialized GoapPlan is emitted to CLI stdout and persisted to the Phase 26 native memory store before any MCP tool or slash command in the plan executes"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/goap_adapter.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-004
+    name: "Plan-tree dependencies satisfy preconditions"
+    description: "Every step's preconditions (read from MCP tool registrations and slash-command annotations) must be satisfied by goal context or upstream postconditions."
+    given: "a GoapPlan is generated"
+    when: "the plan is validated"
+    then: "every step precondition is matched by goal context or upstream postconditions"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/goap_adapter.rs"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-005
+    name: "Replanning is bounded"
+    description: "Replanning triggers when an MCP tool or slash command in the plan returns insufficient evidence and is bounded (default max 3 per goal)."
+    given: "an MCP tool or slash command in the plan returns insufficient evidence (eval-grade below floor or required entities missing)"
+    when: "replan(plan, failed_step, evidence) is called"
+    then: "a revised plan is produced and replan_count is incremented; exceeding the max aborts with an error"
+    scope:
+      - "crates/corp-finance-core/src/multi_agent/goap_adapter.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-006
+    name: "Replay byte-diff runs on every CI build for every surface entry-point"
+    description: "CI runs replay_golden_set for every registered CLI subcommand, MCP tool, plugin hook, and slash command on every commit and produces a DriftReport per surface entry-point."
+    given: "a CI build is triggered"
+    when: "the replay job runs"
+    then: "a DriftReport exists for every CLI subcommand, every MCP tool registration, every plugin hook, and every slash command"
+    scope:
+      - "scripts/replay-golden-set.sh"
+      - ".github/workflows/"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-007
+    name: "Drift threshold breach blocks deploy in CI"
+    description: "Drift ratio above threshold (default 5%) at any surface entry-point fails CI; dev environments emit warning only."
+    given: "replay produces a DriftReport with drift_ratio > threshold for a CLI subcommand, MCP tool, plugin hook, or slash command"
+    when: "the environment is CI"
+    then: "the deploy gate fails and emits drift_blocked_deploy referencing the offending (surface, surface_event_id)"
+    scope:
+      - "scripts/replay-golden-set.sh"
+      - ".github/workflows/"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-008
+    name: "Trajectory schema fields are required"
+    description: "Trajectory records lacking surface, surface_event_id, eval_grade, or tenant_id are rejected."
+    given: "capture_trajectory is called with surface, surface_event_id, eval_grade, or tenant_id missing"
+    when: "the persistence call executes"
+    then: "the call returns an error and no record is written"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/trajectory.rs"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-009
+    name: "Golden-set manifests are ed25519-signed and immutable"
+    description: "Every golden-set has a manifest signed via ed25519-dalek; signature mismatch fails CI until re-signed via accepted ADR. Golden-sets are organised per surface entry-point under tests/golden-sets/<surface>/<surface_event_id>/."
+    given: "a golden-set manifest exists for a surface entry-point"
+    when: "CI runs the replay job"
+    then: "the manifest ed25519 signature is verified; mismatch fails the run"
+    scope:
+      - "tests/golden-sets/"
+      - "scripts/replay-golden-set.sh"
+    enforcement: build-time
+    severity: error
+  - id: RUF-LEARN-010
+    name: "Covenant deterioration signal emits on cross-surface metric trend"
+    description: "An issuer with monotonically deteriorating credit metrics across consecutive surface events (CLI credit subcommands, credit MCP tool calls, or credit slash-command emissions) emits a covenant_deterioration signal."
+    given: "an issuer is observed in >=3 consecutive credit-related surface events with deteriorating metrics above threshold"
+    when: "detect_patterns is invoked"
+    then: "a covenant_deterioration signal node is written referencing the issuer and contributing trajectories"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/patterns/covenant_deterioration.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-011
+    name: "Sector rotation early signal emits on cluster co-movement"
+    description: "When >=N issuers in a sector cluster show co-movement above threshold across cross-surface entity-graph data, a sector_rotation signal is emitted."
+    given: "a sector cluster contains >=N issuers showing co-movement above threshold across surface events"
+    when: "detect_patterns is invoked"
+    then: "a sector_rotation signal node is written to the native entity graph referencing the contributing issuers and trajectories"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/patterns/sector_rotation.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-012
+    name: "Multi-issuer correlation alert emits on edge-frequency threshold"
+    description: "When two issuers co-occur on >=K native entity-graph edges (built from surface-event entity extractions) within the sliding window, a correlation_alert signal is emitted."
+    given: "two issuers share >=K entity-graph edges (from MCP tool returns, CLI output writes, or slash-command emissions) within the configured window"
+    when: "detect_patterns is invoked"
+    then: "a correlation_alert signal node is written to the native entity graph referencing both issuers and contributing edges"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/patterns/correlation_alert.rs"
+    enforcement: integration-test
+    severity: error
+  - id: RUF-LEARN-013
+    name: "Trajectory and plan data are tenant-scoped"
+    description: "Trajectory and GoapPlan reads filter by tenant_id; cross-tenant reads are rejected per ADR-019."
+    given: "a request originating in tenant A attempts to read trajectory or plan data for tenant B"
+    when: "the read executes"
+    then: "the read returns zero results and an audit event is logged"
+    scope:
+      - "crates/corp-finance-core/src/self_learning/"
+    enforcement: integration-test
+    severity: error
+
+invariants:
+  - id: RUF-LEARN-INV-001
+    name: "Self-learning module is the only entry point for trajectory and plan APIs"
+    check: "no source outside crates/corp-finance-core/src/self_learning/ imports clustering, planning, or pattern-detection modules; default v1 builds use only native crates (pathfinding, ed25519-dalek)"
+  - id: RUF-LEARN-INV-002
+    name: "Trajectory immutability"
+    check: "no SQL UPDATE on the trajectory table in any source file"
+  - id: RUF-LEARN-INV-003
+    name: "Eval-grade floor for cluster training"
+    check: "self_learning::cluster_training_floor >= EvalGrade::B (numeric >= 70)"
+  - id: RUF-LEARN-INV-004
+    name: "Plan-tree review precedes execution at the surface boundary"
+    check: "no MCP tool or slash command in a plan executes before plan_emit completes in chief-analyst coordination"
+  - id: RUF-LEARN-INV-005
+    name: "Replan upper bound"
+    check: "GoapPlan.replan_count <= max_replans (default 3)"
+  - id: RUF-LEARN-INV-006
+    name: "Golden-set size per surface entry-point"
+    check: "count(tests/golden-sets/<surface>/<surface_event_id>/inputs/) == 10 for every registered CLI subcommand, MCP tool, plugin hook, and slash command"
+  - id: RUF-LEARN-INV-007
+    name: "Manifest signing (ed25519)"
+    check: "ed25519_verify(manifest.sig, manifest.json) == true for every surface entry-point golden-set (via ed25519-dalek)"
+  - id: RUF-LEARN-INV-008
+    name: "Drift threshold default"
+    check: "default drift_threshold == 0.05; per-surface-entry-point overrides have approver field populated"
+  - id: RUF-LEARN-INV-009
+    name: "Tenant scoping on every read"
+    check: "no read API in self_learning accepts a query without tenant_id"
+  - id: RUF-LEARN-INV-010
+    name: "Pattern signal types are enumerated"
+    check: "DomainSignalType enum == {covenant_deterioration, sector_rotation, correlation_alert} in Phase 28"
+  - id: RUF-LEARN-INV-011
+    name: "Plan hash determinism"
+    check: "build_plan(goal, action_space).plan_hash is deterministic given fixed inputs"
+  - id: RUF-LEARN-INV-012
+    name: "Trajectory storage reuses Phase 26 native memory store"
+    check: "self_learning::trajectory_repo points at the ADR-016 native HNSW + BM25 + petgraph store"

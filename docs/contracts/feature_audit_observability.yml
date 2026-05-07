@@ -1,0 +1,405 @@
+# Feature Contract: Audit, Cost, Observability, Security (Phase 26)
+# Enforces architectural rules for the audit / cost / observability / security
+# bounded context.
+# Covers: .audit.json schema, surface audit hashing, cost budgets per surface,
+#         structured tracing across CLI / MCP / Plugin / Skill, native PII /
+#         prompt-injection scanning at every surface boundary.
+# Source: PRD-phase26-memory-audit.md, ADR-015, ADR-017
+# DDD context: docs/ddd/domain-audit-observability.md
+#
+# CFA runtime is exclusively four surfaces: CLI (cfa <subcommand>), MCP (server.tool(...)
+# handlers in packages/*-mcp-server/src/), Skills (slash commands + .claude/skills/*), Plugin
+# (hooks at plugins/cfa-core/hooks/hooks.json). Cookbook deploys are CLI invocations
+# (cfa managed-agent deploy) and inherit surface-level instrumentation; cookbooks themselves
+# are deployment artefacts outside this contract's runtime scope.
+
+contracts:
+
+  # ----- Audit -----
+
+  - id: RUF-AUD-001
+    name: "Every surface output file with a numeric recommendation has a matching .audit.json"
+    description: >
+      For every output file produced by a CFA surface event (CLI subcommand
+      output, MCP tool handler output, plugin PostToolUse hook write, or
+      slash-command emission) that contains a numeric recommendation
+      (price target, IRR, NPV, recommended action, allocation percentage,
+      etc., per the surface entry-point's contract), the surface wrapper
+      must write a sibling file at <output_path>.audit.json with the schema
+      specified in ADR-017.
+    given: "a CFA surface event completes and produces output files including audit-required outputs"
+    when: "the surface wrapper finalises the output"
+    then: "every audit-required output file has a sibling <output_path>.audit.json file containing the required schema fields"
+    scope:
+      - "crates/corp-finance-core/src/observability/audit.rs"
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-AUD-002
+    name: "Audit manifest schema fields are populated"
+    description: >
+      Every .audit.json must contain the required fields specified in ADR-017:
+      schema_version, run_id, surface (cli|mcp|plugin|skill), surface_event_id,
+      surface_audit_hash, model, ts, output_path, output_sha256. The
+      output_sha256 must equal sha256 of the file at output_path.
+    given: "an .audit.json file written by any of the four CFA surfaces"
+    when: "the manifest is loaded and validated"
+    then: "all required fields are present, non-null, and output_sha256 matches the actual file content hash"
+    scope:
+      - "crates/corp-finance-core/src/observability/audit.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-AUD-003
+    name: "Surface audit hash is deterministic and content-stable"
+    description: >
+      compute_surface_hash() over identical surface entry-point content (CLI
+      subcommand spec, MCP server.tool registration, plugin hook config, or
+      slash-command + skill body) must produce identical djb2 output regardless
+      of insertion order or insignificant whitespace. Any change to the
+      entry-point definition must produce a different hash.
+    given: "two constructions of the same surface entry-point spec with different field ordering and whitespace"
+    when: "compute_surface_hash is invoked on each"
+    then: "both invocations return the same djb2 string"
+    scope:
+      - "crates/corp-finance-core/src/observability/audit.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-AUD-004
+    name: "Tool call ledger is ordered and contiguous"
+    description: >
+      The tool_call_ledger field of an AuditManifest contains entries with
+      step values that are 1-indexed and contiguous. Entry order matches step
+      ascending. Gaps in step numbering are a contract violation. The ledger
+      records downstream MCP tool calls made within a CLI subcommand or
+      higher-level MCP tool handler.
+    given: "an AuditManifest with a non-empty tool_call_ledger"
+    when: "the ledger is validated"
+    then: "step values form the sequence 1, 2, ..., N with no gaps and entries are ordered ascending"
+    scope:
+      - "crates/corp-finance-core/src/observability/audit.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-AUD-005
+    name: "RunSummary.run_id matches the run_id of all sibling audit manifests"
+    description: >
+      For a given CFA surface event, the run_id in run_summary.json equals
+      the run_id in every <output>.audit.json produced by that surface event.
+      A mismatch indicates a surface boundary error.
+    given: "a CFA surface event that produces a run_summary.json and one or more .audit.json files"
+    when: "the audit reconciliation step compares run_id values"
+    then: "every .audit.json run_id equals the run_summary.json run_id"
+    scope:
+      - "crates/corp-finance-core/src/observability/audit.rs"
+    enforcement: integration-test
+    severity: error
+
+  # ----- Cost -----
+
+  - id: RUF-COST-001
+    name: "cfa cost summary aggregates by surface, surface_event_id, McpServerTier, and analyst"
+    description: >
+      cfa cost summary produces aggregated token cost by the requested grouping
+      (--by surface, --by tool, --by tier, --by analyst). Each row is a per-surface
+      and/or per-MCP-tool aggregation; CLI invocations and plugin hook fires
+      inherit tier classification from the MCP servers they call. The summation
+      is over the requested time window (--since defaults to start of current month).
+    given: "a populated native rusqlite cost ledger with usage events from at least 2 CLI subcommands and at least 2 MCP tools across 2 McpServerTier values"
+    when: "cfa cost summary --by tier is invoked"
+    then: "the output contains exactly one row per non-empty McpServerTier with summed input_tokens, output_tokens, and dollarised cost"
+    scope:
+      - "crates/corp-finance-cli/src/commands/cost.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-COST-002
+    name: "Cost-tier classification consumes existing CookbookTier and McpServerTier"
+    description: >
+      The tier of each surface event is determined by the existing
+      CookbookTier enum (CoreOnly / Freemium / PaidVendor) at
+      crates/corp-finance-core/src/managed_agent/types.rs and McpServerTier at
+      crates/corp-finance-core/src/mcp_servers/types.rs (which the CLI/MCP
+      surface event ultimately touches). The cost CLI must consume CookbookTier
+      and McpServerTier verbatim; no parallel tiering logic and no separate
+      cost_tier field are introduced.
+    given: "a CLI subcommand or MCP tool call that invokes only cfa-core and data-mcp-server"
+    when: "the cost summary classifies the surface event"
+    then: "the classification returns McpServerTier::CoreOnly (and the equivalent CookbookTier::CoreOnly when applied to a cookbook deploy CLI invocation)"
+    scope:
+      - "crates/corp-finance-core/src/managed_agent/types.rs"
+      - "crates/corp-finance-core/src/mcp_servers/types.rs"
+      - "crates/corp-finance-cli/src/commands/cost.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-COST-003
+    name: "Budget threshold crossing emits a budget_threshold_crossed event within 1 second"
+    description: >
+      Per NFR-26-02, when CostBudget::record_usage (called by the CLI tracing
+      wrapper or MCP tool wrapper at surface event completion) produces a
+      current_usage that crosses a configured threshold, a
+      budget_threshold_crossed event is emitted with payload {surface,
+      surface_event_id, mcp_server_tier, threshold_pct, current_usage_usd,
+      monthly_limit_usd}. Latency from threshold crossing (i.e., the surface
+      event that crossed the threshold) to event emission must not exceed 1000 ms.
+    given: "a CostBudget with monthly_limit_usd=100 and warn_thresholds_pct=[80] and current_usage_usd=79"
+    when: "a CLI invocation or MCP tool call records 2 USD of new usage (crossing 80%)"
+    then: "a budget_threshold_crossed event is emitted within 1000 ms with threshold_pct=80"
+    scope:
+      - "crates/corp-finance-core/src/observability/cost_budget.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-COST-004
+    name: "CoreOnly-tier surface events have no monthly limit and no thresholds"
+    description: >
+      A CostBudget with mcp_server_tier=McpServerTier::CoreOnly must have
+      monthly_limit_usd=None and empty warn_thresholds_pct. record_usage on a
+      CoreOnly-tier surface event never emits a budget_threshold_crossed event.
+    given: "a CostBudget with mcp_server_tier=McpServerTier::CoreOnly"
+    when: "record_usage is invoked from a CLI or MCP surface event with arbitrary token counts"
+    then: "no budget_threshold_crossed event is emitted regardless of usage"
+    scope:
+      - "crates/corp-finance-core/src/observability/cost_budget.rs"
+    enforcement: build-time
+    severity: error
+
+  # ----- Observability -----
+
+  - id: RUF-OBS-001
+    name: "Structured trace span opens for every CFA surface event"
+    description: >
+      Every cfa CLI invocation (any subcommand), every MCP server.tool(...)
+      handler invocation across the four MCP servers, and every plugin hook
+      fire opens a TraceSpan via the native tracing + tracing-subscriber crates
+      with attributes cfa.surface (cli|mcp|plugin|skill), cfa.surface.id, and
+      cfa.run.id. The span closes on surface event completion with status=ok or
+      status=error.
+    given: "a CFA surface event begins (CLI process starts, MCP tool handler is invoked, plugin hook fires, or slash command emits)"
+    when: "the surface wrapper enters"
+    then: "exactly one TraceSpan with attribute cfa.surface=<surface> and cfa.surface.id=<id> is opened; the span is closed before the surface event returns"
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+      - "packages/cfa-core/src/"
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-OBS-002
+    name: "Surface event produces child spans for downstream handlers"
+    description: >
+      A surface event that calls downstream surfaces (e.g., a CLI subcommand
+      that calls an MCP tool, or an MCP tool handler that composes other MCP
+      tools) produces child spans for each downstream call. Spans are nested
+      under the root surface span.
+    given: "a cfa CLI invocation that calls 2 MCP tools, or an MCP tool handler that calls 2 downstream MCP tools"
+    when: "the surface event progresses through its downstream calls"
+    then: "the trace tree contains a child span for each downstream surface call, each with parent_span_id pointing to the root surface span"
+    scope:
+      - "crates/corp-finance-core/src/observability/tracing.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-OBS-003
+    name: "Span attributes redact user identity"
+    description: >
+      The cfa.user span attribute, when populated from environment, is
+      redacted to first-initial + last-name format (e.g., "j.smith") rather
+      than full name or email. Full identifiers are not transmitted to any
+      tracing-subscriber exporter (including the optional OTLP exporter).
+    given: "a CFA surface event with USER=jsmith and FULL_NAME='John Smith' in the calling environment"
+    when: "the root span is opened"
+    then: "the cfa.user attribute value is 'j.smith'; the original full name and email do not appear in any span attribute"
+    scope:
+      - "crates/corp-finance-core/src/observability/tracing.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-OBS-004
+    name: "Trace overhead under 15 ms"
+    description: >
+      Per NFR-26-05, span open / close pair adds <= 15 ms to the wall-clock of
+      any surface event (CLI invocation, MCP tool handler, plugin hook fire).
+      Measured by comparing instrumented vs un-instrumented runs of the
+      lowest-overhead surface entry-points.
+    given: "a baseline cfa --help (CLI) and a baseline ping MCP tool call without tracing"
+    when: "the same invocations are run with tracing enabled"
+    then: "the wall-clock delta is <= 15 ms in p50 for both surface event types"
+    scope:
+      - "crates/corp-finance-core/src/observability/tracing.rs"
+    enforcement: integration-test
+    severity: warning
+
+  # ----- Security -----
+
+  - id: RUF-SEC-001
+    name: "Native scanner catches all 14 PII categories at every surface boundary"
+    description: >
+      The PII regression test set contains positive examples for each of the
+      14 categories defined in ADR-017 (names+address tuples, emails, phones,
+      addresses, SSN, passport, drivers' licence, bank account, credit card,
+      IBAN, IP address, MAC address, date of birth, government ID / EIN).
+      Every positive example must be flagged by
+      corp_finance_core::observability::security_scan when invoked at any of
+      the three plugin hook points (PreToolUse, PreMemoryWrite, PostToolUse)
+      that gate every CLI subcommand input/output, every MCP tool handler
+      input/output, every plugin hook write, and every skill emission.
+      Zero false negatives are tolerated.
+    given: "the PII regression test set with at least 1 positive example per category"
+    when: "each example is passed through SecurityScan at hook_point=PreToolUse via the plugin hook"
+    then: "every positive example produces at least one PiiFinding with the matching category"
+    scope:
+      - "tests/regression/pii_regression.rs"
+      - "plugins/cfa-core/hooks/hooks.json"
+      - "crates/corp-finance-core/src/observability/security_scan.rs"
+    enforcement: ci
+    severity: error
+
+  - id: RUF-SEC-002
+    name: "CFA allowlist suppresses false positives on financial identifiers"
+    description: >
+      The CFA allowlist (CUSIP, ISIN, SEDOL, FIGI, LEI, ticker symbols) must
+      suppress PII findings on these identifier classes. A test suite of valid
+      identifiers must produce zero PiiFindings when scanned at any surface
+      boundary.
+    given: "a content payload containing a valid 9-character CUSIP, a valid 12-character ISIN, a valid LEI, and a 1-5 character ticker, presented to a CLI subcommand input or an MCP tool handler input"
+    when: "SecurityScan is invoked at hook_point=PreToolUse"
+    then: "zero PiiFindings are produced for these identifiers"
+    scope:
+      - "crates/corp-finance-core/src/observability/security_scan.rs"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-SEC-003
+    name: "Prompt injection in retrieved memory is excluded from the prompt"
+    description: >
+      When SimilarRunQuery returns RunSummary entries (from any surface) that
+      contain prompt-injection patterns, the retrieved entry is excluded from
+      the prompt before model invocation. A prompt_injection_blocked event is
+      emitted with the pattern label and severity.
+    given: "an indexed RunSummary (originating from any surface) whose key_assumptions contain a prompt-injection pattern"
+    when: "SimilarRunQuery returns this entry as a candidate during a CLI memory find or MCP surface_memory_find call"
+    then: "the entry is filtered out before prompt assembly; a prompt_injection_blocked event is emitted"
+    scope:
+      - "crates/corp-finance-core/src/observability/security_scan.rs"
+      - "crates/corp-finance-core/src/memory/similar_run_query.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-SEC-004
+    name: "Hook configuration replaces the SSN-only regex with the native scanner"
+    description: >
+      plugins/cfa-core/hooks/hooks.json must reference the surface_pii_scan
+      MCP tool (backed by corp_finance_core::observability::security_scan) at
+      three hook points (PreToolUse, PreMemoryWrite, PostToolUse) and must
+      not contain any inline regex patterns for PII detection. The legacy
+      SSN-only regex is removed in Phase 26.
+    given: "the plugins/cfa-core/hooks/hooks.json file after the Phase 26 hook migration"
+    when: "the file is parsed"
+    then: "surface_pii_scan is referenced at exactly the three hook points; no inline PII regex remains"
+    scope:
+      - "plugins/cfa-core/hooks/hooks.json"
+    enforcement: build-time
+    severity: error
+
+  - id: RUF-SEC-005
+    name: "PreMemoryWrite redaction prevents PII persistence"
+    description: >
+      SecurityScan at hook_point=PreMemoryWrite applies ScanAction::Redact to
+      PII findings before any run_summary.json or .cfa-session archive is
+      written to durable storage, regardless of which surface produced the
+      content. Zero raw PII strings should appear in any persisted memory
+      artefact in the regression test set.
+    given: "a run_summary.json under construction (originating from any surface) containing PII in key_assumptions"
+    when: "the PreMemoryWrite hook scans the content prior to write"
+    then: "the persisted run_summary.json contains redacted markers in place of PII; the original PII strings are absent from the persisted file"
+    scope:
+      - "crates/corp-finance-core/src/observability/security_scan.rs"
+      - "crates/corp-finance-core/src/memory/run_summary.rs"
+    enforcement: integration-test
+    severity: error
+
+  - id: RUF-SEC-006
+    name: "PostToolUse security scan emits alert without modifying output"
+    description: >
+      SecurityScan at hook_point=PostToolUse uses ScanAction::AlertOnly. PII
+      findings result in a pii_detected event but the final output bundle
+      from the surface event is left untouched (analyst review is required).
+    given: "a final output bundle from any surface (CLI / MCP / plugin / skill) containing a residual email address"
+    when: "the PostToolUse hook scans the bundle"
+    then: "a pii_detected event is emitted with hook_point=PostToolUse; the output file's sha256 is unchanged"
+    scope:
+      - "crates/corp-finance-core/src/observability/security_scan.rs"
+    enforcement: integration-test
+    severity: error
+
+invariants:
+
+  - id: RUF-AUD-INV-001
+    name: "Audit coverage 100%"
+    description: "100% of audit-required CFA surface event outputs (CLI / MCP / plugin / skill) have a sibling .audit.json (per NFR-26-03)"
+    check: "count(audit_required_surface_outputs without .audit.json) == 0"
+    metric: "audit_coverage"
+    threshold: 0
+    enforcement: ci
+
+  - id: RUF-AUD-INV-002
+    name: "Surface audit hash format"
+    description: "All surface_audit_hash values match pattern djb2:0x[0-9a-f]{8}"
+    check: "all surface_audit_hash values match regex /^djb2:0x[0-9a-f]{8}$/"
+    metric: "audit_hash_format"
+    threshold: 1
+    enforcement: ci
+
+  - id: RUF-COST-INV-001
+    name: "Cost alert latency under 1 second"
+    description: "p99 latency from a surface event crossing a budget threshold to budget_threshold_crossed event emission is <= 1000 ms (per NFR-26-02)"
+    check: "p99(budget_alert_latency_ms) <= 1000"
+    metric: "budget_alert_p99_ms"
+    threshold: 1000
+    enforcement: ci
+
+  - id: RUF-COST-INV-002
+    name: "Tier classification single source of truth"
+    description: "Only managed_agent::types::CookbookTier and mcp_servers::types::McpServerTier are permitted to classify tiers; no parallel logic and no separate cost_tier field in CLI, MCP, plugin, or skill layers"
+    check: "tier classification call sites outside managed_agent::types and mcp_servers::types == 0"
+    metric: "tier_call_sites"
+    threshold: 0
+    enforcement: ci
+
+  - id: RUF-OBS-INV-001
+    name: "Trace coverage of CFA surface events"
+    description: "Every cfa CLI invocation and every MCP server.tool handler invocation produces a root span in the trace store"
+    check: "surface_events_with_root_span / total_surface_events >= 0.99"
+    metric: "trace_coverage"
+    threshold: 0.99
+    enforcement: ci
+
+  - id: RUF-OBS-INV-002
+    name: "Trace overhead under 15 ms p50"
+    description: "Span open/close adds <= 15 ms to p50 surface event wall-clock (per NFR-26-05)"
+    check: "p50(trace_overhead_ms) <= 15"
+    metric: "trace_overhead_p50_ms"
+    threshold: 15
+    enforcement: ci
+
+  - id: RUF-SEC-INV-001
+    name: "PII regression suite passes"
+    description: "Zero failures in the 14-category PII regression suite at every surface boundary (per NFR-26-04)"
+    check: "count(pii_regression_failures) == 0"
+    metric: "pii_regression_failures"
+    threshold: 0
+    enforcement: ci
+
+  - id: RUF-SEC-INV-002
+    name: "No legacy SSN-only regex"
+    description: "plugins/cfa-core/hooks/hooks.json does not contain any inline PII regex; only surface_pii_scan MCP-tool references"
+    check: "inline_pii_regex_in_hooks_json == 0"
+    metric: "legacy_regex_count"
+    threshold: 0
+    enforcement: ci
