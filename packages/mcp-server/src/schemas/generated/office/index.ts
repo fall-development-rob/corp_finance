@@ -4,35 +4,23 @@
  * AUTO-GENERATED — do not edit by hand. Re-run `npm run schemas:gen:office` to refresh.
  * Source of truth: crates/corp-finance-core/src/office/types.rs + templates/*.rs
  * Pipeline: schemars 1.2.1 (JsonSchema derive) → JSON Schema → json-schema-to-zod 2.8.1 → zod 3
+ * Wave 12a fixes: Gap 1 (inline_subschemas) + Gap 2 (discriminatedUnion rewrite) closed.
  *
  * =============================================================================
- * Semantic diff: generated vs hand-maintained (schemas/office.ts) for WorkbookSpec
+ * Semantic diff: generated vs hand-maintained (schemas/office.ts) — remaining gaps
  * =============================================================================
  *
  * 1. `sheets` min-length constraint: hand-maintained uses `.min(1)` on the sheets
- *    array; generated emits `z.array(z.any())` with no minimum. This is acceptable
- *    for parsing but callers relying on the min-1 guard must keep it at the call site.
+ *    array; generated emits `z.array(...)` with no minimum. Callers relying on the
+ *    min-1 guard must keep it at the call site.
  *
- * 2. Nested $ref collapse to z.any(): json-schema-to-zod resolves JSON Schema
- *    `$defs/$ref` references as `z.any()` when the definition lives in the same
- *    file. Leaf types (CellValue, SheetSpec, etc.) exported as standalone files
- *    resolve their `oneOf`/`anyOf` correctly. The generated WorkbookSpecSchema
- *    therefore uses `z.any()` for SheetSpec, DefinedName, and WorkbookProperties
- *    members rather than the fully-typed sub-schemas.
- *
- * 3. Tagged-union encoding: CellValue (Rust: `#[serde(tag="kind")]`) generates
- *    as `z.any().superRefine(oneOf[...])` rather than `z.discriminatedUnion("kind", [...])`
- *    in the hand-maintained schema. Both accept the same wire shape; the hand-
- *    maintained form gives better TypeScript inference. Migration plan: replace
- *    `z.any().superRefine` with `z.discriminatedUnion` in a follow-up polishing pass.
- *
- * 4. Optional vs nullable: generated emits `z.union([z.string(), z.null()]).optional()`
+ * 2. Optional vs nullable: generated emits `z.union([z.string(), z.null()]).optional()`
  *    for `Option<String>` fields (both nullable AND optional in JSON Schema); hand-
  *    maintained uses `.optional()` only. Zod parse accepts both; the difference
  *    surfaces only when the caller passes explicit `null` — generated schemas allow
  *    it, hand-maintained schemas reject it.
  *
- * 5. sha256 regex: hand-maintained adds `.regex(/^[0-9a-f]{64}$/)` for format
+ * 3. sha256 regex: hand-maintained adds `.regex(/^[0-9a-f]{64}$/)` for format
  *    validation; generated emits a plain `z.string()`. Call sites relying on sha256
  *    format validation must keep using hand-maintained WriteWorkbookResultSchema.
  * =============================================================================

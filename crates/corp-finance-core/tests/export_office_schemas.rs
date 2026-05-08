@@ -20,7 +20,10 @@ mod office_schemas {
     };
 
     fn emit<T: schemars::JsonSchema>(type_name: &str) {
-        let schema = schemars::schema_for!(T);
+        let settings = schemars::generate::SchemaSettings::default().with(|s| {
+            s.inline_subschemas = true;
+        });
+        let schema = settings.into_generator().into_root_schema_for::<T>();
         let json = serde_json::to_string_pretty(&schema).unwrap();
         std::fs::create_dir_all("target/schemas/office").unwrap();
         std::fs::write(format!("target/schemas/office/{}.json", type_name), json).unwrap();
@@ -112,7 +115,10 @@ mod office_schemas {
         use corp_finance_core::office::templates::{ic_memo::IcMemoInput, research_init::ResearchInitInput, pitch_deck::PitchDeckInput, ic_presentation::IcPresentationInput};
 
         fn emit<T: schemars::JsonSchema>(type_name: &str) {
-            let schema = schemars::schema_for!(T);
+            let settings = schemars::generate::SchemaSettings::default().with(|s| {
+                s.inline_subschemas = true;
+            });
+            let schema = settings.into_generator().into_root_schema_for::<T>();
             let json = serde_json::to_string_pretty(&schema).unwrap();
             std::fs::create_dir_all("target/schemas/office").unwrap();
             std::fs::write(format!("target/schemas/office/{}.json", type_name), json).unwrap();

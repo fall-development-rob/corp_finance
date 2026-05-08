@@ -34,6 +34,7 @@ use uuid::Uuid;
 /// The `capabilities` vector is sorted lexicographically before being CSV-joined
 /// for the canonical payload, but the field on the wire keeps the caller's order.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct TrustAttestation {
     pub attestation_id: Uuid,
     pub issuer_tenant: String,
@@ -48,6 +49,7 @@ pub struct TrustAttestation {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum AttestationStatus {
     /// signature valid, current time is within [issued_at, expires_at], not revoked
@@ -63,6 +65,7 @@ pub enum AttestationStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct AttestationRevocation {
     pub attestation_id: Uuid,
     pub revoked_at: DateTime<Utc>,

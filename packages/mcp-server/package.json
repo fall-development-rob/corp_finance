@@ -18,7 +18,8 @@
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "schemas:gen:office": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,office --test export_office_schemas && cd packages/mcp-server && node scripts/gen-office-schemas.mjs"
+    "schemas:gen:office": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,office --test export_office_schemas && cd packages/mcp-server && node scripts/gen-office-schemas.mjs",
+    "schemas:gen:attest": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,federation --test export_attest_schemas && cd packages/mcp-server && node scripts/gen-attest-schemas.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

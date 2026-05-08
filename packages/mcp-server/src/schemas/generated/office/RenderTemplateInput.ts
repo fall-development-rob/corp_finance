@@ -1,3 +1,3 @@
 import { z } from "zod"
 
-export const RenderTemplateInputSchema = z.object({ "kind": z.any(), "result_json": z.string() })
+export const RenderTemplateInputSchema = z.object({ "kind": z.enum(["dcf","comps","lbo","three_statement"]), "result_json": z.string() })

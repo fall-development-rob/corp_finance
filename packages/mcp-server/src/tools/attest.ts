@@ -6,6 +6,18 @@ import {
   attestRevoke,
   attestCheck,
 } from "../bindings.js";
+// Generated schemas: types with a public Rust struct and no critical runtime constraints.
+// AttestationRevocationSchema is imported from generated — it correctly emits uuid + datetime.
+import { AttestationRevocationSchema } from "../schemas/generated/attest/index.js";
+
+// Hand-maintained schemas: kept for two reasons:
+// 1. TrustAttestationSchema — generated omits signature (/^[0-9a-f]{128}$/) and
+//    public_key (/^[0-9a-f]{64}$/) regex constraints; these are security-critical
+//    and must be validated at the boundary.
+// 2. AttestationStatusEnum — generated emits z.any().superRefine(...) instead of
+//    z.enum([...]); hand-maintained form gives correct TypeScript inference.
+// 3. All Input/Output schemas — no public Rust struct exists for these types;
+//    they are defined inline in the federation MCP handler and cannot be auto-genned.
 import {
   AttestIssueInputSchema,
   AttestVerifyInputSchema,
@@ -13,7 +25,6 @@ import {
   AttestListInputSchema,
   AttestListOutputSchema,
   AttestRevokeInputSchema,
-  AttestRevokeOutputSchema,
   AttestCheckInputSchema,
   AttestCheckOutputSchema,
   TrustAttestationSchema,
@@ -64,7 +75,9 @@ export function registerAttestTools(server: McpServer) {
     async (params) => {
       const validated = AttestRevokeInputSchema.parse(coerceNumbers(params));
       const resultJson = attestRevoke(JSON.stringify(validated));
-      const parsed = AttestRevokeOutputSchema.parse(JSON.parse(String(resultJson)));
+      // AttestationRevocationSchema from generated/attest: covers the revoke output
+      // shape (attestation_id uuid, revoked_by, reason, revoked_at datetime).
+      const parsed = AttestationRevocationSchema.parse(JSON.parse(String(resultJson)));
       return wrapResponse(JSON.stringify(parsed));
     }
   );
