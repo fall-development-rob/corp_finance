@@ -13,6 +13,7 @@ const COVERAGE_CAP: Decimal = dec!(999);
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CreditMetricsInput {
     pub revenue: Money,
     pub ebitda: Money,
@@ -40,6 +41,7 @@ pub struct CreditMetricsInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CreditMetricsOutput {
     // Leverage
     pub net_debt: Money,
@@ -69,6 +71,7 @@ pub struct CreditMetricsOutput {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub enum CreditRating {
     AAA,
     #[serde(rename = "AA+")]

@@ -1,0 +1,196 @@
+# Feature Contract: CLI Schema Discovery Flag (Phase 29 Wave 17c)
+# Enforces architectural invariants for the cfa <tool> --schema flag and print_schema dispatch
+# ADR: docs/adr/ADR-029-cli-schema-discovery-flag.md
+
+contracts:
+  - id: DISCOVER-001
+    name: "Source-of-truth derivation — schema generated from schemars, not hand-maintained"
+    description: >
+      Every subcommand wired in the print_schema dispatch function must have its corresponding
+      input type annotated with #[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))].
+      The schema must be generated via schemars::schema_for! against the input type. Hand-written
+      or separately maintained schema files for CLI input shapes are forbidden.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+      - "crates/corp-finance-core/src/"
+    check: >
+      For every subcommand name matched in the print_schema function in main.rs,
+      grep the corresponding input type name in crates/corp-finance-core/src/ and confirm
+      the line #[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))] appears
+      in the same file or its parent mod.
+      A wired subcommand whose input type lacks the annotation is a contract violation.
+    enforcement: ci
+    severity: error
+
+  - id: DISCOVER-002
+    name: "Friendly error for un-wired subcommands — never silently succeed"
+    description: >
+      A call to print_schema with a subcommand name that has no match arm must print a
+      structured error message to stderr naming (a) the source file where the match arm
+      must be added and (b) the schemars annotation the input type must carry. It must
+      exit non-zero. Silent success (exit 0 with no output, or exit 0 with empty output)
+      for an un-wired subcommand is a contract violation.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+    check: >
+      cargo test -p corp-finance-cli --features cli_schema -- schema::test_unwired_subcommand
+      must pass. The test calls print_schema with a synthetic subcommand name that has no
+      match arm and asserts: (a) the return value is Err or the exit code is non-zero,
+      (b) the error string contains "main.rs", (c) the error string contains "schemars".
+    enforcement: ci
+    severity: error
+
+  - id: DISCOVER-003
+    name: "Feature gate isolation — default build unaffected by cli_schema"
+    description: >
+      The --schema flag, the print_schema function, and all schemars imports must be
+      gated behind #[cfg(feature = "cli_schema")] or the Cargo feature dependency mechanism.
+      cargo build -p corp-finance-cli with no feature flags must produce a binary that
+      behaves identically to the pre-Wave-17c CLI and must not include schemars in its
+      dependency closure.
+    scope:
+      - "crates/corp-finance-cli/Cargo.toml"
+      - "crates/corp-finance-cli/src/"
+    check: >
+      cargo build -p corp-finance-cli 2>&1 | grep -v 'schemars' (no schemars in default build output).
+      cargo build -p corp-finance-cli --features cli_schema 2>&1 | grep 'Compiling schemars'
+        (schemars compiled only when feature is active).
+      Both builds exit 0.
+    enforcement: ci
+    severity: error
+
+  - id: DISCOVER-004
+    name: "Valid JSON Schema output — schema output parses as JSON and conforms to spec"
+    description: >
+      cfa <tool> --schema must print text that (a) parses as valid JSON and (b) conforms to
+      the JSON Schema draft version emitted by the schemars version in use. An output that
+      fails JSON parsing or fails JSON Schema meta-schema validation is a contract violation.
+      The pilot tools for this check are the 4 credit subcommands wired in Wave 17c.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+      - "crates/corp-finance-core/src/credit/"
+    check: >
+      For each of credit-metrics, altman-zscore, debt-capacity, covenant-test:
+      cargo run -p corp-finance-cli --features cli_schema -- <tool> --schema |
+        python3 -c "import sys, json; json.load(sys.stdin)" exits 0.
+      Optionally: pipe output to jsonschema --instance /dev/null --schema /dev/stdin
+        (validates meta-schema conformance).
+    enforcement: integration
+    severity: error
+
+  - id: DISCOVER-005
+    name: "Serde wire-form fidelity — enum variants in schema match serde output"
+    description: >
+      The schema printed for a subcommand must reflect the serde-serialised form of enum
+      variants, not the Rust identifier form. For types where serde renames are declared,
+      the schema must reflect the renamed form. For types with no rename, the schema must
+      show the raw variant name as serde renders it. The CovenantDirection enum (variants
+      MaxOf/MinOf as of Wave 17c) is the reference case.
+    scope:
+      - "crates/corp-finance-core/src/credit/"
+    check: >
+      cargo run -p corp-finance-cli --features cli_schema -- covenant-test --schema |
+        python3 -c "
+          import sys, json
+          schema = json.load(sys.stdin)
+          # Navigate to CovenantDirection enum values in the schema
+          defs = schema.get('definitions', schema.get('\$defs', {}))
+          direction = defs.get('CovenantDirection', {})
+          variants = direction.get('enum', [])
+          assert 'MaxOf' in variants, f'Expected MaxOf in {variants}'
+          assert 'MinOf' in variants, f'Expected MinOf in {variants}'
+          print('OK:', variants)
+        "
+      exits 0.
+    enforcement: integration
+    severity: error
+
+invariants:
+  - id: DISCOVER-INV-001
+    name: "Source-of-truth invariant — schema reflects actual input type"
+    description: >
+      Every CLI subcommand with --schema support must reflect the actual input type at the
+      Rust source-of-truth. The schema is generated via schemars::schema_for! against the
+      input type, not hand-maintained. A wired subcommand whose input type lacks the
+      schemars annotation, or whose print_schema arm calls schema_for! against a different
+      type than the one serde deserialises at runtime, is an invariant violation.
+      Asserted by: a CI check that for every subcommand wired in print_schema, the
+      corresponding input type has #[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))].
+    check: >
+      For every match arm in the print_schema function, extract the input type name.
+      grep -r 'derive(schemars::JsonSchema)' crates/corp-finance-core/src/ must include
+      a hit for that type name. Any wired type missing the annotation fails the check.
+    severity: error
+
+  - id: DISCOVER-INV-002
+    name: "Friendly-error invariant — un-wired subcommand never silently succeeds"
+    description: >
+      A subcommand without a print_schema match arm must NOT silently succeed. It must
+      print a message to stderr naming the file and line where to add the match arm and
+      the required schemars annotation, then exit non-zero. The absence of a friendly
+      error is an invariant violation because it turns a missing implementation into an
+      invisible success, causing callers to silently receive no schema.
+      Asserted by: a unit test that calls print_schema with an unwired subcommand name
+      and verifies the error string contains "main.rs" and "schemars".
+    check: >
+      cargo test -p corp-finance-cli --features cli_schema -- schema::test_unwired_subcommand
+      passes. The test asserts non-zero exit / Err return and that the error message
+      contains both "main.rs" and "schemars".
+    severity: error
+
+  - id: DISCOVER-INV-003
+    name: "Feature-gate isolation invariant — default build is unmodified"
+    description: >
+      The cli_schema feature is strictly opt-in. The default CLI binary (no feature flags)
+      must compile and behave identically to the pre-Wave-17c CLI. No silent dependency
+      growth on schemars in the runtime artefact. The feature gate is the enforcement
+      boundary: schemars must not appear in the dependency closure of the default build.
+      Asserted by: feature-matrix CI builds both cargo build -p corp-finance-cli and
+      cargo build -p corp-finance-cli --features cli_schema and both pass.
+    check: >
+      cargo build -p corp-finance-cli exits 0 and produces no schemars compilation step.
+      cargo build -p corp-finance-cli --features cli_schema exits 0.
+      Both must pass in the same CI job.
+    severity: error
+
+  - id: DISCOVER-INV-004
+    name: "Valid JSON Schema invariant — output is parseable and spec-conformant"
+    description: >
+      The printed text from cfa <tool> --schema must parse as JSON and conform to the
+      JSON Schema spec the schemars version in use emits (Draft 7 / 2019-09 at time of
+      this ADR). Output that fails JSON parsing or fails JSON Schema meta-schema validation
+      is an invariant violation. This invariant ensures downstream tooling that consumes
+      the schema for validation or code generation can rely on the output format.
+      Asserted by: an integration test that shells out to cfa credit-metrics --schema and
+      validates the output against jsonschema.
+    check: >
+      cargo run -p corp-finance-cli --features cli_schema -- credit-metrics --schema |
+        python3 -c "import sys, json; json.load(sys.stdin)" exits 0.
+    severity: error
+
+  - id: DISCOVER-INV-005
+    name: "Serde wire-form fidelity invariant — schema reflects JSON contract, not Rust API"
+    description: >
+      Enum variants in the printed schema must show the serde-rendered form, not the Rust
+      identifier form. Where serde renames are declared (#[serde(rename = "...")]),
+      the schema must show the renamed string. Where no rename is declared, the schema must
+      show the raw variant name as serde renders it. The distinction matters because the
+      schema is the JSON contract that callers use to construct payloads; a schema that
+      shows Rust names instead of wire names would cause callers to construct invalid JSON.
+      Today's reference case: CovenantDirection has variants MaxOf and MinOf (no serde
+      rename); the schema must show MaxOf and MinOf, not Maximum and Minimum.
+      Asserted by: integration test on covenant-test --schema that validates the
+      CovenantDirection enum values match the serde output (today: MaxOf/MinOf).
+    check: >
+      cargo run -p corp-finance-cli --features cli_schema -- covenant-test --schema |
+        python3 -c "
+          import sys, json
+          schema = json.load(sys.stdin)
+          defs = schema.get('definitions', schema.get('\$defs', {}))
+          direction = defs.get('CovenantDirection', {})
+          variants = direction.get('enum', [])
+          assert 'MaxOf' in variants and 'MinOf' in variants, f'FAIL: {variants}'
+          print('OK:', variants)
+        "
+      exits 0.
+    severity: error

@@ -10,6 +10,7 @@ use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct DebtCapacityInput {
     pub ebitda: Money,
     pub interest_rate: Rate,

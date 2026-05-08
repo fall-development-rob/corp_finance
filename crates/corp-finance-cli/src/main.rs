@@ -159,6 +159,11 @@ struct Cli {
     /// Output format
     #[arg(long, default_value = "json", global = true)]
     output: OutputFormat,
+
+    /// Print the JSON Schema for this subcommand's input type and exit
+    #[cfg(feature = "cli_schema")]
+    #[arg(long, global = true)]
+    schema: bool,
 }
 
 #[derive(Subcommand)]
@@ -818,6 +823,33 @@ fn command_name(cmd: &Commands) -> String {
     }
 }
 
+#[cfg(feature = "cli_schema")]
+fn print_schema(subcommand: &str) -> Result<(), Box<dyn std::error::Error>> {
+    use corp_finance_core::credit::{
+        altman::AltmanInput, capacity::DebtCapacityInput, covenants::CovenantTestInput,
+        metrics::CreditMetricsInput,
+    };
+    use schemars::schema_for;
+    let schema = match subcommand {
+        "credit-metrics" => schema_for!(CreditMetricsInput),
+        "altman-zscore" => schema_for!(AltmanInput),
+        "debt-capacity" => schema_for!(DebtCapacityInput),
+        "covenant-test" => schema_for!(CovenantTestInput),
+        other => {
+            return Err(format!(
+                "Schema discovery not yet wired for `cfa {}`. Add a match arm to \
+                 print_schema in crates/corp-finance-cli/src/main.rs and ensure the \
+                 input type carries \
+                 #[cfg_attr(feature = \"schema_gen\", derive(schemars::JsonSchema))].",
+                other
+            )
+            .into());
+        }
+    };
+    println!("{}", serde_json::to_string_pretty(&schema)?);
+    Ok(())
+}
+
 fn main() {
     // Install the global tracing subscriber (idempotent).  Errors are
     // surfaced on stderr but never fatal — observability must not block CLI
@@ -827,6 +859,17 @@ fn main() {
     }
 
     let cli = Cli::parse();
+
+    // --schema: print JSON Schema for the subcommand's input type and exit.
+    #[cfg(feature = "cli_schema")]
+    if cli.schema {
+        let subcmd = command_name(&cli.command);
+        if let Err(e) = print_schema(&subcmd) {
+            eprintln!("{}: {}", "error".red().bold(), e);
+            process::exit(1);
+        }
+        process::exit(0);
+    }
 
     // Open a root CLI span for the duration of the dispatch.  The span
     // closes when `_root_span` drops at end of `main`.

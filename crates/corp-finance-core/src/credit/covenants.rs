@@ -10,12 +10,14 @@ use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CovenantTestInput {
     pub covenants: Vec<Covenant>,
     pub actuals: CreditMetricsOutput,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct Covenant {
     pub name: String,
     pub metric: CovenantMetric,
@@ -24,6 +26,7 @@ pub struct Covenant {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub enum CovenantMetric {
     NetDebtToEbitda,
     InterestCoverage,
@@ -35,6 +38,7 @@ pub enum CovenantMetric {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub enum CovenantDirection {
     /// Actual must not exceed threshold.
     MaxOf,

@@ -10,6 +10,7 @@ use crate::{types::*, CorpFinanceError, CorpFinanceResult};
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct AltmanInput {
     // Required for all variants
     pub working_capital: Money,
@@ -30,6 +31,7 @@ pub struct AltmanInput {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub enum ZScoreZone {
     Safe,
     Grey,
