@@ -273,6 +273,12 @@ const wasm = require("../wasm/corp_finance_wasm.js") as {
   project_finance_model: (json: string) => string;
   us_fund_structure: (json: string) => string;
   uk_eu_fund_structure: (json: string) => string;
+  // Wave 17b — partial residuals + previously-blocked
+  merger_model: (json: string) => string;
+  three_statement_model: (json: string) => string;
+  monte_carlo_simulation: (json: string) => string;
+  monte_carlo_dcf: (json: string) => string;
+  scenario_analysis: (json: string) => string;
   version: () => string;
 };
 
@@ -741,6 +747,13 @@ async function main() {
   tool(server, "project_finance_model", "Project finance: revenue/opex/capex projections, sculpted debt, DSCR, sponsor IRR, breakeven analysis.", wasm.project_finance_model);
   tool(server, "us_fund_structure", "US fund structures: Delaware LP, REIT, RIC, BDC structure analysis with tax-adjusted returns.", wasm.us_fund_structure);
   tool(server, "uk_eu_fund_structure", "UK/EU fund structures: UCITS, AIF (RAIF/SIF/SCSp), ICAV, ETC across compliance and tax dimensions.", wasm.uk_eu_fund_structure);
+
+  // Wave 17b — partial residuals + previously-blocked
+  tool(server, "merger_model", "M&A merger model: EPS accretion/dilution, all-cash/all-stock/mixed consideration, premium analysis, exchange ratios, breakeven synergies.", wasm.merger_model);
+  tool(server, "three_statement_model", "Three-statement model: linked income statement, balance sheet, cash flow with circular-reference resolution for interest expense.", wasm.three_statement_model);
+  tool(server, "monte_carlo_simulation", "Monte Carlo simulation: parametric distributions, deterministic-seed mode, percentile output, scenario sensitivity.", wasm.monte_carlo_simulation);
+  tool(server, "monte_carlo_dcf", "Monte Carlo DCF: stochastic WACC + growth + terminal-multiple inputs; percentile EV/equity output, sensitivity decomposition.", wasm.monte_carlo_dcf);
+  tool(server, "scenario_analysis", "Scenario analysis: probability-weighted scenarios with output values + base case; expected value, deviations, dispersion.", wasm.scenario_analysis);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

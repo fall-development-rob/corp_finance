@@ -584,6 +584,37 @@ wasm_tool!(project_finance_model, corp_finance_core::real_assets::project_financ
 wasm_tool!(us_fund_structure, corp_finance_core::onshore_structures::us_funds::UsFundInput, corp_finance_core::onshore_structures::us_funds::analyze_us_fund_structure);
 wasm_tool!(uk_eu_fund_structure, corp_finance_core::onshore_structures::uk_eu_funds::UkEuFundInput, corp_finance_core::onshore_structures::uk_eu_funds::analyze_uk_eu_fund);
 
+// ---------------------------------------------------------------------------
+// Wave 17b — partial-module residuals + monte_carlo (unblocked by getrandom-js)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(merger_model, corp_finance_core::ma::merger_model::MergerInput, corp_finance_core::ma::merger_model::analyze_merger);
+wasm_tool!(three_statement_model, corp_finance_core::three_statement::model::ThreeStatementInput, corp_finance_core::three_statement::model::build_three_statement_model);
+wasm_tool!(monte_carlo_simulation, corp_finance_core::monte_carlo::simulation::MonteCarloInput, corp_finance_core::monte_carlo::simulation::run_monte_carlo_simulation);
+wasm_tool!(monte_carlo_dcf, corp_finance_core::monte_carlo::simulation::McDcfInput, corp_finance_core::monte_carlo::simulation::run_monte_carlo_dcf);
+
+// scenario_analysis takes 3 args (ScenarioInput + output_values + base_case_value)
+// — doesn't fit the wasm_tool! single-input shape. Custom wrapper bundles the
+// 3 args into one JSON envelope.
+#[cfg(feature = "scenarios")]
+#[wasm_bindgen]
+pub fn scenario_analysis(input_json: &str) -> Result<String, JsValue> {
+    #[derive(serde::Deserialize)]
+    struct Envelope {
+        input: corp_finance_core::scenarios::scenario::ScenarioInput,
+        output_values: Vec<rust_decimal::Decimal>,
+        base_case_value: rust_decimal::Decimal,
+    }
+    let p: Envelope = serde_json::from_str(input_json).map_err(err_to_js)?;
+    let output = corp_finance_core::scenarios::scenario::analyze_scenarios(
+        &p.input,
+        &p.output_values,
+        p.base_case_value,
+    )
+    .map_err(err_to_js)?;
+    serde_json::to_string(&output).map_err(err_to_js)
+}
+
 #[wasm_bindgen]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()

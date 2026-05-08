@@ -123,21 +123,6 @@
       "owning_module": "mcp_servers"
     },
     {
-      "tool": "merger_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "ma"
-    },
-    {
-      "tool": "monte_carlo_dcf",
-      "reason": "wasm_blocker: rand\u2192getrandom path uses StdRng::from_entropy() \u2014 needs js-feature-aware seeding (Wave 16\u03b1 deferred)",
-      "owning_module": "monte_carlo"
-    },
-    {
-      "tool": "monte_carlo_simulation",
-      "reason": "wasm_blocker: rand\u2192getrandom path uses StdRng::from_entropy() \u2014 needs js-feature-aware seeding (Wave 16\u03b1 deferred)",
-      "owning_module": "monte_carlo"
-    },
-    {
       "tool": "office_docx_write",
       "reason": "Untested on wasm32 \u2014 Wave 16 will evaluate. docx-rs depends on zip which requires filesystem I/O; see office_xlsx_write",
       "owning_module": "office"
@@ -171,11 +156,6 @@
       "tool": "pii_redact_apply",
       "reason": "security feature: depends on the `regex` crate compiled through the federation dep chain; security module is wasm-compatible but only exposed via the NAPI server",
       "owning_module": "federation"
-    },
-    {
-      "tool": "scenario_analysis",
-      "reason": "wasm_blocker: 3-arg signature (data + scenarios + base_case) \u2014 doesn't fit wasm_tool! single-input macro",
-      "owning_module": "scenarios"
     },
     {
       "tool": "surface_audit_compute",
@@ -241,11 +221,6 @@
       "tool": "tenant_scoped_path",
       "reason": "federation feature: filesystem path resolution tied to native OS paths; rusqlite dep chain",
       "owning_module": "federation"
-    },
-    {
-      "tool": "three_statement_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "three_statement"
     },
     {
       "tool": "trust_score_compute",

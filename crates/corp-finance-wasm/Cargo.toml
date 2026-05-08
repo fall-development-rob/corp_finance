@@ -55,6 +55,10 @@ esg = []
 insurance = []
 fx_commodities = []
 private_credit = []
+# Wave 17b — monte_carlo unblocked by the getrandom-js shim landed in Wave 16α
+# (ma + three_statement features were already enabled in earlier waves; residuals
+# only needed wasm_tool! exports).
+monte_carlo = []
 # Wave 16α bulk port: 35 modules (73 tools).
 wealth = []
 portfolio_optimization = []
@@ -169,6 +173,7 @@ corp-finance-core = { path = "../corp-finance-core", default-features = false, f
     "market_microstructure",
     "real_assets",
     "onshore_structures",
+    "monte_carlo",
 ] }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
