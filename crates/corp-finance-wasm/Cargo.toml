@@ -9,6 +9,17 @@ description = "WebAssembly bindings for corp-finance-core (cfa-core plugin)"
 [lib]
 crate-type = ["cdylib"]
 
+# Wave 17a — wasm-pack runs wasm-opt -O by default; -Oz favours size over speed
+# (acceptable here because the plugin executes deterministic decimal math
+# whose perf is dominated by JS↔wasm trip costs, not inner loops).
+# --enable-bulk-memory because rustc 1.82+ emits memory.copy by default;
+# the bundled wasm-opt validator rejects it without this flag.
+[package.metadata.wasm-pack.profile.release]
+# `--all-features` enables every wasm proposal so the validator accepts
+# whatever rustc decides to emit (bulk-memory, sign-ext, mutable-globals,
+# nontrapping-float-to-int, reference-types, ...).
+wasm-opt = ["-Oz", "--all-features"]
+
 [features]
 # Wave 16a pilot: fpa module (variance_analysis, breakeven_analysis,
 # working_capital, rolling_forecast). Pure-math; compiles cleanly to

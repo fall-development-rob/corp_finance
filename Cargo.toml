@@ -15,7 +15,12 @@ license = "MIT"
 
 # WASM release profile (used by `cargo build --release --target wasm32-unknown-unknown`
 # and by `wasm-pack build --release` for the corp-finance-wasm crate).
+# Wave 17a — bundle size optimization: panic=abort drops unwinding code,
+# strip removes debug symbols, codegen-units=1 + lto=fat maximises
+# cross-crate inlining and dead-code elimination.
 [profile.release]
 opt-level = "z"
-lto = true
+lto = "fat"
 codegen-units = 1
+panic = "abort"
+strip = true
