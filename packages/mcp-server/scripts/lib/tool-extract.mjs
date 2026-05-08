@@ -35,6 +35,8 @@ const PLUGIN_CALL_RE = /^\s*tool\s*\(\s*$/;
 const PLUGIN_SERVER_ARG_RE = /^\s*server\s*,?\s*$/;
 const TOOL_NAME_RE = /^\s*"([^"]+)"/;
 const TOOL_DESC_RE = /^\s*"((?:[^"\\]|\\.)*)"/;
+// Single-line plugin form: `tool(server, "tool_name", "description", wasm.fn);`
+const PLUGIN_INLINE_RE = /^\s*tool\s*\(\s*server\s*,\s*"([^"]+)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*,/;
 
 /**
  * Parse a single file for NAPI-style server.tool("name", ...) registrations.
@@ -69,6 +71,16 @@ function parseNapiPattern(lines, relPath) {
 function parsePluginPattern(lines, relPath) {
   const results = [];
   for (let i = 0; i < lines.length; i++) {
+    // Single-line form: `tool(server, "name", "desc", wasm.fn);`
+    const inlineMatch = PLUGIN_INLINE_RE.exec(lines[i]);
+    if (inlineMatch) {
+      results.push({
+        tool_name: inlineMatch[1],
+        source_file: relPath,
+        description: inlineMatch[2],
+      });
+      continue;
+    }
     if (!PLUGIN_CALL_RE.test(lines[i])) continue;
     const serverLine = lines[i + 1] ?? "";
     if (!PLUGIN_SERVER_ARG_RE.test(serverLine)) continue;

@@ -1,6 +1,6 @@
 {
   "name": "cfa-core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Institutional-grade corporate finance toolkit: WACC, DCF, LBO, credit, derivatives, fixed income, fund admin, KYC, and managed-agent cookbook tooling. 21 CFA-aligned skills, 57 slash commands, 9 specialist research agents. 100% offline / decimal-precision math / no API keys required for the core tier; vendor MCPs (LSEG, S&P, FactSet, etc.) are opt-in.",
   "author": {
     "name": "Robert Fall",
