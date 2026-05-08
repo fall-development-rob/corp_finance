@@ -1,11 +1,77 @@
 ---
 name: "Slide Deck Authoring Workflows"
-description: "Markdown-with-slide-breaks deck authoring conventions for headless pitch and research decks — slide-break syntax, title slide, agenda, exec summary, valuation bull/base/bear layout, comps table, sensitivity, and appendix slides. The CFA agent stack does not have a PPTX writer; this skill defines the markdown deck format so downstream tooling (or the recipient) can convert to PowerPoint, Keynote, or PDF. Routes to cfa-private-markets-analyst for IB/PE decks and cfa-equity-analyst for research decks."
+description: "Markdown-with-slide-breaks deck authoring conventions for headless pitch and research decks — slide-break syntax, title slide, agenda, exec summary, valuation bull/base/bear layout, comps table, sensitivity, and appendix slides. Phase 29 Wave 8 lands a native PPTX writer via the office_pptx_write MCP tool; use it to produce a binary .pptx terminal deliverable from a SlideDeckSpec. The markdown deck format remains the authoring convention; map slides to SlideDeckSpec before calling the writer. Routes to cfa-private-markets-analyst for IB/PE decks and cfa-equity-analyst for research decks."
 ---
 
 # Slide Deck Authoring Workflows
 
-You are producing pitch decks and research decks in a headless environment. The CFA agent stack does not have a PPTX writer (no python-pptx, no Office JS). This skill defines the markdown-with-slide-breaks convention so the deck can be converted to PowerPoint or Keynote by downstream tooling, or read directly as a slide-shaped markdown document.
+You are producing pitch decks and research decks. Phase 29 Wave 8 adds a native PPTX writer to the CFA agent stack via the `office_pptx_write` MCP tool. Use it to produce binary `.pptx` terminal deliverables. The markdown-with-slide-breaks format remains the authoring convention for drafting and review; once finalised, map the markdown deck to a `SlideDeckSpec` and call `office_pptx_write`.
+
+## Native PPTX Writer (Phase 29 Wave 8)
+
+The `office_pptx_write` tool accepts a `SlideDeckSpec` and returns a `WriteDeckResult { output_path, bytes_written, sha256, slide_count }`. The result struct is the system-of-record handle — do not read the file back into the system.
+
+### Mapping Markdown Slides to SlideDeckSpec
+
+| Markdown slide pattern | `Slide` kind |
+|------------------------|--------------|
+| H1 at top + bold subtitle below, no bullets | `{ "kind": "title", "title": "...", "subtitle": "..." }` |
+| H2 with no content (section divider) | `{ "kind": "section", "heading": "..." }` |
+| H2 title + bullet list beneath | `{ "kind": "content", "title": "...", "bullets": ["...", "..."] }` |
+| H2 title + markdown table beneath | `{ "kind": "table", "title": "...", "headers": ["..."], "rows": [[...]] }` |
+
+### Example: Title + Content + Table Deck
+
+```json
+{
+  "spec": {
+    "slides": [
+      {
+        "kind": "title",
+        "title": "Project Falcon",
+        "subtitle": "IC Presentation — May 2026"
+      },
+      {
+        "kind": "section",
+        "heading": "Investment Thesis"
+      },
+      {
+        "kind": "content",
+        "title": "Key Highlights",
+        "bullets": [
+          "$1.2B revenue, 22% EBITDA margin",
+          "Market leader with 35% share",
+          "Three near-term catalysts"
+        ]
+      },
+      {
+        "kind": "table",
+        "title": "Trading Comparables",
+        "headers": ["Company", "EV ($M)", "EV/EBITDA"],
+        "rows": [
+          ["ACME Corp", "1,200", "8.5x"],
+          ["Beta Inc", "850", "7.2x"]
+        ]
+      }
+    ],
+    "properties": {
+      "title": "Project Falcon IC Deck",
+      "author": "CFA Agent"
+    }
+  },
+  "output_path": "/tmp/falcon_ic.pptx"
+}
+```
+
+### v1 Scope and Limitations
+
+v1 supports four slide kinds: `title`, `section`, `content`, `table`. Out of scope for v1: images, charts, transitions, animations, speaker notes, custom themes, hyperlinks, merged table cells. Use the markdown format for slides requiring these features and flag them for manual post-processing in PowerPoint.
+
+### Workflow Integration
+
+For IB/PE pitch and IC decks, author the full markdown deck using the conventions below, then call `office_pptx_write` on the finalised slide list. The writer produces a ZIP-valid `.pptx` with deterministic SHA-256 (identical spec → same hash on every run) suitable for audit logging.
+
+---
 
 ## Core Principles
 

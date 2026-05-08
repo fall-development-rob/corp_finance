@@ -1,11 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { writeXlsxWorkbook, renderOfficeTemplate, writeWordDoc } from "../bindings.js";
+import { writeXlsxWorkbook, renderOfficeTemplate, writeWordDoc, writeSlideDeck } from "../bindings.js";
 import {
   WriteXlsxWorkbookInputSchema,
   WriteWorkbookResultSchema,
   RenderTemplateInputSchema,
   WriteWordDocInputSchema,
   WriteDocResultSchema,
+  WriteSlideDeckInputSchema,
+  WriteDeckResultSchema,
 } from "../schemas/office.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
@@ -44,6 +46,18 @@ export function registerOfficeTools(server: McpServer) {
       const validated = WriteWordDocInputSchema.parse(coerceNumbers(params));
       const resultJson = writeWordDoc(JSON.stringify(validated));
       const parsed = WriteDocResultSchema.parse(JSON.parse(String(resultJson)));
+      return wrapResponse(JSON.stringify(parsed));
+    }
+  );
+
+  server.tool(
+    "office_pptx_write",
+    "Serialise a SlideDeckSpec to a .pptx file on disk and return WriteDeckResult { output_path, bytes_written, sha256, slide_count }. Slide decks are terminal deliverables — the result struct is the system-of-record handle, not the file contents. Phase 29 Wave 8.",
+    WriteSlideDeckInputSchema.shape,
+    async (params) => {
+      const validated = WriteSlideDeckInputSchema.parse(coerceNumbers(params));
+      const resultJson = writeSlideDeck(JSON.stringify(validated));
+      const parsed = WriteDeckResultSchema.parse(JSON.parse(String(resultJson)));
       return wrapResponse(JSON.stringify(parsed));
     }
   );

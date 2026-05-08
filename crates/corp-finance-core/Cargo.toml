@@ -82,7 +82,7 @@ institutional_real_estate = []
 managed_agent = []
 scenarios = ["dep:rand", "dep:statrs"]
 monte_carlo = ["scenarios"]
-office = ["dep:rust_xlsxwriter", "dep:sha2", "dep:docx_rs"]
+office = ["dep:rust_xlsxwriter", "dep:sha2", "dep:docx_rs", "dep:zip", "dep:quick-xml"]
 memory = ["dep:hnsw_rs", "dep:tantivy", "dep:petgraph", "dep:flate2", "dep:uuid", "dep:sha2"]
 audit = ["dep:sha2", "dep:uuid"]
 cost = ["dep:rusqlite", "dep:uuid"]
@@ -120,6 +120,12 @@ rust_xlsxwriter = { version = "~0.94", optional = true }
 
 # Phase 29 Wave 7 — Word / OOXML serialisation
 docx_rs = { package = "docx-rs", version = "0.4", optional = true }
+
+# Phase 29 Wave 8 — PowerPoint / OOXML serialisation (hand-rolled; see pptx.rs)
+# ppt-rs was evaluated but emits chrono::Utc::now() in props_xml breaking sha256
+# stability. Hand-rolling with zip + quick-xml gives fully deterministic output.
+zip = { version = "2", default-features = false, features = ["deflate"], optional = true }
+quick-xml = { version = "0.36", optional = true }
 
 # Phase 27/28 — Multi-agent + Federation + Self-learning (native)
 pathfinding = { version = "4", optional = true }

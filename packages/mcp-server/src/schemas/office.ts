@@ -174,3 +174,47 @@ export const WriteDocResultSchema = z.object({
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
   section_count: z.number().int().nonnegative(),
 });
+
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 8 — PowerPoint / .pptx schemas
+// ---------------------------------------------------------------------------
+
+export const SlideSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("title"),
+    title: z.string().min(1),
+    subtitle: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal("section"),
+    heading: z.string().min(1),
+  }),
+  z.object({
+    kind: z.literal("content"),
+    title: z.string().min(1),
+    bullets: z.array(z.string()).default([]),
+  }),
+  z.object({
+    kind: z.literal("table"),
+    title: z.string().min(1),
+    headers: z.array(z.string()).min(1),
+    rows: z.array(z.array(z.string())).default([]),
+  }),
+]);
+
+export const SlideDeckSpecSchema = z.object({
+  slides: z.array(SlideSchema).min(1),
+  properties: WorkbookPropertiesSchema.default({}),
+});
+
+export const WriteSlideDeckInputSchema = z.object({
+  spec: SlideDeckSpecSchema,
+  output_path: z.string().min(1),
+});
+
+export const WriteDeckResultSchema = z.object({
+  output_path: z.string().min(1),
+  bytes_written: z.number().int().nonnegative(),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  slide_count: z.number().int().nonnegative(),
+});

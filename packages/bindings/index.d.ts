@@ -297,3 +297,4 @@ export declare function writeXlsxWorkbook(inputJson: string): NapiResult
  */
 export declare function renderOfficeTemplate(inputJson: string): NapiResult
 export declare function writeWordDoc(inputJson: string): NapiResult
+export declare function writeSlideDeck(inputJson: string): NapiResult

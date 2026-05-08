@@ -777,13 +777,16 @@ fn command_name(cmd: &Commands) -> String {
         }
         #[cfg(feature = "office")]
         Commands::Office(args) => {
-            use commands::office::{DocxCommands, OfficeCommands, XlsxCommands};
+            use commands::office::{DocxCommands, OfficeCommands, PptxCommands, XlsxCommands};
             match &args.command {
                 OfficeCommands::Xlsx(x) => match &x.command {
                     XlsxCommands::Write(_) => "office.xlsx.write".to_string(),
                 },
                 OfficeCommands::Docx(d) => match &d.command {
                     DocxCommands::Write(_) => "office.docx.write".to_string(),
+                },
+                OfficeCommands::Pptx(p) => match &p.command {
+                    PptxCommands::Write(_) => "office.pptx.write".to_string(),
                 },
                 OfficeCommands::RenderTemplate(_) => "office.render_template".to_string(),
             }
@@ -1221,13 +1224,16 @@ fn main() {
         Commands::Attest(args) => commands::attest::run_attest(args),
         #[cfg(feature = "office")]
         Commands::Office(args) => {
-            use commands::office::{DocxCommands, OfficeCommands, XlsxCommands};
+            use commands::office::{DocxCommands, OfficeCommands, PptxCommands, XlsxCommands};
             match args.command {
                 OfficeCommands::Xlsx(x) => match x.command {
                     XlsxCommands::Write(a) => commands::office::run_xlsx_write(a),
                 },
                 OfficeCommands::Docx(d) => match d.command {
                     DocxCommands::Write(a) => commands::office::run_docx_write(a),
+                },
+                OfficeCommands::Pptx(p) => match p.command {
+                    PptxCommands::Write(a) => commands::office::run_pptx_write(a),
                 },
                 OfficeCommands::RenderTemplate(a) => commands::office::run_render_template(a),
             }

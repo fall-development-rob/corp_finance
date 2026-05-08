@@ -1,0 +1,148 @@
+# Feature Contract: Office OOXML Serialization — .pptx Write Surface (Phase 29 Wave 8)
+# Enforces architectural invariants for the office/.pptx write surface
+# ADR: docs/adr/ADR-023-office-pptx-serialization.md
+
+contracts:
+  - id: PPTX-001
+    name: "office_pptx_write MCP tool must not accept a pptx input parameter"
+    description: >
+      The office surface is write-only. No MCP tool in packages/mcp-server/src/tools/
+      may define a parameter whose name or description implies reading an existing .pptx
+      file (e.g., 'pptx_path', 'input_pptx', 'deck_path' used as input).
+      WriteDeckResult.output_path is the only pptx path that may appear in MCP
+      tool output schemas.
+    scope:
+      - "packages/mcp-server/src/tools/"
+    check: >
+      grep -rn 'input.*\.pptx\|pptx.*input\|read.*pptx\|load.*pptx\|open.*pptx'
+        packages/mcp-server/src/tools/ returns no matches
+    enforcement: build-time
+    severity: error
+
+  - id: PPTX-002
+    name: "NAPI writeSlideDeck must use single-string JSON envelope"
+    description: >
+      The NAPI binding writeSlideDeck must accept exactly one string argument
+      (the JSON envelope { spec, output_path }) and return a string (JSON-encoded
+      WriteDeckResult). This matches the established NAPI boundary pattern.
+      No additional function parameters are permitted.
+    scope:
+      - "packages/bindings/src/lib.rs"
+    check: >
+      grep -n 'writeSlideDeck' packages/bindings/src/lib.rs must show a
+      single-argument fn signature accepting a String/&str; no second parameter present
+    enforcement: build-time
+    severity: error
+
+  - id: PPTX-003
+    name: "office feature is opt-in via Cargo feature flag"
+    description: >
+      The pptx engine (crate or hand-rolled) must appear under the [features] office
+      section in corp-finance-core/Cargo.toml as an optional dependency, not as an
+      always-on dep. No new feature flag is introduced; the pptx engine is gated behind
+      the existing office feature.
+    scope:
+      - "crates/corp-finance-core/Cargo.toml"
+    check: >
+      grep -A20 '\[features\]' crates/corp-finance-core/Cargo.toml |
+        grep 'office' shows pptx engine as an optional feature member
+    enforcement: build-time
+    severity: error
+
+  - id: PPTX-004
+    name: "Slide tagged enum uses kind discriminant with snake_case payloads"
+    description: >
+      The Slide enum must use serde's tagged representation with discriminant key "kind"
+      so the JSON wire form is { "kind": "title", ... } | { "kind": "section", ... } |
+      { "kind": "content", ... } | { "kind": "table", ... } with snake_case payloads.
+      Adding a new slide kind in a future wave is additive and wire-compatible. Renaming
+      or repurposing an existing kind is a wire break requiring a new ADR.
+    scope:
+      - "crates/corp-finance-core/src/office/"
+    check: >
+      grep -n 'tag = "kind"\|serde(tag' crates/corp-finance-core/src/office/ --include='*.rs' -r
+        returns at least one match on the Slide enum definition
+    enforcement: review
+    severity: warning
+
+  - id: PPTX-005
+    name: "CLI office pptx subcommand is feature-gated"
+    description: >
+      The corp-finance-cli office pptx write subcommand must be compiled only when
+      the office feature is enabled. A bare `cargo build --workspace` without
+      --features office must not expose the office pptx subcommand.
+    scope:
+      - "crates/corp-finance-cli/src/main.rs"
+    check: >
+      grep -n 'office' crates/corp-finance-cli/src/main.rs shows cfg(feature = "office")
+      guard on the office pptx subcommand registration
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: PPTX-INV-001
+    name: "Terminal-deliverable invariant — no pptx reader in any MCP tool"
+    description: >
+      Decks are terminal deliverables. No MCP tool, NAPI binding, or CLI subcommand
+      reads a .pptx file back as input. WriteDeckResult { output_path, bytes_written,
+      sha256, slide_count } is the only system-of-record handle after a write.
+    check: >
+      grep -rn '\.pptx' packages/mcp-server/src/tools/ |
+        grep -v 'output_path\|WriteDeck\|bytes_written\|sha256\|slide_count\|# \|//'
+        returns no matches
+    severity: error
+
+  - id: PPTX-INV-002
+    name: "sha256 stability — identical spec produces identical bytes"
+    description: >
+      Writing the same SlideDeckSpec twice must produce byte-identical .pptx output,
+      yielding the same sha256 digest. This is asserted by the unit test
+      `write_deck_sha256_stability` in the office module test suite.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'write_deck_sha256_stability'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office write_deck_sha256_stability exits 0.
+    severity: error
+
+  - id: PPTX-INV-003
+    name: "Zip integrity — output starts with PK magic bytes"
+    description: >
+      Every .pptx file produced by write_slide_deck must begin with the OOXML/ZIP magic
+      bytes PK\x03\x04 (hex: 50 4B 03 04). The unit test `write_deck_zip_magic_bytes`
+      asserts this by reading the first four bytes of the output file after a write.
+      The test must exist and pass under `cargo test --features office`.
+    check: >
+      grep -rn 'write_deck_zip_magic_bytes\|PK\\x03\\x04\|0x50.*0x4B.*0x03.*0x04'
+        crates/corp-finance-core/src/office/ returns at least one match;
+      cargo test --features office write_deck_zip_magic_bytes exits 0.
+    severity: error
+
+  - id: PPTX-INV-004
+    name: "Slide validation — invalid slides rejected with InvalidInput"
+    description: >
+      An empty slides Vec must be rejected with InvalidInput before any pptx-build call.
+      A Title slide with an empty title string must be rejected with InvalidInput.
+      A Table slide with zero columns must be rejected with InvalidInput.
+      All validation occurs in write_slide_deck before any bytes are written.
+      The corresponding unit tests for each rejection case must pass
+      under `cargo test --features office`.
+    check: >
+      In crates/corp-finance-core/src/office/, grep for 'slides\|InvalidInput\|slide_count\|columns'
+      confirms validation logic; the unit tests for the empty-slides, empty-title, and
+      zero-columns rejection cases pass under `cargo test --features office`.
+    severity: error
+
+  - id: PPTX-INV-005
+    name: "Slide-kind tagged-enum discriminant — kind key with snake_case variants"
+    description: >
+      Slide variants must serialize with the `kind` discriminant key and snake_case values:
+      `title` | `section` | `content` | `table`. Wire compatibility rule: adding a new
+      slide kind in a future wave is additive and does not break existing consumers.
+      Renaming or repurposing an existing kind value is a wire break and requires a new
+      ADR before implementation.
+    check: >
+      grep -rn 'tag = "kind"\|"title"\|"section"\|"content"\|"table"'
+        crates/corp-finance-core/src/office/ --include='*.rs' returns matches
+        consistent with snake_case kind discriminants on the Slide enum.
+    severity: warning

@@ -221,3 +221,51 @@ pub struct WriteDocResult {
     pub sha256: String,
     pub section_count: usize,
 }
+
+// ---------------------------------------------------------------------------
+// Phase 29 Wave 8 — PowerPoint / .pptx types
+// ---------------------------------------------------------------------------
+
+/// A single slide in a deck. Tagged union on `kind` (snake_case).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum Slide {
+    /// Full-bleed title slide: large title + optional subtitle.
+    Title {
+        title: String,
+        #[serde(default)]
+        subtitle: Option<String>,
+    },
+    /// Section divider slide with a single centred heading.
+    Section { heading: String },
+    /// Title at top + bulleted body text.
+    Content {
+        title: String,
+        #[serde(default)]
+        bullets: Vec<String>,
+    },
+    /// Title at top + a simple table (header row + N data rows).
+    Table {
+        title: String,
+        headers: Vec<String>,
+        rows: Vec<Vec<String>>,
+    },
+}
+
+/// Top-level description of a PowerPoint deck to be written.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SlideDeckSpec {
+    pub slides: Vec<Slide>,
+    #[serde(default)]
+    pub properties: WorkbookProperties,
+}
+
+/// Returned by [`crate::office::pptx::write_slide_deck`] on success.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WriteDeckResult {
+    pub output_path: PathBuf,
+    pub bytes_written: u64,
+    /// SHA-256 of the written file, 64 lowercase hex chars.
+    pub sha256: String,
+    pub slide_count: usize,
+}

@@ -308,4 +308,7 @@ export const renderOfficeTemplate = b.renderOfficeTemplate;
 // Phase 29 wave 7: office docx writer.
 export const writeWordDoc = b.writeWordDoc;
 
+// Phase 29 wave 8: office pptx writer.
+export const writeSlideDeck = b.writeSlideDeck;
+
 export default pkg;

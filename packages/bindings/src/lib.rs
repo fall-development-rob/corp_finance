@@ -4008,3 +4008,25 @@ pub fn write_word_doc(input_json: String) -> NapiResult<String> {
     .map_err(to_napi_error)?;
     serde_json::to_string(&result).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Office — PowerPoint / .pptx writer (Phase 29 Wave 8)
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Deserialize)]
+struct WriteSlideDeckInput {
+    spec: corp_finance_core::office::SlideDeckSpec,
+    output_path: String,
+}
+
+#[napi]
+pub fn write_slide_deck(input_json: String) -> NapiResult<String> {
+    let input: WriteSlideDeckInput =
+        serde_json::from_str(&input_json).map_err(to_napi_error)?;
+    let result = corp_finance_core::office::write_slide_deck(
+        &input.spec,
+        std::path::Path::new(&input.output_path),
+    )
+    .map_err(to_napi_error)?;
+    serde_json::to_string(&result).map_err(to_napi_error)
+}
