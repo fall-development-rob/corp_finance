@@ -69,6 +69,34 @@ wasm_tool!(
     corp_finance_core::credit::covenants::test_covenants
 );
 
+// ---------------------------------------------------------------------------
+// FP&A (Wave 16a pilot port)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    variance_analysis,
+    corp_finance_core::fpa::variance::VarianceInput,
+    corp_finance_core::fpa::variance::analyze_variance
+);
+
+wasm_tool!(
+    breakeven_analysis,
+    corp_finance_core::fpa::variance::BreakevenInput,
+    corp_finance_core::fpa::variance::analyze_breakeven
+);
+
+wasm_tool!(
+    working_capital,
+    corp_finance_core::fpa::working_capital::WorkingCapitalInput,
+    corp_finance_core::fpa::working_capital::analyze_working_capital
+);
+
+wasm_tool!(
+    rolling_forecast,
+    corp_finance_core::fpa::working_capital::RollingForecastInput,
+    corp_finance_core::fpa::working_capital::build_rolling_forecast
+);
+
 #[wasm_bindgen]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()

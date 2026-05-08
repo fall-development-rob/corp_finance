@@ -25,6 +25,11 @@ const wasm = require("../wasm/corp_finance_wasm.js") as {
   credit_metrics: (json: string) => string;
   debt_capacity: (json: string) => string;
   covenant_compliance: (json: string) => string;
+  // FP&A — Wave 16a pilot port
+  variance_analysis: (json: string) => string;
+  breakeven_analysis: (json: string) => string;
+  working_capital: (json: string) => string;
+  rolling_forecast: (json: string) => string;
   version: () => string;
 };
 
@@ -114,6 +119,35 @@ async function main() {
     "covenant_compliance",
     "Test debt covenant compliance: maintenance covenants (leverage, coverage, fixed-charge), incurrence covenants, and headroom analysis with breach scenarios.",
     wasm.covenant_compliance,
+  );
+
+  // FP&A — Wave 16a pilot port
+  tool(
+    server,
+    "variance_analysis",
+    "Perform budget-vs-actual variance analysis with price/volume/mix revenue decomposition. Computes revenue variance (price, volume, and mix components), cost variance, profit variance with margin analysis, per-line detail, and optional year-over-year comparison.",
+    wasm.variance_analysis,
+  );
+
+  tool(
+    server,
+    "breakeven_analysis",
+    "Perform break-even and operating leverage analysis. Computes contribution margin, break-even units and revenue, margin of safety, operating leverage (DOL), target volume for profit goals, and what-if scenario analysis with multiple overrides.",
+    wasm.breakeven_analysis,
+  );
+
+  tool(
+    server,
+    "working_capital",
+    "Analyse working capital efficiency across multiple periods. Computes DSO, DIO, DPO, Cash Conversion Cycle, net working capital, current/quick ratios, trend analysis, optimization opportunities (cash freed by reducing DSO/DIO), financing savings, and optional industry benchmark comparison.",
+    wasm.working_capital,
+  );
+
+  tool(
+    server,
+    "rolling_forecast",
+    "Build a rolling financial forecast from historical data. Derives driver assumptions (COGS/OpEx/CapEx as % of revenue) from historical averages or overrides, projects revenue with growth rate, computes EBIT, EBITDA, net income, free cash flow, and summary statistics across forecast periods.",
+    wasm.rolling_forecast,
   );
 
   const transport = new StdioServerTransport();
