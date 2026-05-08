@@ -118,16 +118,6 @@
       "owning_module": "fixed_income"
     },
     {
-      "tool": "brinson_attribution",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "performance_attribution"
-    },
-    {
-      "tool": "buyback_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "dividend_policy"
-    },
-    {
       "tool": "camels_rating",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "bank_analytics"
@@ -241,11 +231,6 @@
       "tool": "commodity_forward",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "fx_commodities"
-    },
-    {
-      "tool": "commodity_spread",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "commodity_trading"
     },
     {
       "tool": "concentrated_stock",
@@ -413,11 +398,6 @@
       "owning_module": "structured_products"
     },
     {
-      "tool": "factor_attribution",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "performance_attribution"
-    },
-    {
       "tool": "factor_model",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "quant_risk"
@@ -496,11 +476,6 @@
       "tool": "green_bond",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "esg"
-    },
-    {
-      "tool": "h_model_ddm",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "dividend_policy"
     },
     {
       "tool": "hedge_effectiveness",
@@ -733,11 +708,6 @@
       "owning_module": "fund_of_funds"
     },
     {
-      "tool": "market_sentiment",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "behavioral"
-    },
-    {
       "tool": "mbs_analytics",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "mortgage_analytics"
@@ -768,11 +738,6 @@
       "owning_module": "offshore_structures"
     },
     {
-      "tool": "momentum_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "quant_strategies"
-    },
-    {
       "tool": "monetary_policy",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "macro_economics"
@@ -786,11 +751,6 @@
       "tool": "monte_carlo_simulation",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "monte_carlo"
-    },
-    {
-      "tool": "multistage_ddm",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "dividend_policy"
     },
     {
       "tool": "muni_bond_pricing",
@@ -873,16 +833,6 @@
       "owning_module": "derivatives"
     },
     {
-      "tool": "pairs_trading",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "quant_strategies"
-    },
-    {
-      "tool": "payout_sustainability",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "dividend_policy"
-    },
-    {
       "tool": "pd_calibration",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "credit_scoring"
@@ -946,11 +896,6 @@
       "tool": "property_valuation",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "real_assets"
-    },
-    {
-      "tool": "prospect_theory",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "behavioral"
     },
     {
       "tool": "raroc_calculation",
@@ -1093,11 +1038,6 @@
       "owning_module": "insurance"
     },
     {
-      "tool": "sotp_valuation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "equity_research"
-    },
-    {
       "tool": "sources_uses",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "pe"
@@ -1111,11 +1051,6 @@
       "tool": "spread_analysis",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "market_microstructure"
-    },
-    {
-      "tool": "storage_economics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "commodity_trading"
     },
     {
       "tool": "stress_test",
@@ -1193,11 +1128,6 @@
       "owning_module": "risk_budgeting"
     },
     {
-      "tool": "target_price",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "equity_research"
-    },
-    {
       "tool": "tax_loss_harvesting",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "wealth"
@@ -1236,11 +1166,6 @@
       "tool": "token_valuation",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "crypto"
-    },
-    {
-      "tool": "total_shareholder_return",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "dividend_policy"
     },
     {
       "tool": "tracking_error",

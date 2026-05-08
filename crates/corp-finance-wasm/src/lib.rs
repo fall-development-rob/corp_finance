@@ -97,6 +97,120 @@ wasm_tool!(
     corp_finance_core::fpa::working_capital::build_rolling_forecast
 );
 
+// ---------------------------------------------------------------------------
+// Wave 16x — behavioral module (2 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    prospect_theory,
+    corp_finance_core::behavioral::prospect_theory::ProspectTheoryInput,
+    corp_finance_core::behavioral::prospect_theory::analyze_prospect_theory
+);
+
+wasm_tool!(
+    market_sentiment,
+    corp_finance_core::behavioral::sentiment::SentimentInput,
+    corp_finance_core::behavioral::sentiment::analyze_sentiment
+);
+
+// ---------------------------------------------------------------------------
+// Wave 16x — performance_attribution module (2 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    brinson_attribution,
+    corp_finance_core::performance_attribution::brinson::BrinsonInput,
+    corp_finance_core::performance_attribution::brinson::brinson_attribution
+);
+
+wasm_tool!(
+    factor_attribution,
+    corp_finance_core::performance_attribution::factor_attribution::FactorAttributionInput,
+    corp_finance_core::performance_attribution::factor_attribution::factor_attribution
+);
+
+// ---------------------------------------------------------------------------
+// Wave 16x — quant_strategies module (2 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    pairs_trading,
+    corp_finance_core::quant_strategies::pairs_trading::PairsTradingInput,
+    corp_finance_core::quant_strategies::pairs_trading::analyze_pairs_trading
+);
+
+wasm_tool!(
+    momentum_analysis,
+    corp_finance_core::quant_strategies::momentum::MomentumInput,
+    corp_finance_core::quant_strategies::momentum::analyze_momentum
+);
+
+// ---------------------------------------------------------------------------
+// Wave 16x — equity_research module (2 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    sotp_valuation,
+    corp_finance_core::equity_research::sotp::SotpInput,
+    corp_finance_core::equity_research::sotp::calculate_sotp
+);
+
+wasm_tool!(
+    target_price,
+    corp_finance_core::equity_research::target_price::TargetPriceInput,
+    corp_finance_core::equity_research::target_price::calculate_target_price
+);
+
+// ---------------------------------------------------------------------------
+// Wave 16x — commodity_trading module (2 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    commodity_spread,
+    corp_finance_core::commodity_trading::spreads::CommoditySpreadInput,
+    corp_finance_core::commodity_trading::spreads::analyze_commodity_spread
+);
+
+wasm_tool!(
+    storage_economics,
+    corp_finance_core::commodity_trading::storage::StorageEconomicsInput,
+    corp_finance_core::commodity_trading::storage::analyze_storage_economics
+);
+
+// ---------------------------------------------------------------------------
+// Wave 16x — dividend_policy module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(
+    h_model_ddm,
+    corp_finance_core::dividend_policy::h_model::HModelInput,
+    corp_finance_core::dividend_policy::h_model::calculate_h_model
+);
+
+wasm_tool!(
+    multistage_ddm,
+    corp_finance_core::dividend_policy::multistage_ddm::MultistageDdmInput,
+    corp_finance_core::dividend_policy::multistage_ddm::calculate_multistage_ddm
+);
+
+wasm_tool!(
+    buyback_analysis,
+    corp_finance_core::dividend_policy::buyback::BuybackInput,
+    corp_finance_core::dividend_policy::buyback::calculate_buyback
+);
+
+wasm_tool!(
+    payout_sustainability,
+    corp_finance_core::dividend_policy::payout_sustainability::PayoutSustainabilityInput,
+    corp_finance_core::dividend_policy::payout_sustainability::calculate_payout_sustainability
+);
+
+wasm_tool!(
+    total_shareholder_return,
+    corp_finance_core::dividend_policy::total_shareholder_return::TotalShareholderReturnInput,
+    corp_finance_core::dividend_policy::total_shareholder_return::calculate_total_shareholder_return
+);
+
 #[wasm_bindgen]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()

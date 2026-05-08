@@ -14,10 +14,18 @@ crate-type = ["cdylib"]
 # working_capital, rolling_forecast). Pure-math; compiles cleanly to
 # wasm32-unknown-unknown via the compat::Instant shim.
 fpa = []
+# Wave 16x bulk port: 6 small pure-math modules (15 tools).
+behavioral = []
+performance_attribution = []
+quant_strategies = []
+equity_research = []
+commodity_trading = []
+dividend_policy = []
 
 [dependencies]
 # v0.1 ships the timing-free feature subset — see docs in lib.rs for the v0.2 expansion plan.
 # v0.2 adds the fpa feature (Wave 16a pilot port).
+# v0.3 adds 6 modules in Wave 16x bulk port.
 corp-finance-core = { path = "../corp-finance-core", default-features = false, features = [
     "valuation",
     "credit",
@@ -27,6 +35,12 @@ corp-finance-core = { path = "../corp-finance-core", default-features = false, f
     "derivatives",
     "three_statement",
     "fpa",
+    "behavioral",
+    "performance_attribution",
+    "quant_strategies",
+    "equity_research",
+    "commodity_trading",
+    "dividend_policy",
 ] }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }

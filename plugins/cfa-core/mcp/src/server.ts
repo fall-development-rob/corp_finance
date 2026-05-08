@@ -30,6 +30,27 @@ const wasm = require("../wasm/corp_finance_wasm.js") as {
   breakeven_analysis: (json: string) => string;
   working_capital: (json: string) => string;
   rolling_forecast: (json: string) => string;
+  // Behavioral — Wave 16x
+  prospect_theory: (json: string) => string;
+  market_sentiment: (json: string) => string;
+  // Performance attribution — Wave 16x
+  brinson_attribution: (json: string) => string;
+  factor_attribution: (json: string) => string;
+  // Quant strategies — Wave 16x
+  pairs_trading: (json: string) => string;
+  momentum_analysis: (json: string) => string;
+  // Equity research — Wave 16x
+  sotp_valuation: (json: string) => string;
+  target_price: (json: string) => string;
+  // Commodity trading — Wave 16x
+  commodity_spread: (json: string) => string;
+  storage_economics: (json: string) => string;
+  // Dividend policy — Wave 16x
+  h_model_ddm: (json: string) => string;
+  multistage_ddm: (json: string) => string;
+  buyback_analysis: (json: string) => string;
+  payout_sustainability: (json: string) => string;
+  total_shareholder_return: (json: string) => string;
   version: () => string;
 };
 
@@ -148,6 +169,108 @@ async function main() {
     "rolling_forecast",
     "Build a rolling financial forecast from historical data. Derives driver assumptions (COGS/OpEx/CapEx as % of revenue) from historical averages or overrides, projects revenue with growth rate, computes EBIT, EBITDA, net income, free cash flow, and summary statistics across forecast periods.",
     wasm.rolling_forecast,
+  );
+
+  // Behavioral — Wave 16x
+  tool(
+    server,
+    "prospect_theory",
+    "Prospect theory analysis: loss aversion, probability weighting, reference dependence, disposition effect, framing bias.",
+    wasm.prospect_theory,
+  );
+  tool(
+    server,
+    "market_sentiment",
+    "Market sentiment analysis: fear/greed index, put-call ratio, VIX term structure, fund flows, crowding indicators.",
+    wasm.market_sentiment,
+  );
+
+  // Performance attribution — Wave 16x
+  tool(
+    server,
+    "brinson_attribution",
+    "Brinson-Fachler performance attribution: allocation, selection, interaction effects by sector with multi-period linking via Carino method.",
+    wasm.brinson_attribution,
+  );
+  tool(
+    server,
+    "factor_attribution",
+    "Factor-based return attribution: active exposure decomposition, R-squared, tracking error breakdown by systematic factors.",
+    wasm.factor_attribution,
+  );
+
+  // Quant strategies — Wave 16x
+  tool(
+    server,
+    "pairs_trading",
+    "Statistical pairs trading analysis: cointegration, z-scores, half-life, backtested trades, Sharpe ratio.",
+    wasm.pairs_trading,
+  );
+  tool(
+    server,
+    "momentum_analysis",
+    "Momentum factor scoring: risk-adjusted rankings, portfolio construction, backtest, crash risk.",
+    wasm.momentum_analysis,
+  );
+
+  // Equity research — Wave 16x
+  tool(
+    server,
+    "sotp_valuation",
+    "Sum-of-the-parts valuation: segment-level multiples, conglomerate discount, football field analysis.",
+    wasm.sotp_valuation,
+  );
+  tool(
+    server,
+    "target_price",
+    "Multi-method target price: PE, PEG, PB, PS, DDM, analyst consensus with football field and recommendation.",
+    wasm.target_price,
+  );
+
+  // Commodity trading — Wave 16x
+  tool(
+    server,
+    "commodity_spread",
+    "Commodity spread analysis: crack, crush, spark, calendar, location, quality spreads with risk metrics.",
+    wasm.commodity_spread,
+  );
+  tool(
+    server,
+    "storage_economics",
+    "Commodity storage economics: contango/backwardation, convenience yields, cash-and-carry arbitrage, seasonal analysis.",
+    wasm.storage_economics,
+  );
+
+  // Dividend policy — Wave 16x
+  tool(
+    server,
+    "h_model_ddm",
+    "H-Model DDM: Fuller & Hsia dividend valuation with linearly declining growth from short-term to long-term rate over half-life.",
+    wasm.h_model_ddm,
+  );
+  tool(
+    server,
+    "multistage_ddm",
+    "Multi-stage DDM: N-stage dividend discount model with explicit growth periods and terminal Gordon Growth value.",
+    wasm.multistage_ddm,
+  );
+  tool(
+    server,
+    "buyback_analysis",
+    "Share buyback analysis: EPS accretion/dilution, P/E breakeven, tax efficiency vs dividends, debt-funded vs cash-funded comparison.",
+    wasm.buyback_analysis,
+  );
+  tool(
+    server,
+    "payout_sustainability",
+    "Payout sustainability analysis: payout ratio, FCF coverage, debt capacity, dividend safety score, Lintner smoothing model.",
+    wasm.payout_sustainability,
+  );
+  tool(
+    server,
+    "total_shareholder_return",
+    "Total shareholder return: price appreciation, dividend yield, buyback yield, annualized TSR, component attribution.",
+    wasm.total_shareholder_return,
   );
 
   const transport = new StdioServerTransport();
