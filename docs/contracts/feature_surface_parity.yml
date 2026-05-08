@@ -1,0 +1,210 @@
+# Feature Contract: Plugin/Packages Dual-Mode Architecture and Surface Parity (Phase 29 Wave 15b)
+# Enforces architectural invariants for the plugin/packages dual-mode tool surface boundary
+# ADR: docs/adr/ADR-026-plugin-packages-dual-mode-and-surface-parity.md
+
+contracts:
+  - id: PARITY-001
+    name: "Drift gating — every packages tool is accounted for in plugin or allowlist"
+    description: >
+      Every tool registration (server.tool() call) found in packages/mcp-server/src/tools/*.ts
+      must either (a) also appear as a server.tool() registration in
+      plugins/cfa-core/mcp/src/server.ts, or (b) have an entry in
+      packages/mcp-server/.surface-allowlist.json with a non-empty reason field declaring it
+      NAPI-only. A tool present in packages but absent from both the plugin and the allowlist
+      is an unacknowledged drift and is a contract violation.
+    scope:
+      - "packages/mcp-server/src/tools/"
+      - "plugins/cfa-core/mcp/src/server.ts"
+      - "packages/mcp-server/.surface-allowlist.json"
+    check: >
+      node packages/mcp-server/scripts/check-surface-parity.mjs
+      exits 0 with no output when every packages tool is accounted for;
+      exits non-zero and prints a diff of unaccounted tool names when drift is detected.
+    enforcement: build-time
+    severity: error
+
+  - id: PARITY-002
+    name: "Plugin server name matches agent frontmatter tool declarations"
+    description: >
+      The MCP server name field in plugins/cfa-core/.claude-plugin/plugin.json must equal
+      the string used in every .claude/agents/cfa/*.md frontmatter tools: declaration that
+      references the plugin. At the time of this ADR the canonical name is cfa-core.
+      Any agent file referencing a different string (e.g., the retired ghost name cfa-tools)
+      is a violation. The fix is to update the agent frontmatter, not the plugin manifest.
+    scope:
+      - "plugins/cfa-core/.claude-plugin/plugin.json"
+      - ".claude/agents/cfa/"
+    check: >
+      PLUGIN_NAME=$(jq -r '.name' plugins/cfa-core/.claude-plugin/plugin.json)
+      grep -r 'tools:' .claude/agents/cfa/ | grep -v "$PLUGIN_NAME" |
+        grep -v 'cfa-core-builtin\|computer\|bash\|files\|search' returns no output.
+      Any hit indicates an agent referencing a non-existent or retired server name.
+    enforcement: review
+    severity: error
+
+  - id: PARITY-003
+    name: "Wave-close surface coverage — tool additions documented across both surfaces"
+    description: >
+      A wave commit that introduces a new server.tool() registration must either update both
+      packages/mcp-server and plugins/cfa-core/mcp/ in the same commit, or include the
+      token NAPI-only because: followed by a one-line reason in the commit body. A commit
+      that adds a tool to one surface without updating the other and without the exemption
+      token is a scope violation. This invariant is enforced at review time by scanning the
+      commit message for the exemption token when only one surface appears in the diff.
+    scope:
+      - "packages/mcp-server/src/tools/"
+      - "plugins/cfa-core/mcp/src/"
+    check: >
+      For any commit whose diff touches packages/mcp-server/src/tools/ but not
+        plugins/cfa-core/mcp/src/:
+      git log -1 --format=%B <sha> | grep -q 'NAPI-only because:' || exit 1
+      For any commit whose diff touches plugins/cfa-core/mcp/src/ but not
+        packages/mcp-server/src/tools/:
+      git log -1 --format=%B <sha> | grep -q 'plugin-only because:' || exit 1
+    enforcement: review
+    severity: warning
+
+  - id: PARITY-004
+    name: "Allowlist documentation — every NAPI-only entry must carry a non-empty reason"
+    description: >
+      packages/mcp-server/.surface-allowlist.json is a JSON array of objects. Each object
+      must have at minimum a tool field (string, the tool name) and a reason field (string,
+      non-empty). An entry with an empty or missing reason field is not a valid carve-out;
+      it is an undocumented exception and must be treated as a contract violation.
+      The allowlist is schema-validated by the same check-surface-parity.mjs script that
+      performs the drift comparison.
+    scope:
+      - "packages/mcp-server/.surface-allowlist.json"
+    check: >
+      node -e "
+        const list = JSON.parse(require('fs').readFileSync(
+          'packages/mcp-server/.surface-allowlist.json', 'utf8'));
+        const bad = list.filter(e => !e.tool || !e.reason || e.reason.trim() === '');
+        if (bad.length) { console.error(bad); process.exit(1); }
+      "
+    enforcement: build-time
+    severity: error
+
+  - id: PARITY-005
+    name: "CFA agent tool declaration honesty — tools: references must resolve at runtime"
+    description: >
+      Every tools: entry in .claude/agents/cfa/*.md frontmatter must refer to a string that
+      resolves at Claude Code runtime: either a built-in tool set name (computer, bash, files,
+      search) or the registered name of an installed plugin as declared in
+      plugins/cfa-core/.claude-plugin/plugin.json. A tools: entry that matches no registered
+      server name is a ghost reference and is forbidden. Ghost references silently remove all
+      plugin tools from the subagent's session without an error — the exact failure mode
+      observed on 2026-05-08.
+    scope:
+      - ".claude/agents/cfa/"
+      - "plugins/cfa-core/.claude-plugin/plugin.json"
+    check: >
+      BUILTINS="computer bash files search"
+      PLUGIN_NAME=$(jq -r '.name' plugins/cfa-core/.claude-plugin/plugin.json)
+      VALID="$BUILTINS $PLUGIN_NAME"
+      grep -h 'tools:' .claude/agents/cfa/*.md | sed 's/tools://' |
+        tr ',' '\n' | tr -d ' "' | sort -u |
+        while read tool; do
+          echo "$VALID" | grep -qw "$tool" || { echo "GHOST: $tool"; exit 1; }
+        done
+    enforcement: review
+    severity: error
+
+invariants:
+  - id: PARITY-INV-001
+    name: "Drift-gating invariant — no unaccounted tool gap between packages and plugin"
+    description: >
+      At any point in time, the set of tool names registered in packages/mcp-server/src/tools/
+      minus the set registered in plugins/cfa-core/mcp/src/server.ts must be a subset of the
+      tool names listed in packages/mcp-server/.surface-allowlist.json. Any tool outside this
+      set is an unacknowledged drift. The allowlist is the single artefact of record for
+      deliberate asymmetries.
+      Asserted by: node packages/mcp-server/scripts/check-surface-parity.mjs exits 0.
+    check: >
+      node packages/mcp-server/scripts/check-surface-parity.mjs exits 0.
+      Non-zero exit prints the diff of unaccounted tools and must block the wave close.
+    severity: error
+
+  - id: PARITY-INV-002
+    name: "Server-name honesty invariant — plugin manifest name matches agent declarations"
+    description: >
+      The name field in plugins/cfa-core/.claude-plugin/plugin.json is the runtime identity
+      of the plugin server. Every CFA agent frontmatter tools: entry referencing this plugin
+      must use exactly this string. Any mismatch means the agent's declared tooling does not
+      exist at runtime, silently stripping all plugin tools from the agent's session.
+      Asserted by: the PARITY-002 grep check finds no agent file referencing a name that
+      differs from the plugin manifest name field.
+    check: >
+      PLUGIN_NAME=$(jq -r '.name' plugins/cfa-core/.claude-plugin/plugin.json)
+      grep -r "tools:" .claude/agents/cfa/ | grep -qv "$PLUGIN_NAME" || exit 0
+      (all agents referencing the plugin use the canonical name)
+    severity: error
+
+  - id: PARITY-INV-003
+    name: "Wave-commit surface coverage invariant — asymmetric tool additions are explicit"
+    description: >
+      The history of the repository must not contain a commit that adds a tool to one surface
+      without either updating the other or documenting the asymmetry. Future audits of the
+      git log must be able to reconstruct which tools were intentionally NAPI-only versus
+      accidentally omitted from the plugin surface. The NAPI-only because: token in the commit
+      body is the machine-readable signal.
+      Asserted by: for all commits in the wave range that touch exactly one surface, the commit
+      body contains NAPI-only because: or plugin-only because:.
+    check: >
+      git log --oneline -- packages/mcp-server/src/tools/ plugins/cfa-core/mcp/src/ |
+        awk '{print $1}' |
+        while read sha; do
+          TOUCHES_PACKAGES=$(git diff-tree --no-commit-id -r --name-only "$sha" |
+            grep -c 'packages/mcp-server/src/tools/' || true)
+          TOUCHES_PLUGIN=$(git diff-tree --no-commit-id -r --name-only "$sha" |
+            grep -c 'plugins/cfa-core/mcp/src/' || true)
+          if [ "$TOUCHES_PACKAGES" -gt 0 ] && [ "$TOUCHES_PLUGIN" -eq 0 ]; then
+            git log -1 --format=%B "$sha" | grep -q 'NAPI-only because:' || {
+              echo "MISSING EXEMPTION TOKEN: $sha"; exit 1; }
+          fi
+        done
+    severity: warning
+
+  - id: PARITY-INV-004
+    name: "Allowlist completeness invariant — every NAPI-only entry is documented"
+    description: >
+      Every entry in packages/mcp-server/.surface-allowlist.json has a non-empty tool
+      and reason field. An entry that names a tool without a reason is not a valid carve-out
+      because it provides no information to future maintainers about whether the tool could
+      eventually be ported to WASM. Undocumented entries accumulate technical debt silently.
+      Asserted by: the JSON schema validation in check-surface-parity.mjs rejects any entry
+      with a missing or empty reason field.
+    check: >
+      node -e "
+        const list = JSON.parse(require('fs').readFileSync(
+          'packages/mcp-server/.surface-allowlist.json', 'utf8'));
+        const bad = list.filter(e => !e.tool || !e.reason || e.reason.trim() === '');
+        if (bad.length) { console.error('INVALID ENTRIES:', bad); process.exit(1); }
+        console.log('OK:', list.length, 'allowlist entries valid');
+      "
+    severity: error
+
+  - id: PARITY-INV-005
+    name: "Ghost-name prohibition invariant — all agent tool declarations resolve at runtime"
+    description: >
+      No CFA agent at .claude/agents/cfa/*.md may declare a tools: entry that does not
+      correspond to a real plugin server name or built-in Claude Code tool set. A ghost name
+      (a string that was valid at one point, then invalidated by a rename or removal, but
+      not updated in agent frontmatter) silently removes all associated tools from the
+      agent's runtime session without an error or warning. This invariant prohibits that
+      class of failure.
+      Asserted by: every tools: token in agent frontmatter is either a built-in identifier
+      or exactly matches the name field in plugins/cfa-core/.claude-plugin/plugin.json.
+    check: >
+      PLUGIN_NAME=$(jq -r '.name' plugins/cfa-core/.claude-plugin/plugin.json)
+      for f in .claude/agents/cfa/*.md; do
+        grep -i 'tools:' "$f" | sed 's/.*tools://' | tr ',' '\n' | tr -d ' "\r' |
+          grep -v '^\s*$' |
+          while read tok; do
+            case "$tok" in
+              computer|bash|files|search|"$PLUGIN_NAME") ;;
+              *) echo "GHOST in $f: $tok"; exit 1 ;;
+            esac
+          done
+      done
+    severity: error

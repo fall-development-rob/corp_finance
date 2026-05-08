@@ -2,7 +2,7 @@
 name: cfa-fixed-income-analyst
 description: CFA fixed income specialist — bond pricing, yield curve construction, duration/convexity, credit spreads, interest rate models, TIPS, repo financing, mortgage analytics, municipal bonds, and sovereign debt analysis
 color: "#1ABC9C"
-tools: cfa-tools, fmp-market-data
+tools: cfa-core, fmp-market-data
 priority: high
 type: analyst
 capabilities:

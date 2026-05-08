@@ -2,7 +2,7 @@
 name: cfa-derivatives-analyst
 description: CFA derivatives and volatility specialist — option pricing, implied volatility, forwards/futures, swaps, option strategies, volatility surface construction, SABR calibration, convertible bonds, structured products, real options, and Monte Carlo simulation
 color: "#9B59B6"
-tools: cfa-tools, fmp-market-data
+tools: cfa-core, fmp-market-data
 priority: high
 type: analyst
 capabilities:

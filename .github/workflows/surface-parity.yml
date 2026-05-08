@@ -1,0 +1,44 @@
+name: Surface Parity
+
+# Detects tool surface drift between packages/mcp-server (NAPI, ~277 tools)
+# and plugins/cfa-core/mcp (WASM, 6 tools).
+#
+# Fails if any packages/mcp-server tool is absent from both the WASM plugin
+# AND the allowlist at packages/mcp-server/.surface-allowlist.json.
+# This enforces the rule: "all skills, MCPs, CLIs, and plugins must be kept
+# up to date" by making silent drift a CI failure.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  surface-parity:
+    name: surface-parity/check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install packages/mcp-server dependencies
+        working-directory: packages/mcp-server
+        run: npm install --no-save
+
+      - name: Run surface parity audit
+        working-directory: packages/mcp-server
+        run: node scripts/check-surface-parity.mjs
