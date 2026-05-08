@@ -4030,3 +4030,25 @@ pub fn write_slide_deck(input_json: String) -> NapiResult<String> {
     .map_err(to_napi_error)?;
     serde_json::to_string(&result).map_err(to_napi_error)
 }
+
+// ---------------------------------------------------------------------------
+// Office — Document & Deck template dispatchers (Phase 29 Wave 9)
+// ---------------------------------------------------------------------------
+
+/// Render a docx template (`ic_memo` | `research_init`) into a WordDocSpec.
+/// The caller pipes the result into `write_word_doc` to produce a .docx.
+#[napi]
+pub fn render_doc_template(input_json: String) -> NapiResult<String> {
+    let workbook = corp_finance_core::office::templates::render_doc_template_from_json(&input_json)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&workbook).map_err(to_napi_error)
+}
+
+/// Render a pptx template (`pitch_deck` | `ic_presentation`) into a SlideDeckSpec.
+/// The caller pipes the result into `write_slide_deck` to produce a .pptx.
+#[napi]
+pub fn render_deck_template(input_json: String) -> NapiResult<String> {
+    let deck = corp_finance_core::office::templates::render_deck_template_from_json(&input_json)
+        .map_err(to_napi_error)?;
+    serde_json::to_string(&deck).map_err(to_napi_error)
+}

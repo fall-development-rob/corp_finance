@@ -789,6 +789,10 @@ fn command_name(cmd: &Commands) -> String {
                     PptxCommands::Write(_) => "office.pptx.write".to_string(),
                 },
                 OfficeCommands::RenderTemplate(_) => "office.render_template".to_string(),
+                OfficeCommands::RenderDocTemplate(_) => "office.render_doc_template".to_string(),
+                OfficeCommands::RenderDeckTemplate(_) => {
+                    "office.render_deck_template".to_string()
+                }
             }
         }
         Commands::Version => "version".to_string(),
@@ -1236,6 +1240,12 @@ fn main() {
                     PptxCommands::Write(a) => commands::office::run_pptx_write(a),
                 },
                 OfficeCommands::RenderTemplate(a) => commands::office::run_render_template(a),
+                OfficeCommands::RenderDocTemplate(a) => {
+                    commands::office::run_render_doc_template(a)
+                }
+                OfficeCommands::RenderDeckTemplate(a) => {
+                    commands::office::run_render_deck_template(a)
+                }
             }
         }
         Commands::Version => {

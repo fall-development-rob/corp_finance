@@ -15,6 +15,18 @@ pub mod lbo;
 #[cfg(all(feature = "office", feature = "three_statement"))]
 pub mod three_statement;
 
+#[cfg(feature = "office")]
+pub mod ic_memo;
+
+#[cfg(feature = "office")]
+pub mod ic_presentation;
+
+#[cfg(feature = "office")]
+pub mod pitch_deck;
+
+#[cfg(feature = "office")]
+pub mod research_init;
+
 // ---------------------------------------------------------------------------
 // JSON-envelope dispatcher (Phase 29 Wave 6, Task B1)
 // ---------------------------------------------------------------------------
@@ -325,5 +337,229 @@ mod tests {
     fn render_three_statement_returns_three_sheets() {
         let wb = render_template_from_json(&three_statement_input_json()).unwrap();
         assert_eq!(wb.sheets.len(), 3);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Doc-template dispatcher (Phase 29 Wave 9, docx deliverables)
+// ---------------------------------------------------------------------------
+
+#[cfg(feature = "office")]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DocTemplateKind {
+    IcMemo,
+    ResearchInit,
+}
+
+#[cfg(feature = "office")]
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct RenderDocTemplateInput {
+    pub kind: DocTemplateKind,
+    pub input_json: String,
+}
+
+#[cfg(feature = "office")]
+pub fn render_doc_template_from_json(
+    input_json: &str,
+) -> crate::CorpFinanceResult<crate::office::WordDocSpec> {
+    let envelope: RenderDocTemplateInput = serde_json::from_str(input_json).map_err(|e| {
+        crate::CorpFinanceError::InvalidInput {
+            field: "input_json".into(),
+            reason: e.to_string(),
+        }
+    })?;
+
+    match envelope.kind {
+        DocTemplateKind::IcMemo => {
+            let input: ic_memo::IcMemoInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(ic_memo::ic_memo_to_doc(&input))
+        }
+        DocTemplateKind::ResearchInit => {
+            let input: research_init::ResearchInitInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(research_init::research_init_to_doc(&input))
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Deck-template dispatcher (Phase 29 Wave 9, pptx deliverables)
+// ---------------------------------------------------------------------------
+
+#[cfg(feature = "office")]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DeckTemplateKind {
+    PitchDeck,
+    IcPresentation,
+}
+
+#[cfg(feature = "office")]
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct RenderDeckTemplateInput {
+    pub kind: DeckTemplateKind,
+    pub input_json: String,
+}
+
+#[cfg(feature = "office")]
+pub fn render_deck_template_from_json(
+    input_json: &str,
+) -> crate::CorpFinanceResult<crate::office::SlideDeckSpec> {
+    let envelope: RenderDeckTemplateInput = serde_json::from_str(input_json).map_err(|e| {
+        crate::CorpFinanceError::InvalidInput {
+            field: "input_json".into(),
+            reason: e.to_string(),
+        }
+    })?;
+
+    match envelope.kind {
+        DeckTemplateKind::PitchDeck => {
+            let input: pitch_deck::PitchDeckInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(pitch_deck::pitch_deck_to_deck(&input))
+        }
+        DeckTemplateKind::IcPresentation => {
+            let input: ic_presentation::IcPresentationInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(ic_presentation::ic_presentation_to_deck(&input))
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Wave 9 dispatcher tests
+// ---------------------------------------------------------------------------
+
+#[cfg(all(test, feature = "office"))]
+mod wave9_tests {
+    use super::*;
+
+    fn ic_memo_envelope() -> String {
+        let payload = serde_json::json!({
+            "deal_name": "Project Atlas",
+            "target_company": "Atlas Industries",
+            "date": "2026-05-08",
+            "recommendation": "APPROVE",
+            "author": "Test Author",
+            "investment_thesis": "Compelling market position.",
+            "key_metrics": [["Revenue", "100M"]],
+            "financial_summary": [["Year", "Revenue"], ["2024", "100M"]],
+            "risks": [],
+            "mitigants": [],
+            "conclusion": "Recommend approval."
+        }).to_string();
+        serde_json::json!({"kind": "ic_memo", "input_json": payload}).to_string()
+    }
+
+    fn research_init_envelope() -> String {
+        let payload = serde_json::json!({
+            "ticker": "AAPL",
+            "company": "Apple Inc.",
+            "date": "2026-05-08",
+            "rating": "BUY",
+            "target_price": "$200.00",
+            "current_price": "$185.00",
+            "upside_pct": "+8.1%",
+            "author": "Test Analyst",
+            "exec_summary": "Initiating with BUY.",
+            "investment_thesis": "Premium franchise.",
+            "business_description": "Consumer electronics.",
+            "financial_highlights": [["Year", "Revenue"], ["FY24", "$400B"]],
+            "valuation_summary": [["DCF", "$210"]],
+            "catalysts": [],
+            "risks": []
+        }).to_string();
+        serde_json::json!({"kind": "research_init", "input_json": payload}).to_string()
+    }
+
+    fn pitch_deck_envelope() -> String {
+        let payload = serde_json::json!({
+            "deal_name": "Project Atlas",
+            "subtitle": "Confidential",
+            "date": "2026-05-08",
+            "agenda": ["Overview", "Financials"],
+            "executive_summary": ["Bullet 1"],
+            "market_overview": ["Bullet 1"],
+            "business_overview": ["Bullet 1"],
+            "financial_highlights": [["Year", "Revenue"], ["2024", "100M"]],
+            "returns_summary": [["MOIC", "3.0x"]],
+            "process_timeline": [["IOI", "2026-06"]],
+            "conclusion": ["Bullet 1"]
+        }).to_string();
+        serde_json::json!({"kind": "pitch_deck", "input_json": payload}).to_string()
+    }
+
+    fn ic_presentation_envelope() -> String {
+        let payload = serde_json::json!({
+            "deal_name": "Project Atlas",
+            "recommendation": "APPROVE",
+            "date": "2026-05-08",
+            "presenter": "Test Presenter",
+            "investment_thesis": ["Bullet 1"],
+            "key_metrics": [["Revenue", "100M"]],
+            "returns_table": [["Scenario", "MOIC"], ["Base", "3.0x"]],
+            "risks": [],
+            "mitigants": [],
+            "timeline": []
+        }).to_string();
+        serde_json::json!({"kind": "ic_presentation", "input_json": payload}).to_string()
+    }
+
+    #[test]
+    fn render_ic_memo_returns_doc_with_sections() {
+        let doc = render_doc_template_from_json(&ic_memo_envelope()).unwrap();
+        assert!(doc.sections.len() >= 5);
+    }
+
+    #[test]
+    fn render_research_init_returns_doc_with_sections() {
+        let doc = render_doc_template_from_json(&research_init_envelope()).unwrap();
+        assert!(doc.sections.len() >= 5);
+    }
+
+    #[test]
+    fn render_pitch_deck_returns_deck_with_slides() {
+        let deck = render_deck_template_from_json(&pitch_deck_envelope()).unwrap();
+        assert!(deck.slides.len() >= 5);
+    }
+
+    #[test]
+    fn render_ic_presentation_returns_deck_with_slides() {
+        let deck = render_deck_template_from_json(&ic_presentation_envelope()).unwrap();
+        assert!(deck.slides.len() >= 5);
+    }
+
+    #[test]
+    fn render_doc_template_invalid_kind_errors() {
+        let bad = r#"{"kind":"not_a_kind","input_json":"{}"}"#;
+        assert!(render_doc_template_from_json(bad).is_err());
+    }
+
+    #[test]
+    fn render_deck_template_invalid_kind_errors() {
+        let bad = r#"{"kind":"not_a_kind","input_json":"{}"}"#;
+        assert!(render_deck_template_from_json(bad).is_err());
     }
 }

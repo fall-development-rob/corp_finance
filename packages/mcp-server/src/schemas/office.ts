@@ -75,6 +75,22 @@ export const RenderTemplateInputSchema = z.object({
   result_json: z.string().min(1),
 });
 
+// --- Doc/Deck template-render schemas (Phase 29 Wave 9) ---
+
+export const DocTemplateKindEnum = z.enum(["ic_memo", "research_init"]);
+
+export const RenderDocTemplateInputSchema = z.object({
+  kind: DocTemplateKindEnum,
+  input_json: z.string().min(1),
+});
+
+export const DeckTemplateKindEnum = z.enum(["pitch_deck", "ic_presentation"]);
+
+export const RenderDeckTemplateInputSchema = z.object({
+  kind: DeckTemplateKindEnum,
+  input_json: z.string().min(1),
+});
+
 const SheetSpecSchema = z.object({
   name: z.string().min(1).max(31),
   headers: z.array(z.string()).default([]),

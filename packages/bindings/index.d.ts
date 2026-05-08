@@ -298,3 +298,13 @@ export declare function writeXlsxWorkbook(inputJson: string): NapiResult
 export declare function renderOfficeTemplate(inputJson: string): NapiResult
 export declare function writeWordDoc(inputJson: string): NapiResult
 export declare function writeSlideDeck(inputJson: string): NapiResult
+/**
+ * Render a docx template (`ic_memo` | `research_init`) into a WordDocSpec.
+ * The caller pipes the result into `write_word_doc` to produce a .docx.
+ */
+export declare function renderDocTemplate(inputJson: string): NapiResult
+/**
+ * Render a pptx template (`pitch_deck` | `ic_presentation`) into a SlideDeckSpec.
+ * The caller pipes the result into `write_slide_deck` to produce a .pptx.
+ */
+export declare function renderDeckTemplate(inputJson: string): NapiResult

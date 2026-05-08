@@ -311,4 +311,8 @@ export const writeWordDoc = b.writeWordDoc;
 // Phase 29 wave 8: office pptx writer.
 export const writeSlideDeck = b.writeSlideDeck;
 
+// Phase 29 wave 9: office doc/deck template dispatchers.
+export const renderDocTemplate = b.renderDocTemplate;
+export const renderDeckTemplate = b.renderDeckTemplate;
+
 export default pkg;

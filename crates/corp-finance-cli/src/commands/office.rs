@@ -38,6 +38,10 @@ mod inner {
         Pptx(PptxArgs),
         /// Render a compute result into a WorkbookSpec (prints JSON to stdout).
         RenderTemplate(RenderTemplateArgs),
+        /// Render a docx deliverable template into a WordDocSpec (Phase 29 Wave 9).
+        RenderDocTemplate(RenderDocTemplateArgs),
+        /// Render a pptx deliverable template into a SlideDeckSpec (Phase 29 Wave 9).
+        RenderDeckTemplate(RenderDeckTemplateArgs),
     }
 
     #[derive(Args)]
@@ -130,6 +134,44 @@ mod inner {
         pub result: String,
     }
 
+    #[derive(clap::ValueEnum, Clone)]
+    pub enum DocTemplateKindArg {
+        #[value(name = "ic-memo")]
+        IcMemo,
+        #[value(name = "research-init")]
+        ResearchInit,
+    }
+
+    #[derive(Args)]
+    pub struct RenderDocTemplateArgs {
+        /// Doc-template kind: ic-memo or research-init.
+        #[arg(long)]
+        pub kind: DocTemplateKindArg,
+
+        /// Path to the deliverable input JSON (e.g. IcMemoInput, ResearchInitInput).
+        #[arg(long)]
+        pub input: String,
+    }
+
+    #[derive(clap::ValueEnum, Clone)]
+    pub enum DeckTemplateKindArg {
+        #[value(name = "pitch-deck")]
+        PitchDeck,
+        #[value(name = "ic-presentation")]
+        IcPresentation,
+    }
+
+    #[derive(Args)]
+    pub struct RenderDeckTemplateArgs {
+        /// Deck-template kind: pitch-deck or ic-presentation.
+        #[arg(long)]
+        pub kind: DeckTemplateKindArg,
+
+        /// Path to the deliverable input JSON (e.g. PitchDeckInput, IcPresentationInput).
+        #[arg(long)]
+        pub input: String,
+    }
+
     pub fn run_xlsx_write(args: XlsxWriteArgs) -> Result<Value, Box<dyn std::error::Error>> {
         let spec_json = std::fs::read_to_string(&args.spec)
             .map_err(|e| format!("failed to read spec file '{}': {}", args.spec, e))?;
@@ -196,10 +238,61 @@ mod inner {
         let value: Value = serde_json::from_str(&json)?;
         Ok(value)
     }
+
+    pub fn run_render_doc_template(
+        args: RenderDocTemplateArgs,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        let payload_json = std::fs::read_to_string(&args.input)
+            .map_err(|e| format!("failed to read input file '{}': {}", args.input, e))?;
+
+        let kind_str = match args.kind {
+            DocTemplateKindArg::IcMemo => "ic_memo",
+            DocTemplateKindArg::ResearchInit => "research_init",
+        };
+
+        let envelope_json = serde_json::json!({
+            "kind": kind_str,
+            "input_json": payload_json,
+        })
+        .to_string();
+
+        let doc =
+            corp_finance_core::office::templates::render_doc_template_from_json(&envelope_json)?;
+
+        let json = serde_json::to_string_pretty(&doc)?;
+        let value: Value = serde_json::from_str(&json)?;
+        Ok(value)
+    }
+
+    pub fn run_render_deck_template(
+        args: RenderDeckTemplateArgs,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        let payload_json = std::fs::read_to_string(&args.input)
+            .map_err(|e| format!("failed to read input file '{}': {}", args.input, e))?;
+
+        let kind_str = match args.kind {
+            DeckTemplateKindArg::PitchDeck => "pitch_deck",
+            DeckTemplateKindArg::IcPresentation => "ic_presentation",
+        };
+
+        let envelope_json = serde_json::json!({
+            "kind": kind_str,
+            "input_json": payload_json,
+        })
+        .to_string();
+
+        let deck =
+            corp_finance_core::office::templates::render_deck_template_from_json(&envelope_json)?;
+
+        let json = serde_json::to_string_pretty(&deck)?;
+        let value: Value = serde_json::from_str(&json)?;
+        Ok(value)
+    }
 }
 
 #[cfg(feature = "office")]
 pub use inner::{
     DocxCommands, OfficeArgs, OfficeCommands, PptxCommands, XlsxCommands,
-    run_docx_write, run_pptx_write, run_render_template, run_xlsx_write,
+    run_docx_write, run_pptx_write, run_render_deck_template, run_render_doc_template,
+    run_render_template, run_xlsx_write,
 };

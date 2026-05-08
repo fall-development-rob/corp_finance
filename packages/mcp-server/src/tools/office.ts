@@ -1,5 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { writeXlsxWorkbook, renderOfficeTemplate, writeWordDoc, writeSlideDeck } from "../bindings.js";
+import {
+  writeXlsxWorkbook,
+  renderOfficeTemplate,
+  writeWordDoc,
+  writeSlideDeck,
+  renderDocTemplate,
+  renderDeckTemplate,
+} from "../bindings.js";
 import {
   WriteXlsxWorkbookInputSchema,
   WriteWorkbookResultSchema,
@@ -8,6 +15,8 @@ import {
   WriteDocResultSchema,
   WriteSlideDeckInputSchema,
   WriteDeckResultSchema,
+  RenderDocTemplateInputSchema,
+  RenderDeckTemplateInputSchema,
 } from "../schemas/office.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
@@ -59,6 +68,32 @@ export function registerOfficeTools(server: McpServer) {
       const resultJson = writeSlideDeck(JSON.stringify(validated));
       const parsed = WriteDeckResultSchema.parse(JSON.parse(String(resultJson)));
       return wrapResponse(JSON.stringify(parsed));
+    }
+  );
+
+  server.tool(
+    "office_render_doc_template",
+    "Convert a deliverable input (IcMemoInput | ResearchInitInput) into a WordDocSpec JSON string. " +
+    "Accepts { kind: 'ic_memo'|'research_init', input_json: '<serialised input struct>' }. " +
+    "Returns the WordDocSpec as JSON — pipe directly into office_docx_write to produce a .docx (composable two-step). Phase 29 Wave 9.",
+    RenderDocTemplateInputSchema.shape,
+    async (params) => {
+      const validated = RenderDocTemplateInputSchema.parse(params);
+      const docJson = renderDocTemplate(JSON.stringify(validated));
+      return wrapResponse(String(docJson));
+    }
+  );
+
+  server.tool(
+    "office_render_deck_template",
+    "Convert a deliverable input (PitchDeckInput | IcPresentationInput) into a SlideDeckSpec JSON string. " +
+    "Accepts { kind: 'pitch_deck'|'ic_presentation', input_json: '<serialised input struct>' }. " +
+    "Returns the SlideDeckSpec as JSON — pipe directly into office_pptx_write to produce a .pptx (composable two-step). Phase 29 Wave 9.",
+    RenderDeckTemplateInputSchema.shape,
+    async (params) => {
+      const validated = RenderDeckTemplateInputSchema.parse(params);
+      const deckJson = renderDeckTemplate(JSON.stringify(validated));
+      return wrapResponse(String(deckJson));
     }
   );
 }
