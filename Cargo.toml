@@ -1,9 +1,10 @@
+# corp-finance-{core,wasm,cli} extracted to /home/robert/corp-finance-core (Phase 29 Wave 18).
+# cfa_agent is the agent integration layer; corp-finance-core is the compute library.
+# packages/bindings depends on corp-finance-core via an absolute path dep pointing to the
+# extracted repo. To use a published crate or git ref instead, update packages/bindings/Cargo.toml.
 [workspace]
 resolver = "2"
 members = [
-    "crates/corp-finance-core",
-    "crates/corp-finance-cli",
-    "crates/corp-finance-wasm",
     "packages/bindings",
 ]
 

@@ -1,0 +1,185 @@
+# Feature Contract: corp-finance-core Repository Split (Phase 29 Wave 18)
+# Enforces architectural invariants for the two-repo boundary between corp-finance-core and cfa_agent
+# ADR: docs/adr/ADR-030-corp-finance-core-repo-split.md
+
+contracts:
+  - id: REPO-001
+    name: "Compute source-of-truth — corp-finance-core owns all decimal-precision financial math"
+    description: >
+      All financial computation that requires decimal precision (rust_decimal::Decimal, no f64
+      except Monte Carlo) must reside in /home/robert/corp-finance-core. cfa_agent must not
+      re-implement or inline compute that belongs in the library. cfa_agent may only call into
+      corp-finance-core via the cargo dependency (path, git, or crates.io). Any financial math
+      function introduced directly in cfa_agent source (packages/, plugins/, or crates/) without
+      a corresponding implementation in corp-finance-core is a contract violation.
+    scope:
+      - "packages/"
+      - "plugins/cfa-core/mcp/src/"
+      - "crates/"
+    check: >
+      grep -rn 'rust_decimal\|Decimal::' packages/ plugins/cfa-core/mcp/src/ |
+        grep -v 'use corp_finance_core\|extern crate corp_finance' |
+        grep -v '\.d\.ts\|node_modules' should return no hits.
+      Any hit indicates a decimal-precision computation defined in the integration layer
+      rather than delegated to corp-finance-core.
+    enforcement: review
+    severity: error
+
+  - id: REPO-002
+    name: "Integration-layer boundary — MCP, plugins, agents, skills stay in cfa_agent"
+    description: >
+      The following artefact classes must NOT appear in /home/robert/corp-finance-core:
+      MCP server registrations (server.tool() calls), Claude plugin manifests
+      (.claude-plugin/plugin.json), agent persona definitions (.claude/agents/),
+      skill YAML files (.claude/skills/), slash command definitions (.claude/commands/),
+      hooks configuration, audit middleware, schema-gen pipeline outputs (Zod schemas),
+      and office writer integrations. These are integration concerns; their presence in
+      the compute library would couple library versioning to agent release cadence.
+    scope:
+      - "/home/robert/corp-finance-core/"
+    check: >
+      find /home/robert/corp-finance-core -name 'plugin.json' -o -name '*.skill.yml' \
+        -o -name 'server.tool*' -o -name '*.hooks.json' 2>/dev/null should return no hits.
+      Any hit indicates integration-layer artefacts leaking into the compute library.
+    enforcement: review
+    severity: error
+
+  - id: REPO-003
+    name: "Surface-parity scope — PARITY-INV-001..005 apply to cfa_agent paths only"
+    description: >
+      The surface-parity check (node packages/mcp-server/scripts/check-surface-parity.mjs)
+      compares packages/mcp-server/src/tools/ against plugins/cfa-core/mcp/src/server.ts.
+      Both paths are inside cfa_agent. corp-finance-core is not a party to this comparison.
+      Running check-surface-parity.mjs against corp-finance-core paths, or treating a
+      corp-finance-core CI failure as a cfa_agent surface-parity failure, is a misapplication
+      of the gate. The two CI pipelines are independent.
+    scope:
+      - "packages/mcp-server/scripts/check-surface-parity.mjs"
+      - "packages/mcp-server/.surface-allowlist.json"
+    check: >
+      The check-surface-parity.mjs script must not reference /home/robert/corp-finance-core
+      paths or invoke cargo in that repo. Its scope is limited to cfa_agent workspace paths.
+      grep '/home/robert/corp-finance-core' packages/mcp-server/scripts/check-surface-parity.mjs
+      should return no hits.
+    enforcement: ci
+    severity: warning
+
+  - id: REPO-004
+    name: "Schema-gen cross-repo delegation — npm scripts invoke cargo in corp-finance-core"
+    description: >
+      The schema-gen npm script in packages/mcp-server must invoke cargo test (or cargo run)
+      against the corp-finance-core repo, not a local crates/ path. The invocation must
+      reference the new repo root (path dep: /home/robert/corp-finance-core, or git URL once
+      the remote is wired). Schema-gen must not run against stale or local reimplementations.
+      The resulting JSON Schema files are written into cfa_agent; the cargo invocation
+      is the only step that crosses the boundary.
+    scope:
+      - "packages/mcp-server/package.json"
+      - "packages/mcp-server/scripts/"
+    check: >
+      The schema-gen script entry in packages/mcp-server/package.json must reference
+      corp-finance-core (via --manifest-path, a cd, or CARGO_MANIFEST_DIR) when invoking
+      cargo. grep -n 'corp.finance.core\|/home/robert/corp-finance-core' \
+        packages/mcp-server/package.json should return at least one hit on the schema-gen
+      script line once migration is complete.
+    enforcement: review
+    severity: warning
+
+  - id: REPO-005
+    name: "WASM artefact provenance — wasm binary built in corp-finance-core, copied to cfa_agent"
+    description: >
+      The WASM binary at plugins/cfa-core/mcp/wasm/corp_finance_wasm_bg.wasm must be built
+      by scripts/build-wasm.sh in corp-finance-core. The build-wasm script in cfa_agent at
+      plugins/cfa-core/scripts/build-wasm.sh must delegate to the new repo and copy the
+      resulting binary; it must not invoke wasm-pack or cargo build --target wasm32 against
+      cfa_agent source. A wasm binary in cfa_agent that was not produced by corp-finance-core
+      build infrastructure is an unsourced artefact and violates this contract.
+    scope:
+      - "plugins/cfa-core/scripts/build-wasm.sh"
+      - "plugins/cfa-core/mcp/wasm/"
+    check: >
+      grep -n 'corp.finance.core\|/home/robert/corp-finance-core' \
+        plugins/cfa-core/scripts/build-wasm.sh should return at least one hit showing
+      delegation to the new repo.
+      grep -n 'wasm-pack\|cargo build.*wasm32' plugins/cfa-core/scripts/build-wasm.sh |
+        grep -v 'corp.finance.core\|/home/robert/corp-finance-core' should return no hits
+      (no independent wasm build in cfa_agent).
+    enforcement: ci
+    severity: error
+
+invariants:
+  - id: REPO-INV-001
+    name: "Compute source-of-truth invariant — corp-finance-core is the sole financial math library"
+    description: >
+      All decimal-precision financial math lives in /home/robert/corp-finance-core.
+      cfa_agent references it via cargo dependency only (path or git or crates.io).
+      cfa_agent never re-implements compute. Any financial calculation using
+      rust_decimal::Decimal that is introduced directly in cfa_agent source without
+      delegating to corp-finance-core is an invariant violation.
+      Asserted by: grep for rust_decimal or Decimal:: in packages/ and plugins/cfa-core/mcp/src/
+      returns no hits outside of import/use statements that reference corp_finance_core.
+    check: >
+      grep -rn 'rust_decimal\|Decimal::' packages/ plugins/cfa-core/mcp/src/ |
+        grep -v 'use corp_finance_core\|extern crate\|node_modules\|\.d\.ts' returns no hits.
+    severity: error
+
+  - id: REPO-INV-002
+    name: "Integration-layer boundary invariant — cfa_agent integration artefacts do not migrate to corp-finance-core"
+    description: >
+      cfa_agent owns: MCP server registrations, plugin manifest, agent persona definitions,
+      skills, slash commands, hooks, audit middleware, schema-gen pipeline outputs, and office
+      writer integrations. None of these belong in corp-finance-core. The compute library must
+      remain dependency-free of Claude Code, MCP SDK, and agent orchestration concerns.
+      Asserted by: find in /home/robert/corp-finance-core for plugin.json, *.skill.yml,
+      hooks.json, or server.tool patterns returns no hits.
+    check: >
+      find /home/robert/corp-finance-core -name 'plugin.json' -o -name '*.skill.yml' \
+        -o -name '*.hooks.json' 2>/dev/null returns no results.
+    severity: error
+
+  - id: REPO-INV-003
+    name: "Surface-parity scope invariant — PARITY gate is cfa_agent-internal"
+    description: >
+      The Wave-15 surface-parity audit (PARITY-INV-001..005) operates on cfa_agent paths only
+      (packages/mcp-server/src/tools/ vs plugins/cfa-core/mcp/src/server.ts).
+      corp-finance-core has its own CI gates (feature matrix, wasm bundle size) but is NOT
+      subject to the cfa_agent surface-parity check. The plugin-vs-packages comparison is
+      purely an integration concern and must not be applied to the compute library.
+      Asserted by: check-surface-parity.mjs contains no references to corp-finance-core paths.
+    check: >
+      grep '/home/robert/corp-finance-core' \
+        packages/mcp-server/scripts/check-surface-parity.mjs returns no hits.
+    severity: warning
+
+  - id: REPO-INV-004
+    name: "Schema-gen cross-repo invariant — pipeline crosses boundary via explicit cargo invocation"
+    description: >
+      The Wave-11+ Rust-to-TypeScript schema auto-gen pipeline runs cargo test in
+      corp-finance-core to emit JSON Schema files, then converts to Zod and writes into
+      cfa_agent. The pipeline is documented as crossing repo boundaries. npm scripts in
+      cfa_agent/packages/mcp-server invoke cargo against the new repo path. No schema file
+      in cfa_agent may be hand-maintained or generated from cfa_agent's own Rust source.
+      Asserted by: the schema-gen npm script references corp-finance-core in its cargo
+      invocation (--manifest-path or explicit cd).
+    check: >
+      grep -n 'corp.finance.core\|/home/robert/corp-finance-core' \
+        packages/mcp-server/package.json returns at least one hit on the schema-gen line.
+    severity: warning
+
+  - id: REPO-INV-005
+    name: "WASM artefact flow invariant — wasm binary is built in corp-finance-core and copied into cfa_agent"
+    description: >
+      The cfa-core plugin's WASM binary (plugins/cfa-core/mcp/wasm/corp_finance_wasm_bg.wasm)
+      is built in corp-finance-core (scripts/build-wasm.sh) and copied into cfa_agent.
+      cfa_agent does NOT re-build WASM independently; the WASM is treated as a versioned
+      artefact crossing the boundary. The cfa_agent build-wasm script delegates to the new
+      repo and copies the result. An independently built WASM in cfa_agent is a provenance
+      violation.
+      Asserted by: plugins/cfa-core/scripts/build-wasm.sh references corp-finance-core and
+      contains no independent wasm-pack or wasm32 cargo build invocation.
+    check: >
+      grep -c 'corp.finance.core\|/home/robert/corp-finance-core' \
+        plugins/cfa-core/scripts/build-wasm.sh returns >= 1.
+      grep 'wasm-pack\|cargo build.*wasm32' plugins/cfa-core/scripts/build-wasm.sh |
+        grep -v 'corp.finance.core' returns no hits.
+    severity: error
