@@ -24,6 +24,7 @@ pub use crate::surface::Surface;
 /// Shared kernel with the multi-agent coordination context (Phase 27); the
 /// `EntityRef` value object also lives there once that context lands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum EntityKind {
     Ticker,
@@ -35,6 +36,7 @@ pub enum EntityKind {
 
 /// A single named entity associated with a `RunSummary`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct EntityRef {
     pub kind: EntityKind,
     pub value: String,
@@ -46,6 +48,7 @@ pub struct EntityRef {
 /// subcommand, MCP tool handler, plugin hook fire, and skill execution
 /// that produces an output emits exactly one `RunSummary`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct RunSummary {
     /// Unique invocation id (UUID v7 — sorts lexicographically by time).
     pub run_id: Uuid,
@@ -101,6 +104,7 @@ impl RunSummary {
 /// `session_id`. Backed on disk by the `.cfa-session` portable archive
 /// format (gzip-compressed JSON).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CfaSession {
     pub session_id: Uuid,
     pub surface: Surface,
@@ -134,6 +138,7 @@ impl CfaSession {
 /// At least one of `embedding` or `text` must be supplied; both are used
 /// when both are present (the retriever fuses the two candidate lists).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct MemoryQuery {
     /// Vector query, used by the HNSW index.
     #[serde(default, skip_serializing_if = "Option::is_none")]

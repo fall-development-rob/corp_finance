@@ -40,6 +40,7 @@ pub use crate::surface::Surface;
 /// (keys sorted, no insignificant whitespace) before hashing — see
 /// [`compute_surface_audit_hash`] for the canonicalisation step.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct SurfaceManifest {
     /// Which of the four CFA surfaces produced this event.
     pub surface: Surface,

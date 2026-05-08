@@ -19,7 +19,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "schemas:gen:office": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,office --test export_office_schemas && cd packages/mcp-server && node scripts/gen-office-schemas.mjs",
-    "schemas:gen:attest": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,federation --test export_attest_schemas && cd packages/mcp-server && node scripts/gen-attest-schemas.mjs"
+    "schemas:gen:attest": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,federation --test export_attest_schemas && cd packages/mcp-server && node scripts/gen-attest-schemas.mjs",
+    "schemas:gen:memory": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,memory --test export_memory_schemas && cd packages/mcp-server && node scripts/gen-memory-schemas.mjs",
+    "schemas:gen:audit": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,audit --test export_audit_schemas && cd packages/mcp-server && node scripts/gen-audit-schemas.mjs",
+    "schemas:gen:cost": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,cost --test export_cost_schemas && cd packages/mcp-server && node scripts/gen-cost-schemas.mjs",
+    "schemas:gen:observability": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,observability --test export_observability_schemas && cd packages/mcp-server && node scripts/gen-observability-schemas.mjs",
+    "schemas:gen:all": "npm run schemas:gen:office && npm run schemas:gen:attest && npm run schemas:gen:memory && npm run schemas:gen:audit && npm run schemas:gen:cost && npm run schemas:gen:observability"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

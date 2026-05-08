@@ -1,5 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { surfaceAuditCompute } from "../bindings.js";
+// SurfaceAuditComputeSchema: hand-maintained MCP input envelope (manifest wrapper).
+// Migration note (Wave 13): SurfaceManifestSchema, AuditManifestSchema, and
+// SurfaceSchema from generated/audit are available in
+// src/schemas/generated/audit/index.js but are NOT imported here due to gap 1:
+// the post-processor mis-rewrites the Surface string-enum as
+// z.discriminatedUnion("kind", [z.literal(...)]) which is invalid zod and
+// causes TS2740. That gap is pre-existing across memory/observability/audit
+// domains and is tracked for resolution in a future wave.
+// All three schemas with Rust counterparts are accessible via the generated
+// index for external consumers; this handler keeps the hand-maintained schema.
 import { SurfaceAuditComputeSchema } from "../schemas/audit.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 

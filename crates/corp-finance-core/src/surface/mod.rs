@@ -22,6 +22,7 @@ use serde::{Deserialize, Serialize};
 /// to match the rest of the Phase-26 enum vocabulary (see `cost::TierTag`,
 /// `cost::BudgetPeriod`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Surface {
     /// `cfa <subcommand>` — CLI invocation, dispatched from

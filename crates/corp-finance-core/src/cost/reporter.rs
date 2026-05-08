@@ -13,6 +13,7 @@ use super::ledger::{map_err, CostFilter, CostLedger};
 
 /// What dimension to bucket the summary on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum GroupBy {
     /// One row per `Surface` (cli / mcp / skill / plugin).
@@ -27,6 +28,7 @@ pub enum GroupBy {
 
 /// Per-bucket aggregate.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CostSummaryRow {
     /// String key of the bucket (e.g. `"cli"`, `"mcp_paid_vendor"`,
     /// `"cli|mcp_freemium"`, `"default"`).
@@ -43,6 +45,7 @@ pub struct CostSummaryRow {
 
 /// Top-level summary returned to `cfa cost summary`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CostSummary {
     pub total_cents: i64,
     pub total_tokens_in: u64,

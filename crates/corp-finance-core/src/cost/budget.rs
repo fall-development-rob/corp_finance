@@ -29,6 +29,7 @@ pub struct BudgetFilter {
 
 /// Result of `check_threshold()`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum BudgetStatus {
     /// Within both warn and hard limits.

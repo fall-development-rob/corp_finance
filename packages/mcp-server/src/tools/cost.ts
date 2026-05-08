@@ -9,6 +9,13 @@ import {
   SurfaceCostBudgetSetSchema,
   SurfaceCostBudgetGetSchema,
 } from "../schemas/cost.js";
+// Generated schemas for cost domain response types (Phase 29 Wave 13).
+// Tool input schemas remain in schemas/cost.js because CostFilter / BudgetFilter
+// are not exported Rust types — they are inlined directly into the MCP tool shapes.
+import {
+  BudgetStatusSchema,
+  CostSummarySchema,
+} from "../schemas/generated/cost/index.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
 export function registerCostTools(server: McpServer) {

@@ -5,6 +5,20 @@ import {
   surfaceSessionSave,
   surfaceSessionRestore,
 } from "../bindings.js";
+// Schemas with a Rust counterpart: imported from the auto-gen pipeline (Wave 13).
+// RunSummarySchema, CfaSessionSchema, MemoryQuerySchema, SurfaceSchema,
+// EntityKindSchema, EntityRefSchema are all sourced from generated/memory/index.js.
+// These replace any ad-hoc inline Rust-shape validators that might have appeared here.
+export {
+  RunSummarySchema,
+  CfaSessionSchema,
+  MemoryQuerySchema,
+  SurfaceSchema,
+  EntityKindSchema,
+  EntityRefSchema,
+} from "../schemas/generated/memory/index.js";
+// Inline-defined input/output schemas (no public Rust struct): remain in the
+// hand-maintained schemas/memory.ts. These four cover MCP tool boundaries only.
 import {
   SurfaceMemoryIngestSchema,
   SurfaceMemoryFindSchema,

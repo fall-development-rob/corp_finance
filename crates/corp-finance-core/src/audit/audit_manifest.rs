@@ -39,6 +39,7 @@ use crate::CorpFinanceResult;
 /// a `step` field directly — order in the `Vec<ToolCallRecord>` is the
 /// step ordering. Validators check ascending order at the manifest level.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct ToolCallRecord {
     /// Registered MCP tool name (e.g. `dcf_model`, `fmp_quote`).
     pub tool_name: String,
@@ -61,6 +62,7 @@ pub struct ToolCallRecord {
 /// (`tool_calls`, `tenant_id`) carry additional provenance that consumers
 /// may rely on but the basic schema validator treats as opt-in.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct AuditManifest {
     /// `djb2:0x<8 hex>` surface event hash, per `surface_audit::compute_surface_audit_hash`.
     pub surface_audit_hash: String,

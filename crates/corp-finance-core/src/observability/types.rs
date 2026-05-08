@@ -27,6 +27,7 @@ pub use crate::surface::Surface;
 /// observability callers and downstream surfaces (cost ledger, audit
 /// manifest, memory) can read without taking a tracing dependency.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct SpanContext {
     /// Originating surface of the event.
     pub surface: Surface,

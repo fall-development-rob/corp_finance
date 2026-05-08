@@ -36,6 +36,7 @@ pub use crate::surface::Surface;
 /// Per RUF-COST-002 / RUF-COST-INV-002, this enum is **derived** from those
 /// two source-of-truth tier enums; no parallel tiering logic lives here.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum TierTag {
     /// Cookbook published as `CookbookTier::CoreOnly`.
@@ -123,6 +124,7 @@ impl From<McpServerTier> for TierTag {
 /// A single ledger row.  Emitted by the CLI tracing wrapper at subcommand
 /// completion or by the MCP server wrapper at tool-handler completion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CostEvent {
     /// Stable identity for this event.
     pub event_id: Uuid,
@@ -155,6 +157,7 @@ pub struct CostEvent {
 
 /// The period a budget covers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum BudgetPeriod {
     Daily,
@@ -188,6 +191,7 @@ impl BudgetPeriod {
 /// Budget definition.  Keys on `(surface_filter, tier_filter, period)`
 /// inside the ledger.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CostBudget {
     /// Optional surface filter; `None` covers all surfaces.
     #[serde(default, skip_serializing_if = "Option::is_none")]
