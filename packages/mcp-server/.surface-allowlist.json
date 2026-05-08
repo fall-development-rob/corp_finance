@@ -3,29 +3,19 @@
   "description": "Tools intentionally registered in packages/mcp-server but NOT in plugins/cfa-core. Each entry declares why the plugin omits the tool \u2014 typically because the tool's Rust implementation depends on native crates that don't compile to wasm32-unknown-unknown (rusqlite, ed25519-dalek with random sources, filesystem-bound APIs, etc.).",
   "napi_only": [
     {
-      "tool": "abs_cashflow_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "securitization"
-    },
-    {
       "tool": "agent_invoke_complete",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: dispatches subagents via Anthropic Agent tool runtime",
       "owning_module": "agent_invoke"
     },
     {
       "tool": "agent_invoke_record",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: dispatches subagents via Anthropic Agent tool runtime",
       "owning_module": "agent_invoke"
     },
     {
       "tool": "agent_trace_get",
       "reason": "multi_agent feature: reads execution trace from audit chain (sha2 + uuid); see chief_plan_emit",
       "owning_module": "multi_agent"
-    },
-    {
-      "tool": "aifmd_reporting",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "regulatory_reporting"
     },
     {
       "tool": "attest_check",
@@ -53,31 +43,6 @@
       "owning_module": "federation"
     },
     {
-      "tool": "beps_compliance",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "transfer_pricing"
-    },
-    {
-      "tool": "best_execution",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "compliance"
-    },
-    {
-      "tool": "black_litterman_portfolio",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "portfolio_optimization"
-    },
-    {
-      "tool": "cash_management",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "treasury"
-    },
-    {
-      "tool": "cds_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "credit_derivatives"
-    },
-    {
       "tool": "chief_pattern_detect",
       "reason": "multi_agent feature: pathfinding over petgraph agent graph; see chief_plan_emit",
       "owning_module": "multi_agent"
@@ -91,136 +56,6 @@
       "tool": "chief_plan_replan",
       "reason": "multi_agent feature: petgraph graph mutation; see chief_plan_emit",
       "owning_module": "multi_agent"
-    },
-    {
-      "tool": "collateral_analytics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "repo_financing"
-    },
-    {
-      "tool": "concession_valuation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "infrastructure"
-    },
-    {
-      "tool": "convertible_bond_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "convertibles"
-    },
-    {
-      "tool": "convertible_bond_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "convertibles"
-    },
-    {
-      "tool": "country_risk_assessment",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "sovereign"
-    },
-    {
-      "tool": "credit_migration",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "credit_portfolio"
-    },
-    {
-      "tool": "cva_calculation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "credit_derivatives"
-    },
-    {
-      "tool": "decision_tree_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "real_options"
-    },
-    {
-      "tool": "defi_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "crypto"
-    },
-    {
-      "tool": "distressed_debt_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "restructuring"
-    },
-    {
-      "tool": "economic_substance",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "substance_requirements"
-    },
-    {
-      "tool": "entity_classification",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "fatca_crs"
-    },
-    {
-      "tool": "estate_planning",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "wealth"
-    },
-    {
-      "tool": "exotic_product_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "structured_products"
-    },
-    {
-      "tool": "factor_risk_budget",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "risk_budgeting"
-    },
-    {
-      "tool": "fatca_crs_reporting",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "fatca_crs"
-    },
-    {
-      "tool": "gips_report",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "compliance"
-    },
-    {
-      "tool": "hedge_effectiveness",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "treasury"
-    },
-    {
-      "tool": "implied_vol_surface",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "volatility_surface"
-    },
-    {
-      "tool": "inflation_derivatives",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "inflation_linked"
-    },
-    {
-      "tool": "intercompany_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "transfer_pricing"
-    },
-    {
-      "tool": "international_economics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "macro_economics"
-    },
-    {
-      "tool": "jurisdiction_substance_test",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "substance_requirements"
-    },
-    {
-      "tool": "kelly_sizing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "portfolio"
-    },
-    {
-      "tool": "kyc_risk_assessment",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "aml_compliance"
-    },
-    {
-      "tool": "ldi_strategy",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "pension"
     },
     {
       "tool": "learn_drift_detect",
@@ -253,59 +88,39 @@
       "owning_module": "self_learning"
     },
     {
-      "tool": "lease_classification",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "lease_accounting"
-    },
-    {
-      "tool": "letter_of_credit",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "trade_finance"
-    },
-    {
       "tool": "managed_agent_check_all",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
       "tool": "managed_agent_deploy",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
       "tool": "managed_agent_list",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
       "tool": "managed_agent_orchestrate",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
       "tool": "managed_agent_sync",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
       "tool": "managed_agent_validate",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: cookbook deployment + Anthropic Managed Agents API integration",
       "owning_module": "managed_agent"
     },
     {
-      "tool": "mbs_analytics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "mortgage_analytics"
-    },
-    {
       "tool": "mcp_server_list",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: MCP server registry / process management",
       "owning_module": "mcp_servers"
-    },
-    {
-      "tool": "mean_variance_optimization",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "portfolio_optimization"
     },
     {
       "tool": "merger_model",
@@ -313,29 +128,14 @@
       "owning_module": "ma"
     },
     {
-      "tool": "monetary_policy",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "macro_economics"
-    },
-    {
       "tool": "monte_carlo_dcf",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "wasm_blocker: rand\u2192getrandom path uses StdRng::from_entropy() \u2014 needs js-feature-aware seeding (Wave 16\u03b1 deferred)",
       "owning_module": "monte_carlo"
     },
     {
       "tool": "monte_carlo_simulation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "wasm_blocker: rand\u2192getrandom path uses StdRng::from_entropy() \u2014 needs js-feature-aware seeding (Wave 16\u03b1 deferred)",
       "owning_module": "monte_carlo"
-    },
-    {
-      "tool": "muni_bond_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "municipal"
-    },
-    {
-      "tool": "municipal_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "municipal"
     },
     {
       "tool": "office_docx_write",
@@ -368,129 +168,14 @@
       "owning_module": "office"
     },
     {
-      "tool": "optimal_execution",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "market_microstructure"
-    },
-    {
-      "tool": "pension_funding",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "pension"
-    },
-    {
       "tool": "pii_redact_apply",
       "reason": "security feature: depends on the `regex` crate compiled through the federation dep chain; security module is wasm-compatible but only exposed via the NAPI server",
       "owning_module": "federation"
     },
     {
-      "tool": "portfolio_credit_risk",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "credit_portfolio"
-    },
-    {
-      "tool": "ppp_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "infrastructure"
-    },
-    {
-      "tool": "prepayment_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "mortgage_analytics"
-    },
-    {
-      "tool": "project_finance_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "real_assets"
-    },
-    {
-      "tool": "property_valuation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "real_assets"
-    },
-    {
-      "tool": "real_option_valuation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "real_options"
-    },
-    {
-      "tool": "recovery_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "restructuring"
-    },
-    {
-      "tool": "repo_analytics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "repo_financing"
-    },
-    {
-      "tool": "retirement_planning",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "wealth"
-    },
-    {
-      "tool": "risk_adjusted_returns",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "portfolio"
-    },
-    {
-      "tool": "risk_metrics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "portfolio"
-    },
-    {
-      "tool": "sabr_calibration",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "volatility_surface"
-    },
-    {
-      "tool": "sale_leaseback_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "lease_accounting"
-    },
-    {
-      "tool": "sanctions_screening",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "aml_compliance"
-    },
-    {
       "tool": "scenario_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "wasm_blocker: 3-arg signature (data + scenarios + base_case) \u2014 doesn't fit wasm_tool! single-input macro",
       "owning_module": "scenarios"
-    },
-    {
-      "tool": "sec_cftc_reporting",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "regulatory_reporting"
-    },
-    {
-      "tool": "sensitivity_matrix",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "scenarios"
-    },
-    {
-      "tool": "short_rate_model",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "interest_rate_models"
-    },
-    {
-      "tool": "sovereign_bond_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "sovereign"
-    },
-    {
-      "tool": "spread_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "market_microstructure"
-    },
-    {
-      "tool": "structured_note_pricing",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "structured_products"
-    },
-    {
-      "tool": "supply_chain_finance",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "trade_finance"
     },
     {
       "tool": "surface_audit_compute",
@@ -514,7 +199,7 @@
     },
     {
       "tool": "surface_injection_detect",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: PII scan + injection detection on filesystem-bound surfaces",
       "owning_module": "security"
     },
     {
@@ -529,7 +214,7 @@
     },
     {
       "tool": "surface_pii_scan",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: PII scan + injection detection on filesystem-bound surfaces",
       "owning_module": "security"
     },
     {
@@ -541,16 +226,6 @@
       "tool": "surface_session_save",
       "reason": "memory feature: filesystem-backed session persistence via flate2 + sha2; see surface_memory_ingest",
       "owning_module": "memory"
-    },
-    {
-      "tool": "tail_risk_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "risk_budgeting"
-    },
-    {
-      "tool": "tax_loss_harvesting",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "wealth"
     },
     {
       "tool": "tenant_provision",
@@ -568,39 +243,9 @@
       "owning_module": "federation"
     },
     {
-      "tool": "term_structure_fit",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "interest_rate_models"
-    },
-    {
       "tool": "three_statement_model",
       "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
       "owning_module": "three_statement"
-    },
-    {
-      "tool": "tips_analytics",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "inflation_linked"
-    },
-    {
-      "tool": "token_valuation",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "crypto"
-    },
-    {
-      "tool": "tranching_analysis",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "securitization"
-    },
-    {
-      "tool": "treaty_network",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "tax_treaty"
-    },
-    {
-      "tool": "treaty_structure_optimization",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "tax_treaty"
     },
     {
       "tool": "trust_score_compute",
@@ -608,38 +253,28 @@
       "owning_module": "federation"
     },
     {
-      "tool": "uk_eu_fund_structure",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "onshore_structures"
-    },
-    {
-      "tool": "us_fund_structure",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
-      "owning_module": "onshore_structures"
-    },
-    {
       "tool": "workflow_audit",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
     },
     {
       "tool": "workflow_describe",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
     },
     {
       "tool": "workflow_list",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
     },
     {
       "tool": "workflow_quality_check",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
     },
     {
       "tool": "workflow_validate",
-      "reason": "Wave 15 backlog \u2014 pure-math tool drifted from packages; port to plugin/WASM in Wave 16",
+      "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
     }
   ]

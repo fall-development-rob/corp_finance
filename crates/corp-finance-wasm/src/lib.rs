@@ -455,6 +455,135 @@ wasm_tool!(unitranche_pricing, corp_finance_core::private_credit::unitranche::Un
 wasm_tool!(direct_loan, corp_finance_core::private_credit::direct_lending::DirectLoanInput, corp_finance_core::private_credit::direct_lending::model_direct_loan);
 wasm_tool!(syndication_analysis, corp_finance_core::private_credit::direct_lending::SyndicationInput, corp_finance_core::private_credit::direct_lending::analyze_syndication);
 
+// ---------------------------------------------------------------------------
+// Wave 16α — wealth + portfolio + portfolio_optimization (8 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(retirement_planning, corp_finance_core::wealth::retirement::RetirementInput, corp_finance_core::wealth::retirement::plan_retirement);
+wasm_tool!(tax_loss_harvesting, corp_finance_core::wealth::tax_estate::TlhInput, corp_finance_core::wealth::tax_estate::simulate_tax_loss_harvesting);
+wasm_tool!(estate_planning, corp_finance_core::wealth::tax_estate::EstatePlanInput, corp_finance_core::wealth::tax_estate::plan_estate);
+wasm_tool!(risk_adjusted_returns, corp_finance_core::portfolio::returns::RiskAdjustedInput, corp_finance_core::portfolio::returns::calculate_risk_adjusted_returns);
+wasm_tool!(risk_metrics, corp_finance_core::portfolio::risk::RiskMetricsInput, corp_finance_core::portfolio::risk::calculate_risk_metrics);
+wasm_tool!(kelly_sizing, corp_finance_core::portfolio::sizing::KellyInput, corp_finance_core::portfolio::sizing::calculate_kelly);
+wasm_tool!(mean_variance_optimization, corp_finance_core::portfolio_optimization::mean_variance::MeanVarianceInput, corp_finance_core::portfolio_optimization::mean_variance::optimize_mean_variance);
+wasm_tool!(black_litterman_portfolio, corp_finance_core::portfolio_optimization::black_litterman_portfolio::BlackLittermanInput, corp_finance_core::portfolio_optimization::black_litterman_portfolio::optimize_black_litterman);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — macro_economics + scenarios (4 tools; monte_carlo blocked on getrandom-js)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(monetary_policy, corp_finance_core::macro_economics::monetary_policy::MonetaryPolicyInput, corp_finance_core::macro_economics::monetary_policy::analyze_monetary_policy);
+wasm_tool!(international_economics, corp_finance_core::macro_economics::international::InternationalInput, corp_finance_core::macro_economics::international::analyze_international);
+wasm_tool!(sensitivity_matrix, corp_finance_core::scenarios::sensitivity::SensitivityInput, corp_finance_core::scenarios::sensitivity::build_sensitivity_grid);
+// scenario_analysis takes 3 args (not single-input) — incompatible with wasm_tool! macro shape; stays NAPI-only.
+
+// ---------------------------------------------------------------------------
+// Wave 16α — volatility_surface + interest_rate_models + mortgage_analytics (6 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(implied_vol_surface, corp_finance_core::volatility_surface::implied_vol_surface::ImpliedVolSurfaceInput, corp_finance_core::volatility_surface::implied_vol_surface::build_implied_vol_surface);
+wasm_tool!(sabr_calibration, corp_finance_core::volatility_surface::sabr_model::SabrCalibrationInput, corp_finance_core::volatility_surface::sabr_model::calibrate_sabr);
+wasm_tool!(short_rate_model, corp_finance_core::interest_rate_models::short_rate::ShortRateInput, corp_finance_core::interest_rate_models::short_rate::analyze_short_rate);
+wasm_tool!(term_structure_fit, corp_finance_core::interest_rate_models::term_structure::TermStructureInput, corp_finance_core::interest_rate_models::term_structure::fit_term_structure);
+wasm_tool!(prepayment_analysis, corp_finance_core::mortgage_analytics::prepayment::PrepaymentInput, corp_finance_core::mortgage_analytics::prepayment::analyze_prepayment);
+wasm_tool!(mbs_analytics, corp_finance_core::mortgage_analytics::mbs_analytics::MbsAnalyticsInput, corp_finance_core::mortgage_analytics::mbs_analytics::analyze_mbs);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — inflation_linked + repo_financing + risk_budgeting (6 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(tips_analytics, corp_finance_core::inflation_linked::tips_pricing::TipsAnalyticsInput, corp_finance_core::inflation_linked::tips_pricing::analyze_tips);
+wasm_tool!(inflation_derivatives, corp_finance_core::inflation_linked::inflation_derivatives::InflationDerivativeInput, corp_finance_core::inflation_linked::inflation_derivatives::analyze_inflation_derivatives);
+wasm_tool!(repo_analytics, corp_finance_core::repo_financing::repo_rates::RepoAnalyticsInput, corp_finance_core::repo_financing::repo_rates::analyze_repo);
+wasm_tool!(collateral_analytics, corp_finance_core::repo_financing::collateral_management::CollateralInput, corp_finance_core::repo_financing::collateral_management::analyze_collateral);
+wasm_tool!(factor_risk_budget, corp_finance_core::risk_budgeting::factor_risk_budget::FactorRiskBudgetInput, corp_finance_core::risk_budgeting::factor_risk_budget::analyze_factor_risk_budget);
+wasm_tool!(tail_risk_analysis, corp_finance_core::risk_budgeting::tail_risk::TailRiskInput, corp_finance_core::risk_budgeting::tail_risk::analyze_tail_risk);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — convertibles + credit_derivatives + credit_portfolio (6 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(convertible_bond_pricing, corp_finance_core::convertibles::pricing::ConvertibleBondInput, corp_finance_core::convertibles::pricing::price_convertible);
+wasm_tool!(convertible_bond_analysis, corp_finance_core::convertibles::analysis::ConvertibleAnalysisInput, corp_finance_core::convertibles::analysis::analyze_convertible);
+wasm_tool!(cds_pricing, corp_finance_core::credit_derivatives::cds::CdsInput, corp_finance_core::credit_derivatives::cds::price_cds);
+wasm_tool!(cva_calculation, corp_finance_core::credit_derivatives::cva::CvaInput, corp_finance_core::credit_derivatives::cva::calculate_cva);
+wasm_tool!(portfolio_credit_risk, corp_finance_core::credit_portfolio::portfolio_risk::PortfolioRiskInput, corp_finance_core::credit_portfolio::portfolio_risk::calculate_portfolio_risk);
+wasm_tool!(credit_migration, corp_finance_core::credit_portfolio::migration::MigrationInput, corp_finance_core::credit_portfolio::migration::calculate_migration);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — pension + real_options + structured_products (6 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(pension_funding, corp_finance_core::pension::funding::PensionFundingInput, corp_finance_core::pension::funding::analyze_pension_funding);
+wasm_tool!(ldi_strategy, corp_finance_core::pension::ldi::LdiInput, corp_finance_core::pension::ldi::design_ldi_strategy);
+wasm_tool!(real_option_valuation, corp_finance_core::real_options::valuation::RealOptionInput, corp_finance_core::real_options::valuation::value_real_option);
+wasm_tool!(decision_tree_analysis, corp_finance_core::real_options::decision_tree::DecisionTreeInput, corp_finance_core::real_options::decision_tree::analyze_decision_tree);
+wasm_tool!(structured_note_pricing, corp_finance_core::structured_products::notes::StructuredNoteInput, corp_finance_core::structured_products::notes::price_structured_note);
+wasm_tool!(exotic_product_pricing, corp_finance_core::structured_products::exotic::ExoticProductInput, corp_finance_core::structured_products::exotic::price_exotic);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — lease_accounting + trade_finance + crypto (6 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(lease_classification, corp_finance_core::lease_accounting::classification::LeaseInput, corp_finance_core::lease_accounting::classification::classify_lease);
+wasm_tool!(sale_leaseback_analysis, corp_finance_core::lease_accounting::sale_leaseback::SaleLeasebackInput, corp_finance_core::lease_accounting::sale_leaseback::analyze_sale_leaseback);
+wasm_tool!(letter_of_credit, corp_finance_core::trade_finance::letter_of_credit::LetterOfCreditInput, corp_finance_core::trade_finance::letter_of_credit::price_letter_of_credit);
+wasm_tool!(supply_chain_finance, corp_finance_core::trade_finance::supply_chain::SupplyChainFinanceInput, corp_finance_core::trade_finance::supply_chain::analyze_supply_chain_finance);
+wasm_tool!(token_valuation, corp_finance_core::crypto::valuation::TokenValuationInput, corp_finance_core::crypto::valuation::value_token);
+wasm_tool!(defi_analysis, corp_finance_core::crypto::defi::DefiYieldInput, corp_finance_core::crypto::defi::analyze_defi);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — transfer_pricing + tax_treaty + fatca_crs + substance_requirements (8 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(beps_compliance, corp_finance_core::transfer_pricing::beps::BepsInput, corp_finance_core::transfer_pricing::beps::analyze_beps_compliance);
+wasm_tool!(intercompany_pricing, corp_finance_core::transfer_pricing::intercompany::IntercompanyInput, corp_finance_core::transfer_pricing::intercompany::analyze_intercompany);
+wasm_tool!(treaty_network, corp_finance_core::tax_treaty::treaty_network::TreatyNetworkInput, corp_finance_core::tax_treaty::treaty_network::analyze_treaty_network);
+wasm_tool!(treaty_structure_optimization, corp_finance_core::tax_treaty::optimization::TreatyOptInput, corp_finance_core::tax_treaty::optimization::optimize_treaty_structure);
+wasm_tool!(fatca_crs_reporting, corp_finance_core::fatca_crs::reporting::FatcaCrsReportingInput, corp_finance_core::fatca_crs::reporting::analyze_fatca_crs_reporting);
+wasm_tool!(entity_classification, corp_finance_core::fatca_crs::classification::EntityClassificationInput, corp_finance_core::fatca_crs::classification::classify_entity);
+wasm_tool!(economic_substance, corp_finance_core::substance_requirements::economic_substance::EconomicSubstanceInput, corp_finance_core::substance_requirements::economic_substance::analyze_economic_substance);
+wasm_tool!(jurisdiction_substance_test, corp_finance_core::substance_requirements::jurisdiction_tests::JurisdictionTestInput, corp_finance_core::substance_requirements::jurisdiction_tests::run_jurisdiction_substance_test);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — compliance + aml_compliance + regulatory_reporting + securitization (8 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(best_execution, corp_finance_core::compliance::best_execution::BestExecutionInput, corp_finance_core::compliance::best_execution::analyze_best_execution);
+wasm_tool!(gips_report, corp_finance_core::compliance::reporting::GipsInput, corp_finance_core::compliance::reporting::generate_gips_report);
+wasm_tool!(kyc_risk_assessment, corp_finance_core::aml_compliance::kyc_scoring::KycRiskInput, corp_finance_core::aml_compliance::kyc_scoring::assess_kyc_risk);
+wasm_tool!(sanctions_screening, corp_finance_core::aml_compliance::sanctions_screening::SanctionsScreeningInput, corp_finance_core::aml_compliance::sanctions_screening::screen_sanctions);
+wasm_tool!(aifmd_reporting, corp_finance_core::regulatory_reporting::aifmd_reporting::AifmdReportingInput, corp_finance_core::regulatory_reporting::aifmd_reporting::generate_aifmd_report);
+wasm_tool!(sec_cftc_reporting, corp_finance_core::regulatory_reporting::sec_cftc_reporting::SecCftcReportingInput, corp_finance_core::regulatory_reporting::sec_cftc_reporting::generate_sec_cftc_report);
+wasm_tool!(abs_cashflow_model, corp_finance_core::securitization::abs_mbs::AbsMbsInput, corp_finance_core::securitization::abs_mbs::model_abs_cashflows);
+wasm_tool!(tranching_analysis, corp_finance_core::securitization::tranching::TranchingInput, corp_finance_core::securitization::tranching::analyze_tranching);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — treasury + infrastructure + sovereign + restructuring (8 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(cash_management, corp_finance_core::treasury::cash_management::CashManagementInput, corp_finance_core::treasury::cash_management::analyze_cash_management);
+wasm_tool!(hedge_effectiveness, corp_finance_core::treasury::hedging::HedgingInput, corp_finance_core::treasury::hedging::analyze_hedging);
+wasm_tool!(ppp_model, corp_finance_core::infrastructure::ppp_model::PppModelInput, corp_finance_core::infrastructure::ppp_model::model_ppp);
+wasm_tool!(concession_valuation, corp_finance_core::infrastructure::concession::ConcessionInput, corp_finance_core::infrastructure::concession::value_concession);
+wasm_tool!(sovereign_bond_analysis, corp_finance_core::sovereign::sovereign_bonds::SovereignBondInput, corp_finance_core::sovereign::sovereign_bonds::analyze_sovereign_bond);
+wasm_tool!(country_risk_assessment, corp_finance_core::sovereign::country_risk::CountryRiskInput, corp_finance_core::sovereign::country_risk::assess_country_risk);
+wasm_tool!(recovery_analysis, corp_finance_core::restructuring::recovery::RecoveryAnalysisInput, corp_finance_core::restructuring::recovery::analyze_recovery);
+wasm_tool!(distressed_debt_analysis, corp_finance_core::restructuring::distressed_debt::DistressedDebtInput, corp_finance_core::restructuring::distressed_debt::analyze_distressed_debt);
+
+// ---------------------------------------------------------------------------
+// Wave 16α — municipal + market_microstructure + real_assets + onshore_structures (8 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(muni_bond_pricing, corp_finance_core::municipal::bonds::MuniBondInput, corp_finance_core::municipal::bonds::price_muni_bond);
+wasm_tool!(municipal_analysis, corp_finance_core::municipal::analysis::MuniAnalysisInput, corp_finance_core::municipal::analysis::analyze_municipal);
+wasm_tool!(spread_analysis, corp_finance_core::market_microstructure::spread_analysis::SpreadAnalysisInput, corp_finance_core::market_microstructure::spread_analysis::analyze_spreads);
+wasm_tool!(optimal_execution, corp_finance_core::market_microstructure::optimal_execution::OptimalExecutionInput, corp_finance_core::market_microstructure::optimal_execution::optimize_execution);
+wasm_tool!(property_valuation, corp_finance_core::real_assets::real_estate::PropertyValuationInput, corp_finance_core::real_assets::real_estate::value_property);
+wasm_tool!(project_finance_model, corp_finance_core::real_assets::project_finance::ProjectFinanceInput, corp_finance_core::real_assets::project_finance::model_project_finance);
+wasm_tool!(us_fund_structure, corp_finance_core::onshore_structures::us_funds::UsFundInput, corp_finance_core::onshore_structures::us_funds::analyze_us_fund_structure);
+wasm_tool!(uk_eu_fund_structure, corp_finance_core::onshore_structures::uk_eu_funds::UkEuFundInput, corp_finance_core::onshore_structures::uk_eu_funds::analyze_uk_eu_fund);
+
 #[wasm_bindgen]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
