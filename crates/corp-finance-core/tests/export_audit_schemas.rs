@@ -7,8 +7,8 @@
 
 #[cfg(all(test, feature = "schema_gen", feature = "audit"))]
 mod audit_schemas {
-    use corp_finance_core::audit::{AuditManifest, ToolCallRecord};
     use corp_finance_core::audit::surface_audit::{Surface, SurfaceManifest};
+    use corp_finance_core::audit::{AuditManifest, ToolCallRecord};
 
     fn emit<T: schemars::JsonSchema>(type_name: &str) {
         let settings = schemars::generate::SchemaSettings::default().with(|s| {
@@ -21,14 +21,22 @@ mod audit_schemas {
     }
 
     #[test]
-    fn export_surface() { emit::<Surface>("Surface"); }
+    fn export_surface() {
+        emit::<Surface>("Surface");
+    }
 
     #[test]
-    fn export_surface_manifest() { emit::<SurfaceManifest>("SurfaceManifest"); }
+    fn export_surface_manifest() {
+        emit::<SurfaceManifest>("SurfaceManifest");
+    }
 
     #[test]
-    fn export_tool_call_record() { emit::<ToolCallRecord>("ToolCallRecord"); }
+    fn export_tool_call_record() {
+        emit::<ToolCallRecord>("ToolCallRecord");
+    }
 
     #[test]
-    fn export_audit_manifest() { emit::<AuditManifest>("AuditManifest"); }
+    fn export_audit_manifest() {
+        emit::<AuditManifest>("AuditManifest");
+    }
 }

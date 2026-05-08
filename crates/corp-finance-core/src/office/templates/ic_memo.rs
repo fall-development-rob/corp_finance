@@ -115,7 +115,10 @@ fn build_cover(input: &IcMemoInput) -> DocSection {
 fn build_recommendation(input: &IcMemoInput) -> DocSection {
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: "Recommendation".into() },
+            DocBlock::Heading {
+                level: 2,
+                text: "Recommendation".into(),
+            },
             DocBlock::Paragraph {
                 runs: vec![TextRun {
                     text: input.recommendation.clone(),
@@ -129,13 +132,20 @@ fn build_recommendation(input: &IcMemoInput) -> DocSection {
 
 #[cfg(feature = "office")]
 fn build_thesis(input: &IcMemoInput) -> DocSection {
-    let mut blocks = vec![DocBlock::Heading { level: 2, text: "Investment Thesis".into() }];
+    let mut blocks = vec![DocBlock::Heading {
+        level: 2,
+        text: "Investment Thesis".into(),
+    }];
 
     for segment in input.investment_thesis.split("\n\n") {
         let trimmed = segment.trim();
         if !trimmed.is_empty() {
             blocks.push(DocBlock::Paragraph {
-                runs: vec![TextRun { text: trimmed.into(), bold: false, italic: false }],
+                runs: vec![TextRun {
+                    text: trimmed.into(),
+                    bold: false,
+                    italic: false,
+                }],
             });
         }
     }
@@ -153,7 +163,10 @@ fn build_key_metrics(input: &IcMemoInput) -> DocSection {
 
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: "Key Metrics".into() },
+            DocBlock::Heading {
+                level: 2,
+                text: "Key Metrics".into(),
+            },
             DocBlock::Table {
                 headers: vec!["Metric".into(), "Value".into()],
                 rows,
@@ -164,7 +177,10 @@ fn build_key_metrics(input: &IcMemoInput) -> DocSection {
 
 #[cfg(feature = "office")]
 fn build_financial_summary(input: &IcMemoInput) -> DocSection {
-    let mut blocks = vec![DocBlock::Heading { level: 2, text: "Financial Summary".into() }];
+    let mut blocks = vec![DocBlock::Heading {
+        level: 2,
+        text: "Financial Summary".into(),
+    }];
 
     if input.financial_summary.is_empty() {
         blocks.push(DocBlock::Paragraph {
@@ -187,8 +203,13 @@ fn build_financial_summary(input: &IcMemoInput) -> DocSection {
 fn build_list_section(heading: &str, items: &[String]) -> DocSection {
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: heading.into() },
-            DocBlock::NumberedList { items: items.to_vec() },
+            DocBlock::Heading {
+                level: 2,
+                text: heading.into(),
+            },
+            DocBlock::NumberedList {
+                items: items.to_vec(),
+            },
         ],
     }
 }
@@ -197,7 +218,10 @@ fn build_list_section(heading: &str, items: &[String]) -> DocSection {
 fn build_conclusion(input: &IcMemoInput) -> DocSection {
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: "Conclusion".into() },
+            DocBlock::Heading {
+                level: 2,
+                text: "Conclusion".into(),
+            },
             DocBlock::Paragraph {
                 runs: vec![TextRun {
                     text: input.conclusion.clone(),

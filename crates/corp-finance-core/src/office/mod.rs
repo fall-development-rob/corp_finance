@@ -10,12 +10,11 @@ pub mod templates;
 pub mod types;
 pub mod xlsx;
 
-pub use types::{
-    CellFormat, CellValue, Chart, ChartKind, ChartSeries, DefinedName, DocBlock, DocSection,
-    FormulaCell, FormattedCell, FrozenPanes, SheetSpec, Slide, SlideDeckSpec, TextRun,
-    WordDocSpec, WorkbookProperties, WorkbookSpec, WriteDocResult, WriteDeckResult,
-    WriteWorkbookResult,
-};
 pub use docx::{write_word_doc, write_word_doc_from_json};
 pub use pptx::{write_slide_deck, write_slide_deck_from_json};
+pub use types::{
+    CellFormat, CellValue, Chart, ChartKind, ChartSeries, DefinedName, DocBlock, DocSection,
+    FormattedCell, FormulaCell, FrozenPanes, SheetSpec, Slide, SlideDeckSpec, TextRun, WordDocSpec,
+    WorkbookProperties, WorkbookSpec, WriteDeckResult, WriteDocResult, WriteWorkbookResult,
+};
 pub use xlsx::{write_workbook, write_workbook_from_json};

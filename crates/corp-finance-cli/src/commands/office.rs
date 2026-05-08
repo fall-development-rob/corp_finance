@@ -140,6 +140,12 @@ mod inner {
         IcMemo,
         #[value(name = "research-init")]
         ResearchInit,
+        #[value(name = "cim")]
+        Cim,
+        #[value(name = "sector-overview")]
+        SectorOverview,
+        #[value(name = "earnings-update")]
+        EarningsUpdate,
     }
 
     #[derive(Args)]
@@ -248,6 +254,9 @@ mod inner {
         let kind_str = match args.kind {
             DocTemplateKindArg::IcMemo => "ic_memo",
             DocTemplateKindArg::ResearchInit => "research_init",
+            DocTemplateKindArg::Cim => "cim",
+            DocTemplateKindArg::SectorOverview => "sector_overview",
+            DocTemplateKindArg::EarningsUpdate => "earnings_update",
         };
 
         let envelope_json = serde_json::json!({

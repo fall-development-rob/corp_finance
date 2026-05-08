@@ -3,9 +3,7 @@
 //! Converts a [`ThreeStatementOutput`] into an institutional [`WorkbookSpec`]
 //! with three worksheets: Income Statement, Balance Sheet, and Cash Flow.
 
-use crate::office::types::{
-    CellValue, FrozenPanes, SheetSpec, WorkbookProperties, WorkbookSpec,
-};
+use crate::office::types::{CellValue, FrozenPanes, SheetSpec, WorkbookProperties, WorkbookSpec};
 use crate::three_statement::model::ThreeStatementOutput;
 
 // ---------------------------------------------------------------------------
@@ -72,30 +70,49 @@ fn build_income_statement_sheet(
     }
 }
 
-fn build_balance_sheet_sheet(
-    stmts: &[crate::three_statement::model::BalanceSheet],
-) -> SheetSpec {
+fn build_balance_sheet_sheet(stmts: &[crate::three_statement::model::BalanceSheet]) -> SheetSpec {
     let headers = build_year_headers("Line Item", stmts.iter().map(|s| s.year));
 
     let rows: Vec<Vec<CellValue>> = vec![
         // Assets
         money_row("Cash", stmts.iter().map(|s| s.cash)),
-        money_row("Accounts Receivable", stmts.iter().map(|s| s.accounts_receivable)),
+        money_row(
+            "Accounts Receivable",
+            stmts.iter().map(|s| s.accounts_receivable),
+        ),
         money_row("Inventory", stmts.iter().map(|s| s.inventory)),
-        money_row("Total Current Assets", stmts.iter().map(|s| s.total_current_assets)),
+        money_row(
+            "Total Current Assets",
+            stmts.iter().map(|s| s.total_current_assets),
+        ),
         money_row("PP&E (Net)", stmts.iter().map(|s| s.ppe_net)),
         money_row("Total Assets", stmts.iter().map(|s| s.total_assets)),
         // Liabilities
         money_row("Accounts Payable", stmts.iter().map(|s| s.accounts_payable)),
         money_row("Current Debt", stmts.iter().map(|s| s.current_debt)),
-        money_row("Total Current Liabilities", stmts.iter().map(|s| s.total_current_liabilities)),
+        money_row(
+            "Total Current Liabilities",
+            stmts.iter().map(|s| s.total_current_liabilities),
+        ),
         money_row("Long-Term Debt", stmts.iter().map(|s| s.long_term_debt)),
         money_row("Total Debt", stmts.iter().map(|s| s.total_debt)),
-        money_row("Total Liabilities", stmts.iter().map(|s| s.total_liabilities)),
+        money_row(
+            "Total Liabilities",
+            stmts.iter().map(|s| s.total_liabilities),
+        ),
         // Equity
-        money_row("Shareholders' Equity", stmts.iter().map(|s| s.shareholders_equity)),
-        money_row("Retained Earnings (Cumulative)", stmts.iter().map(|s| s.retained_earnings_cumulative)),
-        money_row("Total Liabilities & Equity", stmts.iter().map(|s| s.total_liabilities_and_equity)),
+        money_row(
+            "Shareholders' Equity",
+            stmts.iter().map(|s| s.shareholders_equity),
+        ),
+        money_row(
+            "Retained Earnings (Cumulative)",
+            stmts.iter().map(|s| s.retained_earnings_cumulative),
+        ),
+        money_row(
+            "Total Liabilities & Equity",
+            stmts.iter().map(|s| s.total_liabilities_and_equity),
+        ),
     ];
 
     SheetSpec {
@@ -109,29 +126,48 @@ fn build_balance_sheet_sheet(
     }
 }
 
-fn build_cash_flow_sheet(
-    stmts: &[crate::three_statement::model::CashFlowStatement],
-) -> SheetSpec {
+fn build_cash_flow_sheet(stmts: &[crate::three_statement::model::CashFlowStatement]) -> SheetSpec {
     let headers = build_year_headers("Line Item", stmts.iter().map(|s| s.year));
 
     let rows: Vec<Vec<CellValue>> = vec![
         // Operating
         money_row("Net Income", stmts.iter().map(|s| s.net_income)),
         money_row("D&A", stmts.iter().map(|s| s.depreciation)),
-        money_row("Change in Receivables", stmts.iter().map(|s| s.change_in_receivables)),
-        money_row("Change in Inventory", stmts.iter().map(|s| s.change_in_inventory)),
-        money_row("Change in Payables", stmts.iter().map(|s| s.change_in_payables)),
-        money_row("Cash from Operations", stmts.iter().map(|s| s.cash_from_operations)),
+        money_row(
+            "Change in Receivables",
+            stmts.iter().map(|s| s.change_in_receivables),
+        ),
+        money_row(
+            "Change in Inventory",
+            stmts.iter().map(|s| s.change_in_inventory),
+        ),
+        money_row(
+            "Change in Payables",
+            stmts.iter().map(|s| s.change_in_payables),
+        ),
+        money_row(
+            "Cash from Operations",
+            stmts.iter().map(|s| s.cash_from_operations),
+        ),
         // Investing
         money_row("Capex", stmts.iter().map(|s| s.capex)),
-        money_row("Cash from Investing", stmts.iter().map(|s| s.cash_from_investing)),
+        money_row(
+            "Cash from Investing",
+            stmts.iter().map(|s| s.cash_from_investing),
+        ),
         // Financing
         money_row("Debt Repayment", stmts.iter().map(|s| s.debt_repayment)),
         money_row("New Debt", stmts.iter().map(|s| s.new_debt)),
         money_row("Dividends", stmts.iter().map(|s| s.dividends)),
-        money_row("Cash from Financing", stmts.iter().map(|s| s.cash_from_financing)),
+        money_row(
+            "Cash from Financing",
+            stmts.iter().map(|s| s.cash_from_financing),
+        ),
         // Summary
-        money_row("Net Change in Cash", stmts.iter().map(|s| s.net_change_in_cash)),
+        money_row(
+            "Net Change in Cash",
+            stmts.iter().map(|s| s.net_change_in_cash),
+        ),
         money_row("Ending Cash", stmts.iter().map(|s| s.ending_cash)),
     ];
 
@@ -161,10 +197,7 @@ fn build_year_headers(label: &str, years: impl Iterator<Item = i32>) -> Vec<Stri
 /// Build one data row: label cell followed by one [`CellValue::Decimal`] per
 /// value in `values`. `Money` is `rust_decimal::Decimal`; `.to_string()`
 /// produces the canonical wire representation.
-fn money_row(
-    label: &str,
-    values: impl Iterator<Item = rust_decimal::Decimal>,
-) -> Vec<CellValue> {
+fn money_row(label: &str, values: impl Iterator<Item = rust_decimal::Decimal>) -> Vec<CellValue> {
     let mut row = vec![CellValue::Text {
         value: label.to_string(),
     }];
@@ -256,10 +289,7 @@ mod tests {
         ThreeStatementOutput {
             income_statements: vec![zero_income_statement(1), zero_income_statement(2)],
             balance_sheets: vec![zero_balance_sheet(1), zero_balance_sheet(2)],
-            cash_flow_statements: vec![
-                zero_cash_flow_statement(1),
-                zero_cash_flow_statement(2),
-            ],
+            cash_flow_statements: vec![zero_cash_flow_statement(1), zero_cash_flow_statement(2)],
             summary: ProjectionSummary {
                 total_years: 2,
                 revenue_cagr: Decimal::ZERO,
@@ -290,10 +320,7 @@ mod tests {
         }
 
         // Workbook title
-        assert_eq!(
-            wb.properties.title.as_deref(),
-            Some("3-Statement Model")
-        );
+        assert_eq!(wb.properties.title.as_deref(), Some("3-Statement Model"));
     }
 
     #[test]

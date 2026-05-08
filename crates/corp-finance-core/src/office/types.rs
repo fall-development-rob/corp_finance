@@ -55,13 +55,21 @@ pub struct FrozenPanes {
 #[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum CellValue {
-    Text { value: String },
-    Number { value: f64 },
+    Text {
+        value: String,
+    },
+    Number {
+        value: f64,
+    },
     /// Decimal preserved on the wire as a string; converted to f64 at the
     /// xlsx cell boundary. Excel is f64-native; this conversion is the
     /// documented exception to the no-f64 invariant.
-    Decimal { value: String },
-    Bool { value: bool },
+    Decimal {
+        value: String,
+    },
+    Bool {
+        value: bool,
+    },
     /// RFC3339 timestamp string. Parsed at write time and rendered as an
     /// Excel date number with the format defined by `excel_format`.
     DateTime {
@@ -205,11 +213,23 @@ pub struct TextRun {
 #[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum DocBlock {
-    Heading { level: u8, text: String },
-    Paragraph { runs: Vec<TextRun> },
-    Table { headers: Vec<String>, rows: Vec<Vec<String>> },
-    BulletList { items: Vec<String> },
-    NumberedList { items: Vec<String> },
+    Heading {
+        level: u8,
+        text: String,
+    },
+    Paragraph {
+        runs: Vec<TextRun>,
+    },
+    Table {
+        headers: Vec<String>,
+        rows: Vec<Vec<String>>,
+    },
+    BulletList {
+        items: Vec<String>,
+    },
+    NumberedList {
+        items: Vec<String>,
+    },
     PageBreak,
 }
 

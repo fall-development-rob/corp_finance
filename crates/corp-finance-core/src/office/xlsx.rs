@@ -8,7 +8,9 @@ use sha2::{Digest, Sha256};
 use crate::error::CorpFinanceError;
 use crate::CorpFinanceResult;
 
-use super::types::{CellValue, Chart, ChartKind, FormattedCell, SheetSpec, WorkbookSpec, WriteWorkbookResult};
+use super::types::{
+    CellValue, Chart, ChartKind, FormattedCell, SheetSpec, WorkbookSpec, WriteWorkbookResult,
+};
 
 /// Write a [`WorkbookSpec`] to disk as an .xlsx file.
 ///
@@ -19,7 +21,10 @@ use super::types::{CellValue, Chart, ChartKind, FormattedCell, SheetSpec, Workbo
 /// - `InvalidInput` when a [`CellValue::Decimal`] payload fails `Decimal::from_str`.
 /// - `InvalidInput` when a [`CellValue::DateTime`] payload fails RFC 3339 parse.
 /// - `SerializationError` on filesystem failures.
-pub fn write_workbook(spec: &WorkbookSpec, output_path: &Path) -> CorpFinanceResult<WriteWorkbookResult> {
+pub fn write_workbook(
+    spec: &WorkbookSpec,
+    output_path: &Path,
+) -> CorpFinanceResult<WriteWorkbookResult> {
     validate_spec(spec)?;
 
     let mut wb = Workbook::new();
@@ -53,7 +58,10 @@ pub fn write_workbook(spec: &WorkbookSpec, output_path: &Path) -> CorpFinanceRes
 }
 
 /// Write directly from a JSON-string spec. Convenience for NAPI / CLI callers.
-pub fn write_workbook_from_json(spec_json: &str, output_path: &Path) -> CorpFinanceResult<WriteWorkbookResult> {
+pub fn write_workbook_from_json(
+    spec_json: &str,
+    output_path: &Path,
+) -> CorpFinanceResult<WriteWorkbookResult> {
     let spec: WorkbookSpec = serde_json::from_str(spec_json)?;
     write_workbook(&spec, output_path)
 }
@@ -200,9 +208,8 @@ fn write_cell(
             // Parse the wire-string into Decimal for validation, then convert to f64
             // at the xlsx cell boundary. Excel is f64-native; this is the documented
             // exception to the no-f64 invariant — lossy conversion is appropriate here.
-            let d: rust_decimal::Decimal = value
-                .parse()
-                .map_err(|e| CorpFinanceError::InvalidInput {
+            let d: rust_decimal::Decimal =
+                value.parse().map_err(|e| CorpFinanceError::InvalidInput {
                     field: "cell_value.decimal".into(),
                     reason: format!("'{}' is not a valid decimal: {}", value, e),
                 })?;
@@ -217,7 +224,10 @@ fn write_cell(
             ws.write_boolean(row, col, *value)
                 .map_err(|e| CorpFinanceError::SerializationError(e.to_string()))?;
         }
-        CellValue::DateTime { value, excel_format } => {
+        CellValue::DateTime {
+            value,
+            excel_format,
+        } => {
             let dt = chrono::DateTime::parse_from_rfc3339(value).map_err(|e| {
                 CorpFinanceError::InvalidInput {
                     field: "cell_value.datetime".into(),
@@ -229,9 +239,7 @@ fn write_cell(
             let iso = naive.format("%Y-%m-%dT%H:%M:%S").to_string();
             let excel_dt = ExcelDateTime::parse_from_str(&iso)
                 .map_err(|e| CorpFinanceError::SerializationError(e.to_string()))?;
-            let num_fmt = excel_format
-                .as_deref()
-                .unwrap_or("yyyy-mm-dd hh:mm:ss");
+            let num_fmt = excel_format.as_deref().unwrap_or("yyyy-mm-dd hh:mm:ss");
             let fmt = Format::new().set_num_format(num_fmt);
             ws.write_datetime_with_format(row, col, excel_dt, &fmt)
                 .map_err(|e| CorpFinanceError::SerializationError(e.to_string()))?;
@@ -288,10 +296,7 @@ fn apply_cell_format(
     // Locate the source CellValue to rewrite it with the new format.
     let data_row = fc.row.saturating_sub(data_row_offset) as usize;
     let col_idx = fc.col as usize;
-    let cell = spec
-        .rows
-        .get(data_row)
-        .and_then(|r| r.get(col_idx));
+    let cell = spec.rows.get(data_row).and_then(|r| r.get(col_idx));
 
     if let Some(cell) = cell {
         if let Some(f) = cell_to_f64(cell)? {
@@ -365,8 +370,8 @@ mod tests {
 
     use super::*;
     use crate::office::types::{
-        CellFormat, CellValue, Chart, ChartKind, ChartSeries, DefinedName, FormulaCell,
-        FormattedCell, FrozenPanes, SheetSpec, WorkbookProperties, WorkbookSpec,
+        CellFormat, CellValue, Chart, ChartKind, ChartSeries, DefinedName, FormattedCell,
+        FormulaCell, FrozenPanes, SheetSpec, WorkbookProperties, WorkbookSpec,
     };
 
     fn minimal_spec(name: &str) -> WorkbookSpec {
@@ -375,7 +380,9 @@ mod tests {
                 name: name.to_string(),
                 headers: vec!["Company".into(), "Value".into()],
                 rows: vec![vec![
-                    CellValue::Text { value: "ACME Corp".into() },
+                    CellValue::Text {
+                        value: "ACME Corp".into(),
+                    },
                     CellValue::Number { value: 1_000_000.0 },
                 ]],
                 ..SheetSpec::default()
@@ -392,7 +399,10 @@ mod tests {
 
     fn assert_sha256_format(s: &str) {
         assert_eq!(s.len(), 64, "sha256 should be 64 chars");
-        assert!(s.chars().all(|c| c.is_ascii_hexdigit()), "sha256 should be lowercase hex");
+        assert!(
+            s.chars().all(|c| c.is_ascii_hexdigit()),
+            "sha256 should be lowercase hex"
+        );
         // Ensure lowercase
         assert_eq!(&s.to_lowercase(), s, "sha256 should be lowercase");
     }
@@ -420,7 +430,10 @@ mod tests {
         let result = write_workbook(&spec, &path).unwrap();
 
         assert_file_nonempty(&path);
-        assert_eq!(result.bytes_written, std::fs::metadata(&path).unwrap().len());
+        assert_eq!(
+            result.bytes_written,
+            std::fs::metadata(&path).unwrap().len()
+        );
         assert_sha256_format(&result.sha256);
         assert_eq!(result.sheet_count, 1);
 
@@ -432,7 +445,10 @@ mod tests {
         let dir2 = TempDir::new().unwrap();
         let path2 = dir2.path().join("minimal2.xlsx");
         let result2 = write_workbook(&spec, &path2).unwrap();
-        assert_eq!(result.sha256, result2.sha256, "sha256 should be stable for identical spec");
+        assert_eq!(
+            result.sha256, result2.sha256,
+            "sha256 should be stable for identical spec"
+        );
     }
 
     #[test]
@@ -442,7 +458,9 @@ mod tests {
         let spec = WorkbookSpec {
             sheets: vec![SheetSpec {
                 name: "Decimals".into(),
-                rows: vec![vec![CellValue::Decimal { value: "1234.56789".into() }]],
+                rows: vec![vec![CellValue::Decimal {
+                    value: "1234.56789".into(),
+                }]],
                 ..SheetSpec::default()
             }],
             defined_names: vec![],
@@ -483,7 +501,9 @@ mod tests {
         let spec = WorkbookSpec {
             sheets: vec![SheetSpec {
                 name: "BadDecimal".into(),
-                rows: vec![vec![CellValue::Decimal { value: "not-a-number".into() }]],
+                rows: vec![vec![CellValue::Decimal {
+                    value: "not-a-number".into(),
+                }]],
                 ..SheetSpec::default()
             }],
             defined_names: vec![],
@@ -550,10 +570,22 @@ mod tests {
                 name: "Formulas".into(),
                 headers: vec!["Label".into(), "Amount".into()],
                 rows: vec![
-                    vec![CellValue::Text { value: "A".into() }, CellValue::Number { value: 10.0 }],
-                    vec![CellValue::Text { value: "B".into() }, CellValue::Number { value: 20.0 }],
-                    vec![CellValue::Text { value: "C".into() }, CellValue::Number { value: 30.0 }],
-                    vec![CellValue::Text { value: "D".into() }, CellValue::Number { value: 40.0 }],
+                    vec![
+                        CellValue::Text { value: "A".into() },
+                        CellValue::Number { value: 10.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "B".into() },
+                        CellValue::Number { value: 20.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "C".into() },
+                        CellValue::Number { value: 30.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "D".into() },
+                        CellValue::Number { value: 40.0 },
+                    ],
                 ],
                 formulas: vec![FormulaCell {
                     row: 5,
@@ -585,7 +617,9 @@ mod tests {
                 name: "Summary".into(),
                 headers: vec!["Label".into(), "WACC".into()],
                 rows: vec![vec![
-                    CellValue::Text { value: "WACC".into() },
+                    CellValue::Text {
+                        value: "WACC".into(),
+                    },
                     CellValue::Number { value: 0.085 },
                 ]],
                 ..SheetSpec::default()
@@ -628,8 +662,14 @@ mod tests {
         let path = dir.path().join("dup.xlsx");
         let spec = WorkbookSpec {
             sheets: vec![
-                SheetSpec { name: "Summary".into(), ..SheetSpec::default() },
-                SheetSpec { name: "Summary".into(), ..SheetSpec::default() },
+                SheetSpec {
+                    name: "Summary".into(),
+                    ..SheetSpec::default()
+                },
+                SheetSpec {
+                    name: "Summary".into(),
+                    ..SheetSpec::default()
+                },
             ],
             defined_names: vec![],
             properties: WorkbookProperties::default(),
@@ -696,7 +736,9 @@ mod tests {
                 name: "Analysis".into(),
                 headers: vec!["Company".into(), "EV/EBITDA".into()],
                 rows: vec![vec![
-                    CellValue::Text { value: "Target Corp".into() },
+                    CellValue::Text {
+                        value: "Target Corp".into(),
+                    },
                     CellValue::Number { value: 12.5 },
                 ]],
                 column_widths: vec![20.0, 12.0],
@@ -725,7 +767,9 @@ mod tests {
                 name: "Comps".into(),
                 headers: vec!["Company".into(), "EV".into()],
                 rows: vec![vec![
-                    CellValue::Text { value: "ACME".into() },
+                    CellValue::Text {
+                        value: "ACME".into(),
+                    },
                     CellValue::Number { value: 1234.56 },
                 ]],
                 // row 1 (data_row_offset=1 because headers present), col 1
@@ -746,7 +790,10 @@ mod tests {
         let result = write_workbook(&spec, &path).unwrap();
         assert_file_nonempty(&path);
         assert_sha256_format(&result.sha256);
-        assert!(zip_contains_bytes(&path, b"$#,##0.00"), "currency format string should appear in xlsx xml");
+        assert!(
+            zip_contains_bytes(&path, b"$#,##0.00"),
+            "currency format string should appear in xlsx xml"
+        );
     }
 
     #[test]
@@ -758,7 +805,9 @@ mod tests {
                 name: "Rates".into(),
                 headers: vec!["Label".into(), "Rate".into()],
                 rows: vec![vec![
-                    CellValue::Text { value: "WACC".into() },
+                    CellValue::Text {
+                        value: "WACC".into(),
+                    },
                     CellValue::Number { value: 0.085 },
                 ]],
                 cell_formats: vec![FormattedCell {
@@ -778,7 +827,10 @@ mod tests {
         let result = write_workbook(&spec, &path).unwrap();
         assert_file_nonempty(&path);
         assert_sha256_format(&result.sha256);
-        assert!(zip_contains_bytes(&path, b"0.00%"), "percent format string should appear in xlsx xml");
+        assert!(
+            zip_contains_bytes(&path, b"0.00%"),
+            "percent format string should appear in xlsx xml"
+        );
     }
 
     fn chart_data_spec(sheet_name: &str, kind: ChartKind) -> WorkbookSpec {
@@ -787,11 +839,26 @@ mod tests {
                 name: sheet_name.into(),
                 headers: vec!["Period".into(), "Revenue".into()],
                 rows: vec![
-                    vec![CellValue::Text { value: "Q1".into() }, CellValue::Number { value: 100.0 }],
-                    vec![CellValue::Text { value: "Q2".into() }, CellValue::Number { value: 120.0 }],
-                    vec![CellValue::Text { value: "Q3".into() }, CellValue::Number { value: 140.0 }],
-                    vec![CellValue::Text { value: "Q4".into() }, CellValue::Number { value: 160.0 }],
-                    vec![CellValue::Text { value: "Q5".into() }, CellValue::Number { value: 180.0 }],
+                    vec![
+                        CellValue::Text { value: "Q1".into() },
+                        CellValue::Number { value: 100.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "Q2".into() },
+                        CellValue::Number { value: 120.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "Q3".into() },
+                        CellValue::Number { value: 140.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "Q4".into() },
+                        CellValue::Number { value: 160.0 },
+                    ],
+                    vec![
+                        CellValue::Text { value: "Q5".into() },
+                        CellValue::Number { value: 180.0 },
+                    ],
                 ],
                 charts: vec![Chart {
                     kind,

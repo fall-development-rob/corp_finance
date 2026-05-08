@@ -161,7 +161,8 @@ fn build_pptx(spec: &SlideDeckSpec) -> CorpFinanceResult<Vec<u8>> {
     // ppt/slideMasters/slideMaster1.xml
     zip.start_file("ppt/slideMasters/slideMaster1.xml", deflated.clone())
         .map_err(zip_err)?;
-    zip.write_all(SLIDE_MASTER_XML.as_bytes()).map_err(zip_err)?;
+    zip.write_all(SLIDE_MASTER_XML.as_bytes())
+        .map_err(zip_err)?;
 
     // ppt/slideMasters/_rels/slideMaster1.xml.rels
     zip.start_file(
@@ -169,12 +170,14 @@ fn build_pptx(spec: &SlideDeckSpec) -> CorpFinanceResult<Vec<u8>> {
         stored.clone(),
     )
     .map_err(zip_err)?;
-    zip.write_all(SLIDE_MASTER_RELS.as_bytes()).map_err(zip_err)?;
+    zip.write_all(SLIDE_MASTER_RELS.as_bytes())
+        .map_err(zip_err)?;
 
     // ppt/slideLayouts/slideLayout1.xml
     zip.start_file("ppt/slideLayouts/slideLayout1.xml", deflated.clone())
         .map_err(zip_err)?;
-    zip.write_all(SLIDE_LAYOUT_XML.as_bytes()).map_err(zip_err)?;
+    zip.write_all(SLIDE_LAYOUT_XML.as_bytes())
+        .map_err(zip_err)?;
 
     // ppt/slideLayouts/_rels/slideLayout1.xml.rels
     zip.start_file(
@@ -182,7 +185,8 @@ fn build_pptx(spec: &SlideDeckSpec) -> CorpFinanceResult<Vec<u8>> {
         stored.clone(),
     )
     .map_err(zip_err)?;
-    zip.write_all(SLIDE_LAYOUT_RELS.as_bytes()).map_err(zip_err)?;
+    zip.write_all(SLIDE_LAYOUT_RELS.as_bytes())
+        .map_err(zip_err)?;
 
     // Per-slide XML + rels
     for (idx, slide) in spec.slides.iter().enumerate() {
@@ -190,11 +194,8 @@ fn build_pptx(spec: &SlideDeckSpec) -> CorpFinanceResult<Vec<u8>> {
         let slide_xml = render_slide(slide, slide_num);
         let slide_rels = slide_rels_xml();
 
-        zip.start_file(
-            format!("ppt/slides/slide{slide_num}.xml"),
-            deflated.clone(),
-        )
-        .map_err(zip_err)?;
+        zip.start_file(format!("ppt/slides/slide{slide_num}.xml"), deflated.clone())
+            .map_err(zip_err)?;
         zip.write_all(slide_xml.as_bytes()).map_err(zip_err)?;
 
         zip.start_file(
@@ -242,8 +243,7 @@ fn content_types_xml(slide_count: usize) -> String {
     s
 }
 
-static ROOT_RELS: &str =
-    r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+static ROOT_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
 </Relationships>"#;
@@ -312,7 +312,11 @@ fn render_slide(slide: &Slide, _num: usize) -> String {
         Slide::Title { title, subtitle } => render_title_slide(title, subtitle.as_deref()),
         Slide::Section { heading } => render_section_slide(heading),
         Slide::Content { title, bullets } => render_content_slide(title, bullets),
-        Slide::Table { title, headers, rows } => render_table_slide(title, headers, rows),
+        Slide::Table {
+            title,
+            headers,
+            rows,
+        } => render_table_slide(title, headers, rows),
     }
 }
 
@@ -346,7 +350,17 @@ fn slide_envelope(body: &str) -> String {
 }
 
 /// Build a text shape XML fragment.
-fn text_shape(id: u32, name: &str, x: i64, y: i64, cx: i64, cy: i64, bold: bool, size_pt: u32, text: &str) -> String {
+fn text_shape(
+    id: u32,
+    name: &str,
+    x: i64,
+    y: i64,
+    cx: i64,
+    cy: i64,
+    bold: bool,
+    size_pt: u32,
+    text: &str,
+) -> String {
     let b_tag = if bold { "<a:b/>" } else { "" };
     let escaped = xml_escape(text);
     format!(
@@ -418,20 +432,30 @@ fn bullet_shape(id: u32, x: i64, y: i64, cx: i64, cy: i64, bullets: &[String]) -
 }
 
 fn render_title_slide(title: &str, subtitle: Option<&str>) -> String {
-    let title_shape = text_shape(2, "Title", 457200, 1600200, 8229600, 1600200, true, 4400, title);
+    let title_shape = text_shape(
+        2, "Title", 457200, 1600200, 8229600, 1600200, true, 4400, title,
+    );
     let sub_shape = subtitle
-        .map(|s| text_shape(3, "Subtitle", 457200, 3200400, 8229600, 1371600, false, 2800, s))
+        .map(|s| {
+            text_shape(
+                3, "Subtitle", 457200, 3200400, 8229600, 1371600, false, 2800, s,
+            )
+        })
         .unwrap_or_default();
     slide_envelope(&format!("{title_shape}\n{sub_shape}"))
 }
 
 fn render_section_slide(heading: &str) -> String {
-    let shape = text_shape(2, "Heading", 457200, 2400000, 8229600, 2058000, true, 3600, heading);
+    let shape = text_shape(
+        2, "Heading", 457200, 2400000, 8229600, 2058000, true, 3600, heading,
+    );
     slide_envelope(&shape)
 }
 
 fn render_content_slide(title: &str, bullets: &[String]) -> String {
-    let title_shape = text_shape(2, "Title", 457200, 274638, 8229600, 1143000, true, 3600, title);
+    let title_shape = text_shape(
+        2, "Title", 457200, 274638, 8229600, 1143000, true, 3600, title,
+    );
     let content_shape = if bullets.is_empty() {
         String::new()
     } else {
@@ -441,7 +465,9 @@ fn render_content_slide(title: &str, bullets: &[String]) -> String {
 }
 
 fn render_table_slide(title: &str, headers: &[String], rows: &[Vec<String>]) -> String {
-    let title_shape = text_shape(2, "Title", 457200, 274638, 8229600, 1143000, true, 3600, title);
+    let title_shape = text_shape(
+        2, "Title", 457200, 274638, 8229600, 1143000, true, 3600, title,
+    );
     let table_shape = render_table_shape(headers, rows);
     slide_envelope(&format!("{title_shape}\n{table_shape}"))
 }
@@ -449,7 +475,11 @@ fn render_table_slide(title: &str, headers: &[String], rows: &[Vec<String>]) -> 
 fn render_table_shape(headers: &[String], rows: &[Vec<String>]) -> String {
     let col_count = headers.len();
     // Distribute width evenly across slide width (8229600 EMU).
-    let col_width = if col_count > 0 { 8229600i64 / col_count as i64 } else { 8229600 };
+    let col_width = if col_count > 0 {
+        8229600i64 / col_count as i64
+    } else {
+        8229600
+    };
 
     let col_widths_xml: String = (0..col_count)
         .map(|_| format!(r#"          <a:gridCol w="{col_width}"/>"#))
@@ -457,7 +487,11 @@ fn render_table_shape(headers: &[String], rows: &[Vec<String>]) -> String {
         .join("\n");
 
     let header_row = table_row_xml(headers, true);
-    let data_rows: String = rows.iter().map(|r| table_row_xml(r, false)).collect::<Vec<_>>().join("\n");
+    let data_rows: String = rows
+        .iter()
+        .map(|r| table_row_xml(r, false))
+        .collect::<Vec<_>>()
+        .join("\n");
 
     format!(
         r#"      <p:graphicFrame>
@@ -572,8 +606,7 @@ static SLIDE_MASTER_XML: &str = r#"<?xml version="1.0" encoding="UTF-8" standalo
   </p:sldLayoutIdLst>
 </p:sldMaster>"#;
 
-static SLIDE_MASTER_RELS: &str =
-    r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+static SLIDE_MASTER_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/>
@@ -603,8 +636,7 @@ static SLIDE_LAYOUT_XML: &str = r#"<?xml version="1.0" encoding="UTF-8" standalo
   </p:cSld>
 </p:sldLayout>"#;
 
-static SLIDE_LAYOUT_RELS: &str =
-    r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+static SLIDE_LAYOUT_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/>
 </Relationships>"#;
@@ -685,7 +717,10 @@ mod tests {
 
     fn assert_sha256_format(s: &str) {
         assert_eq!(s.len(), 64, "sha256 should be 64 chars");
-        assert!(s.chars().all(|c| c.is_ascii_hexdigit()), "sha256 should be hex");
+        assert!(
+            s.chars().all(|c| c.is_ascii_hexdigit()),
+            "sha256 should be hex"
+        );
         assert_eq!(&s.to_lowercase(), s, "sha256 should be lowercase");
     }
 
@@ -696,7 +731,10 @@ mod tests {
         let result = write_slide_deck(&title_only_spec(), &path).unwrap();
 
         assert!(result.bytes_written > 0);
-        assert_eq!(result.bytes_written, std::fs::metadata(&path).unwrap().len());
+        assert_eq!(
+            result.bytes_written,
+            std::fs::metadata(&path).unwrap().len()
+        );
         assert_sha256_format(&result.sha256);
         assert_eq!(result.slide_count, 1);
     }
@@ -705,10 +743,16 @@ mod tests {
     fn write_deck_rejects_empty_slides() {
         let dir = TempDir::new().unwrap();
         let path = dir.path().join("empty.pptx");
-        let spec = SlideDeckSpec { slides: vec![], properties: WorkbookProperties::default() };
+        let spec = SlideDeckSpec {
+            slides: vec![],
+            properties: WorkbookProperties::default(),
+        };
 
         let err = write_slide_deck(&spec, &path).unwrap_err();
-        assert!(matches!(err, crate::error::CorpFinanceError::InvalidInput { .. }));
+        assert!(matches!(
+            err,
+            crate::error::CorpFinanceError::InvalidInput { .. }
+        ));
     }
 
     #[test]
@@ -717,8 +761,13 @@ mod tests {
         let path = dir.path().join("all_kinds.pptx");
         let spec = SlideDeckSpec {
             slides: vec![
-                Slide::Title { title: "Deck Title".into(), subtitle: None },
-                Slide::Section { heading: "Part One".into() },
+                Slide::Title {
+                    title: "Deck Title".into(),
+                    subtitle: None,
+                },
+                Slide::Section {
+                    heading: "Part One".into(),
+                },
                 Slide::Content {
                     title: "Key Points".into(),
                     bullets: vec!["Point A".into(), "Point B".into()],
@@ -759,22 +808,24 @@ mod tests {
         // Bullet text must appear in the zip
         let bytes = std::fs::read(&path).unwrap();
         let text = String::from_utf8_lossy(&bytes);
-        assert!(text.contains("15% revenue CAGR") || {
-            // Text may be deflate-compressed; unzip to check
-            let mut archive = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).unwrap();
-            let mut found = false;
-            for i in 0..archive.len() {
-                let mut entry = archive.by_index(i).unwrap();
-                let mut buf = Vec::new();
-                use std::io::Read;
-                entry.read_to_end(&mut buf).unwrap();
-                if String::from_utf8_lossy(&buf).contains("15% revenue CAGR") {
-                    found = true;
-                    break;
+        assert!(
+            text.contains("15% revenue CAGR") || {
+                // Text may be deflate-compressed; unzip to check
+                let mut archive = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).unwrap();
+                let mut found = false;
+                for i in 0..archive.len() {
+                    let mut entry = archive.by_index(i).unwrap();
+                    let mut buf = Vec::new();
+                    use std::io::Read;
+                    entry.read_to_end(&mut buf).unwrap();
+                    if String::from_utf8_lossy(&buf).contains("15% revenue CAGR") {
+                        found = true;
+                        break;
+                    }
                 }
+                found
             }
-            found
-        });
+        );
     }
 
     #[test]
@@ -804,13 +855,20 @@ mod tests {
         let path = dir.path().join("sections.pptx");
         let spec = SlideDeckSpec {
             slides: vec![
-                Slide::Title { title: "Annual Review".into(), subtitle: None },
-                Slide::Section { heading: "Financial Performance".into() },
+                Slide::Title {
+                    title: "Annual Review".into(),
+                    subtitle: None,
+                },
+                Slide::Section {
+                    heading: "Financial Performance".into(),
+                },
                 Slide::Content {
                     title: "Revenue".into(),
                     bullets: vec!["$1.2B total".into()],
                 },
-                Slide::Section { heading: "Strategic Outlook".into() },
+                Slide::Section {
+                    heading: "Strategic Outlook".into(),
+                },
             ],
             properties: WorkbookProperties::default(),
         };
@@ -831,7 +889,10 @@ mod tests {
         let r1 = write_slide_deck(&spec, &path1).unwrap();
         let r2 = write_slide_deck(&spec, &path2).unwrap();
 
-        assert_eq!(r1.sha256, r2.sha256, "identical spec must produce identical sha256");
+        assert_eq!(
+            r1.sha256, r2.sha256,
+            "identical spec must produce identical sha256"
+        );
     }
 
     #[test]
@@ -862,6 +923,9 @@ mod tests {
         };
 
         let err = write_slide_deck(&spec, &path).unwrap_err();
-        assert!(matches!(err, crate::error::CorpFinanceError::InvalidInput { .. }));
+        assert!(matches!(
+            err,
+            crate::error::CorpFinanceError::InvalidInput { .. }
+        ));
     }
 }

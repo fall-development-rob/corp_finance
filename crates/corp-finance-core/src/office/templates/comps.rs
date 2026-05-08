@@ -203,10 +203,8 @@ mod tests {
     use rust_decimal_macros::dec;
 
     fn make_stats(mt: MultipleType, peers: &[(&str, Decimal)]) -> MultipleStatistics {
-        let values: Vec<(String, Decimal)> = peers
-            .iter()
-            .map(|(n, v)| (n.to_string(), *v))
-            .collect();
+        let values: Vec<(String, Decimal)> =
+            peers.iter().map(|(n, v)| (n.to_string(), *v)).collect();
         let n = values.len();
         let sum: Decimal = values.iter().map(|(_, v)| *v).sum();
         let mean = sum / Decimal::from(n as i64);
@@ -252,10 +250,7 @@ mod tests {
 
         assert_eq!(wb.sheets.len(), 2, "expected exactly 2 sheets");
         assert_eq!(wb.sheets[1].name, "Summary");
-        assert_eq!(
-            wb.properties.title.as_deref(),
-            Some("Trading Comps")
-        );
+        assert_eq!(wb.properties.title.as_deref(), Some("Trading Comps"));
 
         // Peers sheet has 2 data rows (one per peer).
         assert_eq!(wb.sheets[0].rows.len(), 2);

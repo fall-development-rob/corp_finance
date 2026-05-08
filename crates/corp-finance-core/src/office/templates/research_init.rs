@@ -50,8 +50,14 @@ pub fn research_init_to_doc(input: &ResearchInitInput) -> crate::office::WordDoc
 
     sections.push(build_cover(input));
     sections.push(build_text_section("Executive Summary", &input.exec_summary));
-    sections.push(build_text_section("Investment Thesis", &input.investment_thesis));
-    sections.push(build_text_section("Business Description", &input.business_description));
+    sections.push(build_text_section(
+        "Investment Thesis",
+        &input.investment_thesis,
+    ));
+    sections.push(build_text_section(
+        "Business Description",
+        &input.business_description,
+    ));
     sections.push(build_financial_highlights(input));
     sections.push(build_valuation_summary(input));
 
@@ -67,7 +73,10 @@ pub fn research_init_to_doc(input: &ResearchInitInput) -> crate::office::WordDoc
     WordDocSpec {
         sections,
         properties: WorkbookProperties {
-            title: Some(format!("{}: {} — Initiating Coverage", input.ticker, input.company)),
+            title: Some(format!(
+                "{}: {} — Initiating Coverage",
+                input.ticker, input.company
+            )),
             author: Some(input.author.clone()),
             company: None,
             subject: Some("Equity Research — Initiating Coverage".into()),
@@ -129,7 +138,11 @@ fn build_text_section(heading: &str, body: &str) -> crate::office::types::DocSec
 
     for para in split_paragraphs(body) {
         blocks.push(DocBlock::Paragraph {
-            runs: vec![TextRun { text: para, bold: false, italic: false }],
+            runs: vec![TextRun {
+                text: para,
+                bold: false,
+                italic: false,
+            }],
         });
     }
 
@@ -174,7 +187,10 @@ fn build_valuation_summary(input: &ResearchInitInput) -> crate::office::types::D
 
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: "Valuation Summary".into() },
+            DocBlock::Heading {
+                level: 2,
+                text: "Valuation Summary".into(),
+            },
             DocBlock::Table {
                 headers: vec!["Metric".into(), "Value".into()],
                 rows,
@@ -189,8 +205,13 @@ fn build_bullet_section(heading: &str, items: &[String]) -> crate::office::types
 
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: heading.to_owned() },
-            DocBlock::BulletList { items: items.to_vec() },
+            DocBlock::Heading {
+                level: 2,
+                text: heading.to_owned(),
+            },
+            DocBlock::BulletList {
+                items: items.to_vec(),
+            },
         ],
     }
 }
@@ -201,8 +222,13 @@ fn build_numbered_section(heading: &str, items: &[String]) -> crate::office::typ
 
     DocSection {
         blocks: vec![
-            DocBlock::Heading { level: 2, text: heading.to_owned() },
-            DocBlock::NumberedList { items: items.to_vec() },
+            DocBlock::Heading {
+                level: 2,
+                text: heading.to_owned(),
+            },
+            DocBlock::NumberedList {
+                items: items.to_vec(),
+            },
         ],
     }
 }

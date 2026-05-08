@@ -7,7 +7,9 @@
 
 #[cfg(all(test, feature = "schema_gen", feature = "memory"))]
 mod memory_schemas {
-    use corp_finance_core::memory::{RunSummary, EntityRef, EntityKind, CfaSession, MemoryQuery, Surface};
+    use corp_finance_core::memory::{
+        CfaSession, EntityKind, EntityRef, MemoryQuery, RunSummary, Surface,
+    };
 
     fn emit<T: schemars::JsonSchema>(type_name: &str) {
         let settings = schemars::generate::SchemaSettings::default().with(|s| {
@@ -20,20 +22,32 @@ mod memory_schemas {
     }
 
     #[test]
-    fn export_surface() { emit::<Surface>("Surface"); }
+    fn export_surface() {
+        emit::<Surface>("Surface");
+    }
 
     #[test]
-    fn export_entity_kind() { emit::<EntityKind>("EntityKind"); }
+    fn export_entity_kind() {
+        emit::<EntityKind>("EntityKind");
+    }
 
     #[test]
-    fn export_entity_ref() { emit::<EntityRef>("EntityRef"); }
+    fn export_entity_ref() {
+        emit::<EntityRef>("EntityRef");
+    }
 
     #[test]
-    fn export_run_summary() { emit::<RunSummary>("RunSummary"); }
+    fn export_run_summary() {
+        emit::<RunSummary>("RunSummary");
+    }
 
     #[test]
-    fn export_cfa_session() { emit::<CfaSession>("CfaSession"); }
+    fn export_cfa_session() {
+        emit::<CfaSession>("CfaSession");
+    }
 
     #[test]
-    fn export_memory_query() { emit::<MemoryQuery>("MemoryQuery"); }
+    fn export_memory_query() {
+        emit::<MemoryQuery>("MemoryQuery");
+    }
 }

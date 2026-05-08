@@ -27,6 +27,15 @@ pub mod pitch_deck;
 #[cfg(feature = "office")]
 pub mod research_init;
 
+#[cfg(feature = "office")]
+pub mod cim;
+
+#[cfg(feature = "office")]
+pub mod earnings_update;
+
+#[cfg(feature = "office")]
+pub mod sector_overview;
+
 // ---------------------------------------------------------------------------
 // JSON-envelope dispatcher (Phase 29 Wave 6, Task B1)
 // ---------------------------------------------------------------------------
@@ -62,22 +71,19 @@ pub struct RenderTemplateInput {
 pub fn render_template_from_json(
     input_json: &str,
 ) -> crate::CorpFinanceResult<crate::office::WorkbookSpec> {
-    let input: RenderTemplateInput = serde_json::from_str(input_json).map_err(|e| {
-        crate::CorpFinanceError::InvalidInput {
+    let input: RenderTemplateInput =
+        serde_json::from_str(input_json).map_err(|e| crate::CorpFinanceError::InvalidInput {
             field: "input_json".into(),
             reason: e.to_string(),
-        }
-    })?;
+        })?;
 
     match input.kind {
         #[cfg(feature = "valuation")]
         TemplateKind::Dcf => {
-            let result: crate::valuation::dcf::DcfOutput =
-                serde_json::from_str(&input.result_json).map_err(|e| {
-                    crate::CorpFinanceError::InvalidInput {
-                        field: "result_json".into(),
-                        reason: e.to_string(),
-                    }
+            let result: crate::valuation::dcf::DcfOutput = serde_json::from_str(&input.result_json)
+                .map_err(|e| crate::CorpFinanceError::InvalidInput {
+                    field: "result_json".into(),
+                    reason: e.to_string(),
                 })?;
             Ok(dcf::dcf_to_workbook(&result))
         }
@@ -106,12 +112,10 @@ pub fn render_template_from_json(
 
         #[cfg(feature = "pe")]
         TemplateKind::Lbo => {
-            let result: crate::pe::lbo::LboOutput =
-                serde_json::from_str(&input.result_json).map_err(|e| {
-                    crate::CorpFinanceError::InvalidInput {
-                        field: "result_json".into(),
-                        reason: e.to_string(),
-                    }
+            let result: crate::pe::lbo::LboOutput = serde_json::from_str(&input.result_json)
+                .map_err(|e| crate::CorpFinanceError::InvalidInput {
+                    field: "result_json".into(),
+                    reason: e.to_string(),
                 })?;
             Ok(lbo::lbo_to_workbook(&result))
         }
@@ -159,11 +163,15 @@ mod tests {
     // ---- DCF ----------------------------------------------------------------
 
     fn dcf_input_json() -> String {
-        use crate::valuation::dcf::{DcfOutput, DcfYearProjection};
         use crate::types::ProjectionPeriod;
+        use crate::valuation::dcf::{DcfOutput, DcfYearProjection};
         let output = DcfOutput {
             projections: vec![DcfYearProjection {
-                period: ProjectionPeriod { year: 1, label: "Year 1".into(), is_terminal: false },
+                period: ProjectionPeriod {
+                    year: 1,
+                    label: "Year 1".into(),
+                    is_terminal: false,
+                },
                 revenue: dec!(1000),
                 ebitda: dec!(250),
                 ebit: dec!(200),
@@ -232,7 +240,7 @@ mod tests {
     fn lbo_input_json() -> String {
         use crate::pe::{
             debt_schedule::{AmortisationType, DebtTrancheInput},
-            lbo::{LboInput, build_lbo},
+            lbo::{build_lbo, LboInput},
         };
         let input = LboInput {
             entry_ev: dec!(1000),
@@ -288,34 +296,60 @@ mod tests {
         };
         let is = IncomeStatement {
             year: 1,
-            revenue: Decimal::ZERO, cogs: Decimal::ZERO, gross_profit: Decimal::ZERO,
-            gross_margin: Decimal::ZERO, sga: Decimal::ZERO, rnd: Decimal::ZERO,
-            total_opex: Decimal::ZERO, ebitda: Decimal::ZERO, ebitda_margin: Decimal::ZERO,
-            depreciation: Decimal::ZERO, ebit: Decimal::ZERO, ebit_margin: Decimal::ZERO,
-            interest_expense: Decimal::ZERO, ebt: Decimal::ZERO, taxes: Decimal::ZERO,
-            net_income: Decimal::ZERO, net_margin: Decimal::ZERO,
+            revenue: Decimal::ZERO,
+            cogs: Decimal::ZERO,
+            gross_profit: Decimal::ZERO,
+            gross_margin: Decimal::ZERO,
+            sga: Decimal::ZERO,
+            rnd: Decimal::ZERO,
+            total_opex: Decimal::ZERO,
+            ebitda: Decimal::ZERO,
+            ebitda_margin: Decimal::ZERO,
+            depreciation: Decimal::ZERO,
+            ebit: Decimal::ZERO,
+            ebit_margin: Decimal::ZERO,
+            interest_expense: Decimal::ZERO,
+            ebt: Decimal::ZERO,
+            taxes: Decimal::ZERO,
+            net_income: Decimal::ZERO,
+            net_margin: Decimal::ZERO,
         };
         let bs = BalanceSheet {
             year: 1,
-            cash: Decimal::ZERO, accounts_receivable: Decimal::ZERO,
-            inventory: Decimal::ZERO, total_current_assets: Decimal::ZERO,
-            ppe_net: Decimal::ZERO, total_assets: Decimal::ZERO,
-            accounts_payable: Decimal::ZERO, current_debt: Decimal::ZERO,
-            total_current_liabilities: Decimal::ZERO, long_term_debt: Decimal::ZERO,
-            total_debt: Decimal::ZERO, total_liabilities: Decimal::ZERO,
-            shareholders_equity: Decimal::ZERO, retained_earnings_cumulative: Decimal::ZERO,
+            cash: Decimal::ZERO,
+            accounts_receivable: Decimal::ZERO,
+            inventory: Decimal::ZERO,
+            total_current_assets: Decimal::ZERO,
+            ppe_net: Decimal::ZERO,
+            total_assets: Decimal::ZERO,
+            accounts_payable: Decimal::ZERO,
+            current_debt: Decimal::ZERO,
+            total_current_liabilities: Decimal::ZERO,
+            long_term_debt: Decimal::ZERO,
+            total_debt: Decimal::ZERO,
+            total_liabilities: Decimal::ZERO,
+            shareholders_equity: Decimal::ZERO,
+            retained_earnings_cumulative: Decimal::ZERO,
             total_liabilities_and_equity: Decimal::ZERO,
         };
         let cf = CashFlowStatement {
             year: 1,
-            net_income: Decimal::ZERO, depreciation: Decimal::ZERO,
-            change_in_receivables: Decimal::ZERO, change_in_inventory: Decimal::ZERO,
-            change_in_payables: Decimal::ZERO, cash_from_operations: Decimal::ZERO,
-            capex: Decimal::ZERO, cash_from_investing: Decimal::ZERO,
-            debt_repayment: Decimal::ZERO, new_debt: Decimal::ZERO,
-            dividends: Decimal::ZERO, cash_from_financing: Decimal::ZERO,
-            net_change_in_cash: Decimal::ZERO, ending_cash: Decimal::ZERO,
-            fcf: Decimal::ZERO, fcfe: Decimal::ZERO,
+            net_income: Decimal::ZERO,
+            depreciation: Decimal::ZERO,
+            change_in_receivables: Decimal::ZERO,
+            change_in_inventory: Decimal::ZERO,
+            change_in_payables: Decimal::ZERO,
+            cash_from_operations: Decimal::ZERO,
+            capex: Decimal::ZERO,
+            cash_from_investing: Decimal::ZERO,
+            debt_repayment: Decimal::ZERO,
+            new_debt: Decimal::ZERO,
+            dividends: Decimal::ZERO,
+            cash_from_financing: Decimal::ZERO,
+            net_change_in_cash: Decimal::ZERO,
+            ending_cash: Decimal::ZERO,
+            fcf: Decimal::ZERO,
+            fcfe: Decimal::ZERO,
         };
         let output = ThreeStatementOutput {
             income_statements: vec![is],
@@ -353,6 +387,9 @@ mod tests {
 pub enum DocTemplateKind {
     IcMemo,
     ResearchInit,
+    Cim,
+    SectorOverview,
+    EarningsUpdate,
 }
 
 #[cfg(feature = "office")]
@@ -367,12 +404,11 @@ pub struct RenderDocTemplateInput {
 pub fn render_doc_template_from_json(
     input_json: &str,
 ) -> crate::CorpFinanceResult<crate::office::WordDocSpec> {
-    let envelope: RenderDocTemplateInput = serde_json::from_str(input_json).map_err(|e| {
-        crate::CorpFinanceError::InvalidInput {
+    let envelope: RenderDocTemplateInput =
+        serde_json::from_str(input_json).map_err(|e| crate::CorpFinanceError::InvalidInput {
             field: "input_json".into(),
             reason: e.to_string(),
-        }
-    })?;
+        })?;
 
     match envelope.kind {
         DocTemplateKind::IcMemo => {
@@ -394,6 +430,36 @@ pub fn render_doc_template_from_json(
                     }
                 })?;
             Ok(research_init::research_init_to_doc(&input))
+        }
+        DocTemplateKind::Cim => {
+            let input: cim::CimInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(cim::cim_to_doc(&input))
+        }
+        DocTemplateKind::SectorOverview => {
+            let input: sector_overview::SectorOverviewInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(sector_overview::sector_overview_to_doc(&input))
+        }
+        DocTemplateKind::EarningsUpdate => {
+            let input: earnings_update::EarningsUpdateInput =
+                serde_json::from_str(&envelope.input_json).map_err(|e| {
+                    crate::CorpFinanceError::InvalidInput {
+                        field: "input_json.payload".into(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            Ok(earnings_update::earnings_update_to_doc(&input))
         }
     }
 }
@@ -423,21 +489,18 @@ pub struct RenderDeckTemplateInput {
 pub fn render_deck_template_from_json(
     input_json: &str,
 ) -> crate::CorpFinanceResult<crate::office::SlideDeckSpec> {
-    let envelope: RenderDeckTemplateInput = serde_json::from_str(input_json).map_err(|e| {
-        crate::CorpFinanceError::InvalidInput {
+    let envelope: RenderDeckTemplateInput =
+        serde_json::from_str(input_json).map_err(|e| crate::CorpFinanceError::InvalidInput {
             field: "input_json".into(),
             reason: e.to_string(),
-        }
-    })?;
+        })?;
 
     match envelope.kind {
         DeckTemplateKind::PitchDeck => {
-            let input: pitch_deck::PitchDeckInput =
-                serde_json::from_str(&envelope.input_json).map_err(|e| {
-                    crate::CorpFinanceError::InvalidInput {
-                        field: "input_json.payload".into(),
-                        reason: e.to_string(),
-                    }
+            let input: pitch_deck::PitchDeckInput = serde_json::from_str(&envelope.input_json)
+                .map_err(|e| crate::CorpFinanceError::InvalidInput {
+                    field: "input_json.payload".into(),
+                    reason: e.to_string(),
                 })?;
             Ok(pitch_deck::pitch_deck_to_deck(&input))
         }
@@ -475,7 +538,8 @@ mod wave9_tests {
             "risks": [],
             "mitigants": [],
             "conclusion": "Recommend approval."
-        }).to_string();
+        })
+        .to_string();
         serde_json::json!({"kind": "ic_memo", "input_json": payload}).to_string()
     }
 
@@ -496,7 +560,8 @@ mod wave9_tests {
             "valuation_summary": [["DCF", "$210"]],
             "catalysts": [],
             "risks": []
-        }).to_string();
+        })
+        .to_string();
         serde_json::json!({"kind": "research_init", "input_json": payload}).to_string()
     }
 
@@ -513,7 +578,8 @@ mod wave9_tests {
             "returns_summary": [["MOIC", "3.0x"]],
             "process_timeline": [["IOI", "2026-06"]],
             "conclusion": ["Bullet 1"]
-        }).to_string();
+        })
+        .to_string();
         serde_json::json!({"kind": "pitch_deck", "input_json": payload}).to_string()
     }
 
@@ -529,7 +595,8 @@ mod wave9_tests {
             "risks": [],
             "mitigants": [],
             "timeline": []
-        }).to_string();
+        })
+        .to_string();
         serde_json::json!({"kind": "ic_presentation", "input_json": payload}).to_string()
     }
 

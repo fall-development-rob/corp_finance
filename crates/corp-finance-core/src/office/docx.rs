@@ -135,11 +135,15 @@ fn register_bullet_numbering(docx: docx_rs::Docx, abstract_id: usize) -> docx_rs
             docx_rs::LevelText::new("\u{2022}"),
             docx_rs::LevelJc::new("left"),
         )
-        .indent(Some(720), Some(docx_rs::SpecialIndentType::Hanging(360)), Some(360), None),
+        .indent(
+            Some(720),
+            Some(docx_rs::SpecialIndentType::Hanging(360)),
+            Some(360),
+            None,
+        ),
     );
     let num = docx_rs::Numbering::new(abstract_id, abstract_id);
-    docx.add_abstract_numbering(abstract_num)
-        .add_numbering(num)
+    docx.add_abstract_numbering(abstract_num).add_numbering(num)
 }
 
 fn register_decimal_numbering(docx: docx_rs::Docx, abstract_id: usize) -> docx_rs::Docx {
@@ -151,11 +155,15 @@ fn register_decimal_numbering(docx: docx_rs::Docx, abstract_id: usize) -> docx_r
             docx_rs::LevelText::new("%1."),
             docx_rs::LevelJc::new("left"),
         )
-        .indent(Some(720), Some(docx_rs::SpecialIndentType::Hanging(360)), Some(360), None),
+        .indent(
+            Some(720),
+            Some(docx_rs::SpecialIndentType::Hanging(360)),
+            Some(360),
+            None,
+        ),
     );
     let num = docx_rs::Numbering::new(abstract_id, abstract_id);
-    docx.add_abstract_numbering(abstract_num)
-        .add_numbering(num)
+    docx.add_abstract_numbering(abstract_num).add_numbering(num)
 }
 
 // ---------------------------------------------------------------------------
@@ -176,10 +184,7 @@ fn write_section(
 // Block writing
 // ---------------------------------------------------------------------------
 
-fn write_block(
-    docx: docx_rs::Docx,
-    block: &DocBlock,
-) -> CorpFinanceResult<docx_rs::Docx> {
+fn write_block(docx: docx_rs::Docx, block: &DocBlock) -> CorpFinanceResult<docx_rs::Docx> {
     match block {
         DocBlock::Heading { level, text } => Ok(write_heading(docx, *level, text)),
         DocBlock::Paragraph { runs } => Ok(write_paragraph(docx, runs)),
@@ -213,11 +218,7 @@ fn write_paragraph(docx: docx_rs::Docx, runs: &[TextRun]) -> docx_rs::Docx {
     docx.add_paragraph(para)
 }
 
-fn write_table(
-    docx: docx_rs::Docx,
-    headers: &[String],
-    rows: &[Vec<String>],
-) -> docx_rs::Docx {
+fn write_table(docx: docx_rs::Docx, headers: &[String], rows: &[Vec<String>]) -> docx_rs::Docx {
     let mut table_rows: Vec<docx_rs::TableRow> = Vec::new();
 
     // Header row — bold text
@@ -284,8 +285,8 @@ fn write_numbered_list(
 }
 
 fn write_page_break(docx: docx_rs::Docx) -> docx_rs::Docx {
-    let para = docx_rs::Paragraph::new()
-        .add_run(docx_rs::Run::new().add_break(docx_rs::BreakType::Page));
+    let para =
+        docx_rs::Paragraph::new().add_run(docx_rs::Run::new().add_break(docx_rs::BreakType::Page));
     docx.add_paragraph(para)
 }
 
@@ -315,9 +316,7 @@ mod tests {
     use tempfile::TempDir;
 
     use super::*;
-    use crate::office::types::{
-        DocBlock, DocSection, TextRun, WordDocSpec, WorkbookProperties,
-    };
+    use crate::office::types::{DocBlock, DocSection, TextRun, WordDocSpec, WorkbookProperties};
 
     fn minimal_spec() -> WordDocSpec {
         WordDocSpec {
@@ -372,7 +371,10 @@ mod tests {
         let result = write_word_doc(&spec, &path).unwrap();
 
         assert!(result.bytes_written > 0, "should write non-zero bytes");
-        assert_eq!(result.bytes_written, std::fs::metadata(&path).unwrap().len());
+        assert_eq!(
+            result.bytes_written,
+            std::fs::metadata(&path).unwrap().len()
+        );
         assert_sha256_format(&result.sha256);
         assert_eq!(result.section_count, 1);
     }
@@ -384,9 +386,18 @@ mod tests {
         let spec = WordDocSpec {
             sections: vec![DocSection {
                 blocks: vec![
-                    DocBlock::Heading { level: 1, text: "Level 1".into() },
-                    DocBlock::Heading { level: 2, text: "Level 2".into() },
-                    DocBlock::Heading { level: 3, text: "Level 3".into() },
+                    DocBlock::Heading {
+                        level: 1,
+                        text: "Level 1".into(),
+                    },
+                    DocBlock::Heading {
+                        level: 2,
+                        text: "Level 2".into(),
+                    },
+                    DocBlock::Heading {
+                        level: 3,
+                        text: "Level 3".into(),
+                    },
                 ],
             }],
             properties: WorkbookProperties::default(),
@@ -397,9 +408,18 @@ mod tests {
         assert!(result.bytes_written > 0);
         assert_sha256_format(&result.sha256);
         // The heading style IDs appear in document.xml
-        assert!(zip_contains_bytes(&path, b"Heading1"), "Heading1 style should appear");
-        assert!(zip_contains_bytes(&path, b"Heading2"), "Heading2 style should appear");
-        assert!(zip_contains_bytes(&path, b"Heading3"), "Heading3 style should appear");
+        assert!(
+            zip_contains_bytes(&path, b"Heading1"),
+            "Heading1 style should appear"
+        );
+        assert!(
+            zip_contains_bytes(&path, b"Heading2"),
+            "Heading2 style should appear"
+        );
+        assert!(
+            zip_contains_bytes(&path, b"Heading3"),
+            "Heading3 style should appear"
+        );
     }
 
     #[test]
@@ -449,8 +469,16 @@ mod tests {
             sections: vec![DocSection {
                 blocks: vec![DocBlock::Paragraph {
                     runs: vec![
-                        TextRun { text: "Bold text".into(), bold: true, italic: false },
-                        TextRun { text: " italic text".into(), bold: false, italic: true },
+                        TextRun {
+                            text: "Bold text".into(),
+                            bold: true,
+                            italic: false,
+                        },
+                        TextRun {
+                            text: " italic text".into(),
+                            bold: false,
+                            italic: true,
+                        },
                     ],
                 }],
             }],
@@ -462,9 +490,15 @@ mod tests {
         assert!(result.bytes_written > 0);
         assert_sha256_format(&result.sha256);
         // Bold marker appears in document.xml as <w:b/>
-        assert!(zip_contains_bytes(&path, b"<w:b"), "bold marker should appear in docx xml");
+        assert!(
+            zip_contains_bytes(&path, b"<w:b"),
+            "bold marker should appear in docx xml"
+        );
         // Italic marker appears as <w:i/>
-        assert!(zip_contains_bytes(&path, b"<w:i"), "italic marker should appear in docx xml");
+        assert!(
+            zip_contains_bytes(&path, b"<w:i"),
+            "italic marker should appear in docx xml"
+        );
     }
 
     #[test]
@@ -488,8 +522,14 @@ mod tests {
 
         assert!(result.bytes_written > 0);
         assert_sha256_format(&result.sha256);
-        assert!(zip_contains_bytes(&path, b"ACME Corp"), "table data should appear in docx xml");
-        assert!(zip_contains_bytes(&path, b"Company"), "table header should appear in docx xml");
+        assert!(
+            zip_contains_bytes(&path, b"ACME Corp"),
+            "table data should appear in docx xml"
+        );
+        assert!(
+            zip_contains_bytes(&path, b"Company"),
+            "table header should appear in docx xml"
+        );
     }
 
     #[test]
@@ -554,7 +594,10 @@ mod tests {
             sections: vec![
                 DocSection {
                     blocks: vec![
-                        DocBlock::Heading { level: 1, text: "Section One".into() },
+                        DocBlock::Heading {
+                            level: 1,
+                            text: "Section One".into(),
+                        },
                         DocBlock::PageBreak,
                     ],
                 },

@@ -7,10 +7,10 @@
 
 #[cfg(all(test, feature = "schema_gen", feature = "cost"))]
 mod cost_schemas {
+    use corp_finance_core::cost::types::CostEvent;
     use corp_finance_core::cost::{
         BudgetPeriod, BudgetStatus, CostBudget, CostSummary, CostSummaryRow, GroupBy, TierTag,
     };
-    use corp_finance_core::cost::types::CostEvent;
     use corp_finance_core::surface::Surface;
 
     fn emit<T: schemars::JsonSchema>(type_name: &str) {
@@ -24,29 +24,47 @@ mod cost_schemas {
     }
 
     #[test]
-    fn export_surface() { emit::<Surface>("Surface"); }
+    fn export_surface() {
+        emit::<Surface>("Surface");
+    }
 
     #[test]
-    fn export_tier_tag() { emit::<TierTag>("TierTag"); }
+    fn export_tier_tag() {
+        emit::<TierTag>("TierTag");
+    }
 
     #[test]
-    fn export_cost_event() { emit::<CostEvent>("CostEvent"); }
+    fn export_cost_event() {
+        emit::<CostEvent>("CostEvent");
+    }
 
     #[test]
-    fn export_budget_period() { emit::<BudgetPeriod>("BudgetPeriod"); }
+    fn export_budget_period() {
+        emit::<BudgetPeriod>("BudgetPeriod");
+    }
 
     #[test]
-    fn export_cost_budget() { emit::<CostBudget>("CostBudget"); }
+    fn export_cost_budget() {
+        emit::<CostBudget>("CostBudget");
+    }
 
     #[test]
-    fn export_budget_status() { emit::<BudgetStatus>("BudgetStatus"); }
+    fn export_budget_status() {
+        emit::<BudgetStatus>("BudgetStatus");
+    }
 
     #[test]
-    fn export_group_by() { emit::<GroupBy>("GroupBy"); }
+    fn export_group_by() {
+        emit::<GroupBy>("GroupBy");
+    }
 
     #[test]
-    fn export_cost_summary_row() { emit::<CostSummaryRow>("CostSummaryRow"); }
+    fn export_cost_summary_row() {
+        emit::<CostSummaryRow>("CostSummaryRow");
+    }
 
     #[test]
-    fn export_cost_summary() { emit::<CostSummary>("CostSummary"); }
+    fn export_cost_summary() {
+        emit::<CostSummary>("CostSummary");
+    }
 }

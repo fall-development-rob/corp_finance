@@ -85,7 +85,9 @@ fn build_assumptions_sheet(result: &DcfOutput) -> SheetSpec {
 #[cfg(all(feature = "office", feature = "valuation"))]
 fn assumption_row(label: &str, value: String) -> Vec<CellValue> {
     vec![
-        CellValue::Text { value: label.into() },
+        CellValue::Text {
+            value: label.into(),
+        },
         CellValue::Decimal { value },
     ]
 }
@@ -93,7 +95,9 @@ fn assumption_row(label: &str, value: String) -> Vec<CellValue> {
 #[cfg(all(feature = "office", feature = "valuation"))]
 fn assumption_text_row(label: &str, value: String) -> Vec<CellValue> {
     vec![
-        CellValue::Text { value: label.into() },
+        CellValue::Text {
+            value: label.into(),
+        },
         CellValue::Text { value },
     ]
 }
@@ -176,7 +180,9 @@ fn build_valuation_sheet(result: &DcfOutput) -> SheetSpec {
 #[cfg(all(feature = "office", feature = "valuation"))]
 fn label_decimal_row(label: &str, value: String) -> Vec<CellValue> {
     vec![
-        CellValue::Text { value: label.into() },
+        CellValue::Text {
+            value: label.into(),
+        },
         CellValue::Decimal { value },
     ]
 }
@@ -209,8 +215,8 @@ mod tests {
     use rust_decimal_macros::dec;
 
     fn minimal_dcf_output() -> DcfOutput {
-        use crate::valuation::dcf::DcfYearProjection;
         use crate::types::ProjectionPeriod;
+        use crate::valuation::dcf::DcfYearProjection;
 
         DcfOutput {
             projections: vec![DcfYearProjection {

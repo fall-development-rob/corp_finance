@@ -233,10 +233,7 @@ mod tests {
                 vec!["Revenue ($M)".into(), "320".into(), "358".into()],
                 vec!["EBITDA ($M)".into(), "80".into(), "100".into()],
             ],
-            returns_summary: vec![
-                ("IRR".into(), "22%".into()),
-                ("MOIC".into(), "2.8x".into()),
-            ],
+            returns_summary: vec![("IRR".into(), "22%".into()), ("MOIC".into(), "2.8x".into())],
             process_timeline: vec![
                 ("Launch".into(), "Jun 2026".into()),
                 ("LOIs".into(), "Aug 2026".into()),

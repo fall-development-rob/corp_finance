@@ -69,7 +69,13 @@ fn build_sources_uses_sheet(result: &LboOutput) -> SheetSpec {
         let src_val = src.map(|(_, v)| dec_cell(*v)).unwrap_or(CellValue::Empty);
         let use_label = use_.map(|(n, _)| text(n)).unwrap_or(CellValue::Empty);
         let use_val = use_.map(|(_, v)| dec_cell(*v)).unwrap_or(CellValue::Empty);
-        rows.push(vec![src_label, src_val, CellValue::Empty, use_label, use_val]);
+        rows.push(vec![
+            src_label,
+            src_val,
+            CellValue::Empty,
+            use_label,
+            use_val,
+        ]);
     }
 
     // Total row
@@ -121,10 +127,7 @@ fn build_debt_schedule_sheet(result: &LboOutput) -> SheetSpec {
                 let sweep = period.scheduled_repayment - period.scheduled_repayment; // placeholder zero
                 let _ = sweep;
                 // Derive cash sweep from projection matching the year/tranche
-                let proj_opt = result
-                    .projections
-                    .iter()
-                    .find(|p| p.year == period.year);
+                let proj_opt = result.projections.iter().find(|p| p.year == period.year);
                 let optional = proj_opt
                     .map(|p| p.optional_repayment)
                     .unwrap_or(rust_decimal::Decimal::ZERO);
@@ -167,7 +170,10 @@ fn build_returns_sheet(result: &LboOutput) -> SheetSpec {
     let rows = vec![
         vec![text("Exit Enterprise Value"), dec_cell(result.exit_ev)],
         vec![text("Exit Net Debt"), dec_cell(result.exit_net_debt)],
-        vec![text("Exit Equity Value"), dec_cell(result.exit_equity_value)],
+        vec![
+            text("Exit Equity Value"),
+            dec_cell(result.exit_equity_value),
+        ],
         vec![text("MoM (MOIC)"), dec_cell(result.moic)],
         vec![text("Cash-on-Cash"), dec_cell(result.cash_on_cash)],
         vec![text("Sponsor IRR"), dec_cell(result.irr)],
@@ -196,7 +202,7 @@ mod tests {
     fn minimal_lbo_output() -> crate::pe::lbo::LboOutput {
         use crate::pe::{
             debt_schedule::{AmortisationType, DebtTrancheInput},
-            lbo::{LboInput, build_lbo},
+            lbo::{build_lbo, LboInput},
         };
         use rust_decimal_macros::dec;
 
