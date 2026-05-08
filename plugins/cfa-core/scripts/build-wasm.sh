@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
-# Build the corp-finance-wasm crate and copy artifacts into the plugin's mcp/wasm/ directory.
+# Phase 29 Wave 18 — Delegate WASM build to the extracted corp-finance-core repo,
+# then copy artefacts into this plugin's wasm/ directory.
+# corp-finance-core is the source-of-truth for WASM builds; cfa_agent only consumes output.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-PLUGIN_DIR="$REPO_ROOT/plugins/cfa-core"
-CRATE_DIR="$REPO_ROOT/crates/corp-finance-wasm"
-OUT_DIR="$PLUGIN_DIR/mcp/wasm"
+COREREPO="/home/robert/corp-finance-core"
+PLUGIN_WASM="/home/robert/cfa_agent/plugins/cfa-core/mcp/wasm"
 
-if ! command -v wasm-pack >/dev/null 2>&1; then
-    echo "error: wasm-pack not installed. install with:"
-    echo "    curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh"
+if [ ! -d "$COREREPO" ]; then
+    echo "error: corp-finance-core repo not found at $COREREPO"
     exit 1
 fi
 
-echo "[cfa-core] building WASM (release, target=nodejs)..."
-wasm-pack build "$CRATE_DIR" \
-    --release \
-    --target nodejs \
-    --out-dir "$OUT_DIR" \
-    --out-name corp_finance_wasm
+echo "[cfa-core] delegating WASM build to $COREREPO ..."
+cd "$COREREPO" && bash scripts/build-wasm.sh
+
+mkdir -p "$PLUGIN_WASM"
+cp -f "$COREREPO/dist/wasm/corp_finance_wasm.js" "$PLUGIN_WASM/"
+cp -f "$COREREPO/dist/wasm/corp_finance_wasm_bg.wasm" "$PLUGIN_WASM/"
+cp -f "$COREREPO/dist/wasm/corp_finance_wasm_bg.wasm.d.ts" "$PLUGIN_WASM/"
+cp -f "$COREREPO/dist/wasm/corp_finance_wasm.d.ts" "$PLUGIN_WASM/"
 
 echo "[cfa-core] artifact:"
-ls -lh "$OUT_DIR"/*.wasm
+ls -lh "$PLUGIN_WASM/corp_finance_wasm_bg.wasm"
 echo "[cfa-core] done."
