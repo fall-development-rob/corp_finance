@@ -102,7 +102,7 @@ serde_json = "1"
 thiserror = "2"
 chrono = { version = "0.4", features = ["serde"] }
 rand = { version = "0.8", optional = true }
-statrs = { version = "0.17", optional = true }
+statrs = { version = "0.18", optional = true }
 
 # Phase 26 — Memory + Audit + Cost + Observability + Security (native, surface-only)
 hnsw_rs = { version = "0.3", optional = true }
