@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Top-level description of an Excel workbook to be written.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WorkbookSpec {
     pub sheets: Vec<SheetSpec>,
     #[serde(default)]
@@ -14,6 +15,7 @@ pub struct WorkbookSpec {
 
 /// Description of one worksheet tab.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct SheetSpec {
     /// Worksheet tab name (max 31 chars per Excel).
     pub name: String,
@@ -42,6 +44,7 @@ pub struct SheetSpec {
 
 /// Freeze row/col coordinates (0-indexed).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct FrozenPanes {
     pub row: u32,
     pub col: u32,
@@ -49,6 +52,7 @@ pub struct FrozenPanes {
 
 /// A single cell value in a data row.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum CellValue {
     Text { value: String },
@@ -69,6 +73,7 @@ pub enum CellValue {
 
 /// A formula written at an explicit (row, col) position on the sheet.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct FormulaCell {
     /// 0-indexed worksheet row.
     pub row: u32,
@@ -84,6 +89,7 @@ pub struct FormulaCell {
 /// Minimal cell-level format overlay applied after value writes.
 /// `num_format` follows Excel number format syntax (e.g. `"$#,##0.00"`, `"0.00%"`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct CellFormat {
     #[serde(default)]
     pub num_format: Option<String>,
@@ -95,6 +101,7 @@ pub struct CellFormat {
 
 /// A format overlay applied to a specific (row, col) after all data writes.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct FormattedCell {
     /// 0-indexed worksheet row.
     pub row: u32,
@@ -106,6 +113,7 @@ pub struct FormattedCell {
 
 /// Chart variety supported by the xlsx writer.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum ChartKind {
     Line,
@@ -117,6 +125,7 @@ pub enum ChartKind {
 /// One data series within a chart, specified via A1-style absolute ranges.
 /// Example: `categories_range = "Sheet1!$A$2:$A$10"`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct ChartSeries {
     /// Series display name.
     pub name: String,
@@ -128,6 +137,7 @@ pub struct ChartSeries {
 
 /// A chart object embedded in a worksheet at `(anchor_row, anchor_col)`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct Chart {
     pub kind: ChartKind,
     /// 0-indexed row of the chart's top-left anchor cell.
@@ -142,6 +152,7 @@ pub struct Chart {
 
 /// A workbook-level named range / defined name.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct DefinedName {
     /// e.g. "WACC", "DCF_FAIR_VALUE"
     pub name: String,
@@ -151,6 +162,7 @@ pub struct DefinedName {
 
 /// Workbook document properties written into the xlsx metadata.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WorkbookProperties {
     #[serde(default)]
     pub title: Option<String>,
@@ -164,6 +176,7 @@ pub struct WorkbookProperties {
 
 /// Returned by [`crate::office::xlsx::write_workbook`] on success.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WriteWorkbookResult {
     pub output_path: PathBuf,
     pub bytes_written: u64,
@@ -178,6 +191,7 @@ pub struct WriteWorkbookResult {
 
 /// A styled text run within a paragraph.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct TextRun {
     pub text: String,
     #[serde(default)]
@@ -188,6 +202,7 @@ pub struct TextRun {
 
 /// A single content block within a document section.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum DocBlock {
     Heading { level: u8, text: String },
@@ -200,12 +215,14 @@ pub enum DocBlock {
 
 /// A contiguous section of content blocks.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct DocSection {
     pub blocks: Vec<DocBlock>,
 }
 
 /// Top-level description of a Word document to be written.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WordDocSpec {
     pub sections: Vec<DocSection>,
     #[serde(default)]
@@ -214,6 +231,7 @@ pub struct WordDocSpec {
 
 /// Returned by [`crate::office::docx::write_word_doc`] on success.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WriteDocResult {
     pub output_path: PathBuf,
     pub bytes_written: u64,
@@ -228,6 +246,7 @@ pub struct WriteDocResult {
 
 /// A single slide in a deck. Tagged union on `kind` (snake_case).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Slide {
     /// Full-bleed title slide: large title + optional subtitle.
@@ -254,6 +273,7 @@ pub enum Slide {
 
 /// Top-level description of a PowerPoint deck to be written.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct SlideDeckSpec {
     pub slides: Vec<Slide>,
     #[serde(default)]
@@ -262,6 +282,7 @@ pub struct SlideDeckSpec {
 
 /// Returned by [`crate::office::pptx::write_slide_deck`] on success.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct WriteDeckResult {
     pub output_path: PathBuf,
     pub bytes_written: u64,

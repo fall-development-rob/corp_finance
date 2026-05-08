@@ -10,6 +10,7 @@
 
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct ResearchInitInput {
     pub ticker: String,
     pub company: String,

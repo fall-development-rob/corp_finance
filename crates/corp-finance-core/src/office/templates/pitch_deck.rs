@@ -28,6 +28,7 @@ use crate::office::types::{Slide, SlideDeckSpec, WorkbookProperties};
 /// All fields required to build a canonical sell-side IB pitch deck.
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct PitchDeckInput {
     /// Company or deal name — rendered as the title slide heading.
     pub deal_name: String,

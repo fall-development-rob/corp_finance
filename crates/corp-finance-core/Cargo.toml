@@ -83,6 +83,7 @@ managed_agent = []
 scenarios = ["dep:rand", "dep:statrs"]
 monte_carlo = ["scenarios"]
 office = ["dep:rust_xlsxwriter", "dep:sha2", "dep:docx_rs", "dep:zip", "dep:quick-xml"]
+schema_gen = ["dep:schemars"]
 memory = ["dep:hnsw_rs", "dep:tantivy", "dep:petgraph", "dep:flate2", "dep:uuid", "dep:sha2"]
 audit = ["dep:sha2", "dep:uuid"]
 cost = ["dep:rusqlite", "dep:uuid"]
@@ -126,6 +127,9 @@ docx_rs = { package = "docx-rs", version = "0.4", optional = true }
 # stability. Hand-rolling with zip + quick-xml gives fully deterministic output.
 zip = { version = "2", default-features = false, features = ["deflate"], optional = true }
 quick-xml = { version = "0.36", optional = true }
+
+# Phase 29 Wave 11 — Schema generation (build-tooling only, not runtime)
+schemars = { version = "1.2.1", optional = true }
 
 # Phase 27/28 — Multi-agent + Federation + Self-learning (native)
 pathfinding = { version = "4", optional = true }

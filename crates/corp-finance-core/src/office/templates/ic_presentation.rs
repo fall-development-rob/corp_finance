@@ -11,6 +11,7 @@ use crate::office::types::{Slide, SlideDeckSpec, WorkbookProperties};
 /// Structured input for an Investment Committee presentation.
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct IcPresentationInput {
     pub deal_name: String,
     /// e.g. "APPROVE — $250M EQUITY CHECK"

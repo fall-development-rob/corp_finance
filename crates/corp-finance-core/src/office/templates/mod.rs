@@ -33,6 +33,7 @@ pub mod research_init;
 
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum TemplateKind {
     Dcf,
@@ -42,7 +43,8 @@ pub enum TemplateKind {
 }
 
 #[cfg(feature = "office")]
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct RenderTemplateInput {
     pub kind: TemplateKind,
     pub result_json: String,
@@ -346,6 +348,7 @@ mod tests {
 
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum DocTemplateKind {
     IcMemo,
@@ -353,7 +356,8 @@ pub enum DocTemplateKind {
 }
 
 #[cfg(feature = "office")]
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct RenderDocTemplateInput {
     pub kind: DocTemplateKind,
     pub input_json: String,
@@ -400,6 +404,7 @@ pub fn render_doc_template_from_json(
 
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum DeckTemplateKind {
     PitchDeck,
@@ -407,7 +412,8 @@ pub enum DeckTemplateKind {
 }
 
 #[cfg(feature = "office")]
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct RenderDeckTemplateInput {
     pub kind: DeckTemplateKind,
     pub input_json: String,

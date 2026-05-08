@@ -17,16 +17,18 @@
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "schemas:gen:office": "cd ../.. && cargo test -p corp-finance-core --features schema_gen,office --test export_office_schemas && cd packages/mcp-server && node scripts/gen-office-schemas.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.22.0",
-    "@robotixai/corp-finance-bindings": "file:../bindings"
+    "@robotixai/corp-finance-bindings": "file:../bindings",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "json-schema-to-zod": "^2.8.1",
     "tsx": "^4.7.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.4.0"
   }
 }

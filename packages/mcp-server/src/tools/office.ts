@@ -7,17 +7,22 @@ import {
   renderDocTemplate,
   renderDeckTemplate,
 } from "../bindings.js";
+// Tool-specific input wrappers (spec + output_path) have no Rust equivalent;
+// they remain in the hand-maintained schema file.
 import {
   WriteXlsxWorkbookInputSchema,
+  WriteWordDocInputSchema,
+  WriteSlideDeckInputSchema,
+} from "../schemas/office.js";
+// Result schemas and render-input schemas are now sourced from generated (Phase 29 Wave 11).
+import {
   WriteWorkbookResultSchema,
   RenderTemplateInputSchema,
-  WriteWordDocInputSchema,
   WriteDocResultSchema,
-  WriteSlideDeckInputSchema,
   WriteDeckResultSchema,
   RenderDocTemplateInputSchema,
   RenderDeckTemplateInputSchema,
-} from "../schemas/office.js";
+} from "../schemas/generated/office/index.js";
 import { wrapResponse, coerceNumbers } from "../formatters/response.js";
 
 export function registerOfficeTools(server: McpServer) {

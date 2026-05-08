@@ -12,6 +12,7 @@ use crate::office::types::{DocBlock, DocSection, TextRun, WordDocSpec, WorkbookP
 /// All data required to render an institutional IC Memorandum.
 #[cfg(feature = "office")]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema_gen", derive(schemars::JsonSchema))]
 pub struct IcMemoInput {
     pub deal_name: String,
     pub target_company: String,

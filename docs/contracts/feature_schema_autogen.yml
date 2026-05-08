@@ -1,0 +1,179 @@
+# Feature Contract: Rust-to-TypeScript Schema Auto-Generation (Phase 29 Wave 11)
+# Enforces architectural invariants for the schemars -> JSON Schema -> zod pipeline
+# ADR: docs/adr/ADR-025-rust-to-ts-schema-auto-gen.md
+
+contracts:
+  - id: SCHEMA-001
+    name: "Generated files must carry the AUTO-GENERATED header on line 1"
+    description: >
+      Every file emitted by the schemas:gen:office script under
+      packages/mcp-server/src/schemas/generated/ must begin with the literal comment
+      // AUTO-GENERATED — DO NOT EDIT BY HAND on its first line. This header is the
+      machine-readable signal for prettier/eslint exclusion and for CI guard scripts
+      that enforce SCHEMA-INV-001 and SCHEMA-INV-005.
+    scope:
+      - "packages/mcp-server/src/schemas/generated/"
+    check: >
+      grep -rL '^// AUTO-GENERATED — DO NOT EDIT BY HAND'
+        packages/mcp-server/src/schemas/generated/ returns no output
+      (i.e., every file in the directory contains the header)
+    enforcement: build-time
+    severity: error
+
+  - id: SCHEMA-002
+    name: "schema_gen feature must not appear in the full feature set"
+    description: >
+      The schema_gen cargo feature is a dev/CI-only gate. It must not be listed as a
+      dependency of the full feature in crates/corp-finance-core/Cargo.toml. This ensures
+      the schemars derive and the round-trip integration test are excluded from production
+      NAPI builds and do not inflate the runtime dependency closure.
+    scope:
+      - "crates/corp-finance-core/Cargo.toml"
+    check: >
+      grep -A 20 '^\[features\]' crates/corp-finance-core/Cargo.toml |
+        grep '^full' does not contain schema_gen in its dependency list
+    enforcement: review
+    severity: error
+
+  - id: SCHEMA-003
+    name: "schemas:gen:office is the only source of files under schemas/generated/"
+    description: >
+      No file under packages/mcp-server/src/schemas/generated/ may be created or modified
+      by hand. The npm script schemas:gen:office (cargo test --features schema_gen followed
+      by json-schema-to-zod conversion) is the single sanctioned creation path. This is
+      enforceable via the AUTO-GENERATED header check (SCHEMA-001) and is reinforced by
+      the eslint/prettier ignore rules that prevent hand-edit formatting from masking
+      machine-generated content.
+    scope:
+      - "packages/mcp-server/src/schemas/generated/"
+    check: >
+      All files under packages/mcp-server/src/schemas/generated/ pass the
+      SCHEMA-001 header check, confirming they were written by the script and
+      not created or modified manually.
+    enforcement: review
+    severity: error
+
+  - id: SCHEMA-004
+    name: "Pilot scope: only schemas/generated/office/ is added in Wave 11"
+    description: >
+      Wave 11 adds generated schemas for the office domain only. No other subdirectory
+      under schemas/generated/ may be created in this wave. The 83 sibling hand-maintained
+      schema files at packages/mcp-server/src/schemas/*.ts (excluding office.ts) must
+      remain unmodified. This preserves pilot reversibility and keeps scope changes
+      auditable per ADR-025.
+    scope:
+      - "packages/mcp-server/src/schemas/"
+    check: >
+      git diff --name-only HEAD shows additions only under
+        packages/mcp-server/src/schemas/generated/office/;
+      git diff --name-only HEAD shows no modifications to
+        packages/mcp-server/src/schemas/*.ts other than office.ts (which is unchanged)
+    enforcement: review
+    severity: error
+
+  - id: SCHEMA-005
+    name: "Tagged-enum types must emit discriminatedUnion in generated output"
+    description: >
+      Rust enums annotated with #[serde(tag = "kind", rename_all = "snake_case")] must
+      produce a z.discriminatedUnion("kind", [...]) call (or equivalent kind-discriminator
+      zod pattern) in the generated TypeScript. This is required for correct runtime
+      validation of tagged-union MCP tool inputs. If json-schema-to-zod does not emit
+      the discriminator pattern automatically, a post-generation fixup step in the
+      schemas:gen:office script must apply it before commit.
+    scope:
+      - "packages/mcp-server/src/schemas/generated/office/"
+    check: >
+      Count of discriminatedUnion("kind" occurrences in packages/mcp-server/src/schemas/generated/office/
+        matches the count of #[serde(tag = "kind")] annotated enums in
+        crates/corp-finance-core/src/office/
+    enforcement: review
+    severity: error
+
+invariants:
+  - id: SCHEMA-INV-001
+    name: "Rust-is-canonical invariant — generated files are read-only artefacts"
+    description: >
+      For any type committed under packages/mcp-server/src/schemas/generated/, the Rust
+      struct in crates/corp-finance-core/ is the single source of truth. The generated
+      .ts file is a derived artefact; its content is entirely determined by the Rust type
+      definition plus the schemars derive configuration. Hand-editing the generated file
+      is a violation because the next schemas:gen:office run will overwrite the change
+      without warning.
+      Asserted by: grep -rL '^// AUTO-GENERATED — DO NOT EDIT BY HAND'
+        packages/mcp-server/src/schemas/generated/ returns no output on every CI run.
+    check: >
+      grep -rL '^// AUTO-GENERATED — DO NOT EDIT BY HAND'
+        packages/mcp-server/src/schemas/generated/ returns no output.
+      If any file is missing the header, CI fails with a list of offending paths.
+    severity: error
+
+  - id: SCHEMA-INV-002
+    name: "Round-trip wire-compat invariant — serde output validates against schemars schema"
+    description: >
+      For every type annotated with #[derive(JsonSchema)] in the office domain, the JSON
+      value produced by serde_json::to_value(&example) MUST validate successfully against
+      the JSON Schema emitted by schemars::schema_for!(T). A mismatch indicates that the
+      schemars derive is misconfigured for that type (e.g., a serde attribute not reflected
+      in the JSON Schema, or a custom serialiser not matched by a schema validator attribute).
+      Asserted by: a Rust integration test (feature-gated behind schema_gen) that constructs
+      one representative example value per top-level office type, serialises it with
+      serde_json, and validates the resulting Value against the type's JSON Schema using
+      the jsonschema crate. cargo test --features schema_gen passes with this test included.
+    check: >
+      cargo test --features schema_gen passes, including the round-trip integration test
+      at crates/corp-finance-core/src/office/ (or tests/schema_roundtrip.rs).
+      Any validation failure identifies the type name and the failing JSON path.
+    severity: error
+
+  - id: SCHEMA-INV-003
+    name: "Tagged-enum discriminator invariant — serde tag produces kind-discriminated zod"
+    description: >
+      Tagged enums annotated with #[serde(tag = "kind", rename_all = "snake_case")] in
+      Rust must produce z.discriminatedUnion("kind", [...]) (or an equivalent
+      kind-field discriminator pattern) in the corresponding generated TypeScript file.
+      A plain z.union([...]) without discriminator is insufficient: it prevents zod from
+      short-circuiting on the "kind" field and degrades validation error messages.
+      Asserted by: the count of discriminatedUnion("kind" occurrences in
+        packages/mcp-server/src/schemas/generated/office/ equals the count of
+        #[serde(tag = "kind")] annotations in crates/corp-finance-core/src/office/.
+    check: >
+      RUST_COUNT=$(grep -r '#\[serde(tag = "kind"' crates/corp-finance-core/src/office/ | wc -l)
+      TS_COUNT=$(grep -r 'discriminatedUnion("kind"' packages/mcp-server/src/schemas/generated/office/ | wc -l)
+      [ "$RUST_COUNT" -eq "$TS_COUNT" ] || exit 1
+    severity: error
+
+  - id: SCHEMA-INV-004
+    name: "Pilot-scope containment invariant — no sibling schema files modified in Wave 11"
+    description: >
+      The Wave 11 pilot adds files only under packages/mcp-server/src/schemas/generated/office/.
+      The 83 hand-maintained schema files at packages/mcp-server/src/schemas/*.ts
+      (all files except office.ts, which is also unchanged) must not be modified, renamed,
+      or deleted in this wave. This invariant preserves pilot reversibility: rolling back
+      Wave 11 requires only removing schemas/generated/office/ and the schemas:gen:office
+      script entry, with no impact on the existing hand-maintained surface.
+      Asserted by: git diff scope check — only paths matching
+        packages/mcp-server/src/schemas/generated/office/** appear as additions;
+        no modifications to packages/mcp-server/src/schemas/*.ts are present.
+    check: >
+      git diff --name-only HEAD | grep 'packages/mcp-server/src/schemas/' |
+        grep -v '^packages/mcp-server/src/schemas/generated/office/' returns no output.
+      Any match indicates a scope violation and CI must fail.
+    severity: error
+
+  - id: SCHEMA-INV-005
+    name: "Build-time regen invariant — schemas:gen:office is the sole generation path"
+    description: >
+      Running npm run schemas:gen:office from packages/mcp-server is the only sanctioned
+      way for files to appear under schemas/generated/. No developer workflow, IDE plugin,
+      or CI script may create or overwrite these files by any other means. The AUTO-GENERATED
+      header on line 1 of each file is the verifiable evidence that the file passed through
+      the script. A file lacking the header indicates manual creation or a script bug and
+      must be treated as a violation.
+      Asserted by: a CI-callable grep check that reads the first line of every file under
+        schemas/generated/ and confirms it matches '// AUTO-GENERATED — DO NOT EDIT BY HAND'.
+        The check is equivalent to SCHEMA-INV-001 and may share the same CI step.
+    check: >
+      for f in $(find packages/mcp-server/src/schemas/generated -name '*.ts'); do
+        head -1 "$f" | grep -q '^// AUTO-GENERATED — DO NOT EDIT BY HAND' || { echo "VIOLATION: $f"; exit 1; }
+      done
+    severity: error
