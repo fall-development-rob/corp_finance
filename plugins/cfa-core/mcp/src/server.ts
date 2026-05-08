@@ -134,6 +134,71 @@ const wasm = require("../wasm/corp_finance_wasm.js") as {
   clo_reinvestment: (json: string) => string;
   clo_tranche_analytics: (json: string) => string;
   clo_scenario: (json: string) => string;
+  // Fund of funds — Wave 16z
+  j_curve_model: (json: string) => string;
+  commitment_pacing: (json: string) => string;
+  manager_selection: (json: string) => string;
+  secondaries_pricing: (json: string) => string;
+  fof_portfolio: (json: string) => string;
+  // Private wealth — Wave 16z
+  concentrated_stock: (json: string) => string;
+  philanthropic_vehicles: (json: string) => string;
+  wealth_transfer: (json: string) => string;
+  direct_indexing: (json: string) => string;
+  family_governance: (json: string) => string;
+  // Venture — Wave 16z
+  funding_round: (json: string) => string;
+  dilution_analysis: (json: string) => string;
+  convertible_note: (json: string) => string;
+  safe_conversion: (json: string) => string;
+  venture_fund_model: (json: string) => string;
+  // Credit scoring — Wave 16z
+  credit_scorecard: (json: string) => string;
+  merton_pd: (json: string) => string;
+  intensity_model: (json: string) => string;
+  pd_calibration: (json: string) => string;
+  scoring_validation: (json: string) => string;
+  // Capital allocation — Wave 16z
+  economic_capital: (json: string) => string;
+  raroc_calculation: (json: string) => string;
+  euler_allocation: (json: string) => string;
+  shapley_allocation: (json: string) => string;
+  limit_management: (json: string) => string;
+  // Index construction — Wave 16z
+  index_weighting: (json: string) => string;
+  index_rebalancing: (json: string) => string;
+  tracking_error: (json: string) => string;
+  smart_beta: (json: string) => string;
+  index_reconstitution: (json: string) => string;
+  // Regulatory — Wave 16z
+  regulatory_capital: (json: string) => string;
+  lcr: (json: string) => string;
+  nsfr: (json: string) => string;
+  alm_analysis: (json: string) => string;
+  // Quant risk — Wave 16z
+  factor_model: (json: string) => string;
+  black_litterman: (json: string) => string;
+  risk_parity: (json: string) => string;
+  stress_test: (json: string) => string;
+  // ESG — Wave 16z
+  esg_score: (json: string) => string;
+  carbon_footprint: (json: string) => string;
+  green_bond: (json: string) => string;
+  sll_covenants: (json: string) => string;
+  // Insurance — Wave 16z
+  loss_reserving: (json: string) => string;
+  premium_pricing: (json: string) => string;
+  combined_ratio: (json: string) => string;
+  solvency_scr: (json: string) => string;
+  // FX & commodities — Wave 16z
+  fx_forward: (json: string) => string;
+  cross_rate: (json: string) => string;
+  commodity_forward: (json: string) => string;
+  commodity_curve: (json: string) => string;
+  // Private credit — Wave 16z
+  unitranche_pricing: (json: string) => string;
+  direct_loan: (json: string) => string;
+  syndication_analysis: (json: string) => string;
   version: () => string;
 };
 
@@ -450,6 +515,83 @@ async function main() {
   tool(server, "clo_reinvestment", "CLO reinvestment period analytics: vintage diversification, par build-up, prepayment recycling.", wasm.clo_reinvestment);
   tool(server, "clo_tranche_analytics", "CLO tranche analytics: WAL, weighted-avg coupon, attachment/detachment points, par subordination.", wasm.clo_tranche_analytics);
   tool(server, "clo_scenario", "CLO scenario analysis: default/loss/prepayment stress, equity returns, rating-migration impact across waterfall.", wasm.clo_scenario);
+
+  // Fund of funds — Wave 16z
+  tool(server, "j_curve_model", "J-curve fund lifecycle: cash flow projection, TVPI/DPI/RVPI, PME (Kaplan-Schoar), net/gross IRR, trough analysis.", wasm.j_curve_model);
+  tool(server, "commitment_pacing", "Commitment pacing: vintage year allocation, drawdown modeling, NAV projection, over-commitment ratio.", wasm.commitment_pacing);
+  tool(server, "manager_selection", "Manager due diligence: performance scoring, persistence analysis, alpha estimation, qualitative rating.", wasm.manager_selection);
+  tool(server, "secondaries_pricing", "Secondaries pricing: NAV discount, unfunded PV, IRR sensitivity at multiple exit multiples, breakeven.", wasm.secondaries_pricing);
+  tool(server, "fof_portfolio", "Fund of funds portfolio: diversification by strategy/vintage/geography, HHI, constraint monitoring.", wasm.fof_portfolio);
+
+  // Private wealth — Wave 16z
+  tool(server, "concentrated_stock", "Concentrated stock: collar, exchange fund, prepaid forward, charitable strategies with tax-adjusted after-tax comparison.", wasm.concentrated_stock);
+  tool(server, "philanthropic_vehicles", "Philanthropic vehicles: CRT, CLT, DAF, private foundation with tax deduction, income stream, remainder analysis.", wasm.philanthropic_vehicles);
+  tool(server, "wealth_transfer", "Wealth transfer: estate tax, GST, annual exclusion, GRAT, grantor trust, dynasty trust, ILIT analysis with tax savings.", wasm.wealth_transfer);
+  tool(server, "direct_indexing", "Direct indexing: tax-loss harvesting opportunities, wash sale compliance, tracking error, after-tax alpha.", wasm.direct_indexing);
+  tool(server, "family_governance", "Family governance: governance score, complexity assessment, structure recommendations, risk identification.", wasm.family_governance);
+
+  // Venture — Wave 16z
+  tool(server, "funding_round", "Model a single VC funding round with option-pool shuffle, pre/post-money valuations, dilution.", wasm.funding_round);
+  tool(server, "dilution_analysis", "Dilution analysis across multiple funding rounds, ownership trajectories, anti-dilution effects.", wasm.dilution_analysis);
+  tool(server, "convertible_note", "Convert a convertible note into equity at the most favourable price for the note-holder (cap, discount, MFN).", wasm.convertible_note);
+  tool(server, "safe_conversion", "Convert a SAFE into shares at a qualifying financing event (post-money/pre-money, cap, discount).", wasm.safe_conversion);
+  tool(server, "venture_fund_model", "VC fund returns over full lifecycle: TVPI, DPI, IRR, vintage diversification, distribution waterfall.", wasm.venture_fund_model);
+
+  // Credit scoring — Wave 16z
+  tool(server, "credit_scorecard", "Logistic regression scorecard: WoE binning, IV calculation, scorecard points, Gini, KS statistic.", wasm.credit_scorecard);
+  tool(server, "merton_pd", "Merton structural model: asset value/volatility, distance to default, PD, KMV EDF.", wasm.merton_pd);
+  tool(server, "intensity_model", "Reduced-form intensity model: hazard rates from CDS spreads, survival probability, term structure.", wasm.intensity_model);
+  tool(server, "pd_calibration", "PIT/TTC PD calibration: Vasicek single-factor, Basel IRB correlation, central tendency.", wasm.pd_calibration);
+  tool(server, "scoring_validation", "Credit model validation: AUC-ROC, accuracy ratio, Gini, Brier score, Hosmer-Lemeshow.", wasm.scoring_validation);
+
+  // Capital allocation — Wave 16z
+  tool(server, "economic_capital", "Economic capital: VaR/ES-based capital, IRB capital requirement (Basel), stress capital buffer, adequacy ratio.", wasm.economic_capital);
+  tool(server, "raroc_calculation", "RAROC: risk-adjusted return on capital, RORAC, EVA, SVA, spread to hurdle, risk-adjusted pricing.", wasm.raroc_calculation);
+  tool(server, "euler_allocation", "Euler risk contribution: marginal capital allocation, diversification benefit, HHI concentration.", wasm.euler_allocation);
+  tool(server, "shapley_allocation", "Shapley value capital allocation: game-theoretic fair allocation (exact N≤8, sampled N>8).", wasm.shapley_allocation);
+  tool(server, "limit_management", "Risk limit management: notional/VaR/concentration limits, utilization tracking, breach detection.", wasm.limit_management);
+
+  // Index construction — Wave 16z
+  tool(server, "index_weighting", "Index weighting: market-cap, equal, fundamental, free-float with cap constraints, HHI concentration, sector breakdown.", wasm.index_weighting);
+  tool(server, "index_rebalancing", "Index rebalancing: drift analysis, optimal trade list, transaction cost estimation, turnover, liquidity-adjusted scheduling.", wasm.index_rebalancing);
+  tool(server, "tracking_error", "Tracking error: ex-post (returns) and ex-ante (weights/covariance), active share, information ratio decomposition.", wasm.tracking_error);
+  tool(server, "smart_beta", "Smart beta: multi-factor tilted weights (value, momentum, quality, low-vol, dividend) with factor exposure and risk analysis.", wasm.smart_beta);
+  tool(server, "index_reconstitution", "Index reconstitution: member eligibility screening, additions/deletions, buffer zone, turnover, impact analysis.", wasm.index_reconstitution);
+
+  // Regulatory — Wave 16z
+  tool(server, "regulatory_capital", "Basel III/IV regulatory capital and RWA: credit SA risk weights with CRM, op risk (BIA/SA), market risk charge, CET1/Tier1/total ratios, buffers.", wasm.regulatory_capital);
+  tool(server, "lcr", "Basel III LCR: HQLA L1/L2A/L2B with haircuts and composition caps, run-off factors, 75% inflow cap, pass/fail vs 100% minimum.", wasm.lcr);
+  tool(server, "nsfr", "Basel III NSFR: ASF/RSF factors per category, pass/fail vs 100% minimum.", wasm.nsfr);
+  tool(server, "alm_analysis", "ALM/IRRBB: repricing and maturity gap, NII sensitivity, EVE sensitivity, duration gap across rate scenarios.", wasm.alm_analysis);
+
+  // Quant risk — Wave 16z
+  tool(server, "factor_model", "OLS factor regression: CAPM, Fama-French 3F, Carhart 4F, or custom. Returns alpha, factor betas + t-stats, R², adj R², DW, IR.", wasm.factor_model);
+  tool(server, "black_litterman", "Black-Litterman portfolio optimisation: combines market equilibrium with investor views. Returns posterior returns, optimal weights, return/vol/Sharpe.", wasm.black_litterman);
+  tool(server, "risk_parity", "Risk-parity portfolio construction: inverse-vol, ERC, or min-variance. Returns weights, per-asset risk contributions, diversification ratio, effective N.", wasm.risk_parity);
+  tool(server, "stress_test", "Portfolio stress testing: equity/rate/credit/FX/commodity/vol shocks mapped to positions. Returns per-scenario P&L, VaR breach flags, worst-case.", wasm.stress_test);
+
+  // ESG — Wave 16z
+  tool(server, "esg_score", "ESG score with E/S/G pillar weighting, sector materiality mapping, peer benchmarking, red/amber/green flags. 0-100 score, AAA-CCC rating.", wasm.esg_score);
+  tool(server, "carbon_footprint", "Carbon footprint: Scope 1/2/3 emissions, intensity (tCO2e/$M revenue), carbon cost exposure, SBTi target gap, implied temperature.", wasm.carbon_footprint);
+  tool(server, "green_bond", "Green bond greenium: bps premium, PV of coupon savings, total CO2 impact, cost per tonne avoided, ICMA/CBI/EU Taxonomy alignment.", wasm.green_bond);
+  tool(server, "sll_covenants", "Sustainability-linked loan covenants: per-KPI progress vs SPT, met/unmet flag, adjusted margin, annual savings.", wasm.sll_covenants);
+
+  // Insurance — Wave 16z
+  tool(server, "loss_reserving", "Insurance loss reserves: Chain-Ladder + Bornhuetter-Ferguson — age-to-age factors, ultimates, IBNR, tail factors, optional PV discount.", wasm.loss_reserving);
+  tool(server, "premium_pricing", "Insurance premium pricing: frequency × severity pure premium, trended gross premium with expense/profit/RI loadings, rate breakdown.", wasm.premium_pricing);
+  tool(server, "combined_ratio", "Insurance combined ratio: loss, LAE, expense, dividend ratios per period; summary stats, trend, best/worst, profitable-year count.", wasm.combined_ratio);
+  tool(server, "solvency_scr", "Solvency II Standard Formula SCR: non-life UW SCR, cat SCR, market/credit/op SCR, diversification, MCR, solvency ratio, surplus.", wasm.solvency_scr);
+
+  // FX & commodities — Wave 16z
+  tool(server, "fx_forward", "FX forward pricing: covered interest parity, forward points, swap basis, all-in rate.", wasm.fx_forward);
+  tool(server, "cross_rate", "FX cross rate: triangular arbitrage, bid/ask cross via vehicle currency, transaction-cost-adjusted rate.", wasm.cross_rate);
+  tool(server, "commodity_forward", "Commodity forward: cost-of-carry, convenience yield, storage cost, forward curve, contango/backwardation flag.", wasm.commodity_forward);
+  tool(server, "commodity_curve", "Commodity term structure analysis: roll yield, term-structure slope, calendar spread, seasonality.", wasm.commodity_curve);
+
+  // Private credit — Wave 16z
+  tool(server, "unitranche_pricing", "Unitranche facility: FO/LO split, blended yield, call protection, leverage metrics.", wasm.unitranche_pricing);
+  tool(server, "direct_loan", "Direct lending loan: cash/PIK toggle, delayed draw, amortization, credit VaR, default-adjusted yield.", wasm.direct_loan);
+  tool(server, "syndication_analysis", "Loan syndication economics: arranger vs participant fees, oversubscription, pro-rata allocations, per-participant economics.", wasm.syndication_analysis);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

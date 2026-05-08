@@ -342,6 +342,119 @@ wasm_tool!(clo_reinvestment, corp_finance_core::clo_analytics::reinvestment::Rei
 wasm_tool!(clo_tranche_analytics, corp_finance_core::clo_analytics::tranche_analytics::TrancheAnalyticsInput, corp_finance_core::clo_analytics::tranche_analytics::calculate_tranche_analytics);
 wasm_tool!(clo_scenario, corp_finance_core::clo_analytics::scenario::CloScenarioInput, corp_finance_core::clo_analytics::scenario::calculate_clo_scenario);
 
+// ---------------------------------------------------------------------------
+// Wave 16z — fund_of_funds module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(j_curve_model, corp_finance_core::fund_of_funds::j_curve::JCurveInput, corp_finance_core::fund_of_funds::j_curve::calculate_j_curve);
+wasm_tool!(commitment_pacing, corp_finance_core::fund_of_funds::commitment_pacing::CommitmentPacingInput, corp_finance_core::fund_of_funds::commitment_pacing::calculate_commitment_pacing);
+wasm_tool!(manager_selection, corp_finance_core::fund_of_funds::manager_selection::ManagerSelectionInput, corp_finance_core::fund_of_funds::manager_selection::analyze_manager_selection);
+wasm_tool!(secondaries_pricing, corp_finance_core::fund_of_funds::secondaries::SecondariesPricingInput, corp_finance_core::fund_of_funds::secondaries::calculate_secondaries_pricing);
+wasm_tool!(fof_portfolio, corp_finance_core::fund_of_funds::portfolio_construction::FofPortfolioInput, corp_finance_core::fund_of_funds::portfolio_construction::analyze_fof_portfolio);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — private_wealth module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(concentrated_stock, corp_finance_core::private_wealth::concentrated_stock::ConcentratedStockInput, corp_finance_core::private_wealth::concentrated_stock::analyze_concentrated_stock);
+wasm_tool!(philanthropic_vehicles, corp_finance_core::private_wealth::philanthropic_vehicles::PhilanthropicInput, corp_finance_core::private_wealth::philanthropic_vehicles::compare_philanthropic_vehicles);
+wasm_tool!(wealth_transfer, corp_finance_core::private_wealth::wealth_transfer::WealthTransferInput, corp_finance_core::private_wealth::wealth_transfer::analyze_wealth_transfer);
+wasm_tool!(direct_indexing, corp_finance_core::private_wealth::direct_indexing::DirectIndexingInput, corp_finance_core::private_wealth::direct_indexing::analyze_direct_indexing);
+wasm_tool!(family_governance, corp_finance_core::private_wealth::family_governance::FamilyGovernanceInput, corp_finance_core::private_wealth::family_governance::evaluate_family_governance);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — venture module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(funding_round, corp_finance_core::venture::valuation::FundingRoundInput, corp_finance_core::venture::valuation::model_funding_round);
+wasm_tool!(dilution_analysis, corp_finance_core::venture::valuation::DilutionInput, corp_finance_core::venture::valuation::analyze_dilution);
+wasm_tool!(convertible_note, corp_finance_core::venture::instruments::ConvertibleNoteInput, corp_finance_core::venture::instruments::convert_note);
+wasm_tool!(safe_conversion, corp_finance_core::venture::instruments::SafeInput, corp_finance_core::venture::instruments::convert_safe);
+wasm_tool!(venture_fund_model, corp_finance_core::venture::returns::VentureFundInput, corp_finance_core::venture::returns::model_venture_fund);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — credit_scoring module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(credit_scorecard, corp_finance_core::credit_scoring::scorecard::ScorecardInput, corp_finance_core::credit_scoring::scorecard::calculate_scorecard);
+wasm_tool!(merton_pd, corp_finance_core::credit_scoring::structural_model::MertonInput, corp_finance_core::credit_scoring::structural_model::calculate_merton);
+wasm_tool!(intensity_model, corp_finance_core::credit_scoring::intensity_model::IntensityModelInput, corp_finance_core::credit_scoring::intensity_model::calculate_intensity_model);
+wasm_tool!(pd_calibration, corp_finance_core::credit_scoring::calibration::CalibrationInput, corp_finance_core::credit_scoring::calibration::calculate_calibration);
+wasm_tool!(scoring_validation, corp_finance_core::credit_scoring::validation::ValidationInput, corp_finance_core::credit_scoring::validation::calculate_validation);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — capital_allocation module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(economic_capital, corp_finance_core::capital_allocation::economic_capital::EconomicCapitalInput, corp_finance_core::capital_allocation::economic_capital::calculate_economic_capital);
+wasm_tool!(raroc_calculation, corp_finance_core::capital_allocation::raroc::RarocInput, corp_finance_core::capital_allocation::raroc::calculate_raroc);
+wasm_tool!(euler_allocation, corp_finance_core::capital_allocation::euler_allocation::EulerAllocationInput, corp_finance_core::capital_allocation::euler_allocation::calculate_euler_allocation);
+wasm_tool!(shapley_allocation, corp_finance_core::capital_allocation::shapley_allocation::ShapleyAllocationInput, corp_finance_core::capital_allocation::shapley_allocation::calculate_shapley_allocation);
+wasm_tool!(limit_management, corp_finance_core::capital_allocation::limit_management::LimitManagementInput, corp_finance_core::capital_allocation::limit_management::evaluate_limits);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — index_construction module (5 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(index_weighting, corp_finance_core::index_construction::weighting::WeightingInput, corp_finance_core::index_construction::weighting::calculate_weighting);
+wasm_tool!(index_rebalancing, corp_finance_core::index_construction::rebalancing::RebalancingInput, corp_finance_core::index_construction::rebalancing::calculate_rebalancing);
+wasm_tool!(tracking_error, corp_finance_core::index_construction::tracking_error::TrackingErrorInput, corp_finance_core::index_construction::tracking_error::calculate_tracking_error);
+wasm_tool!(smart_beta, corp_finance_core::index_construction::smart_beta::SmartBetaInput, corp_finance_core::index_construction::smart_beta::calculate_smart_beta);
+wasm_tool!(index_reconstitution, corp_finance_core::index_construction::reconstitution::ReconstitutionInput, corp_finance_core::index_construction::reconstitution::calculate_reconstitution);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — regulatory module (4 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(regulatory_capital, corp_finance_core::regulatory::capital::RegulatoryCapitalInput, corp_finance_core::regulatory::capital::calculate_regulatory_capital);
+wasm_tool!(lcr, corp_finance_core::regulatory::liquidity::LcrInput, corp_finance_core::regulatory::liquidity::calculate_lcr);
+wasm_tool!(nsfr, corp_finance_core::regulatory::liquidity::NsfrInput, corp_finance_core::regulatory::liquidity::calculate_nsfr);
+wasm_tool!(alm_analysis, corp_finance_core::regulatory::alm::AlmInput, corp_finance_core::regulatory::alm::analyze_alm);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — quant_risk module (4 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(factor_model, corp_finance_core::quant_risk::factor_models::FactorModelInput, corp_finance_core::quant_risk::factor_models::run_factor_model);
+wasm_tool!(black_litterman, corp_finance_core::quant_risk::black_litterman::BlackLittermanInput, corp_finance_core::quant_risk::black_litterman::run_black_litterman);
+wasm_tool!(risk_parity, corp_finance_core::quant_risk::risk_parity::RiskParityInput, corp_finance_core::quant_risk::risk_parity::calculate_risk_parity);
+wasm_tool!(stress_test, corp_finance_core::quant_risk::stress_testing::StressTestInput, corp_finance_core::quant_risk::stress_testing::run_stress_test);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — esg module (4 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(esg_score, corp_finance_core::esg::scoring::EsgScoreInput, corp_finance_core::esg::scoring::calculate_esg_score);
+wasm_tool!(carbon_footprint, corp_finance_core::esg::climate::CarbonFootprintInput, corp_finance_core::esg::climate::analyze_carbon_footprint);
+wasm_tool!(green_bond, corp_finance_core::esg::climate::GreenBondInput, corp_finance_core::esg::climate::analyze_green_bond);
+wasm_tool!(sll_covenants, corp_finance_core::esg::climate::SllInput, corp_finance_core::esg::climate::test_sll_covenants);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — insurance module (4 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(loss_reserving, corp_finance_core::insurance::reserving::ReservingInput, corp_finance_core::insurance::reserving::estimate_reserves);
+wasm_tool!(premium_pricing, corp_finance_core::insurance::pricing::PremiumPricingInput, corp_finance_core::insurance::pricing::price_premium);
+wasm_tool!(combined_ratio, corp_finance_core::insurance::pricing::CombinedRatioInput, corp_finance_core::insurance::pricing::analyze_combined_ratio);
+wasm_tool!(solvency_scr, corp_finance_core::insurance::pricing::ScrInput, corp_finance_core::insurance::pricing::calculate_scr);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — fx_commodities module (4 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(fx_forward, corp_finance_core::fx_commodities::fx::FxForwardInput, corp_finance_core::fx_commodities::fx::price_fx_forward);
+wasm_tool!(cross_rate, corp_finance_core::fx_commodities::fx::CrossRateInput, corp_finance_core::fx_commodities::fx::calculate_cross_rate);
+wasm_tool!(commodity_forward, corp_finance_core::fx_commodities::commodities::CommodityForwardInput, corp_finance_core::fx_commodities::commodities::price_commodity_forward);
+wasm_tool!(commodity_curve, corp_finance_core::fx_commodities::commodities::CommodityCurveInput, corp_finance_core::fx_commodities::commodities::analyze_commodity_curve);
+
+// ---------------------------------------------------------------------------
+// Wave 16z — private_credit module (3 tools)
+// ---------------------------------------------------------------------------
+
+wasm_tool!(unitranche_pricing, corp_finance_core::private_credit::unitranche::UnitrancheInput, corp_finance_core::private_credit::unitranche::price_unitranche);
+wasm_tool!(direct_loan, corp_finance_core::private_credit::direct_lending::DirectLoanInput, corp_finance_core::private_credit::direct_lending::model_direct_loan);
+wasm_tool!(syndication_analysis, corp_finance_core::private_credit::direct_lending::SyndicationInput, corp_finance_core::private_credit::direct_lending::analyze_syndication);
+
 #[wasm_bindgen]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()

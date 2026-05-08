@@ -31,6 +31,19 @@ bank_analytics = []
 emerging_markets = []
 carbon_markets = []
 clo_analytics = []
+# Wave 16z bulk port: 12 modules (53 tools).
+fund_of_funds = []
+private_wealth = []
+venture = []
+credit_scoring = []
+capital_allocation = []
+index_construction = []
+regulatory = []
+quant_risk = []
+esg = []
+insurance = []
+fx_commodities = []
+private_credit = []
 
 [dependencies]
 # v0.1 ships the timing-free feature subset — see docs in lib.rs for the v0.2 expansion plan.
@@ -62,6 +75,18 @@ corp-finance-core = { path = "../corp-finance-core", default-features = false, f
     "emerging_markets",
     "carbon_markets",
     "clo_analytics",
+    "fund_of_funds",
+    "private_wealth",
+    "venture",
+    "credit_scoring",
+    "capital_allocation",
+    "index_construction",
+    "regulatory",
+    "quant_risk",
+    "esg",
+    "insurance",
+    "fx_commodities",
+    "private_credit",
 ] }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
