@@ -86,11 +86,12 @@ import { registerSelfLearningTools } from "./tools/self_learning.js";
 import { registerAgentInvokeTools } from "./tools/agent_invoke.js";
 import { registerAttestTools } from "./tools/attest.js";
 import { registerOfficeTools } from "./tools/office.js";
+import { withAudit } from "./middleware/audit.js";
 
-const server = new McpServer({
+const server = withAudit(new McpServer({
   name: "corp-finance-mcp",
   version: "1.0.0",
-});
+}));
 
 registerValuationTools(server);
 registerCreditTools(server);

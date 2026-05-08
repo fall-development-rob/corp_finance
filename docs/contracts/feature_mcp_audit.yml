@@ -1,0 +1,164 @@
+# Feature Contract: MCP Tool-Call Audit Middleware (Phase 29 Wave 10)
+# Enforces architectural invariants for the withAudit() MCP middleware
+# ADR: docs/adr/ADR-024-mcp-tool-call-audit.md
+
+contracts:
+  - id: AUDIT-001
+    name: "withAudit wrapper must be applied at the server level in index.ts"
+    description: >
+      The audit middleware must be applied once via withAudit(server) in
+      packages/mcp-server/src/index.ts. No per-tool audit decoration is permitted
+      (see ADR-024 Options Considered). A single application point ensures every
+      tool registered via server.tool() is covered without per-tool changes.
+    scope:
+      - "packages/mcp-server/src/index.ts"
+    check: >
+      grep -n 'withAudit' packages/mcp-server/src/index.ts returns at least one match;
+      grep -rn 'withAudit' packages/mcp-server/src/tools/ returns no matches
+    enforcement: review
+    severity: error
+
+  - id: AUDIT-002
+    name: "Audit record must never contain raw input or output payload fields"
+    description: >
+      The JSONL audit record schema permits only hashed representations of inputs and
+      outputs. Fields named input, params, output, result, body, or payload must not
+      appear in any object written to the audit log. Only input_sha256 and output_sha256
+      (64-hex strings) are permitted to represent tool call data.
+    scope:
+      - "packages/mcp-server/src/middleware/"
+    check: >
+      grep -n '"input"\|"params"\|"output"\|"result"\|"body"\|"payload"'
+        packages/mcp-server/src/middleware/audit.ts returns no matches on
+        lines that construct the audit record object (i.e., the JSONL write target)
+    enforcement: build-time
+    severity: error
+
+  - id: AUDIT-003
+    name: "Default log path follows ~/.cfa-agent/audit/mcp-YYYY-MM-DD.jsonl pattern"
+    description: >
+      When CFA_AUDIT_LOG_PATH is not set, the middleware must derive the log path as
+      ~/.cfa-agent/audit/mcp-{YYYY-MM-DD}.jsonl using the UTC date at call time.
+      The override path must be read from process.env.CFA_AUDIT_LOG_PATH.
+    scope:
+      - "packages/mcp-server/src/middleware/"
+    check: >
+      grep -n 'CFA_AUDIT_LOG_PATH\|\.cfa-agent/audit'
+        packages/mcp-server/src/middleware/audit.ts returns matches for both
+        the env-var lookup and the default path pattern
+    enforcement: review
+    severity: error
+
+  - id: AUDIT-004
+    name: "Audit append uses fs.appendFileSync (synchronous) for v1"
+    description: >
+      The v1 implementation must use synchronous file append (fs.appendFileSync or
+      equivalent blocking call) to ensure write atomicity on single-process deployments.
+      Async append (fs.appendFile, streams, write queues) is explicitly deferred to v2.
+      This contract ensures the v1 decision is documented and enforceable until a
+      future ADR upgrades the append strategy.
+    scope:
+      - "packages/mcp-server/src/middleware/"
+    check: >
+      grep -n 'appendFileSync' packages/mcp-server/src/middleware/audit.ts
+        returns at least one match on the audit-write code path
+    enforcement: review
+    severity: warning
+
+  - id: AUDIT-005
+    name: "Audit failure must not propagate to the tool call return path"
+    description: >
+      The audit append must be wrapped in a try/catch (or equivalent). On error,
+      the middleware logs to stderr (console.error or equivalent) and allows the
+      tool call result to be returned normally. The audit error must not be re-thrown
+      or cause the tool call to reject.
+    scope:
+      - "packages/mcp-server/src/middleware/"
+    check: >
+      grep -n 'try\|catch\|stderr\|console.error'
+        packages/mcp-server/src/middleware/audit.ts returns matches in the
+        audit-write block, confirming error isolation
+    enforcement: review
+    severity: error
+
+invariants:
+  - id: AUDIT-INV-001
+    name: "Every-call invariant — exactly one audit record per tool invocation"
+    description: >
+      Every successful or failing tool call must produce exactly one JSONL audit record.
+      No tool may opt out. The count of records emitted must equal the count of calls
+      dispatched, whether the handler resolves or throws.
+      Asserted by a middleware test that dispatches N calls (mix of ok and error outcomes)
+      and counts exactly N records in the resulting JSONL output.
+    check: >
+      In packages/mcp-server/src/middleware/ or its test directory, a test exists that:
+        (1) mounts withAudit() on a test McpServer with at least one tool,
+        (2) dispatches N calls (both ok and error cases),
+        (3) reads the JSONL output and asserts line count == N.
+      npm test passes with this test included.
+    severity: error
+
+  - id: AUDIT-INV-002
+    name: "Hash-only payload invariant — no raw input or output in audit records"
+    description: >
+      Audit records contain input_sha256 and output_sha256 (64-hex) but never the raw
+      input params or output values. No field named input, params, output, result, body,
+      or payload may carry non-hash payload content.
+      Asserted by: grep on each emitted JSONL line confirms absence of forbidden field
+      names carrying non-hash values; only *_sha256 fields represent call data.
+    check: >
+      A middleware test (or static grep in CI) reads each emitted JSONL record and
+      confirms: JSON.parse(line) has no key matching /^(input|params|output|result|body|payload)$/
+      (i.e., only input_sha256 / output_sha256 are present for payload representation).
+    severity: error
+
+  - id: AUDIT-INV-003
+    name: "Determinism invariant — identical params produce identical input_sha256"
+    description: >
+      For the same tool and the same params object, input_sha256 must be byte-stable
+      across separate invocations (same process or across restarts). This enables
+      replay detection and deduplication without storing raw inputs.
+      Asserted by: a middleware test that invokes the same tool with the same params
+      twice (possibly in separate withAudit() instantiations) and asserts
+      record1.input_sha256 === record2.input_sha256.
+    check: >
+      A middleware test calls the same tool with identical params at least twice and
+      asserts that both emitted JSONL records contain the same input_sha256 value.
+      npm test passes with this assertion included.
+    severity: error
+
+  - id: AUDIT-INV-004
+    name: "Audit failure-isolation invariant — unwritable path does not break tool calls"
+    description: >
+      When the audit log destination is unwritable (disk full, permissions denied,
+      path points to a directory, etc.), the middleware must log a message to stderr
+      and return the tool call result normally. The tool's ok/error outcome is
+      independent of audit infrastructure health.
+      Asserted by: a middleware test that sets CFA_AUDIT_LOG_PATH to an unwritable
+      location (e.g., /dev/full or a path under a chmod 000 directory) and confirms
+      that the tool call still resolves with the expected result and does not throw.
+    check: >
+      A middleware test points CFA_AUDIT_LOG_PATH at an unwritable path, invokes a
+      tool call, and asserts: (1) the call resolves (does not reject/throw), and
+      (2) a stderr write was attempted (spy or capture on console.error).
+      npm test passes with this assertion included.
+    severity: error
+
+  - id: AUDIT-INV-005
+    name: "Schema completeness invariant — all required fields present on every record"
+    description: >
+      Every emitted JSONL record must contain all required fields:
+        call_id (UUID string), timestamp (ISO 8601 UTC), tool (string),
+        input_sha256 (64-hex string), latency_ms (non-negative number), ok (boolean).
+      On success (ok: true), output_sha256 (64-hex string) must also be present.
+      On failure (ok: false), error (string) must also be present.
+      No record may omit any of these fields for its outcome branch.
+      Asserted by: a schema-validation parse on each emitted record in the middleware
+      test suite, covering both ok and error outcome paths.
+    check: >
+      A middleware test emits at least one ok record and one error record, then
+      validates each against the required schema:
+        ok record must have: call_id, timestamp, tool, input_sha256, latency_ms, ok (true), output_sha256;
+        error record must have: call_id, timestamp, tool, input_sha256, latency_ms, ok (false), error.
+      npm test passes with this schema validation included.
+    severity: error
