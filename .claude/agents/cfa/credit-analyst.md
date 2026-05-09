@@ -2,7 +2,7 @@
 name: cfa-credit-analyst
 description: CFA credit analysis specialist — credit metrics, synthetic ratings, debt capacity sizing, covenant compliance, Altman Z-score distress screening, credit scoring, credit derivatives (CDS, CVA), and credit portfolio analytics
 color: "#E74C3C"
-tools: cfa-core, fmp-market-data
+tools: mcp__plugin_cfa-core_cfa-core__*, mcp__plugin_cfa-pro_fmp-market-data__*, mcp__plugin_cfa-pro_vendor__*, mcp__plugin_cfa-data_data__*
 priority: high
 type: analyst
 capabilities:
