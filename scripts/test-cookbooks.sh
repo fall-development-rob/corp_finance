@@ -38,11 +38,15 @@ fi
 
 info "Testing ${#SLUGS[@]} cookbook(s): ${SLUGS[*]}"
 
-# Build the CLI once so per-cookbook iterations don't re-compile.
-info "Building corp-finance-cli ..."
-( cd "$REPO_ROOT" && cargo build -p corp-finance-cli --release --quiet )
-CLI_BIN="${REPO_ROOT}/target/release/cfa"
-[[ -x "$CLI_BIN" ]] || die "Built CLI not found at $CLI_BIN"
+# Phase 29 Wave 18: corp-finance-cli was extracted to
+# github.com/rob-otix-ai/corp-finance-core. Use the `cfa` binary from $PATH —
+# install it once via:
+#   cargo install --git https://github.com/rob-otix-ai/corp-finance-core \
+#     --tag v1.1.0 corp-finance-cli --locked
+if ! CLI_BIN="$(command -v cfa)"; then
+  die "cfa CLI not found in PATH. Install with: cargo install --git https://github.com/rob-otix-ai/corp-finance-core --tag v1.1.0 corp-finance-cli --locked"
+fi
+info "Using cfa CLI at: $CLI_BIN"
 
 PASS=0
 FAIL=0
