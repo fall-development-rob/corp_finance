@@ -1,0 +1,113 @@
+# Feature Contract: Acceptance Tests — Chaco Minerals Canonical Memo (Phase 31 Wave 1)
+# Enforces CI gate invariants for the CFA harness end-to-end acceptance test suite.
+# ADR: docs/adr/ADR-031-custom-harness.md (acceptance criteria section)
+# Date: 2026-05-09
+# One-liner: tests/chaco-acceptance.test.ts runs the canonical Chaco prompt against the
+#             chief-analyst on every PR and asserts tool_uses >= 21 with exact numeric results.
+
+contracts:
+  - id: ACC-001
+    name: "tests/chaco-acceptance.test.ts exists and targets the chief-analyst"
+    description: >
+      The canonical acceptance test file must exist at tests/chaco-acceptance.test.ts.
+      The test must invoke the dispatch loop with agent=chief-analyst and the prompt from
+      docs/examples/chaco-minerals-deal.md. The acceptance test is the primary canary for
+      the tool_uses=0 regression documented in feedback_cfa_agents_cannot_invoke_tools.md:
+      if tool_uses drops to 0 on this prompt the harness has regressed to the Claude Code
+      subagent failure mode and the test must fail the build.
+    scope:
+      - "tests/chaco-acceptance.test.ts"
+    check: >
+      test -f tests/chaco-acceptance.test.ts should succeed.
+      grep -n 'chief-analyst\|chaco\|chaco-minerals' tests/chaco-acceptance.test.ts |
+        grep -iv 'skip\|todo\|xit\|xtest' should return at least one hit confirming the test
+      is active (not skipped).
+    enforcement: ci
+    severity: error
+
+  - id: ACC-002
+    name: "Acceptance test asserts tool_uses >= 21"
+    description: >
+      The test must count the number of tool_use content blocks in the dispatch result and
+      assert the count is >= 21. The canonical breakdown is 20 × option_pricer (the 4×5
+      warrant pricing grid for Chaco Minerals) + 1 × country_risk_premium (Argentina composite
+      CRP). A count of 0 is the regression; a count >= 21 confirms the harness correctly routes
+      tool_use blocks through the MCP client rather than emitting them as text.
+    scope:
+      - "tests/chaco-acceptance.test.ts"
+    check: >
+      grep -n 'tool_uses\|toolUses\|toolCalls.*length\|tool_use.*count' \
+        tests/chaco-acceptance.test.ts should return at least one hit.
+      grep -n '21\b\|>= 21\|greaterThanOrEqual.*21\|toBeGreaterThanOrEqual(21)' \
+        tests/chaco-acceptance.test.ts should return at least one hit confirming the
+      numeric threshold is asserted.
+    enforcement: ci
+    severity: error
+
+  - id: ACC-003
+    name: "Acceptance test asserts canonical numeric results for warrant price and CRP"
+    description: >
+      The test must assert two canonical numerical results produced by the Rust decimal
+      compute core:
+      (a) Per-warrant price at C$0.10/80% volatility = C$0.0208 (from option_pricer,
+          matching /tmp/mcp-chaco-demo.mjs output).
+      (b) Argentina composite country risk premium = 10.69% (from country_risk_premium).
+      These values are deterministic given fixed inputs and pinned to the corp-finance-core
+      1.1.0 compute library. A drift in either value indicates a breaking change in the
+      compute library or incorrect input marshalling through the harness.
+    scope:
+      - "tests/chaco-acceptance.test.ts"
+    check: >
+      grep -n '0\.0208\|0208' tests/chaco-acceptance.test.ts should return at least one hit.
+      grep -n '10\.69\|10\.69%' tests/chaco-acceptance.test.ts should return at least one hit.
+    enforcement: ci
+    severity: error
+
+  - id: ACC-004
+    name: "Acceptance test asserts audit file written to out/chaco-memo.audit.json"
+    description: >
+      The test must verify that a file named out/chaco-memo.audit.json is created after the
+      dispatch and that it contains a non-empty tool_calls array. This confirms the audit
+      chain (AUD-001 through AUD-004) is wired into the CLI run path and not just unit-tested
+      in isolation.
+    scope:
+      - "tests/chaco-acceptance.test.ts"
+    check: >
+      grep -n 'audit\.json\|auditPath\|chaco-memo\.audit' tests/chaco-acceptance.test.ts
+      should return at least one hit confirming the audit file is asserted in the acceptance
+      test.
+    enforcement: ci
+    severity: error
+
+invariants:
+  - id: ACC-INV-001
+    name: "Acceptance test runs in CI on every PR to the harness package"
+    description: >
+      The CI pipeline (e.g. .github/workflows/ci.yml or equivalent) must execute
+      tests/chaco-acceptance.test.ts as a required check on every pull request that touches
+      any file under packages/. The acceptance test must not be gated behind a manual
+      trigger or an environment flag that is absent in the standard CI environment.
+      Asserted by: the CI workflow file references the acceptance test file or the vitest
+      run command that includes it, and the job is not conditional on a non-standard env var.
+    check: >
+      grep -rn 'chaco-acceptance\|vitest.*tests/' .github/workflows/ 2>/dev/null |
+        grep -v '# skip' should return at least one hit confirming the test is in the CI
+      pipeline.
+      grep -rn 'if:.*SKIP_ACCEPTANCE\|if:.*NIGHTLY_ONLY' .github/workflows/ 2>/dev/null
+      should return no hits for the job containing the acceptance test.
+    severity: error
+
+  - id: ACC-INV-002
+    name: "Chaco example prompt file is version-controlled and immutable across waves"
+    description: >
+      docs/examples/chaco-minerals-deal.md must be committed to the repository and must not
+      be modified after Wave 1 acceptance baseline is established. Modifying the prompt
+      invalidates historical tool_uses comparisons and makes regressions undetectable.
+      Changes to the prompt are permitted only via a new versioned example file
+      (e.g. chaco-minerals-deal-v2.md) with a corresponding new acceptance test variant.
+      Asserted by: the file exists and its content hash is stable across waves.
+    check: >
+      test -f docs/examples/chaco-minerals-deal.md should succeed.
+      git log --oneline docs/examples/chaco-minerals-deal.md | wc -l should return >= 1
+      (file is committed).
+    severity: warning

@@ -1,0 +1,106 @@
+# Feature Contract: Audit Chain — Deterministic Invocation Hash Chain (Phase 31 Wave 4)
+# Enforces auditability and replay invariants for the CFA harness Audit Chain bounded context.
+# ADR: docs/adr/ADR-036-audit-hash.md
+# Date: 2026-05-09
+# One-liner: Every dispatch produces a sha2-hashed audit record via the Phase 26 audit module;
+#             records are retrievable by audit_id and support deterministic replay.
+
+contracts:
+  - id: AUD-001
+    name: "Every dispatch produces an audit record with agent_id, prompt_hash, tool_calls, result_hash"
+    description: >
+      packages/audit/chain.ts must emit an audit record for every completed dispatch. The
+      record must contain at minimum: audit_id (uuid or sha2 of inputs), agent_id (string),
+      prompt_hash (sha2 of the input messages), tool_calls (array of {name, input, output}),
+      and result_hash (sha2 of the final assistant message). Incomplete records break the
+      traceability guarantee required for the Chaco memo audit log
+      (out/chaco-memo.audit.json).
+    scope:
+      - "packages/audit/chain.ts"
+    check: >
+      grep -n 'audit_id\|agent_id\|prompt_hash\|tool_calls\|result_hash' \
+        packages/audit/chain.ts should return at least 5 hits (one per field).
+      test -f packages/audit/chain.ts should succeed.
+    enforcement: build-time
+    severity: error
+
+  - id: AUD-002
+    name: "Audit records written via the Phase 26 surface_audit_compute MCP tool; no new audit infrastructure"
+    description: >
+      packages/audit/chain.ts must route audit record persistence through the existing
+      mcp__plugin_cfa-core_cfa-core__surface_audit_compute tool already shipped in Phase 26.
+      Introducing a parallel audit store (a separate SQLite, file writer, or in-process log
+      that bypasses the MCP tool) violates the single-source-of-truth principle and doubles
+      audit infrastructure maintenance burden.
+    scope:
+      - "packages/audit/chain.ts"
+    check: >
+      grep -n 'surface_audit_compute\|surface-audit-compute' packages/audit/chain.ts
+      should return at least one hit confirming the MCP tool is called for persistence.
+    enforcement: review
+    severity: error
+
+  - id: AUD-003
+    name: "Audit hash is deterministic — same input always produces same audit_id"
+    description: >
+      The sha2 hash used to compute audit_id and prompt_hash must be computed over a
+      canonicalised (sorted-key JSON) serialisation of the input. Non-deterministic hashing
+      (e.g. using Date.now() as a salt, or relying on insertion-order object serialisation)
+      breaks the replay invariant AUD-INV-001 because stored audit_ids would not match
+      recomputed ids for the same input.
+    scope:
+      - "packages/audit/chain.ts"
+    check: >
+      grep -n 'JSON\.stringify\|canonicali[sz]e\|sortKeys\|sort_keys' packages/audit/chain.ts
+      should return at least one hit showing deterministic serialisation is applied before
+      hashing.
+      grep -n 'Date\.now\|Math\.random\|uuid\(\)' packages/audit/chain.ts |
+        grep -v '// @nondeterministic-ok' should return no hits (no random salt in the hash
+        path).
+    enforcement: build-time
+    severity: error
+
+  - id: AUD-004
+    name: "Audit log written to <output>.audit.json alongside each CLI run output"
+    description: >
+      The CLI (packages/cli/run.ts) must write the audit chain for each dispatch to a file
+      named <output-basename>.audit.json in the same directory as the output file. For the
+      canonical run (--output out/chaco-memo.md) this produces out/chaco-memo.audit.json.
+      A missing audit file means traceability is broken and the Phase 31 auditable goal
+      is unmet.
+    scope:
+      - "packages/cli/run.ts"
+    check: >
+      grep -n '\.audit\.json\|audit.*json\|auditPath' packages/cli/run.ts should return
+      at least one hit confirming the audit file path is constructed in the CLI.
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: AUD-INV-001
+    name: "Audit record retrievable by audit_id; harness exports a replay(audit_id) API"
+    description: >
+      packages/audit/chain.ts must export a `replay(auditId: string): Promise<DispatchResult>`
+      function that retrieves the stored audit record by audit_id and re-runs the dispatch
+      using the stored prompt_hash inputs, the same agent_id, and the same tool call sequence.
+      Replay must produce a result_hash equal to the original result_hash (for deterministic
+      tools) or at minimum re-invoke the same tool sequence. This enables forensic
+      reproduction of any historical CFA analysis.
+      Asserted by: packages/audit/chain.ts exports a function named replay.
+    check: >
+      grep -n 'export.*function replay\|export.*replay\b' packages/audit/chain.ts returns
+      at least one hit.
+    severity: error
+
+  - id: AUD-INV-002
+    name: "Audit chain is append-only; existing records are never mutated"
+    description: >
+      Once written, an audit record must not be updated or deleted. The chain module must
+      only append new records. Mutation would break the hash-chain integrity (each record
+      can optionally link to the previous record's audit_id to form an ordered chain).
+      Asserted by: the persistence path in chain.ts uses append semantics (no UPDATE/PUT
+      against an existing audit_id key).
+    check: >
+      grep -n 'update\|overwrite\|delete\|removeRecord' packages/audit/chain.ts |
+        grep -v '\/\/' returns no hits.
+    severity: error

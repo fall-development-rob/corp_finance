@@ -1,0 +1,108 @@
+# Feature Contract: Provider Abstraction — Anthropic/OpenAI/Gemini/Bedrock (Phase 31 Waves 1, 3–4)
+# Enforces provider-neutrality invariants for the CFA harness Provider Abstraction bounded context.
+# ADR: docs/adr/ADR-033-anthropic-sdk.md | docs/adr/ADR-035-provider-abstraction.md
+# Date: 2026-05-09
+# One-liner: Provider modules implement a shared Provider interface; tool schemas stay
+#             Anthropic-flavored in core and are translated only at the wire boundary.
+
+contracts:
+  - id: PROV-001
+    name: "Provider modules implement the shared Provider interface"
+    description: >
+      Every provider module under packages/core/providers/ (anthropic.ts now; openai.ts,
+      gemini.ts in Wave 3; bedrock.ts in Wave 4) must implement the TypeScript interface
+      named `Provider` exported from packages/core/providers/index.ts. Modules that do not
+      implement the interface cannot be substituted at runtime and break the provider-neutral
+      dispatch loop. The interface must include at minimum: a `complete` method accepting
+      a messages array and tool schemas, and returning an async iterable of turn events.
+    scope:
+      - "packages/core/providers/"
+    check: >
+      grep -rn 'implements Provider\b\|satisfies Provider\b' packages/core/providers/ |
+        grep -v '\.d\.ts\|node_modules' should return at least one hit per provider file.
+      grep -n 'export.*interface Provider\|export.*type Provider' \
+        packages/core/providers/index.ts should return exactly one hit.
+    enforcement: build-time
+    severity: error
+
+  - id: PROV-002
+    name: "Tool schemas defined Anthropic-flavored in packages/core/tool-schema.ts; providers translate at wire boundary"
+    description: >
+      The canonical tool schema type must be defined in packages/core/tool-schema.ts using
+      Anthropic's `Tool` shape (name, description, input_schema as JSON Schema object).
+      Provider modules are responsible for translating this canonical schema to their wire
+      format (e.g. OpenAI function-calling schema in Wave 3). No provider-specific schema
+      shape may appear in packages/core/tool-schema.ts or packages/agents/.
+    scope:
+      - "packages/core/tool-schema.ts"
+      - "packages/core/providers/"
+    check: >
+      grep -n 'input_schema\b' packages/core/tool-schema.ts should return at least one hit
+      confirming the Anthropic schema shape is used as the canonical definition.
+      grep -rn 'function_call\|functionCall\|FunctionDeclaration' packages/core/tool-schema.ts
+      should return no hits (provider-specific shapes must not leak into the canonical type).
+    enforcement: build-time
+    severity: error
+
+  - id: PROV-003
+    name: "No provider-specific types leak into packages/agents/ or packages/cli/"
+    description: >
+      packages/agents/ and packages/cli/ must not import from packages/core/providers/
+      directly, nor reference provider-specific types (e.g. Anthropic.MessageParam,
+      OpenAI.ChatCompletionMessageParam). Agent and CLI code must only consume the generic
+      Provider interface and the shared turn event types. Provider leakage couples agent
+      definitions to SDK versions and defeats the provider-neutrality goal of Phase 31.
+    scope:
+      - "packages/agents/"
+      - "packages/cli/"
+    check: >
+      grep -rn '@anthropic-ai/sdk\|openai\b\|@google/generative-ai\|@aws-sdk' \
+        packages/agents/ packages/cli/ |
+        grep -v '\.d\.ts\|node_modules\|// @provider-ok' should return no hits.
+    enforcement: ci
+    severity: error
+
+  - id: PROV-004
+    name: "Wave 1 ships only the Anthropic provider; other provider files must not exist in Wave 1"
+    description: >
+      During Wave 1, only packages/core/providers/anthropic.ts may exist under
+      packages/core/providers/. The presence of openai.ts, gemini.ts, or bedrock.ts before
+      Wave 3 indicates premature work that bypasses acceptance testing against the Anthropic
+      provider first. Wave 3 adds providers only after the Chaco acceptance test passes.
+    scope:
+      - "packages/core/providers/"
+    check: >
+      This check is relevant during Wave 1 CI only. After Wave 3 this contract is superseded.
+      If running a Wave 1 build: ls packages/core/providers/ | grep -v 'anthropic\.ts\|index\.ts'
+      should return no hits.
+    enforcement: review
+    severity: warning
+
+invariants:
+  - id: PROV-INV-001
+    name: "Adding a new provider does not require modifying agent definitions or tool schemas"
+    description: >
+      The Provider abstraction must be genuinely neutral. Adding a new provider module under
+      packages/core/providers/ must require no changes to packages/agents/ files, no changes
+      to packages/core/tool-schema.ts, and no changes to the tool allowlists in
+      packages/agents/registry.ts. The only changes required are: a new provider module,
+      a new factory branch in the provider selector, and new provider-specific tests.
+      Asserted by: no import of a provider module exists in packages/agents/ at any time.
+    check: >
+      grep -rn 'from.*providers/' packages/agents/ |
+        grep -v '\.d\.ts\|node_modules' returns no hits.
+    severity: error
+
+  - id: PROV-INV-002
+    name: "Provider selector resolves at runtime from environment; no compile-time provider coupling"
+    description: >
+      The active provider must be selected from an environment variable or runtime config
+      (e.g. HARNESS_PROVIDER=anthropic|openai|gemini|bedrock), not by conditional imports
+      or compile-time ifdefs. Compile-time coupling forces rebuilds on provider switch and
+      prevents runtime A/B testing across providers.
+      Asserted by: packages/core/providers/index.ts uses dynamic import or a registry map
+      keyed by provider name string.
+    check: >
+      grep -n 'process\.env\|HARNESS_PROVIDER\|providerName\|provider.*config' \
+        packages/core/providers/index.ts returns at least one hit.
+    severity: warning

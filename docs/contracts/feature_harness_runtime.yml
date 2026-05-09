@@ -1,0 +1,101 @@
+# Feature Contract: Agent Runtime — Async Generator Dispatch Loop (Phase 31 Wave 1)
+# Enforces structural and behavioural invariants for the CFA harness agent-loop bounded context.
+# ADR: docs/adr/ADR-031-custom-harness.md | docs/adr/ADR-032-typescript-runtime.md
+# Date: 2026-05-09
+# One-liner: Every Messages-API turn goes through a single async generator in agent-loop.ts;
+#             recursion depth is capped at 1 (chief → specialist only).
+
+contracts:
+  - id: HARNESS-001
+    name: "agent-loop exports an async generator dispatch function"
+    description: >
+      packages/core/agent-loop.ts must export an async generator function named `dispatch`.
+      The signature must accept at minimum an agent identifier and a messages array and must
+      yield typed turn events (tool_use, tool_result, text, end_turn). A missing export or a
+      non-generator implementation breaks the entire dispatch pipeline.
+    scope:
+      - "packages/core/agent-loop.ts"
+    check: >
+      grep -n 'export async function\* dispatch' packages/core/agent-loop.ts should return
+      exactly one hit. If zero hits are returned the function is absent or not exported as a
+      generator; if more than one hit exists a duplicate declaration is present.
+    enforcement: build-time
+    severity: error
+
+  - id: HARNESS-002
+    name: "All Messages-API calls go through agent-loop; no naked client.messages.create elsewhere"
+    description: >
+      No TypeScript file outside packages/core/agent-loop.ts may call
+      `client.messages.create` or `anthropic.messages.create` directly. All callers must
+      consume the async generator exported from agent-loop.ts. Direct SDK calls scattered
+      across packages bypass token-budget guards, audit hooks, and retry logic.
+    scope:
+      - "packages/"
+    check: >
+      grep -rn 'messages\.create\b' packages/ |
+        grep -v 'packages/core/agent-loop\.ts' |
+        grep -v '\.d\.ts' |
+        grep -v 'node_modules' should return no hits.
+    enforcement: ci
+    severity: error
+
+  - id: HARNESS-003
+    name: "Every tool_use block produces a corresponding tool_result before end_turn"
+    description: >
+      The dispatch loop in agent-loop.ts must accumulate every tool_use content block and
+      execute the corresponding MCP tool call, then feed back a tool_result block before
+      issuing the next Messages-API turn. The loop must not exit until stop_reason is
+      end_turn. Incomplete loops (exiting on tool_use stop_reason without executing tools)
+      are the root cause of the tool_uses=0 regression documented in
+      feedback_cfa_agents_cannot_invoke_tools.md.
+    scope:
+      - "packages/core/agent-loop.ts"
+    check: >
+      grep -n "stop_reason.*end_turn\|end_turn.*stop_reason" packages/core/agent-loop.ts
+      should return at least one hit confirming the loop terminates on end_turn.
+      grep -n "tool_use\b" packages/core/agent-loop.ts should return at least one hit
+      showing tool_use handling is present in the loop body.
+    enforcement: build-time
+    severity: error
+
+  - id: HARNESS-004
+    name: "Per-agent token budget cap enforced before each Messages-API turn"
+    description: >
+      The dispatch loop must check a per-agent max_tokens cap before each API call and
+      reject or truncate context when the accumulated token estimate exceeds the cap. This
+      prevents unbounded recursive specialist calls from exhausting rate limits during the
+      chief-to-specialist delegation chain introduced in Wave 2.
+    scope:
+      - "packages/core/agent-loop.ts"
+    check: >
+      grep -n 'max_tokens\|token.*budget\|budget.*token' packages/core/agent-loop.ts
+      should return at least one hit showing the cap is applied in the loop.
+    enforcement: review
+    severity: warning
+
+invariants:
+  - id: HARNESS-INV-001
+    name: "Recursion depth capped at 1 — specialists do not delegate further"
+    description: >
+      The chief-analyst may delegate to any of the 8 specialists (depth=1). Specialists must
+      not spawn further sub-dispatches. A recursion depth > 1 would re-introduce unbounded
+      tool call chains and make token cost unpredictable. The dispatch loop must track depth
+      and raise a hard error if a specialist attempts delegation.
+      Asserted by: packages/core/agent-loop.ts contains a depth guard that throws or rejects
+      when depth exceeds 1.
+    check: >
+      grep -n 'depth\b' packages/core/agent-loop.ts returns at least one hit showing a
+      numeric depth parameter or variable tracked across nested dispatch calls.
+    severity: error
+
+  - id: HARNESS-INV-002
+    name: "Dispatch loop error retry is bounded — no infinite retry on API errors"
+    description: >
+      The agent-loop must implement a finite retry policy (e.g., max 3 attempts with
+      exponential backoff) on transient API errors (rate-limit, 529). An unbounded retry
+      loop blocks the CLI and makes acceptance tests non-terminating.
+      Asserted by: packages/core/agent-loop.ts contains a retry count or attempt cap.
+    check: >
+      grep -n 'retry\|attempt\|maxRetries\|max_retries' packages/core/agent-loop.ts
+      returns at least one hit.
+    severity: error

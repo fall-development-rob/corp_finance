@@ -1,0 +1,104 @@
+# Feature Contract: MCP Transport — stdio/SSE/HTTP/WebSocket client (Phase 31 Waves 1–4)
+# Enforces transport-layer invariants for the CFA harness MCP bounded context.
+# ADR: docs/adr/ADR-034-mcp-transport.md
+# Date: 2026-05-09
+# One-liner: All four cfa plugin MCP servers connect via a single stdio transport in Wave 1;
+#             SSE/HTTP/WS added in Wave 3 under packages/mcp-client/; name translation lives
+#             in exactly one file.
+
+contracts:
+  - id: MCP-001
+    name: "Wave 1 transport is stdio only; later transports added under packages/mcp-client/"
+    description: >
+      packages/mcp-client/stdio.ts must exist for Wave 1 and be the sole transport used at
+      startup. SSE, HTTP, and WebSocket transports may only be introduced as sibling files
+      (packages/mcp-client/sse.ts, http.ts, websocket.ts) in Wave 3 or later. No transport
+      logic may reside inside packages/core/ or packages/agents/.
+    scope:
+      - "packages/mcp-client/"
+    check: >
+      test -f packages/mcp-client/stdio.ts should succeed.
+      grep -rn 'new WebSocket\|EventSource\|http\.request' packages/core/ packages/agents/
+        2>/dev/null should return no hits (transport code must not bleed into core or agents).
+    enforcement: build-time
+    severity: error
+
+  - id: MCP-002
+    name: "Tool call inputs wrapped as { input: { ... } } matching plugin MCP server convention"
+    description: >
+      All MCP tools/call requests issued by packages/core/tool-router.ts must wrap arguments
+      in an `input` key: `{ "name": "<tool>", "input": { ... } }`. This matches the existing
+      plugin MCP server convention (cfa-core, cfa-data, fmp-market-data, vendor). Unwrapped
+      arguments produce silent failures where the tool receives an empty input object and
+      returns default-valued results without error.
+    scope:
+      - "packages/core/tool-router.ts"
+    check: >
+      grep -n '"input"\s*:' packages/core/tool-router.ts should return at least one hit
+      confirming the input wrapper is applied at the call site.
+    enforcement: build-time
+    severity: error
+
+  - id: MCP-003
+    name: "All four cfa plugin MCP servers connected at startup; any connection failure is fatal"
+    description: >
+      The harness startup sequence must attempt to connect to all four plugin MCP servers:
+      cfa-core (227 tools), cfa-data (129 tools), cfa-pro/fmp-market-data (180 tools), and
+      cfa-pro/vendor (87 tools). A failure to connect any one server must throw a fatal error
+      and prevent the harness from accepting requests. Partial connectivity produces silently
+      degraded tool sets that corrupt acceptance test results.
+    scope:
+      - "packages/mcp-client/stdio.ts"
+      - "packages/cli/run.ts"
+    check: >
+      grep -n 'cfa-core\|cfa-data\|fmp-market-data\|vendor' packages/mcp-client/stdio.ts
+      should return at least 4 hits (one per server).
+      grep -n 'fatal\|throw\|process\.exit\|reject' packages/mcp-client/stdio.ts should
+      return at least one hit showing a hard failure path on connection error.
+    enforcement: build-time
+    severity: error
+
+  - id: MCP-004
+    name: "Tool list is fetched from each server at startup and merged into a single registry"
+    description: >
+      After connecting all four MCP servers, the harness must call tools/list on each and
+      merge the results into a single in-memory registry keyed by wire-prefixed tool name.
+      Tool list must not be hard-coded; any hard-coded list would drift as tool counts change
+      (currently 623 across four servers). The registry is passed into the dispatch loop.
+    scope:
+      - "packages/mcp-client/stdio.ts"
+    check: >
+      grep -n 'tools/list\|toolsList\|listTools' packages/mcp-client/stdio.ts should return
+      at least one hit showing a tools/list call is issued after connection.
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: MCP-INV-001
+    name: "Name translation lives in exactly one file — packages/mcp-client/name-resolver.ts"
+    description: >
+      The translation from internal bare tool name (e.g. option_pricer) to wire-prefixed
+      name (e.g. mcp__plugin_cfa-core_cfa-core__option_pricer) must reside exclusively in
+      packages/mcp-client/name-resolver.ts. No other file may contain this mapping logic or
+      hard-coded prefix strings. Duplicate translation sites would desynchronise when plugin
+      namespaces change (as occurred between Phase 29 and Phase 30 commits 6c4bd78/d548509).
+      Asserted by: grep for the mcp__plugin_ prefix pattern outside name-resolver.ts returns
+      no hits in non-comment, non-test TypeScript source.
+    check: >
+      grep -rn 'mcp__plugin_' packages/ |
+        grep -v 'packages/mcp-client/name-resolver\.ts' |
+        grep -v '\.test\.\|\.spec\.\|node_modules\|\.d\.ts' should return no hits.
+    severity: error
+
+  - id: MCP-INV-002
+    name: "Total registered tool count >= 600 at startup"
+    description: >
+      After the four-server tools/list merge, the total tool count must be >= 600. A count
+      below this threshold indicates at least one server failed to connect or returned an
+      empty tool list. This invariant is checked programmatically in the startup health log
+      emitted to stderr before the first dispatch.
+      Asserted by: startup log line or assertion referencing tool count >= 600.
+    check: >
+      grep -n 'tool.*count\|totalTools\|registeredTools' packages/mcp-client/stdio.ts
+      returns at least one hit showing the count is computed and logged or asserted.
+    severity: error

@@ -1,0 +1,118 @@
+# Feature Contract: Agent Registry — Code-Defined Agent Specs (Phase 31 Wave 2)
+# Enforces structural and completeness invariants for the CFA harness Agent Registry bounded context.
+# ADR: docs/adr/ADR-037-agent-registry-as-code.md
+# Date: 2026-05-09
+# One-liner: All 9 CFA agent definitions live as TypeScript in packages/agents/registry.ts;
+#             specialist tool subsets are domain-non-overlapping and declared as bare names.
+
+contracts:
+  - id: REG-001
+    name: "Agent definitions in packages/agents/registry.ts as TypeScript code, not markdown"
+    description: >
+      The canonical source of truth for all agent definitions (system prompt, tool subset,
+      delegation rules) must be packages/agents/registry.ts exported as typed TypeScript
+      objects. The existing .claude/agents/cfa/*.md files are the legacy source; they must
+      not be imported into or supersede the TypeScript registry. Having definitions split
+      across markdown and TypeScript creates drift of the kind documented in
+      feedback_surface_parity.md. The TypeScript registry is the runtime-authoritative source.
+    scope:
+      - "packages/agents/registry.ts"
+    check: >
+      test -f packages/agents/registry.ts should succeed.
+      grep -n 'export.*AgentSpec\|export.*registry\|export.*agents' packages/agents/registry.ts
+      should return at least one hit confirming the registry is exported.
+    enforcement: build-time
+    severity: error
+
+  - id: REG-002
+    name: "Each agent spec has a system prompt, a tool subset allowlist, and optional delegation rules"
+    description: >
+      Every entry in the agents registry must define at minimum: systemPrompt (non-empty string),
+      tools (non-empty array of bare-name tool ids), and optionally delegates (array of agent ids
+      this agent may hand off to). An agent without a tool allowlist receives the full 623-tool
+      set by default, which violates the specialist-domain isolation principle. An agent without
+      a system prompt produces undefined behaviour in the dispatch loop.
+    scope:
+      - "packages/agents/registry.ts"
+    check: >
+      grep -n 'systemPrompt\b' packages/agents/registry.ts should return at least 9 hits
+      (one per agent).
+      grep -n 'tools\s*:' packages/agents/registry.ts should return at least 9 hits.
+    enforcement: build-time
+    severity: error
+
+  - id: REG-003
+    name: "All 9 CFA specialists present in the registry"
+    description: >
+      The registry must contain entries for all 9 CFA analyst personas: chief-analyst,
+      equity-analyst, credit-analyst, fixed-income-analyst, derivatives-analyst,
+      quant-risk-analyst, macro-analyst, private-markets-analyst, and esg-regulatory-analyst.
+      A missing specialist causes silent routing failures where the chief attempts to delegate
+      to an undefined agent and the dispatch falls back to chief-only tool invocation.
+    scope:
+      - "packages/agents/registry.ts"
+    check: >
+      grep -c 'chief-analyst\|equity-analyst\|credit-analyst\|fixed-income-analyst\|
+        derivatives-analyst\|quant-risk-analyst\|macro-analyst\|private-markets-analyst\|
+        esg-regulatory-analyst' packages/agents/registry.ts should return 9 (one per agent).
+      Alternatively: node -e "const r=require('./packages/agents/registry'); console.log(Object.keys(r).length)"
+      should output >= 9.
+    enforcement: ci
+    severity: error
+
+  - id: REG-004
+    name: "Tool allowlists use bare names; wire-prefixed names must not appear in registry"
+    description: >
+      Tool ids in each agent's tools array must be bare internal names (e.g. option_pricer,
+      country_risk_premium) not wire-prefixed names (e.g. mcp__plugin_cfa-core_cfa-core__option_pricer).
+      Prefixed names in the registry would bypass packages/mcp-client/name-resolver.ts and
+      create a second translation site, violating MCP-INV-001.
+    scope:
+      - "packages/agents/registry.ts"
+    check: >
+      grep -n 'mcp__plugin_' packages/agents/registry.ts should return no hits.
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: REG-INV-001
+    name: "Specialist tool subsets are domain-non-overlapping at the category level"
+    description: >
+      No two specialist agents may share the same domain-core tool in their allowlists.
+      Specifically: option_pricer and implied_volatility belong exclusively to
+      derivatives-analyst; dcf_model and comps_analysis belong exclusively to equity-analyst;
+      bond_pricer and bond_duration belong exclusively to fixed-income-analyst.
+      Cross-specialist tool access is permitted only for shared infrastructure tools
+      (e.g. wacc_calculator, risk_metrics) explicitly flagged as shared in the registry.
+      Asserted by: each specialist's tools array does not include the domain-core tools of
+      any other specialist.
+    check: >
+      node -e "
+        const r = require('./packages/agents/registry');
+        const overlap = ['option_pricer','implied_volatility'].filter(t =>
+          Object.entries(r).some(([id, spec]) =>
+            id !== 'derivatives-analyst' && spec.tools.includes(t)));
+        if (overlap.length) throw new Error('domain overlap: ' + overlap);
+      " should exit 0.
+    severity: error
+
+  - id: REG-INV-002
+    name: "Chief-analyst tool allowlist is a superset of all specialist allowlists"
+    description: >
+      The chief-analyst may call any tool that any specialist can call, because the chief
+      aggregates results and may need to verify specialist outputs directly. The chief's tools
+      array must therefore be a superset of the union of all specialist tools arrays (or the
+      chief receives the full 623-tool set with no restriction). This invariant ensures the
+      chief can independently reproduce any specialist computation during review.
+      Asserted by: chief-analyst tools array contains all tool ids that appear in any
+      specialist's tools array, or chief-analyst has no tools restriction (empty array treated
+      as all-tools).
+    check: >
+      grep -A2 'chief-analyst' packages/agents/registry.ts |
+        grep 'tools\s*:\s*\[\]' returns at least one hit (open allowlist),
+      OR: node -e "const r=require('./packages/agents/registry'); const chief=r['chief-analyst'].tools;
+        const specialists=Object.entries(r).filter(([id])=>id!=='chief-analyst')
+          .flatMap(([,s])=>s.tools);
+        const missing=specialists.filter(t=>!chief.includes(t));
+        if(missing.length) throw new Error(missing)" exits 0.
+    severity: warning
