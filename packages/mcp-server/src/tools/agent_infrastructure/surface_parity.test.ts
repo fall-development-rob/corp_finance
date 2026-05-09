@@ -8,7 +8,10 @@
 import { describe, it, expect } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 import {
   extractPackagesTools,
   extractPluginTools,
@@ -388,7 +391,9 @@ describe("surfaceParityCheckMcp", () => {
 // ---------------------------------------------------------------------------
 
 describe("integration — live workspace", () => {
-  const WORKSPACE = "/home/robert/cfa_agent";
+  // Auto-detect workspace from this test file's location so the suite runs on
+  // any machine (local /home/robert/cfa_agent, CI /home/runner/work/..., etc).
+  const WORKSPACE = resolve(__dirname, "../../../../..");
   const ALLOWLIST = join(WORKSPACE, "packages/mcp-server/.surface-allowlist.json");
 
   it("returns a report with 200+ packages tools", () => {

@@ -163,14 +163,13 @@ export async function validateOneCookbook(
     return { slug, validate_ok: false, deploy_ok: false, validate_output: validateOutput };
   }
 
-  // --- dry-run deploy ---
+  // --- deploy (payload assembly only — no side effects, no --dry-run flag) ---
   let deployOutput: unknown;
   try {
     const { stdout } = await exec(cfaBinary, [
       "managed-agent",
       "deploy",
       slug,
-      "--dry-run",
       "--cookbooks-root",
       cookbooksRoot,
       "--skills-root",
