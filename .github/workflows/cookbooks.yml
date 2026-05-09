@@ -6,7 +6,7 @@ name: Cookbooks CI
 #   2. Run all unit tests (--lib).
 #   3. Clippy (-D warnings) and rustfmt --check.
 #   4. Validate every managed-agent cookbook (15/15 must pass).
-#   5. Smoke-test cookbooks via scripts/test-cookbooks.sh (15/15 validate + dry-run deploy).
+#   5. Smoke-test cookbooks via the cookbook_validate_all MCP tool (15/15 validate + dry-run deploy).
 #   6. Build all four TypeScript MCP servers.
 
 on:
@@ -108,11 +108,17 @@ jobs:
             exit 1
           fi
 
-      - name: scripts/test-cookbooks.sh (15/15 validate + dry-run deploy)
+      - name: cookbook_validate_all MCP tool (15/15 validate + dry-run deploy)
         shell: bash
+        working-directory: packages/mcp-server
         run: |
           set -euo pipefail
-          ./scripts/test-cookbooks.sh
+          # Phase 30 Wave 1: scripts/test-cookbooks.sh was replaced by the
+          # cookbook_validate_all MCP tool. The npm script `cookbooks:validate`
+          # invokes the same TS module via tsx — same code path as the
+          # agent-callable tool, no separate script file.
+          npm ci --no-audit --no-fund
+          npm run cookbooks:validate
 
       # ---------------------------------------------------------------------
       # TypeScript MCP servers: build all four

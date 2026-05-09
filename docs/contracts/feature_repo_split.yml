@@ -89,21 +89,23 @@ contracts:
     name: "WASM artefact provenance — wasm binary built in corp-finance-core, copied to cfa_agent"
     description: >
       The WASM binary at plugins/cfa-core/mcp/wasm/corp_finance_wasm_bg.wasm must be built
-      by scripts/build-wasm.sh in corp-finance-core. The build-wasm script in cfa_agent at
-      plugins/cfa-core/scripts/build-wasm.sh must delegate to the new repo and copy the
-      resulting binary; it must not invoke wasm-pack or cargo build --target wasm32 against
-      cfa_agent source. A wasm binary in cfa_agent that was not produced by corp-finance-core
-      build infrastructure is an unsourced artefact and violates this contract.
+      by scripts/build-wasm.sh in corp-finance-core. Phase 30 Wave 1 replaced the
+      cfa_agent-side bash wrapper with the wasm_build MCP tool at
+      packages/mcp-server/src/tools/agent_infrastructure/wasm_build.ts; the tool delegates
+      to the extracted repo's scripts/build-wasm.sh and copies the resulting binary.
+      cfa_agent must not invoke wasm-pack or cargo build --target wasm32 against its own
+      source — a wasm binary not produced by corp-finance-core build infrastructure is an
+      unsourced artefact and violates this contract.
     scope:
-      - "plugins/cfa-core/scripts/build-wasm.sh"
+      - "packages/mcp-server/src/tools/agent_infrastructure/wasm_build.ts"
       - "plugins/cfa-core/mcp/wasm/"
     check: >
-      grep -n 'corp.finance.core\|/home/robert/corp-finance-core' \
-        plugins/cfa-core/scripts/build-wasm.sh should return at least one hit showing
-      delegation to the new repo.
-      grep -n 'wasm-pack\|cargo build.*wasm32' plugins/cfa-core/scripts/build-wasm.sh |
-        grep -v 'corp.finance.core\|/home/robert/corp-finance-core' should return no hits
-      (no independent wasm build in cfa_agent).
+      grep -n 'corerepo\|corp-finance-core' \
+        packages/mcp-server/src/tools/agent_infrastructure/wasm_build.ts should return
+      at least one hit showing delegation to the extracted repo.
+      grep -rn 'wasm-pack\|cargo build.*wasm32' packages/ plugins/ | grep -v node_modules
+      | grep -v 'corp-finance-core\|corerepo\|test\|README\|CHANGELOG' should return no
+      hits in source files (no independent wasm build in cfa_agent).
     enforcement: ci
     severity: error
 

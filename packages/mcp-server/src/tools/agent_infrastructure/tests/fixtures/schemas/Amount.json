@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Amount",
+  "description": "A monetary amount with currency",
+  "type": "object",
+  "required": ["value", "currency"],
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Decimal string"
+    },
+    "currency": {
+      "type": "string"
+    }
+  }
+}
