@@ -41,4 +41,4 @@ jobs:
 
       - name: Run surface parity audit
         working-directory: packages/mcp-server
-        run: node scripts/check-surface-parity.mjs
+        run: npm run check:surface-parity
