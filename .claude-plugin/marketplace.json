@@ -1,0 +1,25 @@
+{
+  "name": "cfa-agent",
+  "description": "CFA Agent marketplace — institutional financial-analysis plugins for Claude Code. cfa-core (offline compute, no API keys), cfa-data (free public data feeds), cfa-pro (FMP + paid vendor data).",
+  "owner": {
+    "name": "Robert Fall",
+    "url": "https://github.com/fall-development-rob"
+  },
+  "plugins": [
+    {
+      "name": "cfa-core",
+      "source": "./plugins/cfa-core",
+      "description": "Institutional-grade corporate finance toolkit — 227 WASM-backed compute tools, 21 CFA-aligned skills, 57 slash commands, 9 specialist research agents. 100% offline / decimal-precision math / no API keys required."
+    },
+    {
+      "name": "cfa-data",
+      "source": "./plugins/cfa-data",
+      "description": "Free / freemium public data feeds — FRED, EDGAR, FIGI, Yahoo Finance, World Bank, plus geopolitical sources (ACLED, GDELT, GDACS, NASA, EIA, WTO, etc.). 129 MCP tools."
+    },
+    {
+      "name": "cfa-pro",
+      "source": "./plugins/cfa-pro",
+      "description": "Premium market-data plugin — Financial Modeling Prep (180 tools, freemium, requires FMP_API_KEY) plus paid vendor MCPs covering LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook (87 tools)."
+    }
+  ]
+}
