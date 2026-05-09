@@ -85,14 +85,21 @@ jobs:
         run: cargo fmt --all -- --check
 
       # ---------------------------------------------------------------------
+      # Install cfa CLI from extracted repo (Phase 29 Wave 18: corp-finance-cli
+      # was extracted to github.com/rob-otix-ai/corp-finance-core; install from
+      # the v1.1.0 tag so the cookbook gate has the binary in PATH).
+      # ---------------------------------------------------------------------
+      - name: Install cfa CLI (from extracted repo at v1.1.0)
+        run: cargo install --git https://github.com/rob-otix-ai/corp-finance-core --tag v1.1.0 corp-finance-cli --locked
+
+      # ---------------------------------------------------------------------
       # Managed-agent cookbooks: 15/15 must pass validate + dry-run deploy
       # ---------------------------------------------------------------------
       - name: managed-agent check-all (15/15 validate)
         shell: bash
         run: |
           set -euo pipefail
-          cargo run -p corp-finance-cli --quiet -- managed-agent check-all \
-            > /tmp/check-all.json
+          cfa managed-agent check-all > /tmp/check-all.json
           # Print summary for log readability
           cat /tmp/check-all.json
           # Contract: top-level "ok": true. Match compact + pretty JSON.
