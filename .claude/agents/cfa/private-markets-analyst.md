@@ -2,7 +2,7 @@
 name: cfa-private-markets-analyst
 description: CFA private markets specialist — LBO modelling, PE returns, sources and uses, debt schedules, waterfall distributions, merger analysis, venture capital, infrastructure finance, real assets, CLO analytics, securitization, and fund of funds
 color: "#8E44AD"
-tools: cfa-core, fmp-market-data
+tools: mcp__plugin_cfa-core_cfa-core__*, mcp__plugin_cfa-pro_fmp-market-data__*, mcp__plugin_cfa-pro_vendor__*, mcp__plugin_cfa-data_data__*
 priority: high
 type: analyst
 capabilities:

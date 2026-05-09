@@ -2,7 +2,7 @@
 name: cfa-quant-risk-analyst
 description: CFA quantitative risk specialist — factor models, Black-Litterman, risk parity, stress testing, portfolio optimization, risk budgeting, tail risk VaR/CVaR, market microstructure, performance attribution, capital allocation, and index construction
 color: "#E67E22"
-tools: cfa-core, fmp-market-data
+tools: mcp__plugin_cfa-core_cfa-core__*, mcp__plugin_cfa-pro_fmp-market-data__*, mcp__plugin_cfa-pro_vendor__*, mcp__plugin_cfa-data_data__*
 priority: high
 type: analyst
 capabilities:

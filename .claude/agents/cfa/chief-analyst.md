@@ -2,7 +2,7 @@
 name: cfa-chief-analyst
 description: CFA Chief Analyst coordinator — decomposes research queries, delegates to specialist analysts, aggregates results into institutional-grade reports
 color: "#C9A961"
-tools: cfa-core, fmp-market-data
+tools: mcp__plugin_cfa-core_cfa-core__*, mcp__plugin_cfa-pro_fmp-market-data__*, mcp__plugin_cfa-pro_vendor__*, mcp__plugin_cfa-data_data__*
 priority: critical
 type: coordinator
 capabilities:
