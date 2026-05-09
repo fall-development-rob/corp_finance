@@ -236,12 +236,14 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.tag }}"
 
-          # Count stats from source
-          RUST_FILES=$(find crates -name '*.rs' | wc -l | tr -d ' ')
-          RUST_LINES=$(find crates -name '*.rs' -exec cat {} + | wc -l | tr -d ' ')
-          TEST_COUNT=$(grep -r '#\[test\]' crates/ | wc -l | tr -d ' ')
+          # Count stats from source. Phase 29 Wave 18: corp-finance-{core,wasm,cli}
+          # extracted to github.com/rob-otix-ai/corp-finance-core; crates/ no longer
+          # exists in this repo, so Rust counts are scoped to the bindings layer
+          # (NAPI glue + JSON envelope) that still lives here.
+          RUST_FILES=$(find packages/bindings/src -name '*.rs' 2>/dev/null | wc -l | tr -d ' ')
+          RUST_LINES=$(find packages/bindings/src -name '*.rs' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')
+          TEST_COUNT=$(grep -r '#\[test\]' packages/bindings/src/ 2>/dev/null | wc -l | tr -d ' ')
           MCP_TOOLS=$(grep -r 'server.tool(' packages/mcp-server/src/tools/ | wc -l | tr -d ' ')
-          # Phase 29 Wave 18: corp-finance-core is now at /home/robert/corp-finance-core (separate repo)
           MODULES=$(ls -d packages/bindings/src/*/ 2>/dev/null | wc -l | tr -d ' ')
 
           cat > /tmp/release-body.md << EOF
