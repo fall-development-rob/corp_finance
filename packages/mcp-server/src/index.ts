@@ -86,6 +86,7 @@ import { registerSelfLearningTools } from "./tools/self_learning.js";
 import { registerAgentInvokeTools } from "./tools/agent_invoke.js";
 import { registerAttestTools } from "./tools/attest.js";
 import { registerOfficeTools } from "./tools/office.js";
+import { registerAgentInfrastructureTools } from "./tools/agent_infrastructure/index.js";
 import { withAudit } from "./middleware/audit.js";
 
 const server = withAudit(new McpServer({
@@ -178,6 +179,7 @@ registerSelfLearningTools(server);
 registerAgentInvokeTools(server);
 registerAttestTools(server);
 registerOfficeTools(server);
+registerAgentInfrastructureTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

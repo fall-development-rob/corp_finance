@@ -251,6 +251,26 @@
       "tool": "workflow_validate",
       "reason": "permanent native-required: workflow registry + audit-hashed manifests",
       "owning_module": "workflows"
+    },
+    {
+      "tool": "surface_parity_check",
+      "reason": "Phase 30 Wave 1: agent-infrastructure tool that audits plugin parity itself. Plugin must not depend on its own auditor.",
+      "owning_module": "agent_infrastructure"
+    },
+    {
+      "tool": "schemas_refresh",
+      "reason": "Phase 30 Wave 1: agent-infrastructure tool that spawns npx json-schema-to-zod and reads/writes filesystem paths in $COREREPO. Subprocess + filesystem orchestration; not WASM-compatible.",
+      "owning_module": "agent_infrastructure"
+    },
+    {
+      "tool": "cookbook_validate_all",
+      "reason": "Phase 30 Wave 1: agent-infrastructure tool that spawns the cfa CLI binary as a subprocess. Native subprocess required; not WASM-compatible.",
+      "owning_module": "agent_infrastructure"
+    },
+    {
+      "tool": "wasm_build",
+      "reason": "Phase 30 Wave 1: agent-infrastructure tool that spawns wasm-pack inside the extracted corp-finance-core repo and copies artefacts. Subprocess + filesystem orchestration; not WASM-compatible.",
+      "owning_module": "agent_infrastructure"
     }
   ]
 }

@@ -24,7 +24,7 @@ Institutional-grade corporate finance toolkit for Claude Code. Pure-compute, dec
 
 ```bash
 # from repo root
-./plugins/cfa-core/scripts/build-wasm.sh
+npm --prefix packages/mcp-server run wasm:build   # invokes the wasm_build MCP tool
 npm --prefix plugins/cfa-core/mcp install
 npm --prefix plugins/cfa-core/mcp run build
 ```
