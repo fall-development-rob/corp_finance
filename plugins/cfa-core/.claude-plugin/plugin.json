@@ -8,10 +8,7 @@
   },
   "license": "MIT",
   "homepage": "https://github.com/fall-development-rob/cfa_agent",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fall-development-rob/cfa_agent.git"
-  },
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
   "keywords": [
     "finance",
     "cfa",
@@ -26,20 +23,6 @@
     "wasm",
     "decimal-precision"
   ],
-  "category": "finance",
-  "tags": [
-    "valuation",
-    "credit-analysis",
-    "private-equity",
-    "fixed-income",
-    "derivatives",
-    "portfolio-analytics",
-    "research-workflows"
-  ],
-  "engines": {
-    "claudeCode": ">=2.0.0",
-    "node": ">=20.0.0"
-  },
   "mcpServers": {
     "cfa-core": {
       "command": "node",

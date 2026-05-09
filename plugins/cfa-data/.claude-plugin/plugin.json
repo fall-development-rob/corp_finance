@@ -1,0 +1,29 @@
+{
+  "name": "cfa-data",
+  "version": "0.1.0",
+  "description": "[FREE / FREEMIUM] cfa-data MCP plugin — public data feeds for CFA workflows. Includes FRED (Federal Reserve), EDGAR (SEC filings), FIGI (instrument identifiers), Yahoo Finance, World Bank, plus geopolitical sources (ACLED, UCDP, GDELT, GDACS, USGS, NASA, EIA, WTO, USASpending, Polymarket, CoinGecko, UNHCR, Open-Meteo). Some sources require a free API key; the rest need no auth.",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": [
+    "finance",
+    "macro",
+    "fred",
+    "edgar",
+    "world-bank",
+    "geopolitical",
+    "data"
+  ],
+  "mcpServers": {
+    "data": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"
+      ]
+    }
+  }
+}
