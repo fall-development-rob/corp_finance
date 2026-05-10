@@ -1,37 +1,50 @@
 #!/usr/bin/env node
 /**
- * CFA Harness CLI entry point — Phase 31 Wave 1.
+ * CFA Harness CLI entry point — Phase 31.
  *
  * Usage:
- *   cfa-harness run --agent <id> --prompt <text|@file>
- *                  [--output <path>] [--max-turns N] [--audit <path>]
+ *   cfa-harness run --agent <id> --prompt <text|@file> [options]
  *
- * Flags:
+ * Wave 1 flags:
  *   --agent     (required) Agent id to look up in the registry.
  *   --prompt    (required) Inline text, or @<path> to read from a file.
  *   --output    Write final text to this path instead of stdout.
  *   --max-turns Maximum model turns before forcing stop (default 25).
- *   --audit     Write a JSON audit log (DispatchEvent[] + result) to this path.
+ *   --events    Write a JSON DispatchEvent log + result to this path.
+ *
+ * Wave 2 flag:
+ *   --delegates Enable chief→specialist delegation (chief gets the 8
+ *               cfa specialists as delegate_to_<id> virtual tools).
+ *
+ * Wave 4 flags:
+ *   --audit-dir <dir>    Persist sha256-hashed AuditRecord per dispatch.
+ *   --session-dir <dir>  Persist SessionState per dispatch (durable replay).
+ *
  *   --help      Print this usage message and exit 0.
  */
 
 import { readFile, writeFile } from "node:fs/promises";
 import { createAnthropicProvider } from "../core/providers/anthropic.js";
 import { createStdioMCPClient } from "../mcp-client/stdio.js";
-import { getAgent, defaultMCPServers } from "../agents/registry.js";
+import {
+  defaultDelegates,
+  defaultMCPServers,
+  getAgent,
+} from "../agents/registry.js";
 import { dispatch } from "../core/agent-loop.js";
+import { createFileAuditSink } from "../audit/index.js";
+import { createFileSessionStore } from "../memory/index.js";
 import type { DispatchEvent, DispatchResult } from "../types.js";
-
-// ---------------------------------------------------------------------------
-// Arg parsing
-// ---------------------------------------------------------------------------
 
 interface ParsedArgs {
   agent: string;
   prompt: string;
   output: string | undefined;
   maxTurns: number;
-  audit: string | undefined;
+  events: string | undefined;
+  auditDir: string | undefined;
+  sessionDir: string | undefined;
+  delegates: boolean;
   help: boolean;
 }
 
@@ -40,23 +53,36 @@ function printUsage(): void {
 Usage: cfa-harness run --agent <id> --prompt <text|@file> [options]
 
 Required:
-  --agent <id>       Agent id (e.g. chief-analyst)
-  --prompt <value>   Inline prompt text, or @<path> to read from a file
+  --agent <id>            Agent id (e.g. chief-analyst)
+  --prompt <value>        Inline text, or @<path> to read from a file
 
-Optional:
-  --output <path>    Write final text to file instead of stdout
-  --max-turns <N>    Maximum model turns (default 25)
-  --audit <path>     Write JSON audit log (events + result) to file
-  --help             Print this message and exit
+Output:
+  --output <path>         Write final text to file instead of stdout
+  --max-turns <N>         Max model turns (default 25)
+
+Audit + memory (Wave 4):
+  --audit-dir <dir>       Write sha256-hashed AuditRecord per dispatch
+  --session-dir <dir>     Persist SessionState per dispatch (replay support)
+  --events <path>         Write DispatchEvent log + result JSON to file
+
+Delegation (Wave 2):
+  --delegates             Enable chief→specialist delegation (chief sees
+                          the 8 cfa specialists as delegate_to_<id> tools)
+
+  --help                  Print this message and exit
 
 Example:
-  cfa-harness run --agent chief-analyst --prompt @prompt.txt --max-turns 30
+  cfa-harness run \\
+    --agent chief-analyst \\
+    --prompt @deal.md \\
+    --delegates \\
+    --audit-dir out/audits \\
+    --session-dir out/sessions
 `);
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
-  const args = argv.slice(2); // strip node + script path
-  // Strip leading "run" sub-command if present
+  const args = argv.slice(2);
   if (args[0] === "run") args.shift();
 
   const result: ParsedArgs = {
@@ -64,7 +90,10 @@ function parseArgs(argv: string[]): ParsedArgs {
     prompt: "",
     output: undefined,
     maxTurns: 25,
-    audit: undefined,
+    events: undefined,
+    auditDir: undefined,
+    sessionDir: undefined,
+    delegates: false,
     help: false,
   };
 
@@ -93,9 +122,20 @@ function parseArgs(argv: string[]): ParsedArgs {
         result.maxTurns = parseInt(next ?? "25", 10);
         i++;
         break;
-      case "--audit":
-        result.audit = next ?? "";
+      case "--events":
+        result.events = next ?? "";
         i++;
+        break;
+      case "--audit-dir":
+        result.auditDir = next ?? "";
+        i++;
+        break;
+      case "--session-dir":
+        result.sessionDir = next ?? "";
+        i++;
+        break;
+      case "--delegates":
+        result.delegates = true;
         break;
       default:
         if (flag.startsWith("--")) {
@@ -107,10 +147,6 @@ function parseArgs(argv: string[]): ParsedArgs {
   return result;
 }
 
-// ---------------------------------------------------------------------------
-// Prompt resolution
-// ---------------------------------------------------------------------------
-
 async function resolvePrompt(raw: string): Promise<string> {
   if (raw.startsWith("@")) {
     const filePath = raw.slice(1);
@@ -119,10 +155,6 @@ async function resolvePrompt(raw: string): Promise<string> {
   }
   return raw;
 }
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 
 export async function main(): Promise<void> {
   const parsed = parseArgs(process.argv);
@@ -163,7 +195,11 @@ export async function main(): Promise<void> {
   }
 
   process.stderr.write(
-    `[dispatch] agent=${parsed.agent} prompt-len=${promptText.length}\n`,
+    `[dispatch] agent=${parsed.agent} prompt-len=${promptText.length}` +
+      (parsed.delegates ? " delegates=on" : "") +
+      (parsed.auditDir ? ` audit=${parsed.auditDir}` : "") +
+      (parsed.sessionDir ? ` session=${parsed.sessionDir}` : "") +
+      "\n",
   );
 
   const events: DispatchEvent[] = [];
@@ -177,6 +213,13 @@ export async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const audit = parsed.auditDir
+    ? createFileAuditSink({ dir: parsed.auditDir })
+    : undefined;
+  const session = parsed.sessionDir
+    ? createFileSessionStore({ dir: parsed.sessionDir })
+    : undefined;
+
   const startMs = Date.now();
   let result: DispatchResult;
 
@@ -187,6 +230,9 @@ export async function main(): Promise<void> {
       provider: createAnthropicProvider(),
       mcp,
       maxTurns: parsed.maxTurns,
+      ...(parsed.delegates ? { delegates: defaultDelegates } : {}),
+      ...(audit ? { audit } : {}),
+      ...(session ? { session } : {}),
       onEvent: (event) => {
         events.push(event);
         switch (event.type) {
@@ -200,13 +246,15 @@ export async function main(): Promise<void> {
               `[turn ${event.turn}] tool_call ${event.call.name}\n`,
             );
             break;
+          case "delegation":
+            process.stderr.write(
+              `[delegation] → ${event.targetAgent}\n`,
+            );
+            break;
           case "turn_completed":
             process.stderr.write(
               `[turn ${event.turn}] turn_completed ${event.stopReason}\n`,
             );
-            break;
-          case "dispatch_completed":
-            // handled after dispatch returns
             break;
           default:
             break;
@@ -224,10 +272,13 @@ export async function main(): Promise<void> {
 
   const elapsedSec = ((Date.now() - startMs) / 1000).toFixed(1);
   process.stderr.write(
-    `[dispatch] tool_uses=${result.toolUses} turns=${result.messages.length} elapsed=${elapsedSec}s\n`,
+    `[dispatch] tool_uses=${result.toolUses} turns=${result.messages.length}` +
+      ` elapsed=${elapsedSec}s` +
+      (result.auditId ? ` audit_id=${result.auditId}` : "") +
+      (result.sessionId ? ` session_id=${result.sessionId}` : "") +
+      "\n",
   );
 
-  // Write final text
   if (parsed.output) {
     await writeFile(parsed.output, result.finalText, "utf8");
   } else {
@@ -237,16 +288,14 @@ export async function main(): Promise<void> {
     }
   }
 
-  // Write audit log
-  if (parsed.audit) {
-    const auditPayload = JSON.stringify({ events, result }, null, 2);
-    await writeFile(parsed.audit, auditPayload, "utf8");
+  if (parsed.events) {
+    const eventsPayload = JSON.stringify({ events, result }, null, 2);
+    await writeFile(parsed.events, eventsPayload, "utf8");
   }
 
   process.exit(0);
 }
 
-// Run when invoked directly (ESM: check import.meta.url vs process.argv[1])
 import { fileURLToPath } from "node:url";
 const _thisFile = fileURLToPath(import.meta.url);
 const _invokedFile = process.argv[1] ?? "";

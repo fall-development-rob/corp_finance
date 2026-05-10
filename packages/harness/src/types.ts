@@ -195,6 +195,12 @@ export interface DispatchOptions {
    * specialist; specialists do not delegate further).
    */
   delegates?: AgentDef[];
+  /** Wave 4: audit sink. If provided, every dispatch produces an AuditRecord. */
+  audit?: AuditSink;
+  /** Wave 4: session store. If provided, dispatch state is persisted on completion. */
+  session?: SessionStore;
+  /** Wave 4: parent audit id, set by the agent loop on nested dispatches. */
+  parentAuditId?: string;
 }
 
 export type DispatchEvent =
@@ -211,4 +217,96 @@ export interface DispatchResult {
   messages: Message[];
   /** Per-agent dispatches recorded if delegation occurred. */
   childDispatches?: DispatchResult[];
+  /** Audit record id if an audit sink was provided. */
+  auditId?: string;
+  /** Session id if a session store was provided. */
+  sessionId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Audit chain (Wave 4)
+// ---------------------------------------------------------------------------
+
+export interface AuditToolCall {
+  id: string;
+  name: string;             // bare tool name
+  input_hash: string;       // sha256 of JSON-stringified input
+  result_hash: string;      // sha256 of result content
+  is_error: boolean;
+  duration_ms: number;
+}
+
+export interface AuditRecord {
+  audit_id: string;
+  parent_audit_id?: string;
+  agent_id: string;
+  prompt_hash: string;      // sha256 of prompt
+  tool_calls: AuditToolCall[];
+  result_hash: string;      // sha256 of finalText
+  duration_ms: number;
+  total_tool_uses: number;
+  child_audit_ids: string[]; // delegation children
+  timestamp: string;        // ISO 8601
+  model?: string;
+  usage?: { inputTokens: number; outputTokens: number };
+}
+
+export interface AuditSink {
+  /** Persist a completed audit record. */
+  write(record: AuditRecord): Promise<void>;
+  /** Retrieve a previously-written record by id. */
+  read(auditId: string): Promise<AuditRecord | null>;
+  /** List records, optionally filtered. */
+  list(filter?: { agentId?: string; since?: Date }): Promise<AuditRecord[]>;
+}
+
+// ---------------------------------------------------------------------------
+// Session memory (Wave 4)
+// ---------------------------------------------------------------------------
+
+export interface SessionState {
+  session_id: string;
+  agent_id: string;
+  prompt: string;
+  messages: Message[];
+  tool_uses: number;
+  child_session_ids: string[];
+  final_text?: string;
+  status: "in_progress" | "completed" | "failed";
+  audit_id?: string;
+  created_at: string;
+  updated_at: string;
+  /** Optional structured metadata for the caller to attach. */
+  metadata?: Record<string, unknown>;
+}
+
+export interface SessionStore {
+  save(state: SessionState): Promise<void>;
+  load(sessionId: string): Promise<SessionState | null>;
+  list(filter?: { agentId?: string; status?: SessionState["status"] }): Promise<SessionState[]>;
+  delete(sessionId: string): Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// API-key scoping (Wave 4)
+// ---------------------------------------------------------------------------
+
+export interface KeyScope {
+  /** Env var name (e.g. "FMP_API_KEY"). */
+  env_var: string;
+  /**
+   * Bare tool-name patterns this key applies to. Patterns are simple prefix
+   * matches against the tool's bare name; e.g. "fmp_*" matches every FMP
+   * tool. The literal "*" matches all tools.
+   */
+  tools: string[];
+}
+
+export interface ScopedEnv {
+  /**
+   * Compute the env vars to expose for an agent given its allowlist. Keys
+   * whose `tools` patterns don't intersect the allowlist are dropped.
+   * Returns a Record suitable for passing to MCPServerConfig.env.
+   */
+  scopeForAgent(agentTools: string[] | "*"): Record<string, string>;
 }
