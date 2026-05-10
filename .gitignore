@@ -30,6 +30,8 @@ files-cfa.zip
 !.claude/skills/data-*/
 !.claude/skills/vendor-*/
 !.claude/skills/geopolitical-*/
+!.claude/skills/cfa/
+!.claude/skills/cfa/**
 !.claude/commands/
 .claude/commands/*
 !.claude/commands/cfa/
