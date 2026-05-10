@@ -94,3 +94,12 @@ export {
   summarizeResult,
   type IndexAuditRecordOptions,
 } from "./reasoning/index.js";
+
+// Phase 34 Wave 3 — recall_similar virtual tool
+export {
+  RECALL_TOOL_NAME,
+  isRecallToolName,
+  createRecallTool,
+  formatRecallResult,
+  executeRecallCall,
+} from "./reasoning/index.js";
