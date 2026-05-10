@@ -92,10 +92,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-tools-core"
+      "from_plugin": "../../../plugins/cfa-core/skills/corp-finance-tools-core"
     },
     {
-      "from_skill": "corp-finance-tools-risk"
+      "from_plugin": "../../../plugins/cfa-core/skills/corp-finance-tools-risk"
     }
   ],
   "callable_agents": []

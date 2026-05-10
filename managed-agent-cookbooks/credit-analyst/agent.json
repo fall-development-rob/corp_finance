@@ -2,8 +2,8 @@
   "name": "cfa-credit-analyst",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/credit-analyst.md",
-    "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call \u2014 never from LLM generation. Always compare synthetic rating to actual rating and flag divergence as required by the quality standards.\n"
+    "file": "../../plugins/cfa-core/agents/cfa/credit-analyst.md",
+    "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Always compare synthetic rating to actual rating and flag divergence as required by the quality standards.\n"
   },
   "tools": [
     {
@@ -51,7 +51,7 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-core"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     }
   ],
   "callable_agents": [

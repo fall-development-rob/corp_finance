@@ -100,7 +100,7 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-tools-regulatory"
+      "from_plugin": "../../../plugins/cfa-core/skills/corp-finance-tools-regulatory"
     }
   ],
   "callable_agents": []

@@ -2,7 +2,7 @@
   "name": "cfa-model-builder",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/equity-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/equity-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Excel export is not available; deliver markdown-tabular models only.\n"
   },
   "tools": [
@@ -51,10 +51,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-core"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_skill": "corp-finance-tools-core"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-tools-core"
     }
   ],
   "callable_agents": [
