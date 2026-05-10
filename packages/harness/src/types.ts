@@ -187,6 +187,14 @@ export interface DispatchOptions {
   depth?: number;
   /** Optional handler for streaming events (for CLI output, audit logs). */
   onEvent?: (event: DispatchEvent) => void;
+  /**
+   * Specialist agents this dispatch can delegate to. The agent loop injects
+   * a `delegate_to_<id>` virtual tool for each entry; when the model calls
+   * one, the loop runs a nested dispatch on the specialist with the
+   * sub-prompt as input. Phase 31 caps recursion at depth 1 (chief →
+   * specialist; specialists do not delegate further).
+   */
+  delegates?: AgentDef[];
 }
 
 export type DispatchEvent =

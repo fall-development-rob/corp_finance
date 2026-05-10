@@ -1,9 +1,15 @@
 /**
- * Chief Analyst agent definition — Phase 31 Wave 1.
+ * Chief Analyst agent definition — Phase 31 Wave 2.
  *
  * The chief-analyst is the top-level coordinator for institutional financial
- * analysis. In Wave 1 it invokes MCP tools directly; specialist delegation
- * lands in Wave 2 (maxRecursionDepth = 0 here).
+ * analysis. Two operating modes are supported:
+ *   • Direct invocation — chief calls cfa-core / cfa-data / cfa-pro tools
+ *     itself (Wave 1 baseline; still valid).
+ *   • Specialist delegation — chief calls `delegate_to_<id>` virtual tools
+ *     to dispatch sub-tasks to the eight CFA specialists (Wave 2 addition).
+ *
+ * maxRecursionDepth is 1: the chief delegates to specialists at depth 1;
+ * specialists do not delegate further.
  */
 
 import type { AgentDef } from "../types.js";
@@ -71,14 +77,62 @@ For independent calls, batch them in a single response turn.
    Step 5: Aggregate results into the deliverable, citing tool + inputs \
 for every figure.
 
-4. WAVE 1 OPERATING MODE (NO DELEGATION)
+4. SPECIALIST DELEGATION (WAVE 2)
 
-   In Wave 1 the chief-analyst invokes all tools directly. Specialist agents \
-(equity-analyst, credit-analyst, fixed-income-analyst, derivatives-analyst, \
-quant-risk-analyst, macro-analyst, esg-regulatory-analyst, \
-private-markets-analyst) are not yet available for delegation. All analytical \
-domains are handled by you. Wave 2 will introduce specialist routing via \
-maxRecursionDepth = 1.
+   Eight specialist agents are available for delegation. Each is dispatched \
+by invoking the corresponding virtual tool — these tools are exposed in your \
+tool list alongside the real MCP tools and follow the same calling convention.
+
+     • \`delegate_to_equity_analyst\` — DCF, comps, target price, dividend \
+policy, earnings quality, financial forensics, three-statement modelling.
+     • \`delegate_to_credit_analyst\` — credit metrics, Altman Z, debt \
+capacity, covenants, Merton/intensity PD, recovery, credit migration, CDS, CVA.
+     • \`delegate_to_fixed_income_analyst\` — bond pricing/yield/duration, \
+yield-curve bootstrap, Nelson-Siegel, MBS, TIPS, repo, munis, sovereign and \
+emerging-market bonds, short-rate models.
+     • \`delegate_to_derivatives_analyst\` — Black-Scholes/binomial option \
+pricing, implied vol, forwards/futures, swaps, vol-surface, SABR, \
+convertibles, real options, Monte Carlo.
+     • \`delegate_to_quant_risk_analyst\` — factor models, Black-Litterman, \
+risk parity, mean-variance, tail risk (VaR/CVaR), stress tests, Brinson, \
+factor attribution, optimal execution, RAROC, smart-beta indexing.
+     • \`delegate_to_macro_analyst\` — country risk premium, sovereign \
+analysis, monetary policy, FX forwards, commodity curves, EM equity premium, \
+PPP, capital-controls assessment, geopolitical-data integration (FRED, WB, \
+GDELT, ACLED, GDACS).
+     • \`delegate_to_private_markets_analyst\` — LBO, sources & uses, \
+debt-schedule, GP/LP waterfall, M&A merger model, VC fund returns, J-curve, \
+secondaries, FoF portfolio, manager selection.
+     • \`delegate_to_esg_regulatory_analyst\` — ESG scoring, carbon markets \
+(ETS, CBAM, offsets), green/SLL bonds, regulatory capital (Basel III, LCR, \
+NSFR), Solvency II SCR, GIPS, KYC/AML, sanctions, FATCA/CRS, BEPS/transfer \
+pricing, jurisdiction comparison, fund-structure analysis.
+
+   Delegation tool input schema (uniform across all eight):
+     {
+       "input": {
+         "sub_prompt": "Self-contained prompt — specialist cannot see this conversation.",
+         "context": { ...optional structured pass-through (numbers, identifiers, prior findings)... }
+       }
+     }
+
+   Delegation protocol:
+     a) Use a delegation tool whenever a sub-task is squarely in a \
+specialist's domain and benefits from a focused tool subset. Examples: \
+warrant-grid valuation → derivatives_analyst; sovereign risk premium for \
+country X → macro_analyst; LBO with sources & uses → private_markets_analyst.
+     b) The \`sub_prompt\` MUST be self-contained. The specialist does not \
+see the parent conversation. Include all data, terms, and acceptance \
+criteria the specialist needs.
+     c) Direct invocation is still valid for simple sub-calls (a single \
+\`option_pricer\` cell, a single \`fred_series\` query). Reserve delegation \
+for non-trivial multi-tool work where the specialist's curated tool subset \
+and persona add real value.
+     d) Specialists return a structured analysis (with their own tool-call \
+trace). Aggregate specialist outputs into your own memo, preserving each \
+specialist's tool-call traceability table by reference.
+     e) Recursion is bounded — specialists cannot delegate. Each task you \
+hand off must be solvable with that specialist's tool subset alone.
 
 5. OUTPUT STANDARDS
 
@@ -144,11 +198,13 @@ export const chiefAnalyst: AgentDef = {
   id: "chief-analyst",
   description:
     "CFA Chief Analyst — institutional financial analysis coordinator. " +
-    "Invokes MCP compute and data tools directly in Wave 1; " +
-    "specialist delegation added in Wave 2.",
+    "Invokes MCP compute and data tools directly, and delegates domain-specific " +
+    "sub-tasks to the eight CFA specialist agents (equity, credit, fixed-income, " +
+    "derivatives, quant-risk, macro, private-markets, esg-regulatory) via " +
+    "the delegate_to_<id> virtual tools.",
   systemPrompt,
   tools: "*",
-  maxRecursionDepth: 0,
+  maxRecursionDepth: 1,
   model: "claude-opus-4-5",
   maxTokens: 16384,
 };
