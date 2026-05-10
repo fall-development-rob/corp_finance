@@ -58,6 +58,13 @@ export {
   createDelegationTools,
 } from "./agents/delegate.js";
 
+// Phase 32 Wave 2 — generic file-backed JSON store primitive
+export {
+  createFileJsonStore,
+  type FileJsonStore,
+  type FileJsonStoreOptions,
+} from "./persistence/index.js";
+
 // Phase 32 Wave 1 — ToolCatalogValidator ACL
 export {
   filterToolsForAgent,

@@ -12,6 +12,8 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { MCPClient, CanonicalTool } from "../types.js";
 import {
   extractBareFromWire,
+  toCanonicalTool,
+  unwrapMcpContent,
   type ResolvedTool,
 } from "./name-resolver.js";
 
@@ -30,33 +32,11 @@ export interface HTTPMCPServerConfig {
   headers?: Record<string, string>;
 }
 
-interface SDKToolDef {
-  name: string;
-  description?: string;
-  inputSchema: {
-    type: "object";
-    properties?: Record<string, unknown>;
-    required?: string[];
-  };
-}
-
 interface ServerEntry {
   config: HTTPMCPServerConfig;
   client: Client;
 }
 
-function sdkToolToCanonical(tool: SDKToolDef, prefix: string): CanonicalTool {
-  const bareName = extractBareFromWire(tool.name, prefix);
-  return {
-    name: bareName,
-    description: tool.description ?? "",
-    input_schema: {
-      type: "object",
-      properties: (tool.inputSchema.properties ?? {}) as Record<string, unknown>,
-      required: tool.inputSchema.required,
-    },
-  };
-}
 
 /**
  * Builds a bare→ResolvedTool map from HTTP server configs and their reported
@@ -121,12 +101,12 @@ export function createHTTPMCPClient(servers: HTTPMCPServerConfig[]): MCPClient {
         }
 
         const response = await client.listTools();
-        const wireNames = (response.tools as SDKToolDef[]).map((t) => t.name);
+        const wireNames = response.tools.map((t) => t.name);
         wireToolsByServer.set(config.name, wireNames);
         clientByServer.set(config.name, client);
 
-        for (const tool of response.tools as SDKToolDef[]) {
-          toolCatalog.push(sdkToolToCanonical(tool, config.prefix));
+        for (const tool of response.tools) {
+          toolCatalog.push(toCanonicalTool(tool, config.prefix));
         }
       }
 
@@ -159,15 +139,8 @@ export function createHTTPMCPClient(servers: HTTPMCPServerConfig[]): MCPClient {
       );
 
       // Unwrap text content from the canonical MCP response shape.
-      const content = result.content as Array<{ type: string; text?: string }>;
-      const firstText = content?.find((c) => c.type === "text" && typeof c.text === "string");
-      if (firstText?.text != null) {
-        try {
-          return JSON.parse(firstText.text) as unknown;
-        } catch {
-          return firstText.text;
-        }
-      }
+      const unwrapped = unwrapMcpContent(result);
+      if (unwrapped !== undefined) return unwrapped;
       return result;
     },
 

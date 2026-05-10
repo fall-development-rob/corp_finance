@@ -22,6 +22,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import type { MCPClient, CanonicalTool } from "../types.js";
+import { toCanonicalTool, unwrapMcpContent } from "./name-resolver.js";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -40,16 +41,6 @@ export interface SSEMCPServerConfig {
 // Internal types
 // ---------------------------------------------------------------------------
 
-interface SdkTool {
-  name: string;
-  description?: string;
-  inputSchema?: {
-    type?: string;
-    properties?: Record<string, unknown>;
-    required?: string[];
-  };
-}
-
 interface ServerEntry {
   config: SSEMCPServerConfig;
   client: Client;
@@ -60,25 +51,6 @@ interface ServerEntry {
 // ---------------------------------------------------------------------------
 
 const TOOL_CALL_TIMEOUT_MS = 30_000;
-
-function extractBare(wireName: string, prefix: string): string {
-  if (prefix && wireName.startsWith(prefix)) {
-    return wireName.slice(prefix.length);
-  }
-  return wireName;
-}
-
-function sdkToolToCanonical(tool: SdkTool, prefix: string): CanonicalTool {
-  return {
-    name: extractBare(tool.name, prefix),
-    description: tool.description ?? "",
-    input_schema: {
-      type: "object",
-      properties: tool.inputSchema?.properties ?? {},
-      required: tool.inputSchema?.required,
-    },
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Factory
@@ -123,10 +95,10 @@ export function createSSEMCPClient(servers: SSEMCPServerConfig[]): MCPClient {
         entries.set(config.name, { config, client: sdkClient });
 
         const listResult = await sdkClient.listTools();
-        const sdkTools = (listResult.tools ?? []) as SdkTool[];
+        const sdkTools = listResult.tools ?? [];
 
         for (const sdkTool of sdkTools) {
-          const canonical = sdkToolToCanonical(sdkTool, config.prefix);
+          const canonical = toCanonicalTool(sdkTool, config.prefix);
           if (bareToServer.has(canonical.name)) {
             const existing = bareToServer.get(canonical.name)!;
             throw new Error(
@@ -182,16 +154,8 @@ export function createSSEMCPClient(servers: SSEMCPServerConfig[]): MCPClient {
       const result = await Promise.race([resultPromise, timeoutPromise]);
 
       // MCP spec: result.content is an array of content blocks.
-      const content = (result as { content?: Array<{ type: string; text?: string }> })
-        .content;
-      const first = content?.[0];
-      if (first?.type === "text" && typeof first.text === "string") {
-        try {
-          return JSON.parse(first.text) as unknown;
-        } catch {
-          return first.text;
-        }
-      }
+      const unwrapped = unwrapMcpContent(result);
+      if (unwrapped !== undefined) return unwrapped;
       return result;
     },
 
