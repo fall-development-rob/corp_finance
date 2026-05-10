@@ -24,12 +24,17 @@ Institutional-grade corporate finance toolkit for Claude Code. Pure-compute, dec
 
 ```bash
 # from repo root
-npm --prefix packages/mcp-server run wasm:build   # invokes the wasm_build MCP tool
 npm --prefix plugins/cfa-core/mcp install
 npm --prefix plugins/cfa-core/mcp run build
 ```
 
-The WASM artifact lands in `mcp/wasm/` and is loaded by `mcp/dist/server.js` at runtime.
+The WASM artifact (`mcp/wasm/`) is committed to the repository and loaded by `mcp/dist/server.js`
+at runtime. Contributors who need to rebuild the artifact from source can run:
+
+```bash
+# requires a local corp-finance-core checkout at $COREREPO (defaults to ../../../corp-finance-core)
+tsx packages/mcp-server/src/tools/agent_infrastructure/wasm_build.ts
+```
 
 ## Install as a Claude Code MCP server
 
