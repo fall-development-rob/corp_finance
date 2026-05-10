@@ -84,3 +84,13 @@ export {
   type RecallOptions,
   createRuVectorBank,
 } from "./reasoning/index.js";
+
+// Phase 34 Wave 2 — Indexer (audit -> reasoning bank bridge)
+export {
+  indexAuditRecord,
+  aggregateToolCalls,
+  extractDelegations,
+  summarizePrompt,
+  summarizeResult,
+  type IndexAuditRecordOptions,
+} from "./reasoning/index.js";

@@ -37,6 +37,7 @@ import {
   isDelegationToolName,
   resolveDelegationTarget,
 } from "../agents/delegate.js";
+import { indexAuditRecord } from "../reasoning/indexer.js";
 
 const DEFAULT_MAX_TURNS = 25;
 
@@ -332,8 +333,9 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
     emit(onEvent, { type: "dispatch_completed", toolUses });
 
     // Wave 4: audit write
+    let auditRecord: AuditRecord | undefined;
     if (audit && auditId) {
-      const record: AuditRecord = {
+      auditRecord = {
         audit_id: auditId,
         ...(parentAuditId ? { parent_audit_id: parentAuditId } : {}),
         agent_id: agent.id,
@@ -347,7 +349,26 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         ...(agent.model ? { model: agent.model } : {}),
         ...(totalUsage ? { usage: totalUsage } : {}),
       };
-      await audit.write(record);
+      await audit.write(auditRecord);
+    }
+
+    // Phase 34 Wave 2: fire-and-forget reasoning index. The semantic recall
+    // surface is best-effort — index failures emit a DispatchEvent but never
+    // fail the dispatch. The audit record is the durable source of truth;
+    // the bank is a derived, regenerable cache.
+    if (options.reasoning && auditRecord && auditId) {
+      void indexAuditRecord({
+        bank: options.reasoning,
+        record: auditRecord,
+        prompt,
+        finalText,
+      }).catch((err) => {
+        emit(onEvent, {
+          type: "reasoning_index_failed",
+          reason: err instanceof Error ? err.message : String(err),
+          audit_id: auditId,
+        });
+      });
     }
 
     // Wave 4: session save (completed)
