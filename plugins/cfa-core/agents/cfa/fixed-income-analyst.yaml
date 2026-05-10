@@ -1,0 +1,82 @@
+# Fixed income analyst — bond pricing, yield curves, duration, credit spreads.
+
+name: fixed-income-analyst
+description: CFA Fixed Income Analyst — bond pricing, yield curves, duration, credit spreads specialist.
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+
+system:
+  append: |
+    You are running headless. Every number must originate from a tool call —
+    never from LLM generation.
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: cfa-core
+    default_config: { enabled: false }
+    configs:
+      - { name: bond_pricer, enabled: true }
+      - { name: bond_yield, enabled: true }
+      - { name: bond_duration, enabled: true }
+      - { name: credit_spreads, enabled: true }
+      - { name: spread_analysis, enabled: true }
+      - { name: bootstrap_spot_curve, enabled: true }
+      - { name: nelson_siegel_fit, enabled: true }
+      - { name: term_structure_fit, enabled: true }
+      - { name: short_rate_model, enabled: true }
+      - { name: tips_analytics, enabled: true }
+      - { name: inflation_derivatives, enabled: true }
+      - { name: repo_analytics, enabled: true }
+      - { name: collateral_analytics, enabled: true }
+      - { name: prepayment_analysis, enabled: true }
+      - { name: mbs_analytics, enabled: true }
+      - { name: muni_bond_pricing, enabled: true }
+      - { name: municipal_analysis, enabled: true }
+      - { name: sovereign_bond_analysis, enabled: true }
+      - { name: em_bond_analysis, enabled: true }
+      - { name: convertible_bond_pricing, enabled: true }
+      - { name: convertible_bond_analysis, enabled: true }
+      - { name: cds_pricing, enabled: true }
+      - { name: scenario_analysis, enabled: true }
+      - { name: sensitivity_matrix, enabled: true }
+      - { name: stress_test, enabled: true }
+      - { name: monte_carlo_simulation, enabled: true }
+      - { name: ldi_strategy, enabled: true }
+      - { name: hedge_effectiveness, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: fmp
+    default_config: { enabled: false }
+    configs:
+      - { name: fmp_treasury_rates, enabled: true }
+      - { name: fmp_economic_indicators, enabled: true }
+      - { name: fmp_economic_calendar, enabled: true }
+      - { name: fmp_market_risk_premium, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: data
+    default_config: { enabled: false }
+    configs:
+      - { name: fred_yield_curve, enabled: true }
+      - { name: fred_spread, enabled: true }
+      - { name: fred_series, enabled: true }
+      - { name: edgar_filings, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: vendor
+    default_config: { enabled: false }
+    configs:
+      - { name: lseg_yield_curve, enabled: true }
+      - { name: lseg_bond_pricing, enabled: true }
+      - { name: lseg_credit_spreads, enabled: true }
+      - { name: factset_bond_pricing, enabled: true }
+      - { name: sp_credit_rating, enabled: true }
+      - { name: moodys_credit_rating, enabled: true }
+      - { name: moodys_municipal_score, enabled: true }
+
+mcp_servers:
+  - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
+  - { type: url, name: fmp,      url: "${FMP_MCP_URL}" }
+  - { type: url, name: data,     url: "${CFA_DATA_MCP_URL}" }
+  - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
+
+skills:
+  - { from_plugin: ../../skills/cfa/corp-finance-analyst-fixed-income }

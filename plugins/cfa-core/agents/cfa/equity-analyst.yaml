@@ -1,0 +1,111 @@
+# Equity analyst — institutional fundamental equity research and valuation.
+
+name: equity-analyst
+description: CFA Equity Analyst — institutional fundamental equity research and valuation specialist.
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+
+system:
+  append: |
+    You are running headless. Every number must originate from a tool call —
+    never from LLM generation.
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: cfa-core
+    default_config: { enabled: false }
+    configs:
+      - { name: dcf_model, enabled: true }
+      - { name: wacc_calculator, enabled: true }
+      - { name: comps_analysis, enabled: true }
+      - { name: target_price, enabled: true }
+      - { name: sotp_valuation, enabled: true }
+      - { name: monte_carlo_dcf, enabled: true }
+      - { name: scenario_analysis, enabled: true }
+      - { name: sensitivity_matrix, enabled: true }
+      - { name: three_statement_model, enabled: true }
+      - { name: working_capital, enabled: true }
+      - { name: breakeven_analysis, enabled: true }
+      - { name: variance_analysis, enabled: true }
+      - { name: rolling_forecast, enabled: true }
+      - { name: dilution_analysis, enabled: true }
+      - { name: funding_round, enabled: true }
+      - { name: multistage_ddm, enabled: true }
+      - { name: h_model_ddm, enabled: true }
+      - { name: payout_sustainability, enabled: true }
+      - { name: buyback_analysis, enabled: true }
+      - { name: total_shareholder_return, enabled: true }
+      - { name: beneish_mscore, enabled: true }
+      - { name: piotroski_fscore, enabled: true }
+      - { name: accrual_quality, enabled: true }
+      - { name: revenue_quality, enabled: true }
+      - { name: earnings_quality_composite, enabled: true }
+      - { name: benfords_law, enabled: true }
+      - { name: dupont_analysis, enabled: true }
+      - { name: zscore_models, enabled: true }
+      - { name: altman_zscore, enabled: true }
+      - { name: peer_benchmarking, enabled: true }
+      - { name: red_flag_scoring, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: fmp
+    default_config: { enabled: false }
+    configs:
+      - { name: fmp_quote, enabled: true }
+      - { name: fmp_company_profile, enabled: true }
+      - { name: fmp_balance_sheet, enabled: true }
+      - { name: fmp_income_statement, enabled: true }
+      - { name: fmp_cash_flow, enabled: true }
+      - { name: fmp_key_metrics, enabled: true }
+      - { name: fmp_ratios_ttm, enabled: true }
+      - { name: fmp_financial_ratios, enabled: true }
+      - { name: fmp_financial_growth, enabled: true }
+      - { name: fmp_analyst_estimates, enabled: true }
+      - { name: fmp_price_target, enabled: true }
+      - { name: fmp_price_target_consensus, enabled: true }
+      - { name: fmp_grades, enabled: true }
+      - { name: fmp_grades_consensus, enabled: true }
+      - { name: fmp_historical_price, enabled: true }
+      - { name: fmp_earnings, enabled: true }
+      - { name: fmp_earnings_calendar, enabled: true }
+      - { name: fmp_earnings_transcript, enabled: true }
+      - { name: fmp_dividends, enabled: true }
+      - { name: fmp_market_cap, enabled: true }
+      - { name: fmp_enterprise_values, enabled: true }
+      - { name: fmp_owner_earnings, enabled: true }
+      - { name: fmp_revenue_geo_segments, enabled: true }
+      - { name: fmp_revenue_product_segments, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: data
+    default_config: { enabled: false }
+    configs:
+      - { name: edgar_company_facts, enabled: true }
+      - { name: edgar_filings, enabled: true }
+      - { name: edgar_full_text_search, enabled: true }
+      - { name: yf_quote, enabled: true }
+      - { name: yf_historical, enabled: true }
+      - { name: yf_balance_sheet, enabled: true }
+      - { name: yf_income_statement, enabled: true }
+      - { name: yf_cash_flow, enabled: true }
+      - { name: yf_analyst_targets, enabled: true }
+      - { name: yf_upgrades_downgrades, enabled: true }
+      - { name: yf_earnings, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: vendor
+    default_config: { enabled: false }
+    configs:
+      - { name: lseg_fundamentals, enabled: true }
+      - { name: sp_company_tearsheet, enabled: true }
+      - { name: factset_estimates, enabled: true }
+      - { name: factset_fundamentals, enabled: true }
+      - { name: ms_fair_value, enabled: true }
+      - { name: ms_company_profile, enabled: true }
+
+mcp_servers:
+  - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
+  - { type: url, name: fmp,      url: "${FMP_MCP_URL}" }
+  - { type: url, name: data,     url: "${CFA_DATA_MCP_URL}" }
+  - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
+
+skills:
+  - { from_plugin: ../../skills/cfa/corp-finance-analyst-equity }

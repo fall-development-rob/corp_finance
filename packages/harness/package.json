@@ -21,7 +21,8 @@
     "@google/generative-ai": "^0.21.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "openai": "^4.104.0",
-    "ruvector": "^0.2.25"
+    "ruvector": "^0.2.25",
+    "yaml": "^2.8.4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

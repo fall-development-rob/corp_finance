@@ -4,71 +4,71 @@ description: CFA Private Markets Analyst — LBO, PE, VC, infrastructure, CLO an
 extends:
   - corp-finance-analyst-private-markets
 tools:
-  - lbo_model
-  - sources_uses
-  - debt_schedule
-  - waterfall_calculator
-  - returns_calculator
-  - merger_model
-  - venture_fund_model
-  - funding_round
-  - dilution_analysis
-  - j_curve_model
   - commitment_pacing
-  - manager_selection
-  - secondaries_pricing
-  - fof_portfolio
-  - gp_economics
-  - fund_fee_calculator
-  - investor_net_returns
-  - sotp_valuation
-  - distressed_debt_analysis
-  - recovery_analysis
-  - scenario_analysis
-  - sensitivity_matrix
-  - monte_carlo_simulation
-  - syndication_analysis
-  - direct_loan
-  - unitranche_pricing
-  - credit_metrics
   - covenant_compliance
+  - credit_metrics
   - debt_capacity
-  - fmp_quote
-  - fmp_company_profile
-  - fmp_balance_sheet
-  - fmp_income_statement
-  - fmp_cash_flow
-  - fmp_key_metrics
-  - fmp_ratios_ttm
-  - fmp_enterprise_values
-  - fmp_market_cap
-  - fmp_ma_search
-  - fmp_ma_latest
-  - fmp_ipo_calendar
-  - fmp_ipo_disclosure
-  - fmp_executive_compensation
+  - debt_schedule
+  - dilution_analysis
+  - direct_loan
+  - distressed_debt_analysis
   - edgar_company_facts
   - edgar_filings
   - edgar_full_text_search
-  - yf_info
-  - yf_balance_sheet
-  - pb_company_search
+  - factset_ma_deals
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_company_profile
+  - fmp_enterprise_values
+  - fmp_executive_compensation
+  - fmp_income_statement
+  - fmp_ipo_calendar
+  - fmp_ipo_disclosure
+  - fmp_key_metrics
+  - fmp_ma_latest
+  - fmp_ma_search
+  - fmp_market_cap
+  - fmp_quote
+  - fmp_ratios_ttm
+  - fof_portfolio
+  - fund_fee_calculator
+  - funding_round
+  - gp_economics
+  - investor_net_returns
+  - j_curve_model
+  - lbo_model
+  - manager_selection
+  - merger_model
+  - monte_carlo_simulation
   - pb_company_profile
-  - pb_deal_search
-  - pb_deal_details
+  - pb_company_search
   - pb_comparable_deals
-  - pb_fundraising
-  - pb_lp_commitments
+  - pb_deal_details
+  - pb_deal_search
   - pb_fund_performance
   - pb_fund_search
+  - pb_fundraising
   - pb_investor_profile
-  - pb_vc_exits
+  - pb_lp_commitments
   - pb_market_stats
-  - factset_ma_deals
-  - sp_ma_deals
+  - pb_vc_exits
+  - recovery_analysis
+  - returns_calculator
+  - scenario_analysis
+  - secondaries_pricing
+  - sensitivity_matrix
+  - sotp_valuation
+  - sources_uses
   - sp_capital_structure
   - sp_funding_digest
-model: claude-opus-4-5
+  - sp_ma_deals
+  - syndication_analysis
+  - unitranche_pricing
+  - venture_fund_model
+  - waterfall_calculator
+  - yf_balance_sheet
+  - yf_info
+model: claude-sonnet-4-6
 max_tokens: 8192
 max_recursion_depth: 0
 ---

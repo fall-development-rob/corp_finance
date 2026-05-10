@@ -109,6 +109,26 @@ export interface AgentDef {
   model?: string;
   /** Override the default max output tokens. */
   maxTokens?: number;
+  /**
+   * Phase 36: callable subagent definitions loaded from callable_agents[].
+   * Populated by the YAML manifest loader; runtime wiring is Phase 37.
+   */
+  callableAgents?: AgentDef[];
+  /**
+   * Phase 36: raw toolset configs preserved for live denylist filtering
+   * at dispatch time when default_config.enabled === true blocks are present.
+   */
+  toolsetsRaw?: import("./manifests/types.js").ToolsetConfig[];
+  /**
+   * Phase 36: MCP server references parsed from mcp_servers[].
+   * Stored for future dynamic wiring (Phase 38); not wired at runtime.
+   */
+  mcpServerRefs?: import("./manifests/types.js").McpServerRef[];
+  /**
+   * Phase 36: structured output schema parsed from output_schema.
+   * Stored for future enforcement (Phase 37); not enforced now.
+   */
+  outputSchema?: Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------

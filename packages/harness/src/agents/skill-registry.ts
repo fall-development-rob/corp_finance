@@ -19,6 +19,10 @@ import { fileURLToPath } from "node:url";
 import type { AgentDef } from "../types.js";
 import { createDirectSkillLoader } from "../skills/index.js";
 import type { SkillLoader } from "../skills/types.js";
+import {
+  createDirectYamlManifestLoader,
+  type YamlManifestLoader,
+} from "../manifests/yaml-loader.js";
 
 // ---------------------------------------------------------------------------
 // Public surface
@@ -42,6 +46,8 @@ export interface SkillRegistryOptions {
   agentsRoot?: string;
   /** Injectable for testing. */
   loader?: SkillLoader;
+  /** Injectable YAML manifest loader for testing. */
+  yamlLoader?: YamlManifestLoader;
 }
 
 /**
@@ -105,10 +111,25 @@ export async function createSkillRegistry(
   const loader =
     options?.loader ?? createDirectSkillLoader({ skillsRoot, agentsRoot });
 
+  const yamlLoader =
+    options?.yamlLoader ??
+    createDirectYamlManifestLoader({ agentsRoot, skillLoader: loader });
+
+  /**
+   * Load one agent: prefer <id>.yaml (Phase 36 canonical) over <id>.md.
+   * .yaml takes precedence if the file exists.
+   */
+  async function loadOneAgent(id: string): Promise<AgentDef> {
+    if (existsSync(resolve(agentsRoot, `${id}.yaml`))) {
+      return yamlLoader.loadAgent(id);
+    }
+    return loader.loadAgent(id, "agent");
+  }
+
   // Load all 9 in parallel. Promise.all rejects on the first error, surfacing
   // a clear loader error message that names the missing id.
   const defs = await Promise.all(
-    SKILL_REGISTRY_AGENT_IDS.map((id) => loader.loadAgent(id, "agent")),
+    SKILL_REGISTRY_AGENT_IDS.map((id) => loadOneAgent(id)),
   );
 
   const byId = new Map<string, AgentDef>();
