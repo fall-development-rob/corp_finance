@@ -22,7 +22,8 @@
     "fmt:check": "cargo fmt --workspace --check",
     "format": "prettier --write 'packages/**/*.ts'",
     "format:check": "prettier --check 'packages/**/*.ts'",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "check:manifests": "npx tsx scripts/check-manifests.ts"
   },
   "overrides": {
     "tar": ">=7.5.8"

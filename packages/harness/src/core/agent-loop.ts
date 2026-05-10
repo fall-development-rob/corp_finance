@@ -407,6 +407,10 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
               childDispatches.push(childResult);
               if (childResult.auditId) childAuditIds.push(childResult.auditId);
               if (childResult.sessionId) childSessionIds.push(childResult.sessionId);
+              // REC-2 W2 integration point: if target.outputSchema is defined,
+              // call parseAndValidate(childResult.finalText, target.outputSchema)
+              // here and convert a !ok result into an is_error ToolResult before
+              // feeding back to the chief. Import from "../manifests/index.js".
               const r: ToolResult = {
                 call_id: call.id,
                 content: formatDelegationResult(target.id, childResult),
