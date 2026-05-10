@@ -1,10 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { fmpFetch, CacheTTL } from '../client.js';
 import { QuoteSchema, BatchQuoteSchema, HistoricalPriceSchema, IntradaySchema } from '../schemas/quotes.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerQuoteTools(server: McpServer) {
   server.tool(

@@ -7,10 +7,7 @@ import {
   AnalystReportSchema,
   CompanyProfileSchema,
 } from '../schemas/research.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerResearchTools(server: McpServer) {
   server.tool(

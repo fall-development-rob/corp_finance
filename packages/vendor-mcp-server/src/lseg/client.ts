@@ -172,9 +172,7 @@ export async function lsegFetch<T = unknown>(
 
 // --- Response Wrapper ---
 
-export function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+export { wrapResponse } from '@robotixai/mcp-utils';
 
 // --- Cache TTL Presets ---
 

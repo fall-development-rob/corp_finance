@@ -1,10 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { fmpFetch, CacheTTL } from '../client.js';
 import { PageLimitSchema, SymbolNewsSchema } from '../schemas/news.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerNewsTools(server: McpServer) {
   server.tool(

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@robotixai/mcp-utils": "*",
     "dotenv": "^16.6.1",
     "zod": "^3.22.0"
   },

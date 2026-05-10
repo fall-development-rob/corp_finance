@@ -4,10 +4,7 @@ import {
   IncomeStatementSchema, BalanceSheetSchema, CashFlowSchema,
   IncomeTtmSchema, KeyMetricsSchema, FinancialRatiosSchema,
 } from '../schemas/financials.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerFinancialTools(server: McpServer) {
   server.tool(

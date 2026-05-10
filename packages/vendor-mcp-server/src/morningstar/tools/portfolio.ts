@@ -5,10 +5,7 @@ import {
   AssetAllocationSchema,
   PeerComparisonSchema,
 } from '../schemas/portfolio.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerPortfolioTools(server: McpServer) {
   server.tool(

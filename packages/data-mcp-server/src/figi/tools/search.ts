@@ -6,10 +6,7 @@ import {
   EnumerationsSchema,
   FigiLookupSchema,
 } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerSearchTools(server: McpServer) {
   server.tool(

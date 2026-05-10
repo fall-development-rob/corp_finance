@@ -5,10 +5,7 @@ import {
   CategoryChildrenSchema,
   CategorySeriesSchema,
 } from '../schemas/categories.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerCategoryTools(server: McpServer) {
   server.tool(

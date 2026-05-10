@@ -43,45 +43,34 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Cache npm modules for ${{ matrix.package }}
+      - name: Cache npm modules (workspace root)
         uses: actions/cache@v4
         with:
           path: |
             ~/.npm
-            packages/${{ matrix.package }}/node_modules
-          key: ${{ runner.os }}-npm-${{ matrix.package }}-${{ hashFiles(format('packages/{0}/package-lock.json', matrix.package), format('packages/{0}/package.json', matrix.package)) }}
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-${{ matrix.package }}-
+            ${{ runner.os }}-npm-root-
 
-      # mcp-server has a file: dependency on packages/bindings — build that first
-      # so npm ci can resolve it. We do not need the native .node here; tsc
-      # only needs the index.js / index.d.ts shim that `napi build` produces,
-      # but `npm run build` in bindings will attempt cargo work. For typecheck
-      # we instead `npm install` (no build script) which is sufficient because
-      # the bindings package.json declares "main"/"types" pointing at files
-      # that exist in the repo (committed via napi build).
-      - name: Prepare bindings (mcp-server only)
-        if: matrix.package == 'mcp-server'
+      # Phase 32 Wave 1: workspace lockfiles deleted. Install at the repo root
+      # so npm workspaces can link internal deps (e.g., @robotixai/mcp-utils
+      # is a workspace package not published to the registry — installing
+      # per-package would fail to resolve it).
+      - name: Install workspace dependencies (root)
         shell: bash
-        working-directory: packages/bindings
         run: |
           set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts
-          else
-            npm install --no-audit --no-fund --ignore-scripts
-          fi
+          npm ci --ignore-scripts
 
-      - name: Install dependencies
+      # Build internal workspace deps so consumers' tsc can resolve types.
+      # @robotixai/mcp-utils ships dist/index.d.ts — without this, the four
+      # MCP servers' typecheck fails on `import { wrapResponse } from "@robotixai/mcp-utils"`.
+      - name: Build internal workspace deps
         shell: bash
-        working-directory: packages/${{ matrix.package }}
         run: |
           set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install --no-audit --no-fund
-          fi
+          npm run build -w @robotixai/mcp-utils
 
       - name: Typecheck (tsc --noEmit)
         shell: bash

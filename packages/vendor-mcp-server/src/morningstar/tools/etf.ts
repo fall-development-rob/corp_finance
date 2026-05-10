@@ -1,10 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { msFetch, CacheTTL } from '../client.js';
 import { EtfAnalyticsSchema } from '../schemas/etf.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerEtfTools(server: McpServer) {
   server.tool(

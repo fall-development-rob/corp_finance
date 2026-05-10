@@ -4,10 +4,7 @@ import {
   CompanySearchSchema,
   CompanyProfileSchema,
 } from '../schemas/company.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerCompanyTools(server: McpServer) {
   server.tool(

@@ -1,10 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { yfFetch, CacheTTL, optionsUrl, extractOptions } from '../client.js';
 import { SymbolSchema, OptionsDateSchema } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerOptionsTools(server: McpServer) {
   server.tool(

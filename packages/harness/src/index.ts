@@ -57,3 +57,12 @@ export {
   resolveDelegationTarget,
   createDelegationTools,
 } from "./agents/delegate.js";
+
+// Phase 32 Wave 1 — ToolCatalogValidator ACL
+export {
+  filterToolsForAgent,
+  validateAllowlists,
+  assertAllowlistsValid,
+  type ToolCatalogValidationIssue,
+  type ToolCatalogValidationResult,
+} from "./core/tool-schema.js";
