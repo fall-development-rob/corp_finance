@@ -396,12 +396,15 @@ describe("integration — live workspace", () => {
   const WORKSPACE = resolve(__dirname, "../../../../..");
   const ALLOWLIST = join(WORKSPACE, "packages/mcp-server/.surface-allowlist.json");
 
-  it("returns a report with 200+ packages tools", () => {
+  it("returns a report with packages tools (agent_infrastructure only after cleanup)", () => {
     const report = surfaceParityCheck({
       workspace_root: WORKSPACE,
       allowlist_path: ALLOWLIST,
     });
-    expect(report.packages_total).toBeGreaterThan(200);
+    // After cleanup B/1: only the 4 agent_infrastructure tools remain in packages.
+    // All are allowlisted (NAPI-only: subprocess + FS I/O, cannot run in WASM).
+    expect(report.packages_total).toBeGreaterThan(0);
+    expect(report.packages_only).toHaveLength(0);
   });
 
   it("returns a report with 100+ plugin tools", () => {
