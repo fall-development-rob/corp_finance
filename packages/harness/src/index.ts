@@ -57,6 +57,12 @@ export {
   resolveDelegationTarget,
   createDelegationTools,
 } from "./agents/delegate.js";
+export {
+  createSkillRegistry,
+  SKILL_REGISTRY_AGENT_IDS,
+  type SkillRegistry,
+  type SkillRegistryOptions,
+} from "./agents/skill-registry.js";
 
 // Phase 32 Wave 1 — ToolCatalogValidator ACL
 export {
