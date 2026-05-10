@@ -7,7 +7,14 @@
  * (OpenAI / deterministic / future Voyage / future local) orthogonal to
  * vector storage.
  *
- * `recallByGraph` is a Wave 4 surface; in Wave 1 it throws.
+ * Wave 4 adds `recallByGraph` — structured-metadata queries over the indexed
+ * entries. The published `ruvector` 0.2.25 npm release does not ship the
+ * Cypher / hyperedge surface in its README roadmap, so the implementation
+ * scans the index via `RVIndex.scan` (a JSONL-sidecar mirror — see rv-index.ts
+ * for the rationale) and applies the filter in JS. The public surface is
+ * stable: when ruvector ships native graph queries we can swap the
+ * implementation without changing this interface, the virtual tool, or the
+ * chief skill prose.
  */
 import type { EmbeddingFn } from "./embeddings.js";
 import { openRVIndex, type RVIndex } from "./rv-index.js";
@@ -61,6 +68,39 @@ export interface RecallOptions {
   }>;
 }
 
+/**
+ * Wave 4 — structured graph-style query over the indexed entries.
+ *
+ * Every field is optional. Provided fields are ANDed together (entry must
+ * satisfy every supplied predicate). Within `hasTools` and `hasDelegations`
+ * matching is OR-style — an entry passes if it overlaps ANY of the supplied
+ * names. Within `metadata` matching is equality on each provided key.
+ *
+ * An empty / missing filter returns the most recent `limit` entries globally
+ * — this is intentional, mirroring the recall-by-recency pattern many
+ * reasoning-bank consumers want when no other signal is available.
+ */
+export interface GraphRecallQuery {
+  /** Filter to entries whose metadata matches each provided key. Equality only. */
+  metadata?: Record<string, unknown>;
+  /** Filter to entries that invoked at least one of these tool names. */
+  hasTools?: string[];
+  /** Filter to entries that delegated to at least one of these specialist ids. */
+  hasDelegations?: string[];
+  /** Filter to entries from this agent. */
+  agent_id?: string;
+  /** Filter to entries timestamped on or after this datetime. */
+  since?: Date;
+  /** Filter to entries timestamped on or before this datetime. */
+  until?: Date;
+  /** Maximum entries to return. Default 50, hard cap 500. */
+  limit?: number;
+}
+
+/** Default and maximum sizes for `recallByGraph` result sets. */
+export const GRAPH_RECALL_DEFAULT_LIMIT = 50;
+export const GRAPH_RECALL_MAX_LIMIT = 500;
+
 export interface ReasoningBank {
   /**
    * Embed `queryText` (or `entry.prompt_summary` if omitted) and persist the
@@ -72,8 +112,12 @@ export interface ReasoningBank {
     queryText?: string,
   ): Promise<void>;
   recallSimilar(query: string, opts?: RecallOptions): Promise<ReasoningEntry[]>;
-  /** Cypher-style graph queries. Wave 4 — currently throws. */
-  recallByGraph(query: string): Promise<ReasoningEntry[]>;
+  /**
+   * Structured-metadata recall. Filters across `metadata`, `hasTools`,
+   * `hasDelegations`, `agent_id`, `since`, `until`, with `limit` clamping.
+   * Returns entries sorted by `timestamp` descending (most recent first).
+   */
+  recallByGraph(query: GraphRecallQuery): Promise<ReasoningEntry[]>;
   close(): Promise<void>;
 }
 
@@ -113,10 +157,75 @@ export async function createRuVectorBank(
       return index.search(vec, k, recallOpts?.filter);
     },
 
-    async recallByGraph(_query: string): Promise<ReasoningEntry[]> {
-      throw new Error(
-        "ReasoningBank.recallByGraph: not implemented in Wave 1 (planned for Wave 4)",
+    async recallByGraph(
+      query: GraphRecallQuery,
+    ): Promise<ReasoningEntry[]> {
+      const limit = Math.min(
+        GRAPH_RECALL_MAX_LIMIT,
+        Math.max(1, Math.floor(query.limit ?? GRAPH_RECALL_DEFAULT_LIMIT)),
       );
+
+      // Push the cheap top-level filters (`agent_id`, `since`, `until`) into
+      // the index scan so we don't materialize the whole corpus when callers
+      // narrow by them. The richer filters (metadata equality, hasTools,
+      // hasDelegations) are applied here in JS — RVIndex's storage layer is a
+      // flat key/value blob and doesn't index those fields.
+      const scanFilter: { agent_id?: string; since?: Date; until?: Date } = {};
+      if (query.agent_id !== undefined) scanFilter.agent_id = query.agent_id;
+      if (query.since !== undefined) scanFilter.since = query.since;
+      if (query.until !== undefined) scanFilter.until = query.until;
+
+      // Over-fetch when post-filters are present so we don't return short
+      // results just because the first N scan hits failed the metadata filter.
+      const hasPostFilter =
+        (query.metadata !== undefined &&
+          Object.keys(query.metadata).length > 0) ||
+        (query.hasTools !== undefined && query.hasTools.length > 0) ||
+        (query.hasDelegations !== undefined && query.hasDelegations.length > 0);
+      const fetchLimit = hasPostFilter
+        ? Math.min(GRAPH_RECALL_MAX_LIMIT * 4, limit * 8)
+        : limit;
+
+      const candidates = await index.scan(scanFilter, fetchLimit);
+
+      const out: ReasoningEntry[] = [];
+      for (const entry of candidates) {
+        if (query.metadata !== undefined) {
+          let metaOk = true;
+          for (const [mk, mv] of Object.entries(query.metadata)) {
+            if (entry.metadata[mk] !== mv) {
+              metaOk = false;
+              break;
+            }
+          }
+          if (!metaOk) continue;
+        }
+        if (query.hasTools !== undefined && query.hasTools.length > 0) {
+          const want = new Set(query.hasTools);
+          const hit = entry.tool_calls.some((tc) => want.has(tc.name));
+          if (!hit) continue;
+        }
+        if (
+          query.hasDelegations !== undefined &&
+          query.hasDelegations.length > 0
+        ) {
+          const want = new Set(query.hasDelegations);
+          const hit = entry.delegations.some((d) => want.has(d));
+          if (!hit) continue;
+        }
+        out.push(entry);
+        if (out.length >= limit) break;
+      }
+
+      // Sort by timestamp descending; ties broken by audit_id for determinism.
+      out.sort((a, b) => {
+        if (a.timestamp !== b.timestamp) {
+          return a.timestamp < b.timestamp ? 1 : -1;
+        }
+        return a.audit_id < b.audit_id ? 1 : -1;
+      });
+
+      return out;
     },
 
     async close(): Promise<void> {

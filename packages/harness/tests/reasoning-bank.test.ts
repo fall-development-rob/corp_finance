@@ -225,15 +225,39 @@ describe("createRuVectorBank — index + recall", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Test 6 — recallByGraph throws in Wave 1
+  // Test 6 — recallByGraph (Wave 4 implementation)
   // -------------------------------------------------------------------------
 
-  it("Test 6: recallByGraph throws (Wave 1 stub)", async () => {
+  it("Test 6: recallByGraph returns [] on empty bank, structured query on populated bank", async () => {
     const embed = createDeterministicEmbedder({ dim: DIM });
     bank = await createRuVectorBank({ dir: tmpDir, embed, dimensions: DIM });
-    await expect(bank.recallByGraph("MATCH (n) RETURN n")).rejects.toThrow(
-      /not implemented in Wave 1/i,
+
+    // Empty bank → empty result.
+    const empty = await bank.recallByGraph({});
+    expect(empty).toEqual([]);
+
+    // Populate two entries with distinct metadata.
+    await bank.index(
+      makeEntry({
+        audit_id: "g-1",
+        prompt_summary: "Argentine convertible debenture",
+        metadata: { jurisdiction: "AR", instrument: "convertible" },
+      }),
     );
+    await bank.index(
+      makeEntry({
+        audit_id: "g-2",
+        prompt_summary: "Brazilian sovereign credit spread",
+        metadata: { jurisdiction: "BR", instrument: "sovereign" },
+      }),
+    );
+
+    // Filter by metadata returns only the matching entry.
+    const ar = await bank.recallByGraph({
+      metadata: { jurisdiction: "AR" },
+    });
+    expect(ar.length).toBe(1);
+    expect(ar[0]?.audit_id).toBe("g-1");
   });
 
   // -------------------------------------------------------------------------

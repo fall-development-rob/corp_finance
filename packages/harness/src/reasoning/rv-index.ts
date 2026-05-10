@@ -22,8 +22,21 @@
  *   - There is no `close()` on the underlying VectorDb. Persistence is via
  *     `storagePath`; closing is implicit when references drop. Our `close()`
  *     is a no-op, retained for symmetry with `AuditSink` / `SessionStore`.
+ *
+ * Wave 4 addition — JSONL scan sidecar. The published `ruvector` 0.2.25
+ * VectorDB wrapper exposes `insert`, `search`, `get(id)`, `delete`, and
+ * `len` only — there is NO API to enumerate the entries already in the
+ * store, and no Cypher/graph surface yet (the GitHub README documents both
+ * as roadmap items). To support `recallByGraph`'s structured-metadata
+ * queries we mirror every `insert` to an append-only JSONL file at
+ * `<dir>/scan.jsonl`. `scan()` reads the JSONL and reconstructs entries.
+ * Search is unchanged (still served by VectorDB). The sidecar is a derived
+ * artefact — if it is deleted, `recallByGraph` returns empty until new
+ * entries are indexed, but `recallSimilar` still works because the vector
+ * store is intact. Operators can rebuild the sidecar from the audit chain
+ * via a future `--rebuild-reasoning` CLI command (see ADR-040).
  */
-import { mkdir } from "node:fs/promises";
+import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { VectorDB } from "ruvector";
 import type { ReasoningEntry } from "./bank.js";
@@ -47,6 +60,18 @@ export interface RVSearchFilter {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * Filter accepted by `RVIndex.scan`. Only flat top-level predicates appear
+ * here — richer filters (metadata equality, has-tool, has-delegation) live
+ * one layer up in `ReasoningBank.recallByGraph` so the storage shim stays
+ * narrow.
+ */
+export interface RVScanFilter {
+  agent_id?: string;
+  since?: Date;
+  until?: Date;
+}
+
 export interface RVIndex {
   insert(entry: ReasoningEntry): Promise<void>;
   search(
@@ -54,6 +79,13 @@ export interface RVIndex {
     k: number,
     filter?: RVSearchFilter,
   ): Promise<ReasoningEntry[]>;
+  /**
+   * Wave 4 — vector-free scan over the indexed entries. Backed by an
+   * append-only JSONL sidecar (see file header). Returns up to `limit`
+   * entries that match `filter`, in insertion order. Caller handles further
+   * sorting / filtering.
+   */
+  scan(filter?: RVScanFilter, limit?: number): Promise<ReasoningEntry[]>;
   close(): Promise<void>;
 }
 
@@ -108,6 +140,7 @@ function reconstruct(
 export async function openRVIndex(opts: RVIndexOptions): Promise<RVIndex> {
   await mkdir(opts.dir, { recursive: true });
   const storagePath = join(opts.dir, "store.rvf");
+  const scanSidecarPath = join(opts.dir, "scan.jsonl");
   const dimensions = opts.dimensions ?? DEFAULT_DIMENSIONS;
 
   const db = new VectorDB({
@@ -144,6 +177,17 @@ export async function openRVIndex(opts: RVIndexOptions): Promise<RVIndex> {
         vector: entry.embedding,
         metadata: stored as unknown as Record<string, unknown>,
       });
+      // Wave 4: mirror the entry to the JSONL scan sidecar so
+      // `recallByGraph` can iterate without a query vector. We persist the
+      // SAME `StoredMetadata` shape as the vector store, plus an `embedding`
+      // field, so reconstruction is symmetric. Append is atomic for a
+      // single-process scenario (Node fs.appendFile uses O_APPEND).
+      const sidecarLine =
+        JSON.stringify({
+          ...stored,
+          embedding: entry.embedding,
+        }) + "\n";
+      await appendFile(scanSidecarPath, sidecarLine, { encoding: "utf8" });
     },
 
     async search(
@@ -209,6 +253,73 @@ export async function openRVIndex(opts: RVIndexOptions): Promise<RVIndex> {
         if (entries.length >= k) break;
       }
       return entries;
+    },
+
+    async scan(
+      filter?: RVScanFilter,
+      limit?: number,
+    ): Promise<ReasoningEntry[]> {
+      if (closed) {
+        throw new Error("RVIndex: scan called after close()");
+      }
+      // No sidecar yet → empty index from the scan perspective.
+      let raw: string;
+      try {
+        raw = await readFile(scanSidecarPath, "utf8");
+      } catch (err) {
+        if (
+          (err as NodeJS.ErrnoException).code === "ENOENT" ||
+          (err as { code?: string }).code === "ENOENT"
+        ) {
+          return [];
+        }
+        throw err;
+      }
+
+      const cap =
+        typeof limit === "number" && limit > 0
+          ? Math.floor(limit)
+          : Number.POSITIVE_INFINITY;
+      const out: ReasoningEntry[] = [];
+      const sinceMs = filter?.since?.getTime();
+      const untilMs = filter?.until?.getTime();
+
+      // Iterate lines newest-first by reversing — JSONL append order is
+      // chronological, callers typically want recency. (Caller can sort
+      // again; we just bias the early-exit toward the recent end so a tight
+      // `limit` returns the most recent matches.)
+      const lines = raw.split("\n");
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i];
+        if (!line || line.length === 0) continue;
+        let parsed: (StoredMetadata & { embedding: number[] }) | null = null;
+        try {
+          parsed = JSON.parse(line) as StoredMetadata & { embedding: number[] };
+        } catch {
+          // Tolerate a truncated tail line — sidecar is best-effort.
+          continue;
+        }
+        if (!parsed) continue;
+
+        if (filter?.agent_id !== undefined && parsed.agent_id !== filter.agent_id) {
+          continue;
+        }
+        if (sinceMs !== undefined) {
+          const ts = new Date(parsed.timestamp).getTime();
+          if (Number.isNaN(ts) || ts < sinceMs) continue;
+        }
+        if (untilMs !== undefined) {
+          const ts = new Date(parsed.timestamp).getTime();
+          if (Number.isNaN(ts) || ts > untilMs) continue;
+        }
+
+        const entry = reconstruct(parsed, parsed.embedding);
+        if (!entry) continue;
+        out.push(entry);
+        if (out.length >= cap) break;
+      }
+
+      return out;
     },
 
     async close(): Promise<void> {

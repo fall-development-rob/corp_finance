@@ -243,3 +243,74 @@ There is no daemon. There is no JSONL inbox. There is no scheduled-worker emitte
 | Plan emission | `chief_plan_emit` | Emit an A* plan tree for a multi-domain goal before any specialist runs |
 | Pattern detection | `chief_pattern_detect` | Return patterns surfaced since a timestamp from the entity graph |
 | Agent invocation trace | `agent_trace_get` | Return the trace for an agent invocation (parent + children) by run_id |
+
+## Bounded Context BC4 — Reasoning Bank (Phase 34)
+
+This bounded context owns semantic and structured recall over past
+dispatches. It exists to give the chief-analyst priors when routing a new
+prompt — "have I seen something like this before?" and "what did I do
+last time I had an Argentine convertible deal?" Phase 31 documented this
+context (BC4 "Learning & Adaptation") but did not implement it; Phase 34
+ships the implementation backed by `ruvector` (see ADR-040).
+
+### Responsibilities
+
+- Index every successful dispatch into a vector + metadata store keyed
+  by `audit_id`, with prompt embedding, prompt summary, tool-call
+  counts, delegation list, result excerpt, and free-form metadata.
+- Serve two recall surfaces to the chief: `recallSimilar` (k-NN over
+  prompt embeddings) and `recallByGraph` (structured-metadata query
+  over the same entries).
+- Persist as a single portable `.rvf` file plus an append-only JSONL
+  scan sidecar — no external server, no separate database.
+- Never block the dispatch hot path; never mutate the audit chain.
+
+### Aggregate root
+
+**`ReasoningBank`** (`packages/harness/src/reasoning/bank.ts`) — the
+outbound port. Wraps `RVIndex` with embedding-step factored out so
+embedding-provider choice is orthogonal to vector storage.
+
+### Value objects
+
+| Type | Description |
+|------|-------------|
+| `ReasoningEntry` | One indexed dispatch — `audit_id`, `agent_id`, `prompt_hash`, `prompt_summary`, `embedding`, `tool_calls`, `delegations`, `result_excerpt`, `metadata`, `timestamp`. |
+| `RecallOptions` | k-NN recall params — `k`, `filter` (`agent_id`, `since`, `metadata`). |
+| `GraphRecallQuery` | Structured-metadata recall — `metadata`, `hasTools`, `hasDelegations`, `agent_id`, `since`, `until`, `limit`. Default `limit` 50, max 500. |
+
+### Domain events
+
+| Event | When | Consumed by |
+|-------|------|-------------|
+| `entry_indexed` | After `bank.index()` succeeds | (Future) trajectory pipeline |
+| `recall_hit` | `recallSimilar` / `recallByGraph` returned ≥1 entry | Audit chain (logged as a tool_call entry) |
+| `recall_miss` | Recall returned `[]` | Audit chain |
+| `reasoning_index_failed` | Indexing threw (embedding API down, native binding crash, sidecar I/O failure) | `DispatchEvent` stream (`onEvent`); does NOT propagate to caller (ADR-041) |
+
+### Context relationships
+
+| Upstream | Relationship | Detail |
+|----------|--------------|--------|
+| **Audit Chain (`domain-audit-observability.md`)** | Conformist — bank consumes `AuditRecord` shape verbatim | Each `ReasoningEntry` back-references the source `audit_id`. Bank is regenerable from the audit chain via the future `cfa-harness --rebuild-reasoning` CLI. |
+| **Multi-Agent Coordination (above)** | Customer/Supplier — coordination context dispatches; bank derives entries from completed dispatches | Indexer fires fire-and-forget AFTER `audit.write()`; failures emit `reasoning_index_failed` events but never break the dispatch. |
+
+| Downstream | Relationship | Detail |
+|------------|--------------|--------|
+| **Agent Runtime (Phase 31 BC1)** | Customer — agent loop exposes `recall_similar` and `recall_by_graph` virtual tools when a bank is configured on `DispatchOptions.reasoning` | Virtual tools bypass MCP; agent loop invokes `bank.recallSimilar` / `bank.recallByGraph` directly and returns formatted entries as `tool_result`. |
+
+### Invariants
+
+| ID | Invariant | Enforced By |
+|----|-----------|-------------|
+| RB-INV-001 | Bank entries reference the source `audit_id` and never mutate the audit chain | `ReasoningBank.index` writes only to its own store |
+| RB-INV-002 | Index failure does not propagate to the caller; emits `reasoning_index_failed` instead | `agent-loop.ts` fire-and-forget hook (ADR-041) |
+| RB-INV-003 | `recall_*` virtual-tool calls are themselves audit entries | `agent-loop.ts` records them in `auditToolCalls` like any MCP tool |
+| RB-INV-004 | Specialists at depth ≥1 do not see `recall_*` tools | The reasoning bank is only attached to top-level chief dispatches |
+
+### See also
+
+- ADR-040 — RuVector for the Reasoning Bank
+- ADR-041 — Indexer Hook in the Agent Loop
+- Plan: `docs/plans/phase-34-reasoning-bank.md`
+- Implementation: `packages/harness/src/reasoning/`

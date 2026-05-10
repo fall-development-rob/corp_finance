@@ -103,3 +103,15 @@ export {
   formatRecallResult,
   executeRecallCall,
 } from "./reasoning/index.js";
+
+// Phase 34 Wave 4 — recall_by_graph virtual tool + graph query type
+export {
+  RECALL_GRAPH_TOOL_NAME,
+  isRecallGraphToolName,
+  createRecallGraphTool,
+  formatRecallGraphResult,
+  executeRecallGraphCall,
+  GRAPH_RECALL_DEFAULT_LIMIT,
+  GRAPH_RECALL_MAX_LIMIT,
+  type GraphRecallQuery,
+} from "./reasoning/index.js";
