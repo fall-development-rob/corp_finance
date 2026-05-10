@@ -4,78 +4,78 @@ description: CFA ESG and Regulatory Analyst — ESG scoring, Basel III, complian
 extends:
   - corp-finance-analyst-esg-regulatory
 tools:
-  - esg_score
-  - carbon_footprint
-  - carbon_credit_pricing
-  - ets_compliance
-  - cbam_analysis
-  - shadow_carbon_price
-  - offset_valuation
-  - green_bond
-  - sll_covenants
-  - regulatory_capital
-  - lcr
-  - nsfr
-  - alm_analysis
-  - solvency_scr
-  - loss_reserving
-  - premium_pricing
-  - combined_ratio
-  - gips_report
-  - best_execution
-  - kyc_risk_assessment
-  - sanctions_screening
-  - fatca_crs_reporting
-  - beps_compliance
-  - intercompany_pricing
-  - treaty_network
-  - treaty_structure_optimization
-  - jurisdiction_comparison
-  - jurisdiction_substance_test
-  - economic_substance
-  - ubti_screening
-  - fund_fee_calculator
-  - fund_migration_analysis
-  - investor_net_returns
-  - us_fund_structure
-  - uk_eu_fund_structure
-  - cayman_fund_structure
-  - lux_ireland_fund_structure
-  - singapore_vcc_structure
-  - channel_islands_fund_structure
-  - hong_kong_fund_structure
-  - middle_east_fund_structure
-  - entity_classification
-  - withholding_tax
-  - gaap_ifrs_reconcile
-  - lease_classification
-  - sale_leaseback_analysis
   - aifmd_reporting
-  - sec_cftc_reporting
-  - scenario_analysis
-  - sensitivity_matrix
-  - fmp_sec_filings_by_symbol
-  - fmp_sec_filings_by_form
-  - fmp_sec_company_search_name
-  - fmp_company_profile
-  - fmp_company_notes
-  - fmp_executive_compensation
+  - alm_analysis
+  - beps_compliance
+  - best_execution
+  - carbon_credit_pricing
+  - carbon_footprint
+  - cayman_fund_structure
+  - cbam_analysis
+  - channel_islands_fund_structure
+  - combined_ratio
+  - economic_substance
   - edgar_company_facts
+  - edgar_company_search
   - edgar_filings
   - edgar_full_text_search
-  - edgar_company_search
-  - wb_governance
-  - wb_governance_compare
-  - wb_climate
-  - wb_climate_vulnerability
-  - wb_country_indicators
-  - polymarket_events
+  - entity_classification
+  - esg_score
+  - ets_compliance
+  - fatca_crs_reporting
+  - fmp_company_notes
+  - fmp_company_profile
+  - fmp_executive_compensation
+  - fmp_sec_company_search_name
+  - fmp_sec_filings_by_form
+  - fmp_sec_filings_by_symbol
+  - fund_fee_calculator
+  - fund_migration_analysis
+  - gaap_ifrs_reconcile
+  - gips_report
+  - green_bond
+  - hong_kong_fund_structure
+  - intercompany_pricing
+  - investor_net_returns
+  - jurisdiction_comparison
+  - jurisdiction_substance_test
+  - kyc_risk_assessment
+  - lcr
+  - lease_classification
+  - loss_reserving
   - lseg_esg_scores
+  - lux_ireland_fund_structure
+  - middle_east_fund_structure
   - moodys_climate_risk
   - moodys_esg_score
   - ms_esg_risk
+  - nsfr
+  - offset_valuation
+  - polymarket_events
+  - premium_pricing
+  - regulatory_capital
+  - sale_leaseback_analysis
+  - sanctions_screening
+  - scenario_analysis
+  - sec_cftc_reporting
+  - sensitivity_matrix
+  - shadow_carbon_price
+  - singapore_vcc_structure
+  - sll_covenants
+  - solvency_scr
   - sp_credit_rating
-model: claude-opus-4-5
+  - treaty_network
+  - treaty_structure_optimization
+  - ubti_screening
+  - uk_eu_fund_structure
+  - us_fund_structure
+  - wb_climate
+  - wb_climate_vulnerability
+  - wb_country_indicators
+  - wb_governance
+  - wb_governance_compare
+  - withholding_tax
+model: claude-opus-4-7
 max_tokens: 8192
 max_recursion_depth: 0
 ---

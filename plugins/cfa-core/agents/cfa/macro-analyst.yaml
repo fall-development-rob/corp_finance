@@ -1,0 +1,98 @@
+# Macro strategist — FX, commodities, EM, monetary policy, geopolitical risk.
+
+name: macro-analyst
+description: CFA Macro Strategist — FX, commodities, EM, monetary policy specialist.
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+
+system:
+  append: |
+    You are running headless. Every number must originate from a tool call —
+    never from LLM generation.
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: cfa-core
+    default_config: { enabled: false }
+    configs:
+      - { name: country_risk_premium, enabled: true }
+      - { name: country_risk_assessment, enabled: true }
+      - { name: monetary_policy, enabled: true }
+      - { name: international_economics, enabled: true }
+      - { name: ppp_model, enabled: true }
+      - { name: capital_controls, enabled: true }
+      - { name: political_risk, enabled: true }
+      - { name: em_equity_premium, enabled: true }
+      - { name: em_bond_analysis, enabled: true }
+      - { name: sovereign_bond_analysis, enabled: true }
+      - { name: fx_forward, enabled: true }
+      - { name: cross_rate, enabled: true }
+      - { name: commodity_curve, enabled: true }
+      - { name: commodity_forward, enabled: true }
+      - { name: commodity_spread, enabled: true }
+      - { name: storage_economics, enabled: true }
+      - { name: scenario_analysis, enabled: true }
+      - { name: sensitivity_matrix, enabled: true }
+      - { name: stress_test, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: fmp
+    default_config: { enabled: false }
+    configs:
+      - { name: fmp_economic_indicators, enabled: true }
+      - { name: fmp_economic_calendar, enabled: true }
+      - { name: fmp_treasury_rates, enabled: true }
+      - { name: fmp_market_risk_premium, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: data
+    default_config: { enabled: false }
+    configs:
+      - { name: fred_series, enabled: true }
+      - { name: fred_yield_curve, enabled: true }
+      - { name: fred_spread, enabled: true }
+      - { name: fred_release, enabled: true }
+      - { name: fred_release_series, enabled: true }
+      - { name: wb_country_indicators, enabled: true }
+      - { name: wb_governance, enabled: true }
+      - { name: wb_governance_compare, enabled: true }
+      - { name: wb_governance_trend, enabled: true }
+      - { name: wb_country, enabled: true }
+      - { name: wb_indicator, enabled: true }
+      - { name: wb_data_series, enabled: true }
+      - { name: wb_trade, enabled: true }
+      - { name: wb_inequality, enabled: true }
+      - { name: gdelt_country_tension, enabled: true }
+      - { name: gdelt_events, enabled: true }
+      - { name: gdelt_tone, enabled: true }
+      - { name: acled_events, enabled: true }
+      - { name: acled_country_summary, enabled: true }
+      - { name: acled_fatalities, enabled: true }
+      - { name: ucdp_battle_deaths, enabled: true }
+      - { name: ucdp_country_profile, enabled: true }
+      - { name: ucdp_conflicts, enabled: true }
+      - { name: gdacs_alerts, enabled: true }
+      - { name: gdacs_country_exposure, enabled: true }
+      - { name: gdacs_events, enabled: true }
+      - { name: polymarket_geopolitical, enabled: true }
+      - { name: polymarket_odds, enabled: true }
+      - { name: polymarket_events, enabled: true }
+      - { name: eonet_events, enabled: true }
+      - { name: openmeteo_climate_anomaly, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: vendor
+    default_config: { enabled: false }
+    configs:
+      - { name: moodys_country_risk, enabled: true }
+      - { name: moodys_economic_forecast, enabled: true }
+      - { name: lseg_economic_indicators, enabled: true }
+      - { name: lseg_fx_rates, enabled: true }
+      - { name: sp_credit_rating, enabled: true }
+
+mcp_servers:
+  - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
+  - { type: url, name: fmp,      url: "${FMP_MCP_URL}" }
+  - { type: url, name: data,     url: "${CFA_DATA_MCP_URL}" }
+  - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
+
+skills:
+  - { from_plugin: ../../skills/cfa/corp-finance-analyst-macro }

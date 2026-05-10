@@ -4,50 +4,50 @@ description: CFA Fixed Income Analyst — bond pricing, yield curves, duration, 
 extends:
   - corp-finance-analyst-fixed-income
 tools:
+  - bond_duration
   - bond_pricer
   - bond_yield
-  - bond_duration
-  - credit_spreads
-  - spread_analysis
   - bootstrap_spot_curve
-  - nelson_siegel_fit
-  - term_structure_fit
-  - short_rate_model
-  - tips_analytics
-  - inflation_derivatives
-  - repo_analytics
-  - collateral_analytics
-  - prepayment_analysis
-  - mbs_analytics
-  - muni_bond_pricing
-  - municipal_analysis
-  - sovereign_bond_analysis
-  - em_bond_analysis
-  - convertible_bond_pricing
-  - convertible_bond_analysis
   - cds_pricing
-  - scenario_analysis
-  - sensitivity_matrix
-  - stress_test
-  - monte_carlo_simulation
-  - ldi_strategy
-  - hedge_effectiveness
-  - fmp_treasury_rates
-  - fmp_economic_indicators
-  - fmp_economic_calendar
-  - fmp_market_risk_premium
-  - fred_yield_curve
-  - fred_spread
-  - fred_series
+  - collateral_analytics
+  - convertible_bond_analysis
+  - convertible_bond_pricing
+  - credit_spreads
   - edgar_filings
-  - lseg_yield_curve
+  - em_bond_analysis
+  - factset_bond_pricing
+  - fmp_economic_calendar
+  - fmp_economic_indicators
+  - fmp_market_risk_premium
+  - fmp_treasury_rates
+  - fred_series
+  - fred_spread
+  - fred_yield_curve
+  - hedge_effectiveness
+  - inflation_derivatives
+  - ldi_strategy
   - lseg_bond_pricing
   - lseg_credit_spreads
-  - factset_bond_pricing
-  - sp_credit_rating
+  - lseg_yield_curve
+  - mbs_analytics
+  - monte_carlo_simulation
   - moodys_credit_rating
   - moodys_municipal_score
-model: claude-opus-4-5
+  - muni_bond_pricing
+  - municipal_analysis
+  - nelson_siegel_fit
+  - prepayment_analysis
+  - repo_analytics
+  - scenario_analysis
+  - sensitivity_matrix
+  - short_rate_model
+  - sovereign_bond_analysis
+  - sp_credit_rating
+  - spread_analysis
+  - stress_test
+  - term_structure_fit
+  - tips_analytics
+model: claude-sonnet-4-6
 max_tokens: 8192
 max_recursion_depth: 0
 ---

@@ -27,7 +27,8 @@ describe("agent registry — Wave 2", () => {
     expect(def.tools).toBe("*");
     // Wave 2: chief delegates to 8 specialists at depth 1
     expect(def.maxRecursionDepth).toBe(1);
-    expect(def.model).toBe("claude-opus-4-5");
+    // Phase 36: model updated to claude-opus-4-7 in canonical YAML manifest
+    expect(def.model).toBe("claude-opus-4-7");
     expect(def.maxTokens).toBe(16384);
   });
 

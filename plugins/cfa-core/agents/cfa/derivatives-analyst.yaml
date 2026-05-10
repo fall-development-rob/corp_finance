@@ -1,0 +1,68 @@
+# Derivatives analyst — options, swaps, volatility, structured products.
+
+name: derivatives-analyst
+description: CFA Derivatives Analyst — options, swaps, volatility, structured products specialist.
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+
+system:
+  append: |
+    You are running headless. Every number must originate from a tool call —
+    never from LLM generation.
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: cfa-core
+    default_config: { enabled: false }
+    configs:
+      - { name: option_pricer, enabled: true }
+      - { name: implied_volatility, enabled: true }
+      - { name: forward_pricer, enabled: true }
+      - { name: forward_position_value, enabled: true }
+      - { name: futures_basis_analysis, enabled: true }
+      - { name: interest_rate_swap, enabled: true }
+      - { name: currency_swap, enabled: true }
+      - { name: option_strategy, enabled: true }
+      - { name: implied_vol_surface, enabled: true }
+      - { name: sabr_calibration, enabled: true }
+      - { name: convertible_bond_pricing, enabled: true }
+      - { name: convertible_bond_analysis, enabled: true }
+      - { name: real_option_valuation, enabled: true }
+      - { name: decision_tree_analysis, enabled: true }
+      - { name: monte_carlo_simulation, enabled: true }
+      - { name: monte_carlo_dcf, enabled: true }
+      - { name: scenario_analysis, enabled: true }
+      - { name: sensitivity_matrix, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: fmp
+    default_config: { enabled: false }
+    configs:
+      - { name: fmp_quote, enabled: true }
+      - { name: fmp_historical_price, enabled: true }
+      - { name: fmp_treasury_rates, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: data
+    default_config: { enabled: false }
+    configs:
+      - { name: yf_options_all, enabled: true }
+      - { name: yf_options_chain, enabled: true }
+      - { name: yf_options_expirations, enabled: true }
+      - { name: fred_yield_curve, enabled: true }
+      - { name: fred_series, enabled: true }
+  - type: mcp_toolset
+    mcp_server_name: vendor
+    default_config: { enabled: false }
+    configs:
+      - { name: lseg_options_chain, enabled: true }
+      - { name: lseg_yield_curve, enabled: true }
+      - { name: factset_factor_exposure, enabled: true }
+
+mcp_servers:
+  - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
+  - { type: url, name: fmp,      url: "${FMP_MCP_URL}" }
+  - { type: url, name: data,     url: "${CFA_DATA_MCP_URL}" }
+  - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
+
+skills:
+  - { from_plugin: ../../skills/cfa/corp-finance-analyst-derivatives }
