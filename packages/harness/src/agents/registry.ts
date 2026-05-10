@@ -8,8 +8,8 @@
  * specialist-routing.test.ts) keep working unchanged.
  *
  * Single source of truth for agent prose now lives at
- * `.claude/skills/cfa/corp-finance-analyst-<id>/SKILL.md` plus the thin
- * manifests at `.claude/agents/cfa/<id>.md`. See ADR-031.
+ * `plugins/cfa-core/skills/cfa/corp-finance-analyst-<id>/SKILL.md` plus the
+ * thin manifests at `plugins/cfa-core/agents/cfa/<id>.md`. See ADR-031.
  */
 
 import { existsSync } from "node:fs";

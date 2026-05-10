@@ -2,8 +2,8 @@
  * Skill-backed registry — Phase 33 Wave 3 tests (updated Wave 4).
  *
  * Wave 3 verified that createSkillRegistry() loads all 9 agents in parallel
- * from .claude/skills/cfa + .claude/agents/cfa, and that each loaded
- * AgentDef matched the legacy TypeScript-imported AgentDef. Per-agent
+ * from plugins/cfa-core/skills/cfa + plugins/cfa-core/agents/cfa, and that
+ * each loaded AgentDef matched the legacy TypeScript-imported AgentDef. Per-agent
  * byte-equivalence was independently proven by 9 *-skill-canary test files.
  *
  * Wave 4 deletes the legacy TS specialist sources; the canaries become
@@ -39,8 +39,8 @@ const _thisDir = dirname(fileURLToPath(import.meta.url));
 // packages/harness/tests -> packages/harness -> packages -> repo root
 const repoRoot = resolve(_thisDir, "..", "..", "..");
 
-const skillsRoot = resolve(repoRoot, ".claude", "skills", "cfa");
-const agentsRoot = resolve(repoRoot, ".claude", "agents", "cfa");
+const skillsRoot = resolve(repoRoot, "plugins", "cfa-core", "skills", "cfa");
+const agentsRoot = resolve(repoRoot, "plugins", "cfa-core", "agents", "cfa");
 
 // ---------------------------------------------------------------------------
 // Tests

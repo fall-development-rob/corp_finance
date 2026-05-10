@@ -10,9 +10,10 @@
 /**
  * YAML frontmatter on a SKILL.md or agent .md file.
  *
- * Inputs come from anything in the .claude/skills/ or .claude/agents/
- * format used by Claude Code and the cfa managed-agent CLI. Fields are
- * optional except `name`.
+ * Inputs come from anything in the standard Claude Code skills/agents
+ * format (canonical home: plugins/cfa-core/skills/ and
+ * plugins/cfa-core/agents/) used by Claude Code and the cfa managed-agent
+ * CLI. Fields are optional except `name`.
  */
 export interface SkillFrontmatter {
   name: string;
@@ -45,8 +46,8 @@ export interface ParsedSkill {
 }
 
 export interface SkillLoaderOptions {
-  skillsRoot: string;  // e.g., "<repo>/.claude/skills/cfa"
-  agentsRoot: string;  // e.g., "<repo>/.claude/agents/cfa"
+  skillsRoot: string;  // e.g., "<repo>/plugins/cfa-core/skills/cfa"
+  agentsRoot: string;  // e.g., "<repo>/plugins/cfa-core/agents/cfa"
 }
 
 export interface SkillLoader {
