@@ -281,6 +281,17 @@ export interface DispatchOptions {
    *   "disabled" — ignore the orchestrator even if `handoff` is set
    */
   handoffMode?: "advisory" | "auto" | "disabled";
+
+  /**
+   * REC-4 Wave 5: maximum dispatch depth at which `initiate_handoff` is injected.
+   * Default: 0 (chief only). Set to >= 1 to enable chained handoffs from
+   * specialists. The HandoffOrchestrator's own maxDepth governs chain length;
+   * this option governs WHICH depths see the virtual tool.
+   *
+   * Precedence: a specialist with `blockTools: ["initiate_handoff"]` will never
+   * see the tool regardless of this setting (block wins).
+   */
+  maxHandoffDepth?: number;
 }
 
 export type DispatchEvent =

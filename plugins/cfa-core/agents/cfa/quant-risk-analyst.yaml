@@ -77,6 +77,9 @@ output_schema:
             type: string
             maxLength: 200
 
+block_tools:
+  - initiate_handoff
+
 tools:
   - type: mcp_toolset
     mcp_server_name: cfa-core

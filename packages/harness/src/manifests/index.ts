@@ -25,3 +25,11 @@ export {
   type ManifestCheckReport,
   type CheckOptions,
 } from "./checker.js";
+
+// Phase 33 smoke gate: cookbook deployment loader
+export {
+  createCookbookLoader,
+  type CookbookLoader,
+  type LoadedCookbook,
+  type CookbookLoaderOptions,
+} from "./cookbook-loader.js";

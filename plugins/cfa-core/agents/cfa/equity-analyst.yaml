@@ -77,6 +77,11 @@ output_schema:
             type: string
             maxLength: 200
 
+block_tools:
+  - initiate_handoff
+  - recall_similar
+  - recall_by_graph
+
 tools:
   - type: mcp_toolset
     mcp_server_name: cfa-core

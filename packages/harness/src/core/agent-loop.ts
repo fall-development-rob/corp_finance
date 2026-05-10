@@ -282,13 +282,17 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
       ? createWorkflowTools()
       : [];
 
-  // REC-4 Wave 2: virtual `initiate_handoff` tool — injected at depth=0 only
+  // REC-4 Wave 5: virtual `initiate_handoff` tool — injected at depths 0..maxHandoffDepth
   // when a HandoffOrchestrator is configured and mode is not "disabled".
   // Mirrors the callable_agents: deployment semantics for local-dev parity.
-  // Specialists at depth=1 do not receive `handoff` in their nested dispatch
-  // options, so they never see this tool.
+  // Default maxHandoffDepth=0 preserves the prior chief-only behaviour.
+  // block_tools takes precedence: specialists with blockTools:["initiate_handoff"]
+  // never see the tool even when depth <= maxHandoffDepth.
+  const handoffMaxDepth = options.maxHandoffDepth ?? 0;
   const handoffTools: CanonicalTool[] =
-    options.handoff && (options.handoffMode ?? "advisory") !== "disabled" && depth === 0
+    options.handoff &&
+    (options.handoffMode ?? "advisory") !== "disabled" &&
+    depth <= handoffMaxDepth
       ? [createHandoffTool()]
       : [];
 

@@ -166,6 +166,14 @@ export {
   type CheckOptions,
 } from "./manifests/index.js";
 
+// Phase 33 smoke gate — cookbook deployment loader
+export {
+  createCookbookLoader,
+  type CookbookLoader,
+  type LoadedCookbook,
+  type CookbookLoaderOptions,
+} from "./manifests/index.js";
+
 // REC-4 (Phase 38 W1) — cross-agent handoff event loop
 export {
   createHandoffOrchestrator,

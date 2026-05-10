@@ -77,6 +77,17 @@ output_schema:
             type: string
             maxLength: 200
 
+block_tools:
+  - initiate_handoff
+  - delegate_to_equity_analyst
+  - delegate_to_credit_analyst
+  - delegate_to_fixed_income_analyst
+  - delegate_to_derivatives_analyst
+  - delegate_to_quant_risk_analyst
+  - delegate_to_macro_analyst
+  - delegate_to_private_markets_analyst
+  - delegate_to_esg_regulatory_analyst
+
 tools:
   - type: mcp_toolset
     mcp_server_name: cfa-core
