@@ -69,9 +69,16 @@ export interface HandoffAllowlistEntry {
   /**
    * Optional JSON Schema to validate the handoff payload. When present,
    * the payload must pass before dispatch. When absent, any payload is
-   * accepted (permissive mode).
+   * accepted (permissive mode). Acts as fallback when targetSchemas has
+   * no entry for the specific target.
    */
   payload_schema?: Record<string, unknown>;
+  /**
+   * Phase 38 W3: per-target payload schemas keyed by target slug.
+   * Takes precedence over payload_schema for the specific target.
+   * Populated by buildAllowlistFromAgent from each callable agent's inputSchema.
+   */
+  targetSchemas?: Record<string, Record<string, unknown>>;
 }
 
 // ---------------------------------------------------------------------------

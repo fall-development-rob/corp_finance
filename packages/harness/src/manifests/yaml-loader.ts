@@ -282,6 +282,11 @@ export function createDirectYamlManifestLoader(
         def as AgentDef & { outputSchema?: Record<string, unknown> }
       ).outputSchema = manifest.output_schema;
     }
+    if (manifest.input_schema) {
+      (
+        def as AgentDef & { inputSchema?: Record<string, unknown> }
+      ).inputSchema = manifest.input_schema;
+    }
 
     cache.set(manifestPath, def);
     return def;

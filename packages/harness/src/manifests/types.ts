@@ -36,6 +36,8 @@ export interface AgentManifest {
   callable_agents?: CallableAgentRef[];
   /** Structured output schema — stored on AgentDef.outputSchema; not enforced (Phase 37). */
   output_schema?: Record<string, unknown>;
+  /** Phase 38 W3: schema for payloads this agent accepts; validated by the handoff orchestrator. */
+  input_schema?: Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
