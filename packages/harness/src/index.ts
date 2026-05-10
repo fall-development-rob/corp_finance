@@ -72,3 +72,15 @@ export {
   type ToolCatalogValidationIssue,
   type ToolCatalogValidationResult,
 } from "./core/tool-schema.js";
+
+// Phase 34 Wave 1 — Reasoning bank
+export {
+  type EmbeddingFn,
+  createOpenAIEmbedder,
+  createDeterministicEmbedder,
+  type ReasoningEntry,
+  type ReasoningBank,
+  type ReasoningBankOptions,
+  type RecallOptions,
+  createRuVectorBank,
+} from "./reasoning/index.js";

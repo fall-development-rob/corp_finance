@@ -1,0 +1,10 @@
+/**
+ * Reasoning module barrel — Phase 34 Wave 1.
+ *
+ * Exports the ReasoningBank port + RuVector implementation, the pluggable
+ * embedding helpers, and the low-level RVIndex wrapper for callers that need
+ * direct access (Wave 2 indexer, integration tests).
+ */
+export * from "./bank.js";
+export * from "./embeddings.js";
+export * from "./rv-index.js";
