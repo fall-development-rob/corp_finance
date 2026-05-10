@@ -1,62 +1,57 @@
 /**
- * Agent registry — Phase 31 Wave 2.
+ * Agent registry — Phase 33 Wave 4.
  *
- * Maps agent ids to AgentDef instances. Contains chief-analyst plus the
- * eight CFA specialists (equity, credit, fixed-income, derivatives,
- * quant-risk, macro, esg-regulatory, private-markets).
+ * Maps agent ids to AgentDef instances by loading skill files at module-init
+ * time via top-level await. The registry surface (chiefAnalyst,
+ * defaultDelegates, registry, getAgent, defaultMCPServers) is preserved so
+ * existing consumers (CLI, integration tests, agents.test.ts,
+ * specialist-routing.test.ts) keep working unchanged.
  *
- * Also exports defaultMCPServers — the four cfa plugin server configs that
- * the harness CLI and integration tests use as a starting point, and
- * defaultDelegates — the eight specialist defs the chief delegates to.
+ * Single source of truth for agent prose now lives at
+ * `.claude/skills/cfa/corp-finance-analyst-<id>/SKILL.md` plus the thin
+ * manifests at `.claude/agents/cfa/<id>.md`. See ADR-031.
  */
 
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AgentDef, MCPServerConfig } from "../types.js";
-import { chiefAnalyst } from "./chief-analyst.js";
-import {
-  equityAnalyst,
-  creditAnalyst,
-  fixedIncomeAnalyst,
-  derivativesAnalyst,
-  quantRiskAnalyst,
-  macroAnalyst,
-  privateMarketsAnalyst,
-  esgRegulatoryAnalyst,
-} from "./specialists/index.js";
-
-export { chiefAnalyst } from "./chief-analyst.js";
-export {
-  equityAnalyst,
-  creditAnalyst,
-  fixedIncomeAnalyst,
-  derivativesAnalyst,
-  quantRiskAnalyst,
-  macroAnalyst,
-  privateMarketsAnalyst,
-  esgRegulatoryAnalyst,
-} from "./specialists/index.js";
+import { createSkillRegistry } from "./skill-registry.js";
 
 // ---------------------------------------------------------------------------
-// Registry
+// Skill-loaded registry (top-level await; harness is pure ESM)
 // ---------------------------------------------------------------------------
 
-export const defaultDelegates: AgentDef[] = [
-  equityAnalyst,
-  creditAnalyst,
-  fixedIncomeAnalyst,
-  derivativesAnalyst,
-  quantRiskAnalyst,
-  macroAnalyst,
-  privateMarketsAnalyst,
-  esgRegulatoryAnalyst,
-];
+const _skillRegistry = await createSkillRegistry();
 
-const _entries: AgentDef[] = [chiefAnalyst, ...defaultDelegates];
+export const chiefAnalyst: AgentDef = _skillRegistry.chief();
+export const equityAnalyst: AgentDef = _skillRegistry.get("equity-analyst");
+export const creditAnalyst: AgentDef = _skillRegistry.get("credit-analyst");
+export const fixedIncomeAnalyst: AgentDef = _skillRegistry.get(
+  "fixed-income-analyst",
+);
+export const derivativesAnalyst: AgentDef = _skillRegistry.get(
+  "derivatives-analyst",
+);
+export const quantRiskAnalyst: AgentDef = _skillRegistry.get(
+  "quant-risk-analyst",
+);
+export const macroAnalyst: AgentDef = _skillRegistry.get("macro-analyst");
+export const privateMarketsAnalyst: AgentDef = _skillRegistry.get(
+  "private-markets-analyst",
+);
+export const esgRegulatoryAnalyst: AgentDef = _skillRegistry.get(
+  "esg-regulatory-analyst",
+);
+
+// ---------------------------------------------------------------------------
+// Registry surface
+// ---------------------------------------------------------------------------
+
+export const defaultDelegates: AgentDef[] = _skillRegistry.delegates();
 
 export const registry: Map<string, AgentDef> = new Map(
-  _entries.map((a) => [a.id, a]),
+  _skillRegistry.all().map((a) => [a.id, a]),
 );
 
 export function getAgent(id: string): AgentDef {

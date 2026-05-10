@@ -1,21 +1,21 @@
 /**
- * Skill-backed registry — Phase 33 Wave 3 tests.
+ * Skill-backed registry — Phase 33 Wave 3 tests (updated Wave 4).
  *
- * Verifies that createSkillRegistry() loads all 9 agents in parallel from
- * .claude/skills/cfa + .claude/agents/cfa, and that each AgentDef matches
- * (by id / tools / model / maxTokens / maxRecursionDepth and normalized
- * systemPrompt) the corresponding TypeScript-imported AgentDef.
+ * Wave 3 verified that createSkillRegistry() loads all 9 agents in parallel
+ * from .claude/skills/cfa + .claude/agents/cfa, and that each loaded
+ * AgentDef matched the legacy TypeScript-imported AgentDef. Per-agent
+ * byte-equivalence was independently proven by 9 *-skill-canary test files.
  *
- * Per-agent byte-equivalence is already proven by the *-skill-canary tests;
- * this suite re-asserts the same parity through the registry surface and
- * additionally verifies registry semantics (delegation order, get/throw,
- * fail-fast on missing manifests, custom-paths propagation).
+ * Wave 4 deletes the legacy TS specialist sources; the canaries become
+ * circular and were also deleted. The TS-vs-skill parity test in this file
+ * is replaced with a structural shape assertion that verifies each loaded
+ * AgentDef has the expected fields and types.
  *
- * Normalization rules (must match chief-skill-canary.test.ts):
- *   • Trim leading/trailing whitespace.
- *   • Normalize CRLF → LF.
- *   • Strip trailing whitespace from every line.
- *   • Collapse 3+ consecutive blank lines to exactly 2.
+ * The remaining tests (1, 3, 4, 5) verify registry semantics:
+ *   • parallel load + canonical ordering
+ *   • get(id) round-trip + throws on unknown id
+ *   • delegates() ordering
+ *   • fail-fast on missing manifests with custom paths
  */
 
 import { describe, expect, it } from "vitest";
@@ -29,15 +29,10 @@ import {
   SKILL_REGISTRY_AGENT_IDS,
 } from "../src/agents/skill-registry.js";
 
-import {
-  chiefAnalyst,
-  defaultDelegates,
-} from "../src/agents/registry.js";
-
-import type { AgentDef } from "../src/types.js";
+import { defaultDelegates } from "../src/agents/registry.js";
 
 // ---------------------------------------------------------------------------
-// Path resolution + helpers
+// Path resolution
 // ---------------------------------------------------------------------------
 
 const _thisDir = dirname(fileURLToPath(import.meta.url));
@@ -46,19 +41,6 @@ const repoRoot = resolve(_thisDir, "..", "..", "..");
 
 const skillsRoot = resolve(repoRoot, ".claude", "skills", "cfa");
 const agentsRoot = resolve(repoRoot, ".claude", "agents", "cfa");
-
-function normalize(s: string): string {
-  return s
-    .trim()
-    .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n");
-}
-
-const tsById = new Map<string, AgentDef>([
-  [chiefAnalyst.id, chiefAnalyst],
-  ...defaultDelegates.map((d) => [d.id, d] as [string, AgentDef]),
-]);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -89,33 +71,25 @@ describe("createSkillRegistry (Phase 33 Wave 3)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Test 2 — AgentDef parity vs TS-imported registry (the whole 9)
+  // Test 2 — Loaded AgentDefs have the expected shape
+  //
+  // Replaces the Wave-3 TS-vs-skill parity test (now circular post-Wave-4
+  // since registry.ts is itself skill-loaded). Byte-equivalence pre-deletion
+  // was proven by the 9 *-skill-canary tests; post-deletion we verify
+  // structural correctness against the AgentDef contract.
   // -------------------------------------------------------------------------
-  it("each loaded AgentDef matches its TS-defined counterpart (id / tools / model / maxTokens / maxRecursionDepth / normalized systemPrompt)", async () => {
+  it("loaded AgentDefs have the expected shape across all 9 ids", async () => {
     const registry = await createSkillRegistry({ skillsRoot, agentsRoot });
-
     for (const id of SKILL_REGISTRY_AGENT_IDS) {
-      const loaded = registry.get(id);
-      const ts = tsById.get(id);
-      expect(ts, `TS registry missing id ${id}`).toBeDefined();
-
-      expect(loaded.id, `${id}: id mismatch`).toBe(ts!.id);
-      expect(loaded.tools, `${id}: tools mismatch`).toEqual(ts!.tools);
-      expect(loaded.model, `${id}: model mismatch`).toBe(ts!.model);
-      expect(loaded.maxTokens, `${id}: maxTokens mismatch`).toBe(
-        ts!.maxTokens,
-      );
-      expect(
-        loaded.maxRecursionDepth,
-        `${id}: maxRecursionDepth mismatch`,
-      ).toBe(ts!.maxRecursionDepth);
-
-      // systemPrompt byte-equivalence after normalization. Matches the canary
-      // gate; per-agent canaries already prove this individually.
-      expect(
-        normalize(loaded.systemPrompt),
-        `${id}: normalized systemPrompt mismatch`,
-      ).toBe(normalize(ts!.systemPrompt));
+      const def = registry.get(id);
+      expect(def.id).toBe(id);
+      expect(typeof def.systemPrompt).toBe("string");
+      expect(def.systemPrompt.length).toBeGreaterThan(500);
+      expect(def.tools === "*" || Array.isArray(def.tools)).toBe(true);
+      expect(typeof def.model).toBe("string");
+      expect(typeof def.maxTokens).toBe("number");
+      expect(def.maxTokens).toBeGreaterThan(0);
+      expect(typeof (def.maxRecursionDepth ?? 0)).toBe("number");
     }
   });
 
