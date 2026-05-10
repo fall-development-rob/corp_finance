@@ -1,3 +1,0 @@
-import { z } from "zod"
-
-export const IcMemoInputSchema = z.object({ "author": z.string(), "conclusion": z.string(), "date": z.string(), "deal_name": z.string(), "financial_summary": z.array(z.array(z.string())).describe("Table data; first inner Vec is headers, rest are data rows."), "investment_thesis": z.string().describe("Multi-paragraph thesis; split on blank lines (`\\n\\n`)."), "key_metrics": z.array(z.array(z.any()).min(2).max(2)).describe("(label, value) pairs for the key-metrics table."), "mitigants": z.array(z.string()), "recommendation": z.string().describe("e.g. \"APPROVE\", \"REJECT\", \"DISCUSS\""), "risks": z.array(z.string()), "target_company": z.string() }).describe("All data required to render an institutional IC Memorandum.")

@@ -1,3 +1,0 @@
-import { z } from "zod"
-
-export const TierTagSchema = z.enum(["cookbook_core_only", "cookbook_freemium", "cookbook_paid_vendor", "mcp_free_native", "mcp_free_public_with_api_key", "mcp_freemium", "mcp_paid_vendor", "unknown"]).describe("Tier classification persisted on a `CostEvent`.  Combines `CookbookTier`\n(deploy-time) and `McpServerTier` (runtime) into a single tag space so the\nledger can be aggregated by tier without joining across two enums.\n\nPer RUF-COST-002 / RUF-COST-INV-002, this enum is **derived** from those\ntwo source-of-truth tier enums; no parallel tiering logic lives here.")

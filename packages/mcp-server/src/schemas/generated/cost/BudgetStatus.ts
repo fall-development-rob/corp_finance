@@ -1,3 +1,0 @@
-import { z } from "zod"
-
-export const BudgetStatusSchema = z.discriminatedUnion("status", [z.object({ "limit_cents": z.number().int(), "status": z.literal("ok"), "used_cents": z.number().int() }).describe("Within both warn and hard limits."), z.object({ "limit_cents": z.number().int(), "pct": z.number().int().gte(0).lte(255), "status": z.literal("warn"), "used_cents": z.number().int() }).describe("Crossed the warn threshold but not the hard limit."), z.object({ "limit_cents": z.number().int(), "status": z.literal("exceeded"), "used_cents": z.number().int() }).describe("Crossed the hard limit.")]).describe("Result of `check_threshold()`.")
