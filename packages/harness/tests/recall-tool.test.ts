@@ -37,7 +37,7 @@ function makeBank(over: Partial<ReasoningBank>): ReasoningBank {
       return [];
     },
     async recallByGraph() {
-      throw new Error("not implemented");
+      return [];
     },
     async close() {},
     ...over,

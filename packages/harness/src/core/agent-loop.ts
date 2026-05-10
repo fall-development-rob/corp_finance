@@ -43,6 +43,11 @@ import {
   executeRecallCall,
   isRecallToolName,
 } from "../reasoning/recall-tool.js";
+import {
+  createRecallGraphTool,
+  executeRecallGraphCall,
+  isRecallGraphToolName,
+} from "../reasoning/recall-graph-tool.js";
 
 const DEFAULT_MAX_TURNS = 25;
 
@@ -128,11 +133,14 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
   const delegates = depth < maxRecursion ? options.delegates ?? [] : [];
   const delegationTools = delegates.length > 0 ? createDelegationTools(delegates) : [];
 
-  // Phase 34 Wave 3: virtual `recall_similar` tool — only when a reasoning bank
-  // is configured. Appended after `filterToolsForAgent`, so it bypasses the
-  // per-agent allowlist; specialists at depth 1 don't receive `reasoning` in
-  // their nested dispatch options, so they never see the tool.
-  const recallTools: CanonicalTool[] = options.reasoning ? [createRecallTool()] : [];
+  // Phase 34 Wave 3-4: virtual `recall_similar` + `recall_by_graph` tools —
+  // only when a reasoning bank is configured. Appended after
+  // `filterToolsForAgent`, so they bypass the per-agent allowlist;
+  // specialists at depth 1 don't receive `reasoning` in their nested
+  // dispatch options, so they never see the tools.
+  const recallTools: CanonicalTool[] = options.reasoning
+    ? [createRecallTool(), createRecallGraphTool()]
+    : [];
 
   const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools];
 
@@ -190,12 +198,15 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
 
         const delegationCalls: ToolCall[] = [];
         const recallCalls: ToolCall[] = [];
+        const graphCalls: ToolCall[] = [];
         const realCalls: ToolCall[] = [];
         for (const c of calls) {
           if (isDelegationToolName(c.name)) {
             delegationCalls.push(c);
           } else if (options.reasoning && isRecallToolName(c.name)) {
             recallCalls.push(c);
+          } else if (options.reasoning && isRecallGraphToolName(c.name)) {
+            graphCalls.push(c);
           } else {
             realCalls.push(c);
           }
@@ -332,16 +343,44 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
           }),
         );
 
-        const [realResults, delResults, recallResults] = await Promise.all([
-          realResultsP,
-          delegationsP,
-          recallsP,
-        ]);
+        // Phase 34 Wave 4: parallel `recall_by_graph` calls. Same audit /
+        // error-capture pattern as recallsP; structured-metadata recall.
+        const graphsP = Promise.all(
+          graphCalls.map(async (call): Promise<ToolResult> => {
+            if (!options.reasoning) {
+              return {
+                call_id: call.id,
+                content: "recall_by_graph failed: no reasoning bank",
+                is_error: true,
+              };
+            }
+            const startsAt = Date.now();
+            const result = await executeRecallGraphCall(
+              call,
+              options.reasoning,
+            );
+            if (audit) {
+              auditToolCalls.push({
+                id: call.id,
+                name: call.name,
+                input_hash: hashJSON(call.input),
+                result_hash: hashJSON(result.content),
+                is_error: result.is_error ?? false,
+                duration_ms: Date.now() - startsAt,
+              });
+            }
+            return result;
+          }),
+        );
+
+        const [realResults, delResults, recallResults, graphResults] =
+          await Promise.all([realResultsP, delegationsP, recallsP, graphsP]);
 
         const byId = new Map<string, ToolResult>();
         for (const r of realResults) byId.set(r.call_id, r);
         for (const r of delResults) byId.set(r.call_id, r);
         for (const r of recallResults) byId.set(r.call_id, r);
+        for (const r of graphResults) byId.set(r.call_id, r);
         const ordered: ToolResult[] = calls.map((c) => {
           const r = byId.get(c.id);
           if (!r) {
