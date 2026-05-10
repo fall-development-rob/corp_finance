@@ -4,10 +4,7 @@ import { fmpFetch, CacheTTL } from '../client.js';
 import {
   InsiderLatestSchema, InsiderSearchSchema, InsiderByNameSchema, InsiderStatsSchema,
 } from '../schemas/insider.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerInsiderTools(server: McpServer) {
   server.tool(

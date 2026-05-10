@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { wbFetch, CacheTTL } from '../client.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 const CountryDateSchema = z.object({
   country: z.string().min(1).describe('Country code (ISO2 or ISO3, e.g. US, GBR, CN)'),

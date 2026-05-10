@@ -65,7 +65,7 @@ jobs:
             packages/fmp-mcp-server/node_modules
             packages/mcp-server/node_modules
             packages/vendor-mcp-server/node_modules
-          key: ${{ runner.os }}-npm-cookbooks-${{ hashFiles('packages/*/package-lock.json', 'packages/*/package.json') }}
+          key: ${{ runner.os }}-npm-cookbooks-${{ hashFiles('package-lock.json', 'packages/*/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-cookbooks-
 
@@ -108,36 +108,41 @@ jobs:
             exit 1
           fi
 
+      # Phase 32 Wave 1: workspace lockfiles deleted; install at the repo
+      # root so npm workspaces can resolve internal deps (e.g.,
+      # @robotixai/mcp-utils is a workspace package not on the registry).
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+
+      # Build internal workspace deps so dependents resolve dist/*.d.ts.
+      - name: Build internal workspace deps
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/mcp-utils
+
       - name: cookbook_validate_all MCP tool (15/15 validate + dry-run deploy)
         shell: bash
         working-directory: packages/mcp-server
         run: |
           set -euo pipefail
-          # Phase 30 Wave 1: scripts/test-cookbooks.sh was replaced by the
-          # cookbook_validate_all MCP tool. The npm script `cookbooks:validate`
-          # invokes the same TS module via tsx — same code path as the
-          # agent-callable tool, no separate script file.
-          npm ci --no-audit --no-fund
           npm run cookbooks:validate
 
       # ---------------------------------------------------------------------
-      # TypeScript MCP servers: build all four
+      # TypeScript MCP servers: build all four (deps already installed at root)
       # ---------------------------------------------------------------------
       - name: Build packages/data-mcp-server
         shell: bash
         working-directory: packages/data-mcp-server
-        run: |
-          set -euo pipefail
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: Build packages/fmp-mcp-server
         shell: bash
         working-directory: packages/fmp-mcp-server
-        run: |
-          set -euo pipefail
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: Build packages/mcp-server
         shell: bash
@@ -145,25 +150,16 @@ jobs:
         run: |
           set -euo pipefail
           # mcp-server depends on @robotixai/corp-finance-bindings via file: link
-          # Build the bindings package first so npm ci can resolve it.
+          # Build the bindings package first so the file dep resolves.
           if [ -d ../bindings ]; then
-            (cd ../bindings && npm ci && npm run build)
+            (cd ../bindings && npm run build)
           fi
-          npm ci
           npm run build
 
       - name: Build packages/vendor-mcp-server
         shell: bash
         working-directory: packages/vendor-mcp-server
-        run: |
-          set -euo pipefail
-          # vendor-mcp-server has no package-lock.json — use npm install.
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install --no-audit --no-fund
-          fi
-          npm run build
+        run: npm run build
 
       - name: Upload check-all output
         if: always()

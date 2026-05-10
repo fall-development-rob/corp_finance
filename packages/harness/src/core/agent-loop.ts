@@ -28,7 +28,7 @@ import type {
   ToolUseBlock,
 } from "../types.js";
 import { createAnthropicProvider } from "./providers/anthropic.js";
-import { filterToolsForAgent } from "./tool-schema.js";
+import { assertAllowlistsValid, filterToolsForAgent } from "./tool-schema.js";
 import { routeToolCalls } from "./tool-router.js";
 import {
   buildSubPrompt,
@@ -108,6 +108,14 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
 
   // Real MCP tools, filtered by the agent's allowlist.
   const allTools = await mcp.listTools();
+
+  // Phase 32 Wave 1: ToolCatalogValidator ACL — convert silent
+  // tool_uses=0 failures into loud startup errors. Validates this agent
+  // and any delegates' allowlists against the live catalog.
+  const catalog = new Set(allTools.map((t) => t.name));
+  const agentDefsToValidate = [agent, ...(options.delegates ?? [])];
+  assertAllowlistsValid(agentDefsToValidate, catalog);
+
   const realTools: CanonicalTool[] = filterToolsForAgent(allTools, agent.tools);
 
   // Virtual delegation tools — only at depth 0 (or wherever depth < maxRecursion).

@@ -2,10 +2,7 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { edgarFetch, CacheTTL, padCik } from '../client.js';
 import { CikSchema, TaxonomySchema, ConceptSchema, YearSchema } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 // Composite schemas for multi-field tools
 const CompanyConceptSchema = CikSchema.merge(TaxonomySchema).merge(ConceptSchema);

@@ -6,10 +6,7 @@ import {
   ChronographCapitalAccountSchema,
   ChronographKpiPullSchema,
 } from '../schemas/portfolios.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 const CRED_REQUIRED_BASE = {
   credentials_required: true,

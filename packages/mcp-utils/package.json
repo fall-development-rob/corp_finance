@@ -1,0 +1,22 @@
+{
+  "name": "@robotixai/mcp-utils",
+  "version": "1.0.0",
+  "description": "Shared MCP response utilities for fmp-mcp-server, data-mcp-server, and vendor-mcp-server",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3"
+  }
+}

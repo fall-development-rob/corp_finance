@@ -2,10 +2,7 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { eftsFetch, edgarFetch, CacheTTL } from '../client.js';
 import { SearchQuerySchema, DateRangeSchema } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 // Full-text search schema
 const FullTextSearchSchema = SearchQuerySchema.extend({

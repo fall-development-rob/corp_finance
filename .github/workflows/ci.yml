@@ -30,11 +30,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: packages/agents/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install agent dependencies
-        working-directory: packages/agents
+      - name: Install workspace dependencies (root)
         run: npm ci
+
+      - name: Build internal workspace deps
+        run: npm run build -w @robotixai/mcp-utils
 
       - name: Run contract tests (architecture + drift)
         working-directory: packages/agents
@@ -100,10 +102,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: packages/bindings/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        working-directory: packages/bindings
+      - name: Install workspace dependencies (root)
         run: npm ci
 
       - name: Build bindings
@@ -133,7 +134,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: packages/mcp-server/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Download bindings artifact
         uses: actions/download-artifact@v4
@@ -141,8 +142,7 @@ jobs:
           name: bindings-linux-x64
           path: packages/bindings
 
-      - name: Install MCP server dependencies
-        working-directory: packages/mcp-server
+      - name: Install workspace dependencies (root)
         run: npm ci
 
       - name: Build MCP server

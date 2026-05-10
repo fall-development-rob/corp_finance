@@ -1,0 +1,14 @@
+name: Lockfile Guard
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  no-workspace-lockfiles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/check-no-workspace-lockfiles.sh

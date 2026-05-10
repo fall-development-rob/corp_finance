@@ -104,9 +104,7 @@ export async function spFetch<T = unknown>(
   }
 }
 
-export function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+export { wrapResponse } from '@robotixai/mcp-utils';
 
 /** Cache TTL presets by data type */
 export const CacheTTL = {

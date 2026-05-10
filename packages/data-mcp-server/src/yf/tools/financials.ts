@@ -1,10 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { yfFetch, CacheTTL, quoteSummaryUrl, extractQuoteSummary } from '../client.js';
 import { SymbolSchema } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerFinancialTools(server: McpServer) {
   server.tool(

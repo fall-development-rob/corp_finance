@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
+    "@robotixai/mcp-utils": "*",
     "zod": "^3.24.2"
   },
   "devDependencies": {

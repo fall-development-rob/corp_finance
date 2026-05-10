@@ -5,10 +5,7 @@ import {
   RelatedTagsSchema,
   TagsSeriesSchema,
 } from '../schemas/tags.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 export function registerTagTools(server: McpServer) {
   server.tool(

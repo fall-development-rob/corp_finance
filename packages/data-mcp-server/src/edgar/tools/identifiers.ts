@@ -2,10 +2,7 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { edgarFetch, eftsFetch, CacheTTL, padCik } from '../client.js';
 import { CikSchema, TickerSchema } from '../schemas/common.js';
-
-function wrapResponse(data: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-}
+import { wrapResponse } from '@robotixai/mcp-utils';
 
 // Types for company tickers data
 interface CompanyTickerEntry {
