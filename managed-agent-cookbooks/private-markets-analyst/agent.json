@@ -54,10 +54,16 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-private-equity"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-pe-due-diligence"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-investment-banking"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-pe-ic-memo"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-pe-returns-analysis"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-ib-merger-model"
     }
   ],
   "callable_agents": [

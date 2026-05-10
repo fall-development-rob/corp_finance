@@ -54,7 +54,13 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-wealth-management"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-wm-client-meeting-prep"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-wm-portfolio-rebalancing"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-wm-tax-loss-harvesting"
     }
   ],
   "callable_agents": [

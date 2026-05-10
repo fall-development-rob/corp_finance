@@ -54,7 +54,13 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-investment-banking"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-ib-pitch-deck"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-ib-cim"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-ib-teaser"
     }
   ],
   "callable_agents": [

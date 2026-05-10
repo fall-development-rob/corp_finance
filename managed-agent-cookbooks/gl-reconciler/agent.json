@@ -42,7 +42,10 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-regulatory"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-admin"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-gl-reconciliation"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-break-trace"
     }
   ],
   "callable_agents": [
