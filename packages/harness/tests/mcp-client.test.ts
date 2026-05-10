@@ -3,7 +3,13 @@
  */
 import { describe, it, expect } from "vitest";
 import { existsSync } from "node:fs";
-import { buildNameMap, resolveBareToWire, extractBareFromWire } from "../src/mcp-client/name-resolver.js";
+import {
+  buildNameMap,
+  resolveBareToWire,
+  extractBareFromWire,
+  toCanonicalTool,
+  unwrapMcpContent,
+} from "../src/mcp-client/name-resolver.js";
 import { createStdioMCPClient } from "../src/mcp-client/stdio.js";
 import type { MCPServerConfig } from "../src/types.js";
 
@@ -80,6 +86,96 @@ describe("name-resolver", () => {
     expect(resolveBareToWire(map, "wacc_calculator")?.wireName).toBe(
       "mcp__plugin_cfa-core_cfa-core__wacc_calculator",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toCanonicalTool unit tests
+// ---------------------------------------------------------------------------
+
+describe("toCanonicalTool", () => {
+  const PREFIX = "mcp__plugin_cfa-core_cfa-core__";
+
+  it("strips the prefix from the tool name", () => {
+    const result = toCanonicalTool(
+      { name: `${PREFIX}option_pricer`, description: "Price an option" },
+      PREFIX,
+    );
+    expect(result.name).toBe("option_pricer");
+    expect(result.description).toBe("Price an option");
+  });
+
+  it("passes the name through unchanged when prefix does not match", () => {
+    const result = toCanonicalTool({ name: "some_bare_tool" }, PREFIX);
+    expect(result.name).toBe("some_bare_tool");
+  });
+
+  it("defaults description to empty string when missing", () => {
+    const result = toCanonicalTool({ name: "a_tool" }, "");
+    expect(result.description).toBe("");
+  });
+
+  it("defaults properties to {} when inputSchema is absent", () => {
+    const result = toCanonicalTool({ name: "a_tool" }, "");
+    expect(result.input_schema.properties).toEqual({});
+    expect(result.input_schema.required).toBeUndefined();
+  });
+
+  it("propagates required array when present in inputSchema", () => {
+    const result = toCanonicalTool(
+      {
+        name: "a_tool",
+        inputSchema: {
+          type: "object",
+          properties: { x: { type: "number" } },
+          required: ["x"],
+        },
+      },
+      "",
+    );
+    expect(result.input_schema.required).toEqual(["x"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// unwrapMcpContent unit tests
+// ---------------------------------------------------------------------------
+
+describe("unwrapMcpContent", () => {
+  it("parses valid JSON text content to an object", () => {
+    const result = unwrapMcpContent({
+      content: [{ type: "text", text: '{"price":"0.0208"}' }],
+    });
+    expect(result).toEqual({ price: "0.0208" });
+  });
+
+  it("returns the raw string when text content is not valid JSON", () => {
+    const result = unwrapMcpContent({
+      content: [{ type: "text", text: "plain text result" }],
+    });
+    expect(result).toBe("plain text result");
+  });
+
+  it("returns undefined when no text part exists", () => {
+    const result = unwrapMcpContent({
+      content: [{ type: "resource", uri: "file://foo" }],
+    });
+    expect(result).toBeUndefined();
+  });
+
+  it("returns undefined when content array is empty", () => {
+    const result = unwrapMcpContent({ content: [] });
+    expect(result).toBeUndefined();
+  });
+
+  it("skips a leading non-text block and finds the first text part (.find() semantics)", () => {
+    const result = unwrapMcpContent({
+      content: [
+        { type: "resource", uri: "file://ignored" },
+        { type: "text", text: '{"found":true}' },
+      ],
+    });
+    expect(result).toEqual({ found: true });
   });
 });
 

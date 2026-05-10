@@ -1,76 +1,27 @@
 /**
- * File-based audit sink implementation.
+ * File-based audit sink — Phase 32 Wave 2.
  *
- * Each AuditRecord is written as pretty-printed JSON to <dir>/<audit_id>.json.
- * Writes are atomic: temp file written then renamed.
+ * Thin wrapper over FileJsonStore<AuditRecord>.
  */
-import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import type { AuditRecord, AuditSink } from "../types.js";
-
-function tmpPath(dir: string, auditId: string): string {
-  return join(dir, `.${auditId}.json.tmp`);
-}
-
-function finalPath(dir: string, auditId: string): string {
-  return join(dir, `${auditId}.json`);
-}
-
-async function ensureDir(dir: string): Promise<void> {
-  await mkdir(dir, { recursive: true });
-}
-
-async function parseRecord(dir: string, filename: string): Promise<AuditRecord | null> {
-  try {
-    const raw = await readFile(join(dir, filename), "utf-8");
-    return JSON.parse(raw) as AuditRecord;
-  } catch {
-    return null;
-  }
-}
+import { createFileJsonStore } from "../persistence/index.js";
 
 export function createFileAuditSink(opts: { dir: string }): AuditSink {
-  const { dir } = opts;
+  const store = createFileJsonStore<AuditRecord>({
+    dir: opts.dir,
+    idOf: (r) => r.audit_id,
+    compare: (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  });
 
   return {
-    async write(record: AuditRecord): Promise<void> {
-      await ensureDir(dir);
-      const tmp = tmpPath(dir, record.audit_id);
-      const dest = finalPath(dir, record.audit_id);
-      await writeFile(tmp, JSON.stringify(record, null, 2), "utf-8");
-      await rename(tmp, dest);
-    },
-
-    async read(auditId: string): Promise<AuditRecord | null> {
-      const record = await parseRecord(dir, `${auditId}.json`);
-      return record;
-    },
-
-    async list(filter?: { agentId?: string; since?: Date }): Promise<AuditRecord[]> {
-      await ensureDir(dir);
-      let entries: string[];
-      try {
-        entries = await readdir(dir);
-      } catch {
-        return [];
-      }
-
-      const jsonFiles = entries.filter((f) => f.endsWith(".json") && !f.startsWith("."));
-      const records = await Promise.all(jsonFiles.map((f) => parseRecord(dir, f)));
-      let valid = records.filter((r): r is AuditRecord => r !== null);
-
-      if (filter?.agentId !== undefined) {
-        const id = filter.agentId;
-        valid = valid.filter((r) => r.agent_id === id);
-      }
-      if (filter?.since !== undefined) {
-        const since = filter.since.getTime();
-        valid = valid.filter((r) => new Date(r.timestamp).getTime() >= since);
-      }
-
-      return valid.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-      );
+    write: (record) => store.save(record),
+    read: (auditId) => store.load(auditId),
+    async list(filter?: { agentId?: string; since?: Date }) {
+      return store.list((r) => {
+        if (filter?.agentId !== undefined && r.agent_id !== filter.agentId) return false;
+        if (filter?.since !== undefined && new Date(r.timestamp).getTime() < filter.since.getTime()) return false;
+        return true;
+      });
     },
   };
 }

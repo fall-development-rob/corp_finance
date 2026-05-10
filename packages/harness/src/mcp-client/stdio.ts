@@ -10,7 +10,8 @@ import type { MCPClient, MCPServerConfig, CanonicalTool } from "../types.js";
 import {
   buildNameMap,
   resolveBareToWire,
-  extractBareFromWire,
+  toCanonicalTool,
+  unwrapMcpContent,
   type ResolvedTool,
 } from "./name-resolver.js";
 
@@ -145,18 +146,6 @@ async function listServerTools(state: ServerState): Promise<WireToolDef[]> {
   return result?.tools ?? [];
 }
 
-function wireToolToCanonical(tool: WireToolDef, prefix: string): CanonicalTool {
-  const bareName = extractBareFromWire(tool.name, prefix);
-  return {
-    name: bareName,
-    description: tool.description ?? "",
-    input_schema: {
-      type: "object",
-      properties: tool.inputSchema?.properties ?? {},
-      required: tool.inputSchema?.required,
-    },
-  };
-}
 
 /**
  * Creates and returns an MCPClient that connects to all specified MCP servers
@@ -183,7 +172,7 @@ export function createStdioMCPClient(servers: MCPServerConfig[]): MCPClient {
 
         // Build canonical tools for this server
         for (const wt of wireTools) {
-          toolCatalog.push(wireToolToCanonical(wt, config.prefix));
+          toolCatalog.push(toCanonicalTool(wt, config.prefix));
         }
       }
 
@@ -218,15 +207,8 @@ export function createStdioMCPClient(servers: MCPServerConfig[]): MCPClient {
       }
 
       // Plugin returns: { content: [{ type: "text", text: "<json>" }] }
-      const result = resp.result as { content?: Array<{ type: string; text: string }> };
-      const firstContent = result?.content?.[0];
-      if (firstContent?.type === "text" && typeof firstContent.text === "string") {
-        try {
-          return JSON.parse(firstContent.text) as unknown;
-        } catch {
-          return firstContent.text;
-        }
-      }
+      const unwrapped = unwrapMcpContent(resp.result);
+      if (unwrapped !== undefined) return unwrapped;
       return resp.result;
     },
 
