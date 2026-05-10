@@ -54,7 +54,13 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-equity-research"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-er-sector-overview"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-er-morning-note"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-er-idea-screening"
     }
   ],
   "callable_agents": [

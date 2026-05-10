@@ -42,7 +42,22 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-regulatory"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-operations-kyc"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-customer-intake"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-beneficial-ownership"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-sanctions-screening"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-pep-screening"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-source-of-funds"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-kyc-monitoring-triggers"
     }
   ],
   "callable_agents": [

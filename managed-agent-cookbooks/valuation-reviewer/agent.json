@@ -54,7 +54,10 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-private-equity"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-pe-portfolio-monitoring"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-pe-returns-analysis"
     }
   ],
   "callable_agents": [

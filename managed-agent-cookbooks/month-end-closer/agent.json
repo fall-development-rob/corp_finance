@@ -42,7 +42,13 @@
       "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-admin"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-period-end-accruals"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-period-rollforward"
+    },
+    {
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-fpa-variance-commentary"
     }
   ],
   "callable_agents": [
