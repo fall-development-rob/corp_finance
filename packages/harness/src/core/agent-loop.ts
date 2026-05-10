@@ -48,6 +48,13 @@ import {
   executeRecallGraphCall,
   isRecallGraphToolName,
 } from "../reasoning/recall-graph-tool.js";
+import {
+  createWorkflowTools,
+  executeListWorkflowsCall,
+  executeRunWorkflowCall,
+  isWorkflowToolName,
+} from "../workflow/tools.js";
+import type { WorkflowMatch } from "../workflow/types.js";
 
 const DEFAULT_MAX_TURNS = 25;
 
@@ -129,6 +136,115 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
 
   const realTools: CanonicalTool[] = filterToolsForAgent(allTools, agent.tools);
 
+  // Phase 35: Hybrid dispatch — deterministic workflow path.
+  // Inserted after assertAllowlistsValid so ACL validation always runs.
+  // If the workflow path fires, we overwrite the session to "completed"
+  // in a single write and return early, bypassing the LLM entirely.
+  if (
+    options.workflow &&
+    (options.workflowMode ?? "auto") !== "disabled"
+  ) {
+    const threshold = options.workflowAutoRouteThreshold ?? 0.82;
+    const mode = options.workflowMode ?? "auto";
+
+    let matchResult: WorkflowMatch | null = null;
+    try {
+      matchResult = await options.workflow.match(prompt);
+    } catch (err) {
+      emit(onEvent, {
+        type: "workflow_failed",
+        slug: "(match)",
+        reason: err instanceof Error ? err.message : String(err),
+      });
+      // fall through to LLM path
+    }
+
+    if (matchResult && matchResult.confidence >= threshold && mode === "auto") {
+      emit(onEvent, {
+        type: "workflow_matched",
+        slug: matchResult.slug,
+        confidence: matchResult.confidence,
+        extracted_params: matchResult.extracted_params,
+      });
+      const wfStart = Date.now();
+      try {
+        const wfResult = await options.workflow.run(
+          matchResult.slug,
+          matchResult.extracted_params,
+        );
+        emit(onEvent, {
+          type: "workflow_executed",
+          slug: matchResult.slug,
+          duration_ms: wfResult.duration_ms,
+          audit_hash: wfResult.audit_hash,
+        });
+
+        // Audit record for workflow path
+        let auditRecord: AuditRecord | undefined;
+        if (audit && auditId) {
+          auditRecord = {
+            audit_id: auditId,
+            ...(parentAuditId ? { parent_audit_id: parentAuditId } : {}),
+            agent_id: agent.id,
+            prompt_hash: sha256(prompt),
+            tool_calls: wfResult.tool_calls.map((tc) => ({
+              id: `wf-${tc.name}`,
+              name: tc.name,
+              input_hash: tc.input_hash,
+              result_hash: tc.result_hash,
+              is_error: false,
+              duration_ms: tc.duration_ms,
+            })),
+            result_hash: sha256(wfResult.deliverable),
+            duration_ms: Date.now() - wfStart,
+            total_tool_uses: wfResult.tool_calls.length,
+            child_audit_ids: [],
+            timestamp: nowIso(),
+            path: "workflow",
+            workflow_slug: matchResult.slug,
+            workflow_audit_hash: wfResult.audit_hash,
+          };
+          await audit.write(auditRecord);
+        }
+
+        // Session save: overwrite in_progress with completed (single durable write)
+        if (session && sessionId) {
+          await session.save({
+            session_id: sessionId,
+            agent_id: agent.id,
+            prompt,
+            messages: [],
+            tool_uses: wfResult.tool_calls.length,
+            child_session_ids: [],
+            final_text: wfResult.deliverable,
+            status: "completed",
+            audit_id: auditId,
+            created_at: nowIso(),
+            updated_at: nowIso(),
+          });
+        }
+
+        return {
+          finalText: wfResult.deliverable,
+          toolUses: wfResult.tool_calls.length,
+          messages: [],
+          childDispatches: [],
+          ...(auditId ? { auditId } : {}),
+          ...(sessionId ? { sessionId } : {}),
+          notes: `executed via workflow path: ${matchResult.slug}`,
+        };
+      } catch (err) {
+        emit(onEvent, {
+          type: "workflow_failed",
+          slug: matchResult.slug,
+          reason: err instanceof Error ? err.message : String(err),
+        });
+        // fall through to LLM path — no re-throw
+      }
+    }
+  }
+  // LLM path continues below (existing code unchanged)
+
   // Virtual delegation tools — only at depth 0 (or wherever depth < maxRecursion).
   const delegates = depth < maxRecursion ? options.delegates ?? [] : [];
   const delegationTools = delegates.length > 0 ? createDelegationTools(delegates) : [];
@@ -142,7 +258,16 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
     ? [createRecallTool(), createRecallGraphTool()]
     : [];
 
-  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools];
+  // Phase 35 Wave 3: virtual `list_workflows` + `run_workflow` tools —
+  // injected at depth=0 only when a WorkflowRouter is configured and mode
+  // is not "disabled". Specialists at depth=1 don't receive `workflow` in
+  // their nested dispatch options, so they never see these tools.
+  const workflowTools: CanonicalTool[] =
+    options.workflow && (options.workflowMode ?? "auto") !== "disabled" && depth === 0
+      ? createWorkflowTools()
+      : [];
+
+  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools, ...workflowTools];
 
   const messages: Message[] = [
     { role: "user", content: [{ type: "text", text: prompt }] },
@@ -199,6 +324,7 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         const delegationCalls: ToolCall[] = [];
         const recallCalls: ToolCall[] = [];
         const graphCalls: ToolCall[] = [];
+        const workflowCalls: ToolCall[] = [];
         const realCalls: ToolCall[] = [];
         for (const c of calls) {
           if (isDelegationToolName(c.name)) {
@@ -207,6 +333,8 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
             recallCalls.push(c);
           } else if (options.reasoning && isRecallGraphToolName(c.name)) {
             graphCalls.push(c);
+          } else if (options.workflow && isWorkflowToolName(c.name)) {
+            workflowCalls.push(c);
           } else {
             realCalls.push(c);
           }
@@ -373,14 +501,44 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
           }),
         );
 
-        const [realResults, delResults, recallResults, graphResults] =
-          await Promise.all([realResultsP, delegationsP, recallsP, graphsP]);
+        // Phase 35 Wave 3: parallel workflow virtual tool calls. Same audit /
+        // error-capture pattern as recallsP; errors return is_error results.
+        const workflowsP = Promise.all(
+          workflowCalls.map(async (call): Promise<ToolResult> => {
+            if (!options.workflow) {
+              return {
+                call_id: call.id,
+                content: `${call.name} failed: no workflow router configured`,
+                is_error: true,
+              };
+            }
+            const startsAt = Date.now();
+            const result = call.name === "list_workflows"
+              ? await executeListWorkflowsCall(call, options.workflow)
+              : await executeRunWorkflowCall(call, options.workflow);
+            if (audit) {
+              auditToolCalls.push({
+                id: call.id,
+                name: call.name,
+                input_hash: hashJSON(call.input),
+                result_hash: hashJSON(result.content),
+                is_error: result.is_error ?? false,
+                duration_ms: Date.now() - startsAt,
+              });
+            }
+            return result;
+          }),
+        );
+
+        const [realResults, delResults, recallResults, graphResults, workflowResults] =
+          await Promise.all([realResultsP, delegationsP, recallsP, graphsP, workflowsP]);
 
         const byId = new Map<string, ToolResult>();
         for (const r of realResults) byId.set(r.call_id, r);
         for (const r of delResults) byId.set(r.call_id, r);
         for (const r of recallResults) byId.set(r.call_id, r);
         for (const r of graphResults) byId.set(r.call_id, r);
+        for (const r of workflowResults) byId.set(r.call_id, r);
         const ordered: ToolResult[] = calls.map((c) => {
           const r = byId.get(c.id);
           if (!r) {

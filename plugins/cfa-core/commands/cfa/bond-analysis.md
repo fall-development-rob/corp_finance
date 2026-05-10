@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: fa-bond-analysis
+  auto_route: true
+  advisory: false
+---
+
 # Bond Analysis
 
 Perform fixed income analysis using the `corp-finance-tools-markets` skill. Covers bond pricing, yield analytics, duration/convexity, spread decomposition, and rate sensitivity.

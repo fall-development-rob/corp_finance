@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: fa-dcf-model
+  auto_route: true
+  advisory: false
+---
+
 # DCF Model
 
 Build an institutional-grade discounted cash flow model using the `workflow-financial-analysis` skill in concert with `corp-finance-analyst-core` computation tools.

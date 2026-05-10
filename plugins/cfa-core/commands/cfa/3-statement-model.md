@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: fa-three-statement-model
+  auto_route: true
+  advisory: false
+---
+
 # 3-Statement Model
 
 Build an integrated three-statement model using the `workflow-financial-analysis` skill with `corp-finance-analyst-core` computation tools.

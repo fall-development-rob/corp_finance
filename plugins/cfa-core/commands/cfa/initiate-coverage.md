@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: er-initiating-coverage
+  auto_route: true
+  advisory: false
+---
+
 # Initiate Coverage
 
 Invoke the Initiating Coverage workflow from the `workflow-equity-research` skill to create an institutional-quality equity research initiation report.

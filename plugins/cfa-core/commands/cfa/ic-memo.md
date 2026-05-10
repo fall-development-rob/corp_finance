@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: pe-ic-memo
+  auto_route: true
+  advisory: false
+---
+
 # IC Memo
 
 Draft an Investment Committee memo using the IC Memo workflow from `workflow-private-equity`.
