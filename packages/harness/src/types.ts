@@ -5,6 +5,7 @@
  * (Agent Runtime, MCP Transport, Provider Abstraction, Agent Registry).
  * Implementations live in their respective directories under src/.
  */
+import type { ReasoningBank } from "./reasoning/bank.js";
 
 // ---------------------------------------------------------------------------
 // Tool model — Anthropic-flavored canonical shape
@@ -201,6 +202,13 @@ export interface DispatchOptions {
   session?: SessionStore;
   /** Wave 4: parent audit id, set by the agent loop on nested dispatches. */
   parentAuditId?: string;
+  /**
+   * Phase 34 Wave 2: reasoning bank. If provided alongside `audit`, every
+   * successful dispatch fire-and-forgets a `ReasoningEntry` derived from the
+   * audit record + prompt + finalText. Index failures emit a
+   * `reasoning_index_failed` DispatchEvent but never fail the dispatch.
+   */
+  reasoning?: ReasoningBank;
 }
 
 export type DispatchEvent =
@@ -209,7 +217,8 @@ export type DispatchEvent =
   | { type: "tool_result"; result: ToolResult; turn: number }
   | { type: "delegation"; targetAgent: string; subPrompt: string }
   | { type: "turn_completed"; turn: number; stopReason: string }
-  | { type: "dispatch_completed"; toolUses: number };
+  | { type: "dispatch_completed"; toolUses: number }
+  | { type: "reasoning_index_failed"; reason: string; audit_id: string };
 
 export interface DispatchResult {
   finalText: string;

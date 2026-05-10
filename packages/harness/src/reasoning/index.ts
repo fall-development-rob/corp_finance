@@ -8,3 +8,4 @@
 export * from "./bank.js";
 export * from "./embeddings.js";
 export * from "./rv-index.js";
+export * from "./indexer.js";
