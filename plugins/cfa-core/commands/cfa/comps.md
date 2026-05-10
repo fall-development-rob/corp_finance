@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: fa-trading-comps
+  auto_route: true
+  advisory: false
+---
+
 # Trading Comps
 
 Construct a trading comparables analysis using the `workflow-financial-analysis` skill with `corp-finance-analyst-core` and FMP screener data.

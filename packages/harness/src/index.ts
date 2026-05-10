@@ -115,3 +115,36 @@ export {
   GRAPH_RECALL_MAX_LIMIT,
   type GraphRecallQuery,
 } from "./reasoning/index.js";
+
+// Phase 35 — Hybrid dispatch: WorkflowRouter, types, and virtual tools
+export {
+  type Workflow,
+  type WorkflowList,
+  type WorkflowMatch,
+  type WorkflowResult,
+  type WorkflowToolCallRecord,
+  type WorkflowInputSchema,
+  type WorkflowOutputSchema,
+  WorkflowRouterError,
+} from "./workflow/types.js";
+export {
+  type WorkflowRouter,
+  type CliWorkflowRouterOpts,
+  type MockWorkflowRouterFixtures,
+  createCliWorkflowRouter,
+  createMockWorkflowRouter,
+} from "./workflow/router.js";
+export {
+  LIST_WORKFLOWS_TOOL_NAME,
+  RUN_WORKFLOW_TOOL_NAME,
+  isListWorkflowsToolName,
+  isRunWorkflowToolName,
+  isWorkflowToolName,
+  createListWorkflowsTool,
+  createRunWorkflowTool,
+  createWorkflowTools,
+  formatWorkflowList,
+  formatWorkflowResult,
+  executeListWorkflowsCall,
+  executeRunWorkflowCall,
+} from "./workflow/tools.js";

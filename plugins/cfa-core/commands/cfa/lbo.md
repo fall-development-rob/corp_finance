@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: pe-lbo-model
+  auto_route: true
+  advisory: false
+---
+
 # LBO Model
 
 Build a leveraged buyout model using the `workflow-financial-analysis` skill with `corp-finance-analyst-core` computation tools.

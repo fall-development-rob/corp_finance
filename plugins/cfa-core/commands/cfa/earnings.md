@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: er-earnings-analysis
+  auto_route: true
+  advisory: false
+---
+
 # Earnings Analysis
 
 Post-earnings update report using the Earnings Analysis workflow from `workflow-equity-research`.

@@ -6,6 +6,7 @@
  * Implementations live in their respective directories under src/.
  */
 import type { ReasoningBank } from "./reasoning/bank.js";
+import type { WorkflowRouter } from "./workflow/router.js";
 
 // ---------------------------------------------------------------------------
 // Tool model — Anthropic-flavored canonical shape
@@ -209,6 +210,28 @@ export interface DispatchOptions {
    * `reasoning_index_failed` DispatchEvent but never fail the dispatch.
    */
   reasoning?: ReasoningBank;
+
+  /**
+   * Phase 35: hybrid dispatch. If provided, enables deterministic workflow
+   * routing before the LLM path is invoked.
+   */
+  workflow?: WorkflowRouter;
+
+  /**
+   * Phase 35: confidence floor for auto-routing. Default 0.82.
+   * Prompts matched with confidence >= this threshold are routed to the
+   * workflow path in "auto" mode.
+   */
+  workflowAutoRouteThreshold?: number;
+
+  /**
+   * Phase 35: dispatch mode.
+   *   "auto"     — bypass LLM if match confidence >= threshold (default)
+   *   "advisory" — surface match to chief via list_workflows/run_workflow
+   *                virtual tools but do not bypass; the LLM decides
+   *   "disabled" — ignore the router entirely even if `workflow` is set
+   */
+  workflowMode?: "auto" | "advisory" | "disabled";
 }
 
 export type DispatchEvent =
@@ -218,7 +241,11 @@ export type DispatchEvent =
   | { type: "delegation"; targetAgent: string; subPrompt: string }
   | { type: "turn_completed"; turn: number; stopReason: string }
   | { type: "dispatch_completed"; toolUses: number }
-  | { type: "reasoning_index_failed"; reason: string; audit_id: string };
+  | { type: "reasoning_index_failed"; reason: string; audit_id: string }
+  // Phase 35: hybrid dispatch events
+  | { type: "workflow_matched"; slug: string; confidence: number; extracted_params: Record<string, string | number | boolean> }
+  | { type: "workflow_executed"; slug: string; duration_ms: number; audit_hash: string }
+  | { type: "workflow_failed"; slug: string; reason: string };
 
 export interface DispatchResult {
   finalText: string;
@@ -230,6 +257,8 @@ export interface DispatchResult {
   auditId?: string;
   /** Session id if a session store was provided. */
   sessionId?: string;
+  /** Phase 35: informational marker when the workflow path was taken. */
+  notes?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -258,6 +287,12 @@ export interface AuditRecord {
   timestamp: string;        // ISO 8601
   model?: string;
   usage?: { inputTokens: number; outputTokens: number };
+  /** Phase 35: which execution path was taken. Absent on legacy records means "llm". */
+  path?: "workflow" | "llm";
+  /** Phase 35: workflow slug if path === "workflow". */
+  workflow_slug?: string;
+  /** Phase 35: audit hash produced by the Rust CLI, for cross-validation. */
+  workflow_audit_hash?: string;
 }
 
 export interface AuditSink {

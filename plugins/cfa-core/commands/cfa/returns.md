@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: pe-returns-analysis
+  auto_route: true
+  advisory: false
+---
+
 # Returns Analysis
 
 Run a full returns analysis on a PE deal using the Returns Analysis section of the `workflow-private-equity` skill.

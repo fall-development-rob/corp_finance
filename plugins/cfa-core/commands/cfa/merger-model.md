@@ -1,3 +1,10 @@
+---
+workflow:
+  slug: ib-merger-model
+  auto_route: true
+  advisory: false
+---
+
 # Merger Model
 
 Build an M&A merger model with accretion / dilution analysis using the Merger Model workflow from `workflow-investment-banking`.
