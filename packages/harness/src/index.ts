@@ -116,6 +116,15 @@ export {
   type GraphRecallQuery,
 } from "./reasoning/index.js";
 
+// REC-2 (Phase 37 W1) — output_schema runtime validator
+export {
+  validateAgainstSchema,
+  parseAndValidate,
+  type SchemaValidationResult,
+  type SchemaValidationError,
+  type ValidatorOptions,
+} from "./manifests/index.js";
+
 // Phase 35 — Hybrid dispatch: WorkflowRouter, types, and virtual tools
 export {
   type Workflow,
@@ -148,3 +157,11 @@ export {
   executeListWorkflowsCall,
   executeRunWorkflowCall,
 } from "./workflow/tools.js";
+
+// Phase 33 REC-3 — manifest static linter
+export {
+  checkManifests,
+  type ManifestCheckIssue,
+  type ManifestCheckReport,
+  type CheckOptions,
+} from "./manifests/index.js";
