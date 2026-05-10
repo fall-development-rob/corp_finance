@@ -21,6 +21,22 @@ export {
   createHTTPMCPClient,
   type HTTPMCPServerConfig,
 } from "./mcp-client/index.js";
+
+// Wave 4 — audit, memory, security
+export {
+  createFileAuditSink,
+  verifyAuditChain,
+} from "./audit/index.js";
+export {
+  createFileSessionStore,
+  buildReplayPrompt,
+} from "./memory/index.js";
+export {
+  defaultKeyScopes,
+  createScopedEnv,
+  matchesPattern,
+  scopeEnvForAgent,
+} from "./security/index.js";
 export {
   registry,
   chiefAnalyst,
