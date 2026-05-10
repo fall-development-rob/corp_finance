@@ -111,7 +111,7 @@ function findPayloadSchema(
 export function createHandoffOrchestrator(
   opts: HandoffOrchestratorOptions,
 ): HandoffOrchestrator {
-  const { allowlist, resolveAgent, dispatchAgent, onEvent } = opts;
+  const { allowlist, resolveAllowlist, resolveAgent, dispatchAgent, onEvent } = opts;
   const maxDepth = opts.maxDepth ?? DEFAULT_MAX_DEPTH;
 
   function emit(event: HandoffEvent): void {
@@ -135,15 +135,28 @@ export function createHandoffOrchestrator(
     };
   }
 
+  /**
+   * Resolve the effective allowlist for a given source agent.
+   * Per-source resolver takes priority; falls back to the top-level allowlist.
+   */
+  function effectiveAllowlist(source: string): HandoffAllowlistEntry[] {
+    const perSource = resolveAllowlist?.(source);
+    return perSource ?? allowlist;
+  }
+
   function isAllowed(source: string, target: string): boolean {
-    return allowlist.some((e) => e.source === source && e.targets.includes(target));
+    return effectiveAllowlist(source).some(
+      (e) => e.source === source && e.targets.includes(target),
+    );
   }
 
   function validatePayload(
     target: string,
     payload: unknown,
+    sourceSlug?: string,
   ): { ok: boolean; errors?: string[] } {
-    const schema = findPayloadSchema(allowlist, target);
+    const list = sourceSlug !== undefined ? effectiveAllowlist(sourceSlug) : allowlist;
+    const schema = findPayloadSchema(list, target);
     if (!schema) return { ok: true };
 
     const result = validateAgainstSchema(payload, schema);
@@ -186,13 +199,15 @@ export function createHandoffOrchestrator(
       return reject("payload required");
     }
 
-    // Gate 2: depth cap
+    // Gate 2: depth cap — currentDepth is the Nth hop; reject when >= maxDepth
     if (currentDepth >= maxDepth) {
-      return reject(`max depth (${maxDepth}) exceeded`);
+      return reject(
+        `max chain depth (${maxDepth}) exceeded for source '${req.source_agent}'`,
+      );
     }
 
-    // Gate 3: allowlist check
-    const sourceEntries = findSourceEntries(allowlist, req.source_agent);
+    // Gate 3: per-source allowlist check
+    const sourceEntries = findSourceEntries(effectiveAllowlist(req.source_agent), req.source_agent);
     if (sourceEntries.length === 0) {
       return reject("source agent has no handoff permissions");
     }
@@ -208,18 +223,24 @@ export function createHandoffOrchestrator(
       return reject(`target agent "${req.target_agent}" not found in registry`);
     }
 
-    // Gate 5: validate payload against schema
-    const validation = validatePayload(req.target_agent, req.payload);
+    // Gate 5: validate payload using per-source effective allowlist
+    const validation = validatePayload(req.target_agent, req.payload, req.source_agent);
     if (!validation.ok) {
       return reject((validation.errors ?? []).join("; "));
     }
 
-    // All gates passed — build prompt and dispatch
+    // All gates passed — build prompt and dispatch.
+    // Pass parentDepth = currentDepth + 1 so the callback can thread depth
+    // through nested HandoffRequests (W5 agent-loop integration).
     const prompt = buildHandoffPrompt(req);
     emit(makeEvent("handoff_executed", req, requestId, { payload: req.payload }));
 
     try {
-      const { finalText, auditId } = await dispatchAgent(targetAgent, prompt);
+      const { finalText, auditId } = await dispatchAgent(
+        targetAgent,
+        prompt,
+        currentDepth + 1,
+      );
       const result = { finalText, auditId };
 
       emit(makeEvent("handoff_completed", req, requestId, { result, payload: undefined }));
@@ -238,5 +259,13 @@ export function createHandoffOrchestrator(
     }
   }
 
-  return { execute, isAllowed, validatePayload };
+  // Public validatePayload exposes the two-arg variant from HandoffOrchestrator interface
+  function publicValidatePayload(
+    target: string,
+    payload: unknown,
+  ): { ok: boolean; errors?: string[] } {
+    return validatePayload(target, payload);
+  }
+
+  return { execute, isAllowed, validatePayload: publicValidatePayload };
 }

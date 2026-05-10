@@ -1,5 +1,5 @@
 /**
- * Barrel export for the cross-agent handoff event loop — REC-4 Wave 1-2.
+ * Barrel export for the cross-agent handoff event loop — REC-4 Wave 1-2, Phase 38 W4.
  */
 export * from "./types.js";
 export { createHandoffOrchestrator } from "./orchestrator.js";
@@ -15,4 +15,5 @@ export {
 export {
   buildAllowlistFromAgent,
   buildResolverFromAgent,
+  buildAllowlistResolver,
 } from "./from-agent-def.js";

@@ -444,7 +444,7 @@ describe("execute — rejection: dispatchAgent throws", () => {
 });
 
 describe("execute — rejection: max depth exceeded", () => {
-  it("rejects with 'max depth' reason when currentDepth >= maxDepth", async () => {
+  it("rejects with actionable reason when currentDepth >= maxDepth", async () => {
     const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
     const { events, onEvent } = makeEventCollector();
 
@@ -466,7 +466,9 @@ describe("execute — rejection: max depth exceeded", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toContain("max depth");
+    expect(result.reason).toContain("max chain depth");
+    expect(result.reason).toContain("5");
+    expect(result.reason).toContain("market-researcher");
     expectEventSequence(events, ["handoff_request", "handoff_rejected"]);
   });
 
@@ -686,7 +688,7 @@ describe("empty allowlist", () => {
 // Phase 38 W3: per-target schemas via buildAllowlistFromAgent + validatePayload
 // ---------------------------------------------------------------------------
 
-import { buildAllowlistFromAgent } from "../src/handoff/from-agent-def.js";
+import { buildAllowlistFromAgent, buildAllowlistResolver } from "../src/handoff/from-agent-def.js";
 
 const tickerSchema: Record<string, unknown> = {
   type: "object",
@@ -806,6 +808,261 @@ describe("Phase 38 W3 — buildAllowlistFromAgent targetSchemas", () => {
     });
     const result = orchestrator.validatePayload("macro-analyst", { anything: true });
     expect(result.ok).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 38 W4 — chained handoff depth tracking and per-source allowlist scoping
+// ---------------------------------------------------------------------------
+
+describe("Phase 38 W4 — dispatchAgent receives parentDepth", () => {
+  it("passes parentDepth = currentDepth + 1 to dispatchAgent callback", async () => {
+    const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
+    const capturedArgs: unknown[][] = [];
+    const dispatch = vi.fn().mockImplementation(
+      (_agent: AgentDef, _prompt: string, parentDepth: number) => {
+        capturedArgs.push([parentDepth]);
+        return Promise.resolve({ finalText: "done", auditId: "a1" });
+      },
+    );
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: baseAllowlist,
+      resolveAgent: (slug) => registry.get(slug),
+      dispatchAgent: dispatch,
+    });
+
+    // Execute at currentDepth=0 → parentDepth should be 1
+    await orchestrator.execute(
+      {
+        source_agent: "market-researcher",
+        target_agent: "earnings-reviewer",
+        payload: { ticker: "AAPL", period: "Q1-2026" },
+      },
+      0,
+    );
+
+    expect(capturedArgs[0]![0]).toBe(1);
+  });
+
+  it("passes parentDepth = currentDepth + 1 at depth=1 (specialist hop)", async () => {
+    const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
+    const capturedDepths: number[] = [];
+    const dispatch = vi.fn().mockImplementation(
+      (_agent: AgentDef, _prompt: string, parentDepth: number) => {
+        capturedDepths.push(parentDepth);
+        return Promise.resolve({ finalText: "done" });
+      },
+    );
+
+    // Isolated allowlist without schema to avoid cross-entry schema contamination
+    const isolatedAllowlist: HandoffAllowlistEntry[] = [
+      { source: "earnings-reviewer", targets: ["model-builder"] },
+    ];
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: isolatedAllowlist,
+      resolveAgent: (slug) => registry.get(slug),
+      dispatchAgent: dispatch,
+    });
+
+    // Execute at currentDepth=1 → parentDepth should be 2
+    await orchestrator.execute(
+      {
+        source_agent: "earnings-reviewer",
+        target_agent: "model-builder",
+        payload: { x: 1 },
+      },
+      1,
+    );
+
+    expect(capturedDepths[0]).toBe(2);
+  });
+});
+
+describe("Phase 38 W4 — resolveAllowlist per-source scoping", () => {
+  it("resolveAllowlist is called with source slug and its result gates the handoff", async () => {
+    const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
+    const resolveAllowlistFn = vi.fn().mockReturnValue([
+      { source: "earnings-reviewer", targets: ["model-builder"] },
+    ]);
+    const dispatch = makeDispatch();
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: [], // top-level empty; per-source resolver provides access
+      resolveAllowlist: resolveAllowlistFn,
+      resolveAgent: (slug) => registry.get(slug),
+      dispatchAgent: dispatch,
+    });
+
+    const result = await orchestrator.execute({
+      source_agent: "earnings-reviewer",
+      target_agent: "model-builder",
+      payload: { x: 1 },
+    });
+
+    expect(resolveAllowlistFn).toHaveBeenCalledWith("earnings-reviewer");
+    expect(result.ok).toBe(true);
+    expect(dispatch).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to top-level allowlist when resolveAllowlist returns undefined", async () => {
+    const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
+    const resolveAllowlistFn = vi.fn().mockReturnValue(undefined);
+    const dispatch = makeDispatch();
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: baseAllowlist, // top-level has access
+      resolveAllowlist: resolveAllowlistFn,
+      resolveAgent: (slug) => registry.get(slug),
+      dispatchAgent: dispatch,
+    });
+
+    const result = await orchestrator.execute({
+      source_agent: "market-researcher",
+      target_agent: "earnings-reviewer",
+      payload: { ticker: "MSFT", period: "Q2-2026" },
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  it("blocks handoff when per-source allowlist does NOT include the target", async () => {
+    const registry = makeRegistry([RESEARCHER, REVIEWER, BUILDER]);
+    // earnings-reviewer's per-source allowlist only allows model-builder, NOT market-researcher
+    const resolveAllowlistFn = vi.fn().mockReturnValue([
+      { source: "earnings-reviewer", targets: ["model-builder"] },
+    ]);
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: baseAllowlist, // has broader access but per-source takes priority
+      resolveAllowlist: resolveAllowlistFn,
+      resolveAgent: (slug) => registry.get(slug),
+      dispatchAgent: makeDispatch(),
+    });
+
+    const result = await orchestrator.execute({
+      source_agent: "earnings-reviewer",
+      target_agent: "market-researcher", // NOT in earnings-reviewer's per-source list
+      payload: { x: 1 },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain("not allowed");
+  });
+});
+
+describe("Phase 38 W4 — depth cap rejection wording", () => {
+  it("rejection reason includes maxDepth value and source slug", async () => {
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: baseAllowlist,
+      resolveAgent: () => undefined,
+      dispatchAgent: makeDispatch(),
+      maxDepth: 3,
+    });
+
+    const result = await orchestrator.execute(
+      {
+        source_agent: "market-researcher",
+        target_agent: "earnings-reviewer",
+        payload: { ticker: "NVDA", period: "Q3-2026" },
+      },
+      3, // currentDepth === maxDepth → reject
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain("max chain depth");
+    expect(result.reason).toContain("3");
+    expect(result.reason).toContain("market-researcher");
+  });
+});
+
+describe("Phase 38 W4 — buildAllowlistResolver", () => {
+  it("maps each agent in registry to its per-source allowlist entries", () => {
+    const chiefDef: AgentDef = {
+      id: "chief",
+      description: "Chief",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [RESEARCHER, REVIEWER],
+    };
+    const researcherDef: AgentDef = {
+      id: "market-researcher",
+      description: "Researcher",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [BUILDER],
+    };
+
+    const resolver = buildAllowlistResolver([chiefDef, researcherDef]);
+
+    const chiefAllowlist = resolver("chief");
+    expect(chiefAllowlist).toBeDefined();
+    expect(chiefAllowlist![0]!.source).toBe("chief");
+    expect(chiefAllowlist![0]!.targets).toContain("market-researcher");
+    expect(chiefAllowlist![0]!.targets).toContain("earnings-reviewer");
+
+    const researcherAllowlist = resolver("market-researcher");
+    expect(researcherAllowlist).toBeDefined();
+    expect(researcherAllowlist![0]!.targets).toEqual(["model-builder"]);
+  });
+
+  it("returns undefined for a slug not in the registry", () => {
+    const resolver = buildAllowlistResolver([RESEARCHER]);
+    expect(resolver("unknown-agent")).toBeUndefined();
+  });
+
+  it("allows chained dispatch via buildAllowlistResolver scoping", async () => {
+    // chief → earnings-reviewer → model-builder (chained, each scoped to their own callable_agents)
+    const chiefDef: AgentDef = {
+      id: "chief-analyst",
+      description: "Chief",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [REVIEWER],
+    };
+    const reviewerDef: AgentDef = {
+      id: "earnings-reviewer",
+      description: "Reviewer",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [BUILDER],
+    };
+    const fullRegistry = makeRegistry([chiefDef, reviewerDef, BUILDER]);
+    const resolver = buildAllowlistResolver([chiefDef, reviewerDef]);
+    const dispatch = makeDispatch({ finalText: "chain-done" });
+
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: [], // empty top-level; per-source resolver provides all access
+      resolveAllowlist: resolver,
+      resolveAgent: (slug) => fullRegistry.get(slug),
+      dispatchAgent: dispatch,
+    });
+
+    // chief→reviewer allowed (chief's callable_agents includes reviewer)
+    const result = await orchestrator.execute({
+      source_agent: "chief-analyst",
+      target_agent: "earnings-reviewer",
+      payload: { x: 1 },
+    });
+    expect(result.ok).toBe(true);
+
+    // reviewer→builder allowed (reviewer's callable_agents includes builder)
+    const result2 = await orchestrator.execute({
+      source_agent: "earnings-reviewer",
+      target_agent: "model-builder",
+      payload: { x: 2 },
+    });
+    expect(result2.ok).toBe(true);
+
+    // chief→builder NOT allowed (builder is NOT in chief's callable_agents)
+    const result3 = await orchestrator.execute({
+      source_agent: "chief-analyst",
+      target_agent: "model-builder",
+      payload: { x: 3 },
+    });
+    expect(result3.ok).toBe(false);
+    expect(result3.reason).toContain("not allowed");
   });
 });
 
