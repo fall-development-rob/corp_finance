@@ -2,7 +2,7 @@
   "name": "cfa-lseg-rates-monitor",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/fixed-income-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/fixed-income-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Curve, spread, and FX commentary must distinguish base / bull / bear scenarios with explicit rate path assumptions.\n"
   },
   "tools": [
@@ -51,10 +51,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-markets"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-markets"
     },
     {
-      "from_skill": "vendor-lseg"
+      "from_plugin": "../../plugins/cfa-pro/skills/vendor-lseg"
     }
   ],
   "callable_agents": [

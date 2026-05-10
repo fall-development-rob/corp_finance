@@ -37,6 +37,7 @@ import {
   isDelegationToolName,
   resolveDelegationTarget,
 } from "../agents/delegate.js";
+import { parseAndValidate } from "../manifests/validator.js";
 import { indexAuditRecord } from "../reasoning/indexer.js";
 import {
   createRecallTool,
@@ -83,6 +84,15 @@ function hashJSON(value: unknown): string {
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+/** Strip markdown code fences (```json or ```) from around a JSON payload. */
+function extractJsonFromMarkdown(text: string): string {
+  const jsonBlockMatch = text.match(/```json\s*\n([\s\S]*?)\n```/);
+  if (jsonBlockMatch) return jsonBlockMatch[1]!;
+  const codeBlockMatch = text.match(/```\s*\n([\s\S]*?)\n```/);
+  if (codeBlockMatch) return codeBlockMatch[1]!;
+  return text;
 }
 
 export async function dispatch(options: DispatchOptions): Promise<DispatchResult> {
@@ -407,10 +417,47 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
               childDispatches.push(childResult);
               if (childResult.auditId) childAuditIds.push(childResult.auditId);
               if (childResult.sessionId) childSessionIds.push(childResult.sessionId);
-              // REC-2 W2 integration point: if target.outputSchema is defined,
-              // call parseAndValidate(childResult.finalText, target.outputSchema)
-              // here and convert a !ok result into an is_error ToolResult before
-              // feeding back to the chief. Import from "../manifests/index.js".
+              // REC-2 W2: validate child's finalText against target's output_schema if declared.
+              if (target.outputSchema) {
+                const textToValidate = extractJsonFromMarkdown(childResult.finalText);
+                const validation = parseAndValidate(textToValidate, target.outputSchema);
+                if (!validation.ok) {
+                  const errorContent = [
+                    `# ${target.id} — output schema validation failed`,
+                    ``,
+                    `The specialist returned text that does not match its declared output_schema.`,
+                    `This may indicate prompt injection in the input data, a model error, or an outdated schema.`,
+                    ``,
+                    `## Validation errors`,
+                    ...validation.errors.map(
+                      (e) => `- \`${e.path}\`: ${e.message}` + (e.schemaKeyword ? ` (${e.schemaKeyword})` : ""),
+                    ),
+                    ``,
+                    `## Original child output (first 500 chars, for debugging)`,
+                    ``,
+                    `\`\`\``,
+                    childResult.finalText.slice(0, 500),
+                    `\`\`\``,
+                  ].join("\n");
+                  const r: ToolResult = {
+                    call_id: call.id,
+                    content: errorContent,
+                    is_error: true,
+                  };
+                  if (audit) {
+                    auditToolCalls.push({
+                      id: call.id,
+                      name: call.name,
+                      input_hash: hashJSON(call.input),
+                      result_hash: hashJSON(errorContent),
+                      is_error: true,
+                      duration_ms: Date.now() - delStart,
+                    });
+                  }
+                  return r;
+                }
+                // Validation passed — fall through to normal formatDelegationResult below.
+              }
               const r: ToolResult = {
                 call_id: call.id,
                 content: formatDelegationResult(target.id, childResult),

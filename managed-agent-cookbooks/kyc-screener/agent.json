@@ -2,7 +2,7 @@
   "name": "cfa-kyc-screener",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/esg-regulatory-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every risk score must originate from a tool call — never from LLM generation. Final SDD/CDD/EDD recommendation must be supported by tool-call provenance.\n"
   },
   "tools": [
@@ -39,10 +39,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-regulatory"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-regulatory"
     },
     {
-      "from_skill": "workflow-operations-kyc"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-operations-kyc"
     }
   ],
   "callable_agents": [

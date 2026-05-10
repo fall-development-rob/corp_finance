@@ -2,7 +2,7 @@
   "name": "cfa-gl-reconciler",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/esg-regulatory-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Every break must be classified into the standard taxonomy (timing / FX / mapping / duplicate / fees / data quality) and assigned an owner and action.\n"
   },
   "tools": [
@@ -39,10 +39,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-regulatory"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-regulatory"
     },
     {
-      "from_skill": "workflow-fund-admin"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-fund-admin"
     }
   ],
   "callable_agents": [

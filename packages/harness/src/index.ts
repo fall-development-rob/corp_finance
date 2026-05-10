@@ -165,3 +165,15 @@ export {
   type ManifestCheckReport,
   type CheckOptions,
 } from "./manifests/index.js";
+
+// REC-4 (Phase 38 W1) — cross-agent handoff event loop
+export {
+  createHandoffOrchestrator,
+  type HandoffOrchestrator,
+  type HandoffOrchestratorOptions,
+  type HandoffEvent,
+  type HandoffEventType,
+  type HandoffRequest,
+  type HandoffResult,
+  type HandoffAllowlistEntry,
+} from "./handoff/index.js";

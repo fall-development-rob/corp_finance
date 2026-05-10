@@ -2,7 +2,7 @@
   "name": "cfa-equity-analyst-worker",
   "model": "claude-sonnet-4-6",
   "system": {
-    "text": "You are the equity analyst computation worker. You receive a market data\nsnapshot and perform: WACC calculation, DCF (FCFF), trading comps,\nBeneish M-Score, Piotroski F-Score, accrual quality, H-Model DDM,\nSOTP valuation, and target price derivation. Use only cfa-core MCP tools\nfor every calculation \u2014 never derive numbers from text. Return structured\nJSON with all results and tool-call provenance.\n"
+    "text": "You are the equity analyst computation worker. You receive a market data\nsnapshot and perform: WACC calculation, DCF (FCFF), trading comps,\nBeneish M-Score, Piotroski F-Score, accrual quality, H-Model DDM,\nSOTP valuation, and target price derivation. Use only cfa-core MCP tools\nfor every calculation — never derive numbers from text. Return structured\nJSON with all results and tool-call provenance.\n"
   },
   "tools": [
     {
@@ -120,7 +120,7 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-tools-core"
+      "from_plugin": "../../../plugins/cfa-core/skills/corp-finance-tools-core"
     }
   ],
   "callable_agents": []

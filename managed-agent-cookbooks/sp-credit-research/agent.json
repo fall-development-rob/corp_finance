@@ -2,7 +2,7 @@
   "name": "cfa-sp-credit-research",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/credit-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/credit-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Always compare synthetic rating to S&P actual rating and flag divergence. Cite the S&P rating action history and earnings transcript excerpts that drive the credit view.\n"
   },
   "tools": [
@@ -63,10 +63,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-core"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_skill": "vendor-sp-global"
+      "from_plugin": "../../plugins/cfa-pro/skills/vendor-sp-global"
     }
   ],
   "callable_agents": [

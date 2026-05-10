@@ -2,7 +2,7 @@
   "name": "cfa-valuation-reviewer",
   "model": "claude-opus-4-7",
   "system": {
-    "file": "../../../.claude/agents/cfa/private-markets-analyst.md",
+    "file": "../../plugins/cfa-core/agents/cfa/private-markets-analyst.md",
     "append": "You are running headless. Produce output files in ./out/; do not assume an interactive terminal. Every number must originate from a tool call — never from LLM generation. Mark-to-market every portfolio company; report variance against the GP's reported marks.\n"
   },
   "tools": [
@@ -51,10 +51,10 @@
   ],
   "skills": [
     {
-      "from_skill": "corp-finance-analyst-core"
+      "from_plugin": "../../plugins/cfa-core/skills/corp-finance-analyst-core"
     },
     {
-      "from_skill": "workflow-private-equity"
+      "from_plugin": "../../plugins/cfa-core/skills/workflow-private-equity"
     }
   ],
   "callable_agents": [
