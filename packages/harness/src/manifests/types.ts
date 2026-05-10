@@ -38,6 +38,12 @@ export interface AgentManifest {
   output_schema?: Record<string, unknown>;
   /** Phase 38 W3: schema for payloads this agent accepts; validated by the handoff orchestrator. */
   input_schema?: Record<string, unknown>;
+  /**
+   * Phase 33: Hermes-inspired block-list. Snake_case to match cookbook YAML
+   * convention. Mapped to AgentDef.blockTools by the loader. Tools in this
+   * list are stripped from the agent's tool set at dispatch time.
+   */
+  block_tools?: string[];
 }
 
 // ---------------------------------------------------------------------------

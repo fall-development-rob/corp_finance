@@ -49,3 +49,26 @@ export function buildResolverFromAgent(
 ): (slug: string) => AgentDef | undefined {
   return (slug) => agent.callableAgents?.find((a) => a.id === slug);
 }
+
+/**
+ * Phase 38 W4: Build a per-source allowlist resolver from a registry of agents.
+ *
+ * Returns a function `(sourceSlug) => HandoffAllowlistEntry[] | undefined`.
+ * Each source slug maps to the allowlist derived from ITS own `callableAgents`.
+ * Returns `undefined` when the source slug isn't in the registry, allowing the
+ * orchestrator to fall back to the top-level allowlist.
+ *
+ * This mirrors the Managed Agents API `callable_agents:` scoping: agent A can
+ * only hand off to agents listed in A's own `callable_agents`, not arbitrarily.
+ */
+export function buildAllowlistResolver(
+  agents: AgentDef[],
+): (sourceSlug: string) => HandoffAllowlistEntry[] | undefined {
+  const byId = new Map<string, AgentDef>();
+  for (const a of agents) byId.set(a.id, a);
+  return (slug) => {
+    const a = byId.get(slug);
+    if (!a) return undefined;
+    return buildAllowlistFromAgent(a);
+  };
+}

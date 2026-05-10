@@ -576,7 +576,7 @@ describe("Test 10: depth cap enforced", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toContain("max depth");
+    expect(result.reason).toContain("max chain depth");
     expect(dispatchStub).not.toHaveBeenCalled();
   });
 });

@@ -135,6 +135,13 @@ export interface AgentDef {
    * Used by the handoff orchestrator's per-target payload validation.
    */
   inputSchema?: Record<string, unknown>;
+  /**
+   * Phase 33: Hermes-inspired block-list. Tool names in this list are
+   * STRIPPED from the agent's assembled tool list before the first turn,
+   * so the model never sees them. Blocklist takes precedence over the
+   * allowlist on conflicts. Mirrors DELEGATE_BLOCKED_TOOLS in hermes-agent.
+   */
+  blockTools?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -290,7 +297,9 @@ export type DispatchEvent =
   | { type: "workflow_failed"; slug: string; reason: string }
   // REC-4 Wave 2: cross-agent handoff events
   | { type: "handoff_initiated"; target_agent: string; request_id: string }
-  | { type: "handoff_returned"; target_agent: string; request_id: string; ok: boolean; duration_ms: number };
+  | { type: "handoff_returned"; target_agent: string; request_id: string; ok: boolean; duration_ms: number }
+  // Phase 33: block-list enforcement events
+  | { type: "tool_blocked"; toolName: string; reason: "blockTools" };
 
 export interface DispatchResult {
   finalText: string;

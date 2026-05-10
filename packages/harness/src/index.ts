@@ -171,6 +171,7 @@ export {
   createHandoffOrchestrator,
   type HandoffOrchestrator,
   type HandoffOrchestratorOptions,
+  type DispatchAgentFn,
   type HandoffEvent,
   type HandoffEventType,
   type HandoffRequest,
@@ -179,6 +180,7 @@ export {
 } from "./handoff/index.js";
 
 // REC-4 Wave 2 — initiate_handoff virtual tool + AgentDef helpers
+// Phase 38 W4 — buildAllowlistResolver for per-source scoping
 export {
   HANDOFF_TOOL_NAME,
   isHandoffToolName,
@@ -187,4 +189,5 @@ export {
   executeHandoffCall,
   buildAllowlistFromAgent,
   buildResolverFromAgent,
+  buildAllowlistResolver,
 } from "./handoff/index.js";

@@ -5,12 +5,11 @@ name: manifest-check
 #
 # The linter walks every agent manifest + cookbook in the repo and reports
 # drift: missing files, broken cross-refs, and schema-shape issues.
-# It exits 1 on errors; warnings do NOT fail the job in NORMAL mode.
+# It exits 1 on errors; in STRICT mode warnings also fail the job.
 #
-# REC-3: once the parallel cookbook-hardening batches (phase-33 waves) have
-# remediated the cookbook-subagent-no-output-schema warnings, flip the runner
-# step below to `npx tsx scripts/check-manifests.ts --strict` to also fail on
-# warnings.
+# REC-3 completed (commit 3f84fd6): all 30 cookbook-subagent-no-output-schema
+# warnings have been remediated. The runner now runs in --strict mode so any
+# new warning must be remediated before it can merge to main.
 
 on:
   push:
@@ -71,17 +70,16 @@ jobs:
           set -euo pipefail
           npm run build -w @robotixai/cfa-harness
 
-      # NORMAL mode — exits 0 on warnings; only errors fail the job.
-      # To enforce warnings as errors, change the run command to:
-      #   npx tsx scripts/check-manifests.ts --strict
-      # Prerequisite: remediate cookbook-subagent-no-output-schema warnings
-      # across all managed-agent-cookbooks/ subagent JSON files first.
-      - name: Run manifest linter (normal mode)
+      # STRICT mode — both errors AND warnings fail the build. The REC-1
+      # cookbook hardening (commit 3f84fd6) cleared all 30 pre-existing
+      # subagent-no-output-schema warnings; from here forward any new
+      # warning must be remediated before merge.
+      - name: Run manifest linter (strict mode)
         shell: bash
         run: |
           set -euo pipefail
           # pipefail ensures tsx's exit code is preserved through the tee pipeline.
-          npx tsx scripts/check-manifests.ts 2>&1 | tee /tmp/manifest-check.log
+          npx tsx scripts/check-manifests.ts --strict 2>&1 | tee /tmp/manifest-check.log
 
       # Upload linter stdout as an artefact for easy debugging on failures.
       - name: Upload linter output

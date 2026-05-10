@@ -292,7 +292,34 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
       ? [createHandoffTool()]
       : [];
 
-  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools, ...workflowTools, ...handoffTools];
+  // Phase 33: Apply blocklist — strip any tool the agent must never invoke.
+  // Blocklist is evaluated AFTER all virtual-tool injection so it can block
+  // virtual tools (e.g., initiate_handoff, delegate_to_*) in addition to
+  // real MCP tools. Blocklist takes precedence over allowlist on conflicts.
+  // Fast-path: skip filter when blockTools is empty (common case).
+  const blockedToolsArray = agent.blockTools ?? [];
+  const blockedSet = new Set(blockedToolsArray);
+  const assembledTools: CanonicalTool[] = [
+    ...realTools,
+    ...delegationTools,
+    ...recallTools,
+    ...workflowTools,
+    ...handoffTools,
+  ];
+  const tools: CanonicalTool[] =
+    blockedToolsArray.length > 0
+      ? assembledTools.filter((t) => {
+          if (blockedSet.has(t.name)) {
+            emit(onEvent, {
+              type: "tool_blocked",
+              toolName: t.name,
+              reason: "blockTools",
+            });
+            return false;
+          }
+          return true;
+        })
+      : assembledTools;
 
   const messages: Message[] = [
     { role: "user", content: [{ type: "text", text: prompt }] },

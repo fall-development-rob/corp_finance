@@ -85,8 +85,35 @@ export interface HandoffAllowlistEntry {
 // Orchestrator options and interface
 // ---------------------------------------------------------------------------
 
+/**
+ * Dispatch callback signature with depth threading for chained handoffs.
+ *
+ * `parentDepth` is the orchestrator's `currentDepth + 1` at the point of
+ * dispatch — it lets the callback (agent-loop in W5) construct nested
+ * HandoffRequest objects with `currentDepth = parentDepth + 1`.
+ *
+ * Backward-compatible: existing stubs that accept only `(agent, prompt)` still
+ * satisfy this type because TS function parameter contravariance allows callers
+ * to ignore trailing parameters.
+ */
+export type DispatchAgentFn = (
+  agent: AgentDef,
+  prompt: string,
+  parentDepth: number,
+) => Promise<{ finalText: string; auditId?: string }>;
+
 export interface HandoffOrchestratorOptions {
+  /** Top-level allowlist (used when no per-source resolver or resolver returns undefined). */
   allowlist: HandoffAllowlistEntry[];
+  /**
+   * Optional per-source allowlist resolver. Given a source agent slug, returns
+   * the allowlist entries for THAT source (its callable_agents). Falls back to
+   * the top-level allowlist when undefined is returned.
+   *
+   * Enables per-target allowlist scoping: when chief→A is allowed and A has its
+   * own callable_agents [B, C], A→B is allowed but A→unrelated is not.
+   */
+  resolveAllowlist?: (sourceSlug: string) => HandoffAllowlistEntry[] | undefined;
   /**
    * Resolves a target agent slug to its AgentDef. Callers should pass a
    * closure over their registry (e.g., `(slug) => registry.get(slug)`).
@@ -95,11 +122,11 @@ export interface HandoffOrchestratorOptions {
   /**
    * Dispatches the target agent with the serialised payload as its prompt.
    * Returns the final text and an optional audit id.
+   *
+   * `parentDepth` is `currentDepth + 1` at dispatch time; pass it through as
+   * the depth for any nested HandoffRequest initiated inside the callback (W5).
    */
-  dispatchAgent: (
-    agent: AgentDef,
-    prompt: string,
-  ) => Promise<{ finalText: string; auditId?: string }>;
+  dispatchAgent: DispatchAgentFn;
   /** Optional lifecycle event sink for observability (audit logs, telemetry). */
   onEvent?: (e: HandoffEvent) => void;
   /** Maximum chain depth before a handoff is auto-rejected. Default: 5. */

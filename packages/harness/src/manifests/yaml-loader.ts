@@ -287,6 +287,10 @@ export function createDirectYamlManifestLoader(
         def as AgentDef & { inputSchema?: Record<string, unknown> }
       ).inputSchema = manifest.input_schema;
     }
+    if (manifest.block_tools && manifest.block_tools.length > 0) {
+      (def as AgentDef & { blockTools?: string[] }).blockTools =
+        manifest.block_tools;
+    }
 
     cache.set(manifestPath, def);
     return def;
