@@ -177,3 +177,14 @@ export {
   type HandoffResult,
   type HandoffAllowlistEntry,
 } from "./handoff/index.js";
+
+// REC-4 Wave 2 — initiate_handoff virtual tool + AgentDef helpers
+export {
+  HANDOFF_TOOL_NAME,
+  isHandoffToolName,
+  createHandoffTool,
+  formatHandoffResult,
+  executeHandoffCall,
+  buildAllowlistFromAgent,
+  buildResolverFromAgent,
+} from "./handoff/index.js";

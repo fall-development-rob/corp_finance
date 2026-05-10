@@ -56,6 +56,11 @@ import {
   isWorkflowToolName,
 } from "../workflow/tools.js";
 import type { WorkflowMatch } from "../workflow/types.js";
+import {
+  createHandoffTool,
+  executeHandoffCall,
+  isHandoffToolName,
+} from "../handoff/handoff-tool.js";
 
 const DEFAULT_MAX_TURNS = 25;
 
@@ -277,7 +282,17 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
       ? createWorkflowTools()
       : [];
 
-  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools, ...workflowTools];
+  // REC-4 Wave 2: virtual `initiate_handoff` tool — injected at depth=0 only
+  // when a HandoffOrchestrator is configured and mode is not "disabled".
+  // Mirrors the callable_agents: deployment semantics for local-dev parity.
+  // Specialists at depth=1 do not receive `handoff` in their nested dispatch
+  // options, so they never see this tool.
+  const handoffTools: CanonicalTool[] =
+    options.handoff && (options.handoffMode ?? "advisory") !== "disabled" && depth === 0
+      ? [createHandoffTool()]
+      : [];
+
+  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools, ...workflowTools, ...handoffTools];
 
   const messages: Message[] = [
     { role: "user", content: [{ type: "text", text: prompt }] },
@@ -335,6 +350,7 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         const recallCalls: ToolCall[] = [];
         const graphCalls: ToolCall[] = [];
         const workflowCalls: ToolCall[] = [];
+        const handoffCalls: ToolCall[] = [];
         const realCalls: ToolCall[] = [];
         for (const c of calls) {
           if (isDelegationToolName(c.name)) {
@@ -345,6 +361,8 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
             graphCalls.push(c);
           } else if (options.workflow && isWorkflowToolName(c.name)) {
             workflowCalls.push(c);
+          } else if (options.handoff && isHandoffToolName(c.name)) {
+            handoffCalls.push(c);
           } else {
             realCalls.push(c);
           }
@@ -581,8 +599,62 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
           }),
         );
 
-        const [realResults, delResults, recallResults, graphResults, workflowResults] =
-          await Promise.all([realResultsP, delegationsP, recallsP, graphsP, workflowsP]);
+        // Emit handoff_initiated for each handoff call before dispatch starts.
+        for (const c of handoffCalls) {
+          const targetSlug = typeof c.input["target"] === "string" ? c.input["target"] : "(unknown)";
+          emit(onEvent, {
+            type: "handoff_initiated",
+            target_agent: targetSlug,
+            // request_id is not yet known (assigned by orchestrator); use call id as correlation
+            request_id: c.id,
+          });
+        }
+
+        // REC-4 Wave 2: parallel `initiate_handoff` virtual tool calls. Same
+        // audit / error-capture pattern as recallsP; the orchestrator handles
+        // all rejection gates internally and never throws.
+        const handoffsP = Promise.all(
+          handoffCalls.map(async (call): Promise<ToolResult> => {
+            if (!options.handoff) {
+              return {
+                call_id: call.id,
+                content: "initiate_handoff failed: no handoff orchestrator configured",
+                is_error: true,
+              };
+            }
+            const startsAt = Date.now();
+            const result = await executeHandoffCall(
+              call,
+              options.handoff,
+              agent.id,
+              depth,
+            );
+            const durMs = Date.now() - startsAt;
+            const targetSlug = typeof call.input["target"] === "string" ? call.input["target"] : "(unknown)";
+            emit(onEvent, {
+              type: "handoff_returned",
+              target_agent: targetSlug,
+              // use call id as correlation (consistent with handoff_initiated above)
+              request_id: call.id,
+              ok: !result.is_error,
+              duration_ms: durMs,
+            });
+            if (audit) {
+              auditToolCalls.push({
+                id: call.id,
+                name: call.name,
+                input_hash: hashJSON(call.input),
+                result_hash: hashJSON(result.content),
+                is_error: result.is_error ?? false,
+                duration_ms: durMs,
+              });
+            }
+            return result;
+          }),
+        );
+
+        const [realResults, delResults, recallResults, graphResults, workflowResults, handoffResults] =
+          await Promise.all([realResultsP, delegationsP, recallsP, graphsP, workflowsP, handoffsP]);
 
         const byId = new Map<string, ToolResult>();
         for (const r of realResults) byId.set(r.call_id, r);
@@ -590,6 +662,7 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         for (const r of recallResults) byId.set(r.call_id, r);
         for (const r of graphResults) byId.set(r.call_id, r);
         for (const r of workflowResults) byId.set(r.call_id, r);
+        for (const r of handoffResults) byId.set(r.call_id, r);
         const ordered: ToolResult[] = calls.map((c) => {
           const r = byId.get(c.id);
           if (!r) {
