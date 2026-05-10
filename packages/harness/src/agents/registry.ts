@@ -1,12 +1,13 @@
 /**
- * Agent registry — Phase 31 Wave 1.
+ * Agent registry — Phase 31 Wave 2.
  *
- * Maps agent ids to AgentDef instances. Wave 1 contains chief-analyst only.
- * Specialist agents (equity, credit, fixed-income, derivatives, quant-risk,
- * macro, esg-regulatory, private-markets) are registered in Wave 2.
+ * Maps agent ids to AgentDef instances. Contains chief-analyst plus the
+ * eight CFA specialists (equity, credit, fixed-income, derivatives,
+ * quant-risk, macro, esg-regulatory, private-markets).
  *
  * Also exports defaultMCPServers — the four cfa plugin server configs that
- * the harness CLI and integration tests use as a starting point.
+ * the harness CLI and integration tests use as a starting point, and
+ * defaultDelegates — the eight specialist defs the chief delegates to.
  */
 
 import { existsSync } from "node:fs";
@@ -14,14 +15,45 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AgentDef, MCPServerConfig } from "../types.js";
 import { chiefAnalyst } from "./chief-analyst.js";
+import {
+  equityAnalyst,
+  creditAnalyst,
+  fixedIncomeAnalyst,
+  derivativesAnalyst,
+  quantRiskAnalyst,
+  macroAnalyst,
+  privateMarketsAnalyst,
+  esgRegulatoryAnalyst,
+} from "./specialists/index.js";
 
 export { chiefAnalyst } from "./chief-analyst.js";
+export {
+  equityAnalyst,
+  creditAnalyst,
+  fixedIncomeAnalyst,
+  derivativesAnalyst,
+  quantRiskAnalyst,
+  macroAnalyst,
+  privateMarketsAnalyst,
+  esgRegulatoryAnalyst,
+} from "./specialists/index.js";
 
 // ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 
-const _entries: AgentDef[] = [chiefAnalyst];
+export const defaultDelegates: AgentDef[] = [
+  equityAnalyst,
+  creditAnalyst,
+  fixedIncomeAnalyst,
+  derivativesAnalyst,
+  quantRiskAnalyst,
+  macroAnalyst,
+  privateMarketsAnalyst,
+  esgRegulatoryAnalyst,
+];
+
+const _entries: AgentDef[] = [chiefAnalyst, ...defaultDelegates];
 
 export const registry: Map<string, AgentDef> = new Map(
   _entries.map((a) => [a.id, a]),

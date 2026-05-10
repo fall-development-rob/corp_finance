@@ -16,4 +16,19 @@ export {
   registry,
   chiefAnalyst,
   defaultMCPServers,
+  defaultDelegates,
+  equityAnalyst,
+  creditAnalyst,
+  fixedIncomeAnalyst,
+  derivativesAnalyst,
+  quantRiskAnalyst,
+  macroAnalyst,
+  privateMarketsAnalyst,
+  esgRegulatoryAnalyst,
 } from "./agents/registry.js";
+export {
+  delegationToolName,
+  isDelegationToolName,
+  resolveDelegationTarget,
+  createDelegationTools,
+} from "./agents/delegate.js";

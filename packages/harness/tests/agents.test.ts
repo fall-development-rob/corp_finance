@@ -1,21 +1,23 @@
 /**
- * Agent registry tests — Phase 31 Wave 1.
+ * Agent registry tests — Phase 31 Wave 2.
  *
- * Verifies that the agent registry is correctly populated, that getAgent
- * enforces known-id invariants, and that defaultMCPServers has the expected
- * structure and prefixes.
+ * Verifies that the agent registry is correctly populated (chief +
+ * 8 specialists), that getAgent enforces known-id invariants, that
+ * defaultMCPServers has the expected structure and prefixes, and that
+ * defaultDelegates contains the eight specialist defs.
  */
 
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   chiefAnalyst,
+  defaultDelegates,
   defaultMCPServers,
   getAgent,
   registry,
 } from "../src/agents/registry.js";
 
-describe("agent registry — Wave 1", () => {
+describe("agent registry — Wave 2", () => {
   it("getAgent('chief-analyst') returns a valid AgentDef with a non-empty system prompt", () => {
     const def = getAgent("chief-analyst");
     expect(def).toBeDefined();
@@ -23,9 +25,45 @@ describe("agent registry — Wave 1", () => {
     expect(typeof def.systemPrompt).toBe("string");
     expect(def.systemPrompt.length).toBeGreaterThan(0);
     expect(def.tools).toBe("*");
-    expect(def.maxRecursionDepth).toBe(0);
+    // Wave 2: chief delegates to 8 specialists at depth 1
+    expect(def.maxRecursionDepth).toBe(1);
     expect(def.model).toBe("claude-opus-4-5");
     expect(def.maxTokens).toBe(16384);
+  });
+
+  it("registers all 8 specialists with maxRecursionDepth 0 (no further delegation)", () => {
+    const expected = [
+      "equity-analyst",
+      "credit-analyst",
+      "fixed-income-analyst",
+      "derivatives-analyst",
+      "quant-risk-analyst",
+      "macro-analyst",
+      "private-markets-analyst",
+      "esg-regulatory-analyst",
+    ];
+    for (const id of expected) {
+      const def = getAgent(id);
+      expect(def.id).toBe(id);
+      expect(def.systemPrompt.length).toBeGreaterThan(500);
+      expect(Array.isArray(def.tools)).toBe(true);
+      expect((def.tools as string[]).length).toBeGreaterThan(10);
+      expect(def.maxRecursionDepth ?? 0).toBe(0);
+    }
+  });
+
+  it("defaultDelegates contains the 8 specialists in canonical order", () => {
+    expect(defaultDelegates).toHaveLength(8);
+    expect(defaultDelegates.map((d) => d.id)).toEqual([
+      "equity-analyst",
+      "credit-analyst",
+      "fixed-income-analyst",
+      "derivatives-analyst",
+      "quant-risk-analyst",
+      "macro-analyst",
+      "private-markets-analyst",
+      "esg-regulatory-analyst",
+    ]);
   });
 
   it("getAgent('unknown') throws with a descriptive error", () => {
