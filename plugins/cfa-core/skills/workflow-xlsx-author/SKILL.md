@@ -231,8 +231,126 @@ Every numeric value carries a unit (declared in the units row), a source (declar
 
 This skill is the headless replacement for an Excel writer. We do not have openpyxl, xlsxwriter, or Office JS in the CFA agent stack. The contract with the recipient is: paste the markdown sections into Excel sheets of the same name, replace the textual `Formula` column entries with cell-relative Excel formulas (using the source column as the dependency map), and the workbook will reconstitute. The numeric values in the markdown carry the canonical answer (computed by corp-finance-mcp in 128-bit Decimal), so the recipient's reconstructed Excel formulas should reproduce them.
 
+## Workbook Generation via MCP Tool
+
+The markdown-tabular form above is the human-readable, paste-into-Excel medium. **As of Phase 29 Wave 6**, agents may also emit a real .xlsx binary file by mapping the same table data to a `WorkbookSpec` and invoking the `office_xlsx_write` MCP tool. This is optional; the markdown form remains the baseline.
+
+### When to Use `office_xlsx_write`
+
+- A recipient requests a deliverable as an actual `.xlsx` file (not markdown).
+- The output comprises one or more data tables with headers, units, and formulas.
+- You have structured the table(s) according to this skill's markdown-tabular convention.
+- Named ranges or defined names are required for cross-sheet references.
+
+### Input Shape
+
+The tool accepts:
+
+```json
+{
+  "spec": {
+    "sheets": [
+      {
+        "name": "Comparables",
+        "headers": ["Ticker", "Market Cap ($M)", "EV/EBITDA (x)", "Source"],
+        "rows": [
+          [
+            {"kind": "text", "value": "ACME"},
+            {"kind": "decimal", "value": "2500.50"},
+            {"kind": "decimal", "value": "12.3"},
+            {"kind": "text", "value": "tool: comps_analysis"}
+          ],
+          [
+            {"kind": "text", "value": "BETA"},
+            {"kind": "decimal", "value": "1800.00"},
+            {"kind": "decimal", "value": "11.8"},
+            {"kind": "text", "value": "tool: comps_analysis"}
+          ],
+          [
+            {"kind": "text", "value": "GAMMA"},
+            {"kind": "decimal", "value": "3100.75"},
+            {"kind": "decimal", "value": "13.1"},
+            {"kind": "text", "value": "tool: comps_analysis"}
+          ]
+        ],
+        "column_widths": [15, 18, 15, 20],
+        "frozen_panes": {"row": 1, "col": 0}
+      }
+    ],
+    "defined_names": [],
+    "properties": {
+      "title": "Comparables Analysis",
+      "author": "cfa-chief-analyst",
+      "company": "CFA Agent",
+      "subject": "Equity Comps"
+    }
+  },
+  "output_path": "/tmp/comps_analysis.xlsx"
+}
+```
+
+### Cell Value Types
+
+Each cell in `rows` is a tagged union:
+- `{"kind": "text", "value": "..."}` — text cell
+- `{"kind": "number", "value": 123.45}` — floating-point number
+- `{"kind": "decimal", "value": "123.45"}` — high-precision decimal (wire format: string, stored as f64 in Excel)
+- `{"kind": "bool", "value": true}` — boolean
+- `{"kind": "datetime", "value": "2026-05-07T14:00:00Z"}` — RFC3339 timestamp
+- `{"kind": "empty"}` — blank cell
+
+Use `decimal` for financial values to preserve the canonical Decimal precision from corp-finance-mcp tools.
+
+### Optional Fields
+
+- `formulas` — array of `{row, col, formula, cached_result}` to inject Excel formulas at specific cell addresses. Example: `{"row": 5, "col": 2, "formula": "SUM(A2:A5)"}`.
+- `defined_names` — array of `{name, range}` to create workbook-level named ranges. Example: `{"name": "WACC", "range": "Assumptions!$B$5"}`.
+- `column_widths` — array of per-column width values (Excel units). Empty = auto-fit.
+- `frozen_panes` — `{row, col}` to freeze rows above and columns left of the specified cell (0-indexed).
+
+### Tool Invocation
+
+Call the `office_xlsx_write` MCP tool:
+
+```
+Tool: office_xlsx_write
+Input:
+{
+  "spec": { ... },
+  "output_path": "/path/to/output.xlsx"
+}
+```
+
+### Output
+
+Returns:
+
+```json
+{
+  "output_path": "/path/to/output.xlsx",
+  "bytes_written": 45678,
+  "sha256": "a1b2c3...",
+  "sheet_count": 1
+}
+```
+
+The `sha256` and `bytes_written` are the system-of-record handle. **Do not read the `.xlsx` file back into the system.** The structured output (path, hash, byte count) is the deliverable receipt. Recipients download the file directly.
+
+### Quality Checklist
+
+- [ ] All numeric columns use `decimal` cell type (not `number`)
+- [ ] Headers row matches markdown-tabular convention
+- [ ] Units row present (as a data row, not a sheet header)
+- [ ] Source column populated on derived rows
+- [ ] Negatives in parentheses; multiples with `x`; percentages with `%`
+- [ ] `column_widths` set to reasonable values (15–25 typical)
+- [ ] `frozen_panes` set to freeze the header + units rows if multi-row header
+- [ ] `defined_names` populated for any cross-sheet references
+- [ ] `properties.title` and `properties.author` set
+- [ ] Output path is a temp or artifact directory (not root or repo)
+
 ## Routing
 
 **Primary agent:** `cfa-chief-analyst`
 
-Tabular authoring is the universal output medium for any model-derived deliverable. The chief analyst owns this skill so the convention is uniform across IB, PE, ER, and WM workflows that all produce tabular output.
+Tabular authoring is the universal output medium for any model-derived deliverable. The chief analyst owns this skill so the convention is uniform across IB, PE, ER, and WM workflows that all produce tabular output. As of Phase 29 Wave 6, the chief analyst can emit both markdown-tabular (paste-into-Excel) and real `.xlsx` (via `office_xlsx_write`) forms, depending on the recipient's requirement.

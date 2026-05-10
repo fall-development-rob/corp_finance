@@ -12,7 +12,7 @@ You have access to the Aiera MCP server for retrieving earnings call transcripts
 **Transport**: `http` (streamable HTTP as defined in MCP spec)
 **Requires**: `AIERA_API_KEY` environment variable. Obtain an API key via the Aiera dashboard at https://dashboard.aiera.com or by contacting support@aiera.com.
 
-> **Scaffold note**: This skill documents the Aiera MCP connector for integration planning. No production API calls are wired. Register the server (see `scripts/register-data-mcp.sh`) once you have a valid `AIERA_API_KEY`.
+> **Status**: Wired. Run `./scripts/register-data-mcp.sh --apply` once `AIERA_API_KEY` is set in your environment to register the remote Aiera MCP server with Claude Code.
 
 ## What Aiera Provides
 

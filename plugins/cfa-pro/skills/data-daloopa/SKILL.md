@@ -12,7 +12,7 @@ You have access to the Daloopa MCP server for retrieving normalized, model-ready
 **Transport**: `http` (streamable HTTP as defined in MCP spec)
 **Requires**: `DALOOPA_API_KEY` environment variable. Obtain an API key at https://www.daloopa.com -- contact sales or sign up for a developer account.
 
-> **Scaffold note**: This skill documents the Daloopa MCP connector for integration planning. No production API calls are wired. Register the server (see `scripts/register-data-mcp.sh`) once you have a valid `DALOOPA_API_KEY`.
+> **Status**: Wired. Run `./scripts/register-data-mcp.sh --apply` once `DALOOPA_API_KEY` is set in your environment to register the remote Daloopa MCP server with Claude Code.
 
 ## What Daloopa Provides
 

@@ -1,3 +1,7 @@
+---
+name: workflow-fund-admin
+description: "Professional fund administration and accounting operations workflows -- GL break reconciliation, NAV tie-out for LP statements, period-end accrual schedules with draft journal entries, period-over-period roll-forward, FP&A variance commentary with driver explanations, and break-tracing across general ledger and sub-ledger systems. Use when administering fund accounting operations, reconciling NAV before LP distribution, drafting journal entries, or producing FP&A variance commentaries."
+---
 <!-- Adapted from:
   plugins/vertical-plugins/fund-admin/skills/gl-recon/SKILL.md
   plugins/vertical-plugins/fund-admin/skills/break-trace/SKILL.md
@@ -7,10 +11,6 @@
   plugins/vertical-plugins/fund-admin/skills/variance-commentary/SKILL.md
   Source repo: https://github.com/anthropics/financial-services
 -->
----
-name: workflow-fund-admin
-description: "Professional fund administration and accounting operations workflows -- GL break reconciliation, NAV tie-out for LP statements, period-end accrual schedules with draft journal entries, period-over-period roll-forward, FP&A variance commentary with driver explanations, and break-tracing across general ledger and sub-ledger systems. Use when administering fund accounting operations, reconciling NAV before LP distribution, drafting journal entries, or producing FP&A variance commentaries."
----
 
 # Fund Administration Workflows
 

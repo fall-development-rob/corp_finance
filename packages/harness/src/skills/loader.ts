@@ -1,7 +1,8 @@
 /**
  * Direct filesystem skill loader — Phase 33 Wave 1.
  *
- * Reads .claude/skills/<id>/SKILL.md and .claude/agents/<id>.md, resolves
+ * Reads <skillsRoot>/<id>/SKILL.md and <agentsRoot>/<id>.md (defaulting to
+ * plugins/cfa-core/skills/cfa and plugins/cfa-core/agents/cfa), resolves
  * `extends:` references recursively (with cycle detection), and returns
  * fully-assembled AgentDef instances.
  *

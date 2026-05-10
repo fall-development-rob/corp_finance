@@ -2,8 +2,9 @@
  * Skill-backed agent registry — Phase 33 Wave 3.
  *
  * Provides a runtime substrate that constructs the full 9-agent registry
- * purely by loading SKILL.md + agent manifest files from .claude/skills/cfa/
- * and .claude/agents/cfa/. Parallel to the existing TS-imported `registry`
+ * purely by loading SKILL.md + agent manifest files from
+ * plugins/cfa-core/skills/cfa/ and plugins/cfa-core/agents/cfa/. Parallel
+ * to the existing TS-imported `registry`
  * Map in registry.ts; Wave 4 will switch consumers over and delete the TS
  * specialist source files.
  *
@@ -35,9 +36,9 @@ export interface SkillRegistry {
 }
 
 export interface SkillRegistryOptions {
-  /** Defaults to <repo>/.claude/skills/cfa */
+  /** Defaults to <repo>/plugins/cfa-core/skills/cfa */
   skillsRoot?: string;
-  /** Defaults to <repo>/.claude/agents/cfa */
+  /** Defaults to <repo>/plugins/cfa-core/agents/cfa */
   agentsRoot?: string;
   /** Injectable for testing. */
   loader?: SkillLoader;
@@ -95,9 +96,11 @@ export async function createSkillRegistry(
   options?: SkillRegistryOptions,
 ): Promise<SkillRegistry> {
   const skillsRoot =
-    options?.skillsRoot ?? resolve(_repoRoot, ".claude", "skills", "cfa");
+    options?.skillsRoot ??
+    resolve(_repoRoot, "plugins", "cfa-core", "skills", "cfa");
   const agentsRoot =
-    options?.agentsRoot ?? resolve(_repoRoot, ".claude", "agents", "cfa");
+    options?.agentsRoot ??
+    resolve(_repoRoot, "plugins", "cfa-core", "agents", "cfa");
 
   const loader =
     options?.loader ?? createDirectSkillLoader({ skillsRoot, agentsRoot });
