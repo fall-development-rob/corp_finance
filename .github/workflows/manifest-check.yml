@@ -1,0 +1,94 @@
+name: manifest-check
+
+# Runs the static manifest linter (scripts/check-manifests.ts) on every PR
+# and on every push to main (post-merge sanity check).
+#
+# The linter walks every agent manifest + cookbook in the repo and reports
+# drift: missing files, broken cross-refs, and schema-shape issues.
+# It exits 1 on errors; warnings do NOT fail the job in NORMAL mode.
+#
+# REC-3: once the parallel cookbook-hardening batches (phase-33 waves) have
+# remediated the cookbook-subagent-no-output-schema warnings, flip the runner
+# step below to `npx tsx scripts/check-manifests.ts --strict` to also fail on
+# warnings.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  lint-manifests:
+    name: lint-manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      # Install all workspace dependencies at the repo root so npm workspaces
+      # can resolve internal deps (e.g. @robotixai/mcp-utils is a workspace
+      # package not published to the registry; per-package install would fail).
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      # The linter imports from packages/harness/src/manifests/checker.js.
+      # Build the harness first so the dist output exists for tsx to resolve.
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # NORMAL mode — exits 0 on warnings; only errors fail the job.
+      # To enforce warnings as errors, change the run command to:
+      #   npx tsx scripts/check-manifests.ts --strict
+      # Prerequisite: remediate cookbook-subagent-no-output-schema warnings
+      # across all managed-agent-cookbooks/ subagent JSON files first.
+      - name: Run manifest linter (normal mode)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # pipefail ensures tsx's exit code is preserved through the tee pipeline.
+          npx tsx scripts/check-manifests.ts 2>&1 | tee /tmp/manifest-check.log
+
+      # Upload linter stdout as an artefact for easy debugging on failures.
+      - name: Upload linter output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifest-check-log
+          path: /tmp/manifest-check.log
+          if-no-files-found: ignore
+          retention-days: 7

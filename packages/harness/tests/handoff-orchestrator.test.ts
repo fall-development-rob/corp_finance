@@ -683,6 +683,133 @@ describe("empty allowlist", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Phase 38 W3: per-target schemas via buildAllowlistFromAgent + validatePayload
+// ---------------------------------------------------------------------------
+
+import { buildAllowlistFromAgent } from "../src/handoff/from-agent-def.js";
+
+const tickerSchema: Record<string, unknown> = {
+  type: "object",
+  required: ["ticker", "period"],
+  properties: {
+    ticker: { type: "string" },
+    period: { type: "string" },
+  },
+};
+
+const creditSchema: Record<string, unknown> = {
+  type: "object",
+  required: ["company"],
+  properties: {
+    company: { type: "string" },
+  },
+};
+
+describe("Phase 38 W3 — buildAllowlistFromAgent targetSchemas", () => {
+  it("populates targetSchemas when callableAgents have inputSchema declared", () => {
+    const agent: AgentDef = {
+      id: "chief",
+      description: "Chief",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [
+        { id: "equity-analyst", description: "", systemPrompt: "", tools: [], inputSchema: tickerSchema },
+        { id: "credit-analyst", description: "", systemPrompt: "", tools: [], inputSchema: creditSchema },
+      ],
+    };
+    const [entry] = buildAllowlistFromAgent(agent);
+    expect(entry!.targetSchemas).toBeDefined();
+    expect(entry!.targetSchemas!["equity-analyst"]).toEqual(tickerSchema);
+    expect(entry!.targetSchemas!["credit-analyst"]).toEqual(creditSchema);
+  });
+
+  it("omits targetSchemas entries for callableAgents WITHOUT inputSchema", () => {
+    const agent: AgentDef = {
+      id: "chief",
+      description: "Chief",
+      systemPrompt: "",
+      tools: [],
+      callableAgents: [
+        { id: "equity-analyst", description: "", systemPrompt: "", tools: [], inputSchema: tickerSchema },
+        { id: "macro-analyst", description: "", systemPrompt: "", tools: [] }, // no inputSchema
+      ],
+    };
+    const [entry] = buildAllowlistFromAgent(agent);
+    expect(entry!.targetSchemas).toBeDefined();
+    expect(entry!.targetSchemas!["equity-analyst"]).toEqual(tickerSchema);
+    expect(entry!.targetSchemas!["macro-analyst"]).toBeUndefined();
+  });
+
+  it("validatePayload uses target-specific schema when both targetSchemas and payload_schema present", () => {
+    const equitySchema: Record<string, unknown> = {
+      type: "object",
+      required: ["ticker"],
+      properties: { ticker: { type: "string" } },
+    };
+    const fallbackSchema: Record<string, unknown> = {
+      type: "object",
+      required: ["company"],
+      properties: { company: { type: "string" } },
+    };
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: [
+        {
+          source: "chief",
+          targets: ["equity-analyst"],
+          payload_schema: fallbackSchema,
+          targetSchemas: { "equity-analyst": equitySchema },
+        },
+      ],
+      resolveAgent: () => undefined,
+      dispatchAgent: makeDispatch(),
+    });
+    // payload valid per equitySchema (has ticker), invalid per fallbackSchema (missing company)
+    const result = orchestrator.validatePayload("equity-analyst", { ticker: "AAPL" });
+    expect(result.ok).toBe(true);
+  });
+
+  it("validatePayload falls back to payload_schema if targetSchemas[target] missing", () => {
+    const fallbackSchema: Record<string, unknown> = {
+      type: "object",
+      required: ["company"],
+      properties: { company: { type: "string" } },
+    };
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: [
+        {
+          source: "chief",
+          targets: ["credit-analyst"],
+          payload_schema: fallbackSchema,
+          targetSchemas: { "equity-analyst": tickerSchema }, // no entry for credit-analyst
+        },
+      ],
+      resolveAgent: () => undefined,
+      dispatchAgent: makeDispatch(),
+    });
+    // Falls back to fallbackSchema — missing required "company"
+    const result = orchestrator.validatePayload("credit-analyst", { ticker: "AAPL" });
+    expect(result.ok).toBe(false);
+    expect(result.errors!.some((e) => e.includes("company"))).toBe(true);
+  });
+
+  it("validatePayload returns ok:true if neither targetSchemas nor payload_schema exists for target", () => {
+    const orchestrator = createHandoffOrchestrator({
+      allowlist: [
+        {
+          source: "chief",
+          targets: ["macro-analyst"],
+          // no payload_schema, no targetSchemas
+        },
+      ],
+      resolveAgent: () => undefined,
+      dispatchAgent: makeDispatch(),
+    });
+    const result = orchestrator.validatePayload("macro-analyst", { anything: true });
+    expect(result.ok).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

@@ -130,6 +130,11 @@ export interface AgentDef {
    * Stored for future enforcement (Phase 37); not enforced now.
    */
   outputSchema?: Record<string, unknown>;
+  /**
+   * Phase 38 W3: input schema parsed from input_schema.
+   * Used by the handoff orchestrator's per-target payload validation.
+   */
+  inputSchema?: Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------

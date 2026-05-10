@@ -86,15 +86,20 @@ function findSourceEntries(
   return allowlist.filter((e) => e.source === source);
 }
 
-/** Returns the first schema configured for `target` across ALL allowlist entries. */
+/**
+ * Returns the schema to use for `target` across ALL allowlist entries.
+ * Precedence per entry: targetSchemas[target] > payload_schema > absent.
+ * Uses the first entry that names the target and has any schema.
+ */
 function findPayloadSchema(
   allowlist: HandoffAllowlistEntry[],
   target: string,
 ): Record<string, unknown> | undefined {
   for (const entry of allowlist) {
-    if (entry.targets.includes(target) && entry.payload_schema) {
-      return entry.payload_schema;
-    }
+    if (!entry.targets.includes(target)) continue;
+    const perTarget = entry.targetSchemas?.[target];
+    if (perTarget) return perTarget;
+    if (entry.payload_schema) return entry.payload_schema;
   }
   return undefined;
 }

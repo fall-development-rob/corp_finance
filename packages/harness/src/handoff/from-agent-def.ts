@@ -6,9 +6,9 @@
  * from `callable_agents:` — the same field that Managed Agents API deployment
  * uses). This wires local-dev handoff semantics to the production contract.
  *
- * Per-target payload schemas are deferred to Phase 38 W3 — allowlist entries
- * are created in permissive mode (no schema) unless a future caller supplies
- * explicit overrides.
+ * Phase 38 W3: per-target payload schemas are now populated from each callable
+ * agent's `inputSchema` field, enabling the orchestrator to enforce each
+ * target's declared input contract before dispatch.
  */
 import type { AgentDef } from "../types.js";
 import type { HandoffAllowlistEntry } from "./types.js";
@@ -17,20 +17,26 @@ import type { HandoffAllowlistEntry } from "./types.js";
  * Build a HandoffAllowlistEntry array from the agent's `callableAgents` list.
  * Returns an empty array when the agent declares no callable agents.
  *
- * Phase 38 W3 TODO: pull per-target payload_schema from each target's
- * `outputSchema` or a dedicated `input_schema` field.
+ * Per-target schemas are keyed by target slug in `targetSchemas`. Callable
+ * agents without an `inputSchema` are omitted from targetSchemas (permissive
+ * for that specific target). Existing `payload_schema` semantics are preserved
+ * for backwards compatibility.
  */
 export function buildAllowlistFromAgent(
   agent: AgentDef,
 ): HandoffAllowlistEntry[] {
   if (!agent.callableAgents || agent.callableAgents.length === 0) return [];
-  return [
-    {
-      source: agent.id,
-      targets: agent.callableAgents.map((a) => a.id),
-      // payload_schema: deferred to Phase 38 W3
-    },
-  ];
+  const entry: HandoffAllowlistEntry = {
+    source: agent.id,
+    targets: agent.callableAgents.map((a) => a.id),
+  };
+  const schemaEntries = agent.callableAgents
+    .filter((a) => a.inputSchema !== undefined)
+    .map((a) => [a.id, a.inputSchema] as [string, Record<string, unknown>]);
+  if (schemaEntries.length > 0) {
+    entry.targetSchemas = Object.fromEntries(schemaEntries);
+  }
+  return [entry];
 }
 
 /**
