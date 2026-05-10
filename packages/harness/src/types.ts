@@ -7,6 +7,7 @@
  */
 import type { ReasoningBank } from "./reasoning/bank.js";
 import type { WorkflowRouter } from "./workflow/router.js";
+import type { HandoffOrchestrator } from "./handoff/types.js";
 
 // ---------------------------------------------------------------------------
 // Tool model — Anthropic-flavored canonical shape
@@ -252,6 +253,22 @@ export interface DispatchOptions {
    *   "disabled" — ignore the router entirely even if `workflow` is set
    */
   workflowMode?: "auto" | "advisory" | "disabled";
+
+  /**
+   * REC-4 Wave 2: cross-agent handoff orchestrator. If provided at depth=0,
+   * the chief receives an `initiate_handoff` virtual tool that lets it hand
+   * off sub-tasks to allowlisted target agents. Mirrors the Managed Agents API
+   * `callable_agents:` deployment semantics for local-dev parity.
+   */
+  handoff?: HandoffOrchestrator;
+
+  /**
+   * REC-4 Wave 2: handoff dispatch mode.
+   *   "advisory" — chief gets the `initiate_handoff` virtual tool (default)
+   *   "auto"     — reserved for future sub-features (chained handoffs, Phase 38 W3)
+   *   "disabled" — ignore the orchestrator even if `handoff` is set
+   */
+  handoffMode?: "advisory" | "auto" | "disabled";
 }
 
 export type DispatchEvent =
@@ -265,7 +282,10 @@ export type DispatchEvent =
   // Phase 35: hybrid dispatch events
   | { type: "workflow_matched"; slug: string; confidence: number; extracted_params: Record<string, string | number | boolean> }
   | { type: "workflow_executed"; slug: string; duration_ms: number; audit_hash: string }
-  | { type: "workflow_failed"; slug: string; reason: string };
+  | { type: "workflow_failed"; slug: string; reason: string }
+  // REC-4 Wave 2: cross-agent handoff events
+  | { type: "handoff_initiated"; target_agent: string; request_id: string }
+  | { type: "handoff_returned"; target_agent: string; request_id: string; ok: boolean; duration_ms: number };
 
 export interface DispatchResult {
   finalText: string;
