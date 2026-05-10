@@ -38,6 +38,11 @@ import {
   resolveDelegationTarget,
 } from "../agents/delegate.js";
 import { indexAuditRecord } from "../reasoning/indexer.js";
+import {
+  createRecallTool,
+  executeRecallCall,
+  isRecallToolName,
+} from "../reasoning/recall-tool.js";
 
 const DEFAULT_MAX_TURNS = 25;
 
@@ -123,7 +128,13 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
   const delegates = depth < maxRecursion ? options.delegates ?? [] : [];
   const delegationTools = delegates.length > 0 ? createDelegationTools(delegates) : [];
 
-  const tools: CanonicalTool[] = [...realTools, ...delegationTools];
+  // Phase 34 Wave 3: virtual `recall_similar` tool — only when a reasoning bank
+  // is configured. Appended after `filterToolsForAgent`, so it bypasses the
+  // per-agent allowlist; specialists at depth 1 don't receive `reasoning` in
+  // their nested dispatch options, so they never see the tool.
+  const recallTools: CanonicalTool[] = options.reasoning ? [createRecallTool()] : [];
+
+  const tools: CanonicalTool[] = [...realTools, ...delegationTools, ...recallTools];
 
   const messages: Message[] = [
     { role: "user", content: [{ type: "text", text: prompt }] },
@@ -178,10 +189,13 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         }
 
         const delegationCalls: ToolCall[] = [];
+        const recallCalls: ToolCall[] = [];
         const realCalls: ToolCall[] = [];
         for (const c of calls) {
           if (isDelegationToolName(c.name)) {
             delegationCalls.push(c);
+          } else if (options.reasoning && isRecallToolName(c.name)) {
+            recallCalls.push(c);
           } else {
             realCalls.push(c);
           }
@@ -291,11 +305,43 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
           }),
         );
 
-        const [realResults, delResults] = await Promise.all([realResultsP, delegationsP]);
+        const recallsP = Promise.all(
+          recallCalls.map(async (call): Promise<ToolResult> => {
+            // Defensive: this branch is only entered when options.reasoning is
+            // truthy (see split above), but the closure capture isn't narrowed.
+            if (!options.reasoning) {
+              return {
+                call_id: call.id,
+                content: "recall_similar failed: no reasoning bank",
+                is_error: true,
+              };
+            }
+            const startsAt = Date.now();
+            const result = await executeRecallCall(call, options.reasoning);
+            if (audit) {
+              auditToolCalls.push({
+                id: call.id,
+                name: call.name,
+                input_hash: hashJSON(call.input),
+                result_hash: hashJSON(result.content),
+                is_error: result.is_error ?? false,
+                duration_ms: Date.now() - startsAt,
+              });
+            }
+            return result;
+          }),
+        );
+
+        const [realResults, delResults, recallResults] = await Promise.all([
+          realResultsP,
+          delegationsP,
+          recallsP,
+        ]);
 
         const byId = new Map<string, ToolResult>();
         for (const r of realResults) byId.set(r.call_id, r);
         for (const r of delResults) byId.set(r.call_id, r);
+        for (const r of recallResults) byId.set(r.call_id, r);
         const ordered: ToolResult[] = calls.map((c) => {
           const r = byId.get(c.id);
           if (!r) {
