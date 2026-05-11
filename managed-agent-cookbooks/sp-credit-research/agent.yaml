@@ -27,8 +27,8 @@ mcp_servers:
   - { type: url, name: vendor, url: "${VENDOR_MCP_URL}" }
   - { type: url, name: fmp, url: "${FMP_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-core }
-  - { from_plugin: ../../plugins/cfa-pro/skills/vendor-sp-global }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core }
+  - { from_plugin: ../../plugins/partner-built/sp-global/skills/vendor-sp-global }
 callable_agents:
   - { manifest: ./subagents/data-reader.yaml }
   - { manifest: ./subagents/credit-scorer.yaml }

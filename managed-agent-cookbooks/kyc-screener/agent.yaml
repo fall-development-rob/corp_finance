@@ -19,13 +19,13 @@ tools:
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-regulatory }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-customer-intake }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-beneficial-ownership }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-sanctions-screening }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-pep-screening }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-source-of-funds }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-kyc-monitoring-triggers }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-regulatory }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-customer-intake }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-beneficial-ownership }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-sanctions-screening }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-pep-screening }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-source-of-funds }
+  - { from_plugin: ../../plugins/vertical-plugins/operations/skills/workflow-kyc-monitoring-triggers }
 callable_agents:
   - { manifest: ./subagents/identity-reader.yaml }
   - { manifest: ./subagents/screener.yaml }

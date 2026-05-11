@@ -19,9 +19,9 @@ tools:
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-regulatory }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-fund-gl-reconciliation }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-fund-break-trace }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-regulatory }
+  - { from_plugin: ../../plugins/vertical-plugins/fund-admin/skills/workflow-fund-gl-reconciliation }
+  - { from_plugin: ../../plugins/vertical-plugins/fund-admin/skills/workflow-fund-break-trace }
 callable_agents:
   - { manifest: ./subagents/ledger-reader.yaml }
   - { manifest: ./subagents/reconciler.yaml }
