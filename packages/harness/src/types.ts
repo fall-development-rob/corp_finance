@@ -237,6 +237,14 @@ export interface DispatchOptions {
   /** Wave 4: parent audit id, set by the agent loop on nested dispatches. */
   parentAuditId?: string;
   /**
+   * W6 Gap 3: caller-provided audit id override. When set and an audit sink
+   * is configured, the agent loop uses this id instead of generating a new
+   * randomUUID(). This allows dispatchCookbook to pre-generate the parent's
+   * audit id so the dispatchAgent callback can thread it as parentAuditId
+   * on subagent dispatches, completing the parent→child audit chain.
+   */
+  auditIdOverride?: string;
+  /**
    * Phase 34 Wave 2: reasoning bank. If provided alongside `audit`, every
    * successful dispatch fire-and-forgets a `ReasoningEntry` derived from the
    * audit record + prompt + finalText. Index failures emit a

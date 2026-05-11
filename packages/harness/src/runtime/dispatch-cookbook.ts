@@ -18,6 +18,7 @@
  *   - Reasoning bank is threaded to the parent dispatch only (depth=0)
  */
 
+import { randomUUID } from "node:crypto";
 import type {
   AuditSink,
   CanonicalTool,
@@ -178,6 +179,12 @@ export async function dispatchCookbook(
   // Collect audit ids from subagent handoff dispatches
   const subagentAuditIds: string[] = [];
 
+  // W6 Gap 3: Pre-generate the parent's audit id so the dispatchAgent callback
+  // can thread it as parentAuditId on subagent dispatches, completing the
+  // parent→child audit chain (AuditRecord.parent_audit_id on each subagent).
+  // When no audit sink is configured, this stays undefined and is ignored.
+  const parentAuditIdOverride = audit ? randomUUID() : undefined;
+
   // Step 3: Resolve agent by slug across parent + subagents
   function resolveAgent(agentSlug: string): AgentDef | undefined {
     return allAgents.find((a) => a.id === agentSlug);
@@ -205,6 +212,9 @@ export async function dispatchCookbook(
       mcp: enrichedMcp,
       audit,
       session,
+      // W6 Gap 3: thread the pre-generated parent audit id so each subagent's
+      // AuditRecord.parent_audit_id links back to the parent dispatch.
+      parentAuditId: parentAuditIdOverride,
       // reasoning is NOT passed to subagent dispatches — matches agent-loop
       // convention where only the root (depth=0) dispatch receives the bank
       handoff: orchestrator,
@@ -231,7 +241,9 @@ export async function dispatchCookbook(
     maxDepth: maxChainDepth,
   });
 
-  // Step 6: Dispatch the parent at depth=0 with reasoning wired in
+  // Step 6: Dispatch the parent at depth=0 with reasoning wired in.
+  // W6 Gap 3: pass auditIdOverride so the parent's dispatch uses the
+  // pre-generated id (parentAuditIdOverride) instead of a fresh randomUUID().
   const parentResult = await dispatch({
     agent: parent,
     prompt,
@@ -244,6 +256,7 @@ export async function dispatchCookbook(
     maxHandoffDepth,
     depth: 0,
     onEvent,
+    ...(parentAuditIdOverride ? { auditIdOverride: parentAuditIdOverride } : {}),
   });
 
   return {

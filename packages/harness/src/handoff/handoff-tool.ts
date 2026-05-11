@@ -14,8 +14,25 @@
  */
 import type { CanonicalTool, ToolCall, ToolResult } from "../types.js";
 import type { HandoffOrchestrator, HandoffResult } from "./types.js";
+import { parseAndValidate } from "../manifests/validator.js";
 
 export const HANDOFF_TOOL_NAME = "initiate_handoff";
+
+/** Strip markdown code fences (```json or ```) from around a JSON payload. */
+function extractJsonFromMarkdown(text: string): string {
+  const jsonBlockMatch = text.match(/```json\s*\n([\s\S]*?)\n```/);
+  if (jsonBlockMatch) return jsonBlockMatch[1]!;
+  const codeBlockMatch = text.match(/```\s*\n([\s\S]*?)\n```/);
+  if (codeBlockMatch) return codeBlockMatch[1]!;
+  return text;
+}
+
+/** Return type for executeHandoffCall — carries the ToolResult AND the subagent's audit id. */
+export interface HandoffCallResult {
+  result: ToolResult;
+  /** Audit id produced by the subagent dispatch, if an audit sink was configured. */
+  subagentAuditId?: string;
+}
 
 /** Predicate: is this tool call an `initiate_handoff` virtual call? */
 export function isHandoffToolName(name: string): boolean {
@@ -129,7 +146,13 @@ function parseHandoffInput(input: Record<string, unknown>): ParsedHandoffInput {
 
 /**
  * Execute an `initiate_handoff` tool call against a `HandoffOrchestrator`.
- * Returns a fully-formed `ToolResult` ready to be added to the conversation.
+ * Returns a `HandoffCallResult` with the ToolResult AND the subagent's audit id
+ * (Gap 2: threading audit ids into the parent's child_audit_ids).
+ *
+ * When `resolveTargetSchema` is provided, the subagent's finalText is validated
+ * against the target agent's outputSchema (Gap 1: handoff path parity with
+ * the delegation path's parseAndValidate gate).
+ *
  * Errors are captured into `is_error: true` results — never thrown — to
  * preserve the dispatch hot path.
  *
@@ -141,19 +164,22 @@ export async function executeHandoffCall(
   orchestrator: HandoffOrchestrator,
   sourceAgent: string,
   currentDepth: number,
-): Promise<ToolResult> {
+  resolveTargetSchema?: (slug: string) => Promise<Record<string, unknown> | undefined> | Record<string, unknown> | undefined,
+): Promise<HandoffCallResult> {
   let parsed: ParsedHandoffInput;
   try {
     parsed = parseHandoffInput(call.input);
   } catch (err) {
     return {
-      call_id: call.id,
-      content: `initiate_handoff failed: ${err instanceof Error ? err.message : String(err)}`,
-      is_error: true,
+      result: {
+        call_id: call.id,
+        content: `initiate_handoff failed: ${err instanceof Error ? err.message : String(err)}`,
+        is_error: true,
+      },
     };
   }
 
-  const result = await orchestrator.execute(
+  const handoffResult = await orchestrator.execute(
     {
       source_agent: sourceAgent,
       target_agent: parsed.target,
@@ -163,9 +189,52 @@ export async function executeHandoffCall(
     currentDepth,
   );
 
+  // Extract subagent audit id from the result payload (set by dispatchAgent callback)
+  const resultPayload = handoffResult.result as { finalText?: string; auditId?: string } | undefined;
+  const subagentAuditId = handoffResult.ok ? resultPayload?.auditId : undefined;
+
+  // Gap 1: validate the subagent's finalText against the target's outputSchema.
+  // Mirrors the delegation path's parseAndValidate gate in agent-loop.ts.
+  if (handoffResult.ok && resultPayload?.finalText && resolveTargetSchema) {
+    const schema = await resolveTargetSchema(parsed.target);
+    if (schema) {
+      const textToValidate = extractJsonFromMarkdown(resultPayload.finalText);
+      const validation = parseAndValidate(textToValidate, schema);
+      if (!validation.ok) {
+        const errorContent = [
+          `# ${parsed.target} — output schema validation failed`,
+          ``,
+          `The handoff target returned text that does not match its declared output_schema.`,
+          `This may indicate prompt injection in the input data, a model error, or an outdated schema.`,
+          ``,
+          `## Validation errors`,
+          ...validation.errors.map(
+            (e) => `- \`${e.path}\`: ${e.message}` + (e.schemaKeyword ? ` (${e.schemaKeyword})` : ""),
+          ),
+          ``,
+          `## Original target output (first 500 chars, for debugging)`,
+          ``,
+          `\`\`\``,
+          resultPayload.finalText.slice(0, 500),
+          `\`\`\``,
+        ].join("\n");
+        return {
+          result: {
+            call_id: call.id,
+            content: errorContent,
+            is_error: true,
+          },
+        };
+      }
+    }
+  }
+
   return {
-    call_id: call.id,
-    content: formatHandoffResult(result),
-    is_error: !result.ok,
+    result: {
+      call_id: call.id,
+      content: formatHandoffResult(handoffResult),
+      is_error: !handoffResult.ok,
+    },
+    subagentAuditId,
   };
 }

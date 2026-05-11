@@ -143,6 +143,14 @@ export interface HandoffOrchestrator {
    * When no schema is configured for the target, returns ok: true (permissive).
    */
   validatePayload(target: string, payload: unknown): { ok: boolean; errors?: string[] };
+  /**
+   * W6 Gap 1: Resolve a target agent slug to its AgentDef.
+   * Exposes the orchestrator's internal resolveAgent callback so callers
+   * (agent-loop handoff branch) can look up the target's outputSchema
+   * and apply output_schema validation on handoff results — parity with
+   * the delegation path's parseAndValidate gate.
+   */
+  resolveAgent(slug: string): Promise<AgentDef | undefined> | AgentDef | undefined;
 }
 
 // ---------------------------------------------------------------------------
