@@ -1,0 +1,13 @@
+{
+  "name": "equity-analyst",
+  "version": "0.1.0",
+  "description": "CFA equity research specialist — DCF, comps, target price, earnings quality, financial forensics, and initiating coverage reports",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "equity"]
+}

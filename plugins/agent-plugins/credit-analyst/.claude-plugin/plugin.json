@@ -1,0 +1,13 @@
+{
+  "name": "credit-analyst",
+  "version": "0.1.0",
+  "description": "CFA credit analyst — leveraged finance, credit metrics, debt capacity, covenant compliance, distressed debt, and credit-portfolio analytics",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "credit"]
+}

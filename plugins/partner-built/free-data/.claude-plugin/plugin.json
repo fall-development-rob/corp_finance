@@ -1,0 +1,13 @@
+{
+  "name": "free-data",
+  "version": "0.1.0",
+  "description": "Free public data sources: SEC EDGAR filings, FRED macro indicators, World Bank development data, Yahoo Finance quotes, and OpenFIGI identifier mapping",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vendor", "free-data"]
+}

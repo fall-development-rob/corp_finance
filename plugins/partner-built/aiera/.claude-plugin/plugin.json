@@ -1,0 +1,13 @@
+{
+  "name": "aiera",
+  "version": "0.1.0",
+  "description": "Aiera — AI-powered earnings call intelligence, event monitoring, and real-time transcript analysis via Aiera MCP (pending vendor integration)",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vendor", "aiera"]
+}

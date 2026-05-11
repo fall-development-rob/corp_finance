@@ -1,0 +1,13 @@
+{
+  "name": "foundations",
+  "version": "0.1.0",
+  "description": "Cross-cutting analyst foundations: four broad corp-finance-analyst skills covering core, markets, regulatory, and risk domains used by all cookbooks",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "foundations"]
+}

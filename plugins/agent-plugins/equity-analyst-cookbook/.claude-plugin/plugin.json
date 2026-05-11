@@ -1,0 +1,13 @@
+{
+  "name": "equity-analyst-cookbook",
+  "version": "0.1.0",
+  "description": "Equity analyst cookbook agent — full equity research workflow: screening, DCF, comps, target price, and initiating coverage report assembly",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "equity"]
+}

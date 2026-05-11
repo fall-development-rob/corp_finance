@@ -1,0 +1,13 @@
+{
+  "name": "moodys",
+  "version": "0.1.0",
+  "description": "Moody's — credit ratings, fixed income analytics, structured finance data, default rates, transition matrices, and economic research via Moody's MCP",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vendor", "moodys"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "gl-reconciler",
+  "version": "0.1.0",
+  "description": "General ledger reconciliation agent — traces GL breaks, reconciles sub-ledger balances, and produces period-end journal entry schedules",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "fund-admin"]
+}

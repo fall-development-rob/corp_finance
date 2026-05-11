@@ -1,0 +1,13 @@
+{
+  "name": "earnings-reviewer",
+  "version": "0.1.0",
+  "description": "Earnings review agent — ingests income statements, analyses beat/miss vs consensus, flags quality issues, and produces earnings update notes",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "earnings"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "derivatives",
+  "version": "0.1.0",
+  "description": "Derivatives valuation workflows: options, swaps, structured products, and volatility surface analysis (stub — skills populated in a future phase)",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "derivatives"]
+}

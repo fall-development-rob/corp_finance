@@ -1,0 +1,13 @@
+{
+  "name": "fund-admin",
+  "version": "0.1.0",
+  "description": "Fund administration workflows: GL reconciliation, NAV tie-out, period-end accruals, period-over-period roll-forward, and FP&A variance commentary",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "fund-admin"]
+}

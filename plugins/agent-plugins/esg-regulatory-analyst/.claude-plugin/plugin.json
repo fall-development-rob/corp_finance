@@ -1,0 +1,13 @@
+{
+  "name": "esg-regulatory-analyst",
+  "version": "0.1.0",
+  "description": "CFA ESG and regulatory analyst — ESG scoring, carbon markets, AIFMD/GIPS compliance, FATCA/CRS, AML/KYC, and regulatory capital analysis",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "esg"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "kyc-screener",
+  "version": "0.1.0",
+  "description": "KYC/AML screening agent — customer intake, beneficial ownership verification, sanctions and PEP screening, and source-of-funds documentation",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "kyc"]
+}

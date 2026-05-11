@@ -1,0 +1,13 @@
+{
+  "name": "private-markets-analyst-cookbook",
+  "version": "0.1.0",
+  "description": "Private markets analyst cookbook agent — full PE deal workflow: sourcing screen, DD checklist, LBO model, IC memo, and returns analysis",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "private-equity"]
+}

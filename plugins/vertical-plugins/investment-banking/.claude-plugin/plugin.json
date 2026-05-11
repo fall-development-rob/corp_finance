@@ -1,0 +1,13 @@
+{
+  "name": "investment-banking",
+  "version": "0.1.0",
+  "description": "Investment banking deal execution workflows: CIM drafting, teasers, process letters, buyer lists, merger models, pitch decks, and datapack assembly",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "investment-banking"]
+}
