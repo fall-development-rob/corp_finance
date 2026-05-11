@@ -1,0 +1,20 @@
+# Canonical policy: block memory-recall tools for depth-1 specialists.
+# Use for: any subagent that relies on the chief analyst to supply relevant
+# prior context. Depth-1 specialists should receive curated priors from the
+# chief via the handoff payload, not independently recall from the shared
+# memory graph. Independent recall at depth 1 creates divergent context
+# between the chief and the specialist and makes audit replay non-deterministic.
+#
+# Usage: merge the `block_tools` list into the target agent manifest.
+#
+# Example manifest fragment (before):
+#   block_tools: []
+#
+# Example manifest fragment (after):
+#   block_tools:
+#     - recall_similar
+#     - recall_by_graph
+
+block_tools:
+  - recall_similar
+  - recall_by_graph

@@ -1,0 +1,17 @@
+# Canonical constraint: array fields.
+# Use for: any output_schema property of type array (holdings, positions,
+# risk_factors, citations, peers, line_items, audit_ids, tool_trace, etc.).
+# maxItems: 500 is the standard cap. Arrays that legitimately exceed 500 items
+# indicate an upstream aggregation error; the agent should paginate or summarise
+# rather than return a single oversized array.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.holdings"
+#     add_constraint:
+#       maxItems: 500
+
+add_constraint:
+  maxItems: 500
