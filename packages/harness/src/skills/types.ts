@@ -48,6 +48,18 @@ export interface ParsedSkill {
 export interface SkillLoaderOptions {
   skillsRoot: string;  // e.g., "<repo>/plugins/cfa-core/skills/cfa"
   agentsRoot: string;  // e.g., "<repo>/plugins/cfa-core/agents/cfa"
+  /**
+   * Optional multi-root override. When provided, the loader walks all roots
+   * in order and returns the first match. Takes precedence over skillsRoot.
+   * Added in Phase 40 Wave 4 for 3-tier plugin discovery.
+   */
+  skillsRoots?: string[];
+  /**
+   * Optional multi-root override. When provided, the loader walks all roots
+   * in order and returns the first match. Takes precedence over agentsRoot.
+   * Added in Phase 40 Wave 4 for 3-tier plugin discovery.
+   */
+  agentsRoots?: string[];
 }
 
 export interface SkillLoader {

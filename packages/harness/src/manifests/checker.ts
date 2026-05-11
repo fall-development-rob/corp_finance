@@ -14,7 +14,7 @@
  * Run in < 1 second across all manifests; suitable for pre-commit / pre-PR CI.
  */
 
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import { resolve, relative, join, dirname, basename } from "node:path";
 import { parse as parseYaml } from "yaml";
@@ -596,16 +596,76 @@ function checkDriftRules(
 }
 
 // ---------------------------------------------------------------------------
+// Default manifest path discovery (Phase 40 Wave 4)
+// ---------------------------------------------------------------------------
+
+const MANIFEST_PLUGIN_TIERS = [
+  "agent-plugins",
+  "vertical-plugins",
+  "partner-built",
+] as const;
+
+/**
+ * Build the default list of directories to scan for YAML manifests.
+ *
+ * The manifest linter validates reference integrity (from_plugin, system.file,
+ * callable_agents.manifest). The 3 plugin tiers under agent-plugins/,
+ * vertical-plugins/, and partner-built/ contain manifests that use
+ * relative paths anchored to the cfa-core layout; those paths are intentionally
+ * validated only in the canonical cfa-core location. The linter therefore
+ * covers the canonical cfa-core agents + managed-agent-cookbooks by default.
+ *
+ * Callers that want to scan additional tiers can pass explicit manifestPaths.
+ * W5 will update this once agent-plugins manifests are self-contained.
+ */
+export function buildDefaultManifestPaths(repoRoot: string): string[] {
+  const paths: string[] = [];
+
+  // Canonical cfa-core agents (correct relative refs)
+  const cfaCoreAgents = join(repoRoot, "plugins", "cfa-core", "agents", "cfa");
+  if (existsSync(cfaCoreAgents)) paths.push(cfaCoreAgents);
+
+  // Managed-agent cookbooks
+  const cookbooks = join(repoRoot, "managed-agent-cookbooks");
+  if (existsSync(cookbooks)) paths.push(cookbooks);
+
+  return paths;
+}
+
+/**
+ * Build manifest paths across all 3 plugin tiers.
+ * Used when a caller explicitly wants to scan new-tier agents (e.g. CI
+ * after the W5 migration that fixes agent-plugins relative refs).
+ */
+export function buildAllTierManifestPaths(repoRoot: string): string[] {
+  const paths = buildDefaultManifestPaths(repoRoot);
+
+  for (const tier of MANIFEST_PLUGIN_TIERS) {
+    const tierDir = join(repoRoot, "plugins", tier);
+    if (!existsSync(tierDir)) continue;
+    let entries: string[];
+    try {
+      entries = readdirSync(tierDir);
+    } catch {
+      continue;
+    }
+    for (const plugin of entries) {
+      const agentsDir = join(tierDir, plugin, "agents");
+      if (existsSync(agentsDir)) paths.push(agentsDir);
+    }
+  }
+
+  return paths;
+}
+
+// ---------------------------------------------------------------------------
 // Main check function
 // ---------------------------------------------------------------------------
 
 export async function checkManifests(opts: CheckOptions): Promise<ManifestCheckReport> {
   const { repoRoot, strict = false } = opts;
 
-  const defaultPaths = [
-    join(repoRoot, "plugins/cfa-core/agents/cfa"),
-    join(repoRoot, "managed-agent-cookbooks"),
-  ];
+  const defaultPaths = buildDefaultManifestPaths(repoRoot);
   const scanPaths = (opts.manifestPaths ?? defaultPaths).map((p) =>
     resolve(repoRoot, p),
   );
