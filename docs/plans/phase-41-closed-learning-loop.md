@@ -563,12 +563,13 @@ Phase 41 is purely additive. It wires together existing phases without modifying
 
 | Wave | Action | Duration | LOC delta | Gate |
 |---|---|---|---|---|
+| W0 | NEW (Q1 resolution): `packages/harness/src/reasoning/s3-bank.ts` — `S3ReasoningBank` impl behind existing `ReasoningBank` interface; env-driven backend selection (`CFA_BANK_BACKEND=local|s3`); concurrency via S3 ETag on `index.jsonl`; retry on conflict | 2 days | +280 src + ~80 tests | New unit + integration tests green; existing reasoning-bank tests still pass against local backend |
 | W1 | Scaffold `plugins/agent-plugins/skill-editor/` + `managed-agent-cookbooks/skill-editor/agent.yaml` + 3 subagent yamls; stub `plugin.json` | 1 day | +120 | CI green (no new logic) |
 | W2 | `packages/harness/src/reasoning/outliers.ts` — 4 query functions + `OutlierReport` types + watermark utility | 1.5 days | +280 | `outlier-detection.test.ts` green |
-| W3 | Proposal-writer output logic — diff generation, path guard, sidecar JSON writer | 1.5 days | +220 | `proposal-writer-path-guard.test.ts` green |
-| W4 | CI cron workflow + threshold-driven hint in CLI + metadata writer addition in indexer | 1 day | +150 | `skill-editor-cookbook.test.ts` green; full test suite green |
+| W3 | Proposal-writer output logic — diff generation, path guard, sidecar JSON writer + `scripts/archive-skill-proposal.sh` (Q3 resolution) | 1.5 days | +250 | `proposal-writer-path-guard.test.ts` green; archive script idempotent |
+| W4 | `skill-editor-cron.yml` workflow + `workflow_dispatch` trigger (Q2: NO push-to-main trigger) + threshold-driven hint in CLI + metadata writer addition in indexer | 1 day | +150 | `skill-editor-cookbook.test.ts` green; full test suite green; CI cron uses `CFA_BANK_S3_BUCKET` secret |
 
-**Total: ~5-6 working days. Estimated implementation LOC: ~770 net new lines. Test LOC: ~350.**
+**Total: ~7-8 working days. Estimated implementation LOC: ~1,080 net new lines (was ~770 — added W0 S3 backend). Test LOC: ~430 (was 350).**
 
 ---
 
@@ -606,13 +607,36 @@ A: The outlier-detector returns `clusters: []`. The parent cookbook returns `pro
 **Q: Should `validation_failed` indexing be added to Phase 34 or Phase 41?**
 A: Phase 41 adds 2-3 lines to the existing Phase 34 indexer callback. The change is backward-compatible (new optional metadata key; existing entries have it absent, which is treated as `false`).
 
-### Flagged for user decision
+### Resolved in this revision (post-architect, user decisions 2026-05-11)
 
-**Q: Shared reasoning bank for CI cron.** The bank currently lives on the developer's local machine. For the cron workflow to produce useful clusters, the bank needs to be accessible from CI. Options: (a) commit the bank to git LFS; (b) store in a shared cloud object store (S3/GCS); (c) accept that the cron produces no clusters until a shared bank is established and treat the cron as a future-phase activation. Recommendation: option (c) for Phase 41; add bank persistence to the CI job as a Phase 42 infrastructure task.
+**Q1: Shared reasoning bank for CI cron — RESOLVED: build into Phase 41 (S3 backend).**
+The cron workflow needs cross-run bank persistence. Decision: add an `S3ReasoningBank` implementation alongside the existing `RuVectorReasoningBank`, both behind the existing `ReasoningBank` interface (Phase 34 abstraction).
 
-**Q: Skill-editor run frequency.** Weekly Monday cron is specified above. Should it also trigger on PR merge (post-merge hook) to catch regressions immediately? This would require a GitHub Actions workflow trigger on `push: branches: [main]`, which could produce noisy proposals if PRs merge frequently. Recommendation: keep weekly; add a `workflow_dispatch` for on-demand.
+- New file: `packages/harness/src/reasoning/s3-bank.ts` (~250 LOC)
+  - Implements `ReasoningBank` via S3 PUT/GET against a configured bucket
+  - Reads existing index on `recallSimilar`/`recallByGraph`; appends on `index`
+  - Object-keys structure: `cfa-bank/<agent_id>/<timestamp>-<audit_id>.json` per entry; a single `cfa-bank/index.jsonl` for query
+  - Concurrency: optimistic concurrency via S3 ETag on the index file; retry on conflict
+- Env config: `CFA_BANK_S3_BUCKET`, standard AWS credential chain (env vars, ~/.aws/credentials, IAM role)
+- Wave plan adds W0 (shared bank backend) before W1; new total: 5 waves over ~8-9 days (was 4 / 6-7 days)
 
-**Q: Proposal retention policy.** The `docs/proposed-skill-updates/` directory will accumulate diffs over time. Should a cleanup step archive or delete proposals older than N weeks? Not specified in this design; flag for the implementation team.
+CI workflow uses `CFA_BANK_S3_BUCKET` via GitHub Actions secret. Local developers can EITHER use the same shared S3 bank (their dispatches feed the same pool) OR stay on the local RuVector bank (default; opt into S3 by setting `CFA_BANK_BACKEND=s3` env).
+
+This makes the cron useful from day one — every Monday it sees the cumulative bank state across all dispatches (local + CI + production).
+
+**Q2: PR-merge trigger — RESOLVED: NO merge trigger.**
+Skill-editor runs only via the weekly Monday cron and `workflow_dispatch`. No `push: branches: [main]` trigger. Rationale: a busy week could produce too many proposals; weekly cadence + on-demand triggers cover the iteration loop without noise.
+
+**Q3: Proposal retention — RESOLVED: archive merged to month-bucketed dir.**
+When a proposal is applied (manually or via a future merge-and-archive script), the proposal file moves from `docs/proposed-skill-updates/<file>.diff` to `docs/proposed-skill-updates/archive/<YYYY-MM>/<file>.diff`. Unmerged proposals stay top-level. Pattern matches `docs/plans/archive/` from Phase 40 W7.
+
+Implementation: a small `scripts/archive-skill-proposal.sh` runs as part of the human merge flow:
+```bash
+./scripts/archive-skill-proposal.sh <proposal-filename>
+# Moves the proposal + its metadata sidecar to docs/proposed-skill-updates/archive/$(date +%Y-%m)/
+```
+
+No automatic TTL or staleness logic in Phase 41. If unmerged proposals accumulate, humans clean up; can automate later if needed.
 
 ---
 
