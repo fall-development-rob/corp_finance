@@ -20,6 +20,24 @@ packages/vendor-mcp-server  87 vendor tools — paid (LSEG, S&P, FactSet, Mornin
 packages/agents             9-analyst pipeline with HNSW routing and swarm coordination
 ```
 
+### Plugin layout (three-tier, Phase 40)
+
+```
+plugins/
+  agent-plugins/    24 plugins — one per deployable agent (9 specialists + 15 cookbooks)
+  vertical-plugins/ 11 plugins — one per business domain (equity-research, ib, pe, fund-admin,
+                      operations, wealth-management, financial-analysis, foundations, macro,
+                      derivatives stub, fixed-income stub)
+  partner-built/    10 plugins — one per data vendor (lseg, sp-global, factset, moodys,
+                      morningstar, pitchbook, fmp, free-data, aiera stub, daloopa stub)
+  cfa-core/         compute backbone — WASM/NAPI MCP server, 4 corp-finance-tools-* skills,
+                      specflow, cfa-managed-agent, security/audit hooks
+```
+
+Each plugin carries a `.claude-plugin/plugin.json` manifest; partner-built plugins also carry
+a `.mcp.json` for MCP server endpoint registration. See `docs/adr/ADR-043-three-tier-plugin-architecture.md`
+for the full decision record.
+
 ## Quick Start
 
 ### As an MCP Server
@@ -116,7 +134,7 @@ cfa analyze -i
 |----------|-------------|
 | [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) | What runs without paid feeds, and how to add free / paid layers |
 | **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** | Full technical reference |
-| `docs/adr/` | Architecture Decision Records (ADR-001 to ADR-013) |
+| `docs/adr/` | Architecture Decision Records (ADR-015 to ADR-043) |
 | `docs/prd/` | Product Requirements Documents |
 | `docs/ddd/` | Domain-Driven Design documents |
 | `docs/contracts/` | Executable specification contracts |
