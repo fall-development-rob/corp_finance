@@ -267,5 +267,10 @@ export function createHandoffOrchestrator(
     return validatePayload(target, payload);
   }
 
-  return { execute, isAllowed, validatePayload: publicValidatePayload };
+  // W6 Gap 1: expose resolveAgent so agent-loop can look up target outputSchema
+  function publicResolveAgent(slug: string) {
+    return resolveAgent(slug);
+  }
+
+  return { execute, isAllowed, validatePayload: publicValidatePayload, resolveAgent: publicResolveAgent };
 }

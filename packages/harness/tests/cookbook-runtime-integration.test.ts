@@ -448,10 +448,9 @@ describe("Happy path: full credit-analyst 3-stage pipeline", () => {
     expect(parentRecord).not.toBeNull();
     expect(parentRecord!.agent_id).toBe(PARENT_ID);
 
-    // In the handoff-based architecture, child_audit_ids on the parent record
-    // is populated via the delegation path only; handoff subagents produce
-    // separate audit records captured in CookbookDispatchResult.subagentAuditIds
-    // rather than in child_audit_ids.
+    // W6 Gap 2 closed: handoff subagents now populate child_audit_ids on the parent record
+    // (mirroring the delegation path). subagentAuditIds in CookbookDispatchResult are also
+    // set for convenience. Both must reference the same 3 subagent audit ids.
     // Verify: at least 4 records total (parent + 3 subagents)
     expect(records.size).toBeGreaterThanOrEqual(4);
 
@@ -459,14 +458,26 @@ describe("Happy path: full credit-analyst 3-stage pipeline", () => {
     expect(result.subagentAuditIds).toBeDefined();
     expect(result.subagentAuditIds!.length).toBe(3);
 
+    // Gap 2: parent's child_audit_ids must include all 3 subagent audit ids
+    expect(parentRecord!.child_audit_ids).toBeDefined();
+    expect(parentRecord!.child_audit_ids.length).toBe(3);
+    for (const subId of result.subagentAuditIds!) {
+      expect(parentRecord!.child_audit_ids).toContain(subId);
+    }
+
     // Each subagent audit id must be readable
     for (const subId of result.subagentAuditIds!) {
       const subRecord = await sink.read(subId);
       expect(subRecord, `subagent audit record ${subId} missing from store`).not.toBeNull();
     }
 
-    // The audit chain (considered independently as separate subtrees) verifies clean
-    // (no broken parent/child references within each subtree)
+    // W6 Gap 3 closed: each subagent record's parent_audit_id must link to the parent
+    for (const subId of result.subagentAuditIds!) {
+      const subRecord = await sink.read(subId);
+      expect(subRecord!.parent_audit_id, `subagent ${subId} missing parent_audit_id`).toBe(parentAuditId);
+    }
+
+    // The full audit chain (parent + subagents) must now verify clean as a single tree
     const allRecords = [...records.values()];
     const verify = verifyAuditChain(allRecords);
     expect(verify.ok, `audit chain integrity issues: ${verify.issues.join("; ")}`).toBe(true);
@@ -514,7 +525,7 @@ describe("Happy path: full credit-analyst 3-stage pipeline", () => {
 // ---------------------------------------------------------------------------
 
 describe("Schema enforcement: output_schema validation against cookbook schemas", () => {
-  it("Test 5: data-reader output missing 'ticker' fails parseAndValidate; dispatch completes", async () => {
+  it("Test 5: data-reader output missing 'ticker' fails parseAndValidate; handoff returns is_error (W6 Gap 1)", async () => {
     const missingTickerOutput = JSON.stringify({
       issuer: "Apple Inc.",
       // ticker deliberately omitted
@@ -531,11 +542,14 @@ describe("Schema enforcement: output_schema validation against cookbook schemas"
     expect(schemaCheck.errors.some((e) => e.message.includes("ticker"))).toBe(true);
     expect(schemaCheck.errors.some((e) => e.schemaKeyword === "required")).toBe(true);
 
-    // The handoff path completes normally regardless (no output_schema gate on handoff)
+    // W6 Gap 1 closed: the handoff path now validates output_schema.
+    // Invalid output causes the handoff to return is_error: true (ok: false).
+    // The overall dispatch still completes — the chief sees an error tool_result
+    // and continues with the next turn from the sequential provider.
     const provider = makeSequentialProvider([
       { kind: "handoff", target: DATA_READER_ID, payload: { ticker: "AAPL" } },
       { kind: "text", text: missingTickerOutput },
-      { kind: "text", text: "received data-reader output." },
+      { kind: "text", text: "received data-reader output with validation error." },
     ]);
 
     const { events, onEvent } = collectEvents();
@@ -544,12 +558,12 @@ describe("Schema enforcement: output_schema validation against cookbook schemas"
     expect(result).toBeDefined();
     expect(typeof result.finalText).toBe("string");
 
-    // The handoff itself succeeds (handoff path doesn't validate output_schema)
+    // W6 Gap 1: handoff now returns is_error=true when output_schema validation fails
     const dataReaderReturn = (events.filter((e) => e.type === "handoff_returned") as Array<
       Extract<DispatchEvent, { type: "handoff_returned" }>
     >).find((e) => e.target_agent === DATA_READER_ID);
     expect(dataReaderReturn).toBeDefined();
-    expect(dataReaderReturn!.ok).toBe(true);
+    expect(dataReaderReturn!.ok).toBe(false);
   });
 
   it("Test 6: synthetic_rating 'ZZZ' fails enum validation in parseAndValidate", async () => {
@@ -622,7 +636,8 @@ describe("Schema enforcement: output_schema validation against cookbook schemas"
       Extract<DispatchEvent, { type: "handoff_returned" }>
     >).find((e) => e.target_agent === REPORTER_ID);
     expect(reporterReturn).toBeDefined();
-    // handoff path doesn't validate output — passes through raw text
+    // W6 Gap 1: handoff now validates output_schema. Markdown-fenced JSON is unwrapped
+    // by extractJsonFromMarkdown before validation, so valid JSON in fences still passes.
     expect(reporterReturn!.ok).toBe(true);
     void wrappedNoLabel; // used above
   });
@@ -782,10 +797,17 @@ describe("Audit chain linkage", () => {
     expect(parentRecord).not.toBeNull();
     expect(parentRecord!.agent_id).toBe(PARENT_ID);
 
-    // In the handoff-based architecture, subagent audit ids are returned in
-    // CookbookDispatchResult.subagentAuditIds (not in parent.child_audit_ids)
+    // W6 Gap 2+3 closed: subagent audit ids appear in BOTH CookbookDispatchResult.subagentAuditIds
+    // AND parent.child_audit_ids; each subagent record's parent_audit_id links back to parent.
     expect(result.subagentAuditIds).toBeDefined();
     expect(result.subagentAuditIds!.length).toBe(3);
+
+    // Gap 2: parent's child_audit_ids must include all 3 subagent audit ids
+    expect(parentRecord!.child_audit_ids).toBeDefined();
+    expect(parentRecord!.child_audit_ids.length).toBe(3);
+    for (const subId of result.subagentAuditIds!) {
+      expect(parentRecord!.child_audit_ids).toContain(subId);
+    }
 
     // Every subagent audit record must exist in the file store
     for (const subId of result.subagentAuditIds!) {
@@ -793,7 +815,13 @@ describe("Audit chain linkage", () => {
       expect(subRecord, `subagent audit record ${subId} missing`).not.toBeNull();
     }
 
-    // Full chain integrity (each record's parent/child references are internally consistent)
+    // Gap 3: each subagent record's parent_audit_id must link to the parent
+    for (const subId of result.subagentAuditIds!) {
+      const subRecord = await audit.read(subId);
+      expect(subRecord!.parent_audit_id, `subagent ${subId} missing parent_audit_id`).toBe(parentAuditId);
+    }
+
+    // Full chain integrity (parent → subagents form a single connected tree)
     const allRecords = await audit.list();
     const verify = verifyAuditChain(allRecords);
     expect(verify.ok, `Audit chain integrity issues: ${verify.issues.join("; ")}`).toBe(true);

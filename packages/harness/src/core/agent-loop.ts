@@ -60,6 +60,7 @@ import {
   createHandoffTool,
   executeHandoffCall,
   isHandoffToolName,
+  type HandoffCallResult,
 } from "../handoff/handoff-tool.js";
 
 const DEFAULT_MAX_TURNS = 25;
@@ -101,7 +102,7 @@ function extractJsonFromMarkdown(text: string): string {
 }
 
 export async function dispatch(options: DispatchOptions): Promise<DispatchResult> {
-  const { agent, prompt, mcp, onEvent, audit, session, parentAuditId } = options;
+  const { agent, prompt, mcp, onEvent, audit, session, parentAuditId, auditIdOverride } = options;
   const depth = options.depth ?? 0;
   const maxRecursion = agent.maxRecursionDepth ?? 0;
 
@@ -114,7 +115,9 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
   const maxTurns = options.maxTurns ?? DEFAULT_MAX_TURNS;
 
   // Wave 4 audit/session bookkeeping
-  const auditId = audit ? randomUUID() : undefined;
+  // W6 Gap 3: use caller-supplied auditIdOverride when present so dispatchCookbook
+  // can pre-generate the parent's id and thread it as parentAuditId on subagent dispatches.
+  const auditId = audit ? (auditIdOverride ?? randomUUID()) : undefined;
   const sessionId = session ? randomUUID() : undefined;
   const startTime = Date.now();
   const auditToolCalls: AuditToolCall[] = [];
@@ -644,6 +647,16 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
         // REC-4 Wave 2: parallel `initiate_handoff` virtual tool calls. Same
         // audit / error-capture pattern as recallsP; the orchestrator handles
         // all rejection gates internally and never throws.
+        //
+        // W6 Gap 1+2: build a schema resolver so executeHandoffCall can
+        // validate the subagent's finalText and return its audit id.
+        const resolveTargetSchema = options.handoff
+          ? async (slug: string): Promise<Record<string, unknown> | undefined> => {
+              const ag = await options.handoff!.resolveAgent(slug);
+              return ag?.outputSchema;
+            }
+          : undefined;
+
         const handoffsP = Promise.all(
           handoffCalls.map(async (call): Promise<ToolResult> => {
             if (!options.handoff) {
@@ -654,11 +667,12 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
               };
             }
             const startsAt = Date.now();
-            const result = await executeHandoffCall(
+            const { result, subagentAuditId }: HandoffCallResult = await executeHandoffCall(
               call,
               options.handoff,
               agent.id,
               depth,
+              resolveTargetSchema,
             );
             const durMs = Date.now() - startsAt;
             const targetSlug = typeof call.input["target"] === "string" ? call.input["target"] : "(unknown)";
@@ -670,6 +684,10 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
               ok: !result.is_error,
               duration_ms: durMs,
             });
+            // W6 Gap 2: thread subagent audit id into parent's child_audit_ids
+            if (audit && subagentAuditId) {
+              childAuditIds.push(subagentAuditId);
+            }
             if (audit) {
               auditToolCalls.push({
                 id: call.id,
