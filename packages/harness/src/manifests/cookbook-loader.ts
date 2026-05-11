@@ -1,10 +1,10 @@
 /**
  * Cookbook deployment loader — Phase 33 smoke gate.
  *
- * Loads managed-agent-cookbook agent.json + subagents/*.json into AgentDef,
+ * Loads managed-agent-cookbook agent.yaml + subagents/*.yaml into AgentDef,
  * using the same projection logic as the YAML manifest loader (yaml-loader.ts).
- * JSON is valid YAML 1.2, but we use JSON.parse directly for speed and to get
- * line/column parse errors from V8 rather than the yaml library.
+ * yaml.parse() accepts both YAML and JSON 1.2, so legacy .json cookbooks
+ * (if any remain) continue to load without errors.
  *
  * The projection is a faithful port of loadAgentByPath from yaml-loader.ts;
  * both implementations share the same AgentManifest → AgentDef mapping rules.
@@ -13,6 +13,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
+import { parse as parseYaml } from "yaml";
 import type { AgentDef } from "../types.js";
 import type { SkillLoader } from "../skills/types.js";
 import { parseFrontmatter } from "../skills/frontmatter-parser.js";
@@ -43,9 +44,9 @@ export interface LoadedCookbook {
 }
 
 export interface CookbookLoader {
-  /** Return every immediate subdirectory of cookbooksRoot that contains agent.json. */
+  /** Return every immediate subdirectory of cookbooksRoot that contains agent.yaml (or legacy agent.json). */
   list(): Promise<string[]>;
-  /** Load one cookbook by slug: parent agent.json + all subagents/*.json → AgentDef[]. */
+  /** Load one cookbook by slug: parent agent.yaml + all subagents/*.yaml → AgentDef[]. */
   load(slug: string): Promise<LoadedCookbook>;
   /** Load every cookbook under cookbooksRoot in parallel. */
   loadAll(): Promise<LoadedCookbook[]>;
@@ -201,7 +202,7 @@ async function projectManifest(
           `Cycle detected in callable_agents: ${[...next, subPath].join(" → ")}`,
         );
       }
-      const subManifest = await readManifestJson(subPath);
+      const subManifest = await readManifestYaml(subPath);
       const subDef = await projectManifest(subPath, subManifest, skillLoader, new Set(next));
       callableAgents.push(subDef);
     }
@@ -235,10 +236,11 @@ async function projectManifest(
 }
 
 // ---------------------------------------------------------------------------
-// JSON reader with descriptive errors
+// YAML/JSON reader with descriptive errors
+// yaml.parse() accepts both YAML and JSON 1.2.
 // ---------------------------------------------------------------------------
 
-async function readManifestJson(filePath: string): Promise<AgentManifest> {
+async function readManifestYaml(filePath: string): Promise<AgentManifest> {
   if (!existsSync(filePath)) {
     throw new Error(`Cookbook manifest not found at: ${filePath}`);
   }
@@ -250,9 +252,9 @@ async function readManifestJson(filePath: string): Promise<AgentManifest> {
   }
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = parseYaml(raw);
   } catch (err) {
-    throw new Error(`Failed to parse JSON at ${filePath}: ${(err as Error).message}`);
+    throw new Error(`Failed to parse YAML at ${filePath}: ${(err as Error).message}`);
   }
   if (
     typeof parsed !== "object" ||
@@ -283,33 +285,43 @@ export function createCookbookLoader(opts: CookbookLoaderOptions): CookbookLoade
     }
     const slugs: string[] = [];
     for (const entry of entries) {
+      // Prefer .yaml; fall back to legacy .json
+      const agentYamlPath = resolve(cookbooksRoot, entry, "agent.yaml");
       const agentJsonPath = resolve(cookbooksRoot, entry, "agent.json");
-      if (existsSync(agentJsonPath)) slugs.push(entry);
+      if (existsSync(agentYamlPath) || existsSync(agentJsonPath)) slugs.push(entry);
     }
     return slugs.sort();
   }
 
+  function resolveAgentManifestPath(dir: string): string {
+    const yamlPath = resolve(dir, "agent.yaml");
+    if (existsSync(yamlPath)) return yamlPath;
+    const jsonPath = resolve(dir, "agent.json");
+    if (existsSync(jsonPath)) return jsonPath;
+    return yamlPath; // let the reader produce the descriptive error
+  }
+
   async function load(slug: string): Promise<LoadedCookbook> {
     const cookbookDir = resolve(cookbooksRoot, slug);
-    const agentJsonPath = resolve(cookbookDir, "agent.json");
+    const agentManifestPath = resolveAgentManifestPath(cookbookDir);
 
-    if (!existsSync(agentJsonPath)) {
+    if (!existsSync(agentManifestPath)) {
       throw new Error(
-        `Cookbook "${slug}" has no agent.json. Expected: ${agentJsonPath}`,
+        `Cookbook "${slug}" has no agent.yaml (or agent.json). Expected: ${agentManifestPath}`,
       );
     }
 
-    const parentManifest = await readManifestJson(agentJsonPath);
+    const parentManifest = await readManifestYaml(agentManifestPath);
     const warnings: string[] = [];
 
     const parent = await projectManifest(
-      agentJsonPath,
+      agentManifestPath,
       parentManifest,
       skillLoader,
       new Set(),
     );
 
-    // Load subagents/*.json
+    // Load subagents/*.yaml (also accepts legacy .json and .yml)
     const subagentsDir = resolve(cookbookDir, "subagents");
     const subagents: AgentDef[] = [];
     if (existsSync(subagentsDir)) {
@@ -320,10 +332,12 @@ export function createCookbookLoader(opts: CookbookLoaderOptions): CookbookLoade
         subFiles = [];
         warnings.push(`Could not read subagents directory: ${subagentsDir}`);
       }
-      const jsonFiles = subFiles.filter((f) => f.endsWith(".json")).sort();
-      for (const filename of jsonFiles) {
+      const manifestFiles = subFiles
+        .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml") || f.endsWith(".json"))
+        .sort();
+      for (const filename of manifestFiles) {
         const subPath = resolve(subagentsDir, filename);
-        const subManifest = await readManifestJson(subPath);
+        const subManifest = await readManifestYaml(subPath);
         const subDef = await projectManifest(subPath, subManifest, skillLoader, new Set());
         subagents.push(subDef);
       }

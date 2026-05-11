@@ -199,3 +199,10 @@ export {
   buildResolverFromAgent,
   buildAllowlistResolver,
 } from "./handoff/index.js";
+
+// Phase 33 skill-driven planning — cookbook dispatch runtime
+export {
+  dispatchCookbook,
+  type CookbookDispatchOptions,
+  type CookbookDispatchResult,
+} from "./runtime/index.js";
