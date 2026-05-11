@@ -336,6 +336,10 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
   let turn = 0;
   const childDispatches: DispatchResult[] = [];
   let totalUsage: { inputTokens: number; outputTokens: number } | undefined;
+  // Phase 41 Wave 4: accumulate delegation/handoff validation failures so
+  // indexAuditRecord can mark the chief's entry with validation_failed: true.
+  let dispatchValidationFailed = false;
+  const dispatchValidationErrors: Array<{ path: string; message: string }> = [];
 
   try {
     while (turn < maxTurns) {
@@ -474,6 +478,9 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
                 const textToValidate = extractJsonFromMarkdown(childResult.finalText);
                 const validation = parseAndValidate(textToValidate, target.outputSchema);
                 if (!validation.ok) {
+                  // Phase 41 W4: record failure so indexAuditRecord marks the chief entry.
+                  dispatchValidationFailed = true;
+                  dispatchValidationErrors.push(...validation.errors);
                   const errorContent = [
                     `# ${target.id} — output schema validation failed`,
                     ``,
@@ -773,11 +780,18 @@ export async function dispatch(options: DispatchOptions): Promise<DispatchResult
     // fail the dispatch. The audit record is the durable source of truth;
     // the bank is a derived, regenerable cache.
     if (options.reasoning && auditRecord && auditId) {
+      // Phase 41 W4: pass accumulated delegation/handoff validation result so
+      // the bank entry is marked with validation_failed: true when any child
+      // output failed schema validation during this dispatch.
+      const validationResult = dispatchValidationFailed
+        ? { ok: false, errors: dispatchValidationErrors }
+        : undefined;
       void indexAuditRecord({
         bank: options.reasoning,
         record: auditRecord,
         prompt,
         finalText,
+        ...(validationResult !== undefined ? { validationResult } : {}),
       }).catch((err) => {
         emit(onEvent, {
           type: "reasoning_index_failed",

@@ -15,3 +15,10 @@ export * from "./recall-graph-tool.js";
 export { createS3ReasoningBank, createS3ReasoningBankWithEmbed, type S3ReasoningBankOptions, type S3ReasoningBankWithEmbedOptions } from "./s3-bank.js";
 // Phase 41 Wave 2 — outlier detection
 export * from "./outliers.js";
+// Phase 41 Wave 4 — bank factory (env-driven backend selector)
+export {
+  createReasoningBank,
+  reasoningBankConfigFromEnv,
+  type BankBackend,
+  type BankFactoryOptions,
+} from "./bank-factory.js";

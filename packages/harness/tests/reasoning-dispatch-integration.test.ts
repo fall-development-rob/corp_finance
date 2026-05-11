@@ -227,7 +227,118 @@ describe("reasoning bank dispatch integration — Wave 2", () => {
     expect(result.finalText).toBe("Final reasoning bank acceptance.");
     // Wait briefly to ensure no async indexing leaked.
     await new Promise((r) => setTimeout(r, 50));
+    bank = await createRuVectorBank({
+      dir: bankDir,
+      embed: createDeterministicEmbedder({ dim: DIM }),
+      dimensions: DIM,
+    });
     const hits = await bank.recallSimilar("no audit configured");
     expect(hits.length).toBe(0);
+  });
+
+  // Phase 41 W4: validate that delegation schema failures are propagated into
+  // the indexed entry's metadata (validation_failed: true) when the chief has
+  // both audit and reasoning configured and the specialist has an outputSchema.
+  it("marks indexed entry with validation_failed=true when a delegation output schema check fails", async () => {
+    const audit = createFileAuditSink({ dir: auditDir });
+    bank = await createRuVectorBank({
+      dir: bankDir,
+      embed: createDeterministicEmbedder({ dim: DIM }),
+      dimensions: DIM,
+    });
+
+    // Specialist with an outputSchema that requires { score: number }.
+    // Use "tiny_tool" in tools list so ACL validation passes.
+    const specialist: AgentDef = {
+      id: "schema-specialist",
+      description: "Specialist with strict output schema.",
+      systemPrompt: "Return a JSON object with score.",
+      tools: ["tiny_tool"],
+      maxRecursionDepth: 0,
+      model: "claude-test",
+      maxTokens: 1024,
+      outputSchema: {
+        type: "object" as const,
+        properties: { score: { type: "number" } },
+        required: ["score"],
+        additionalProperties: false,
+      },
+    };
+
+    const chief: AgentDef = {
+      id: "chief-analyst",
+      description: "Chief that delegates.",
+      systemPrompt: "Delegate and summarize.",
+      tools: ["tiny_tool"],
+      maxRecursionDepth: 1,
+      model: "claude-test",
+      maxTokens: 1024,
+    };
+
+    // Provider: chief delegates on turn 1; specialist returns invalid JSON on turn 2; chief ends on turn 3.
+    let turn = 0;
+    const provider: Provider = {
+      name: "anthropic" as const,
+      async turn(_req: ProviderTurnRequest): Promise<ProviderTurnResponse> {
+        turn += 1;
+        if (turn === 1) {
+          // Chief delegates to specialist.
+          return {
+            message: {
+              role: "assistant",
+              content: [
+                { type: "tool_use", id: "del-1", name: "delegate_to_schema_specialist", input: { sub_prompt: "score this" } },
+              ],
+            },
+            stopReason: "tool_use",
+          };
+        }
+        if (turn === 2) {
+          // Specialist returns invalid output (missing required "score" field).
+          return {
+            message: {
+              role: "assistant",
+              content: [{ type: "text", text: '{"result": "ok"}' }],
+            },
+            stopReason: "end_turn",
+          };
+        }
+        // Chief's final turn after delegation error result.
+        return {
+          message: {
+            role: "assistant",
+            content: [{ type: "text", text: "Chief finished with delegation error." }],
+          },
+          stopReason: "end_turn",
+        };
+      },
+    };
+
+    const mcp = makeMCPClient([tinyTool]);
+    const result = await dispatch({
+      agent: chief,
+      prompt: "Test delegation schema validation wiring.",
+      provider,
+      mcp,
+      audit,
+      reasoning: bank,
+      delegates: [specialist],
+    });
+
+    expect(result.auditId).toBeDefined();
+
+    // Wait for fire-and-forget indexing to flush.
+    let indexed: ReasoningEntry[] = [];
+    for (let i = 0; i < 30; i++) {
+      indexed = await bank.recallByGraph({ agent_id: "chief-analyst" });
+      if (indexed.length > 0) break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+
+    expect(indexed.length).toBe(1);
+    const entry = indexed[0]!;
+    // The chief's entry must carry validation_failed: true because the
+    // delegation to schema-specialist failed output schema validation.
+    expect(entry.metadata["validation_failed"]).toBe(true);
   });
 });

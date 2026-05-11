@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * CFA Harness CLI entry point — Phase 31.
+ * CFA Harness CLI entry point — Phase 31 / Phase 41 Wave 3.
  *
  * Subcommands:
  *   cfa-harness run --agent <id> --prompt <text|@file> [options]
  *   cfa-harness cookbook run <slug> --prompt <text|@file> [options]
+ *   cfa-harness skill-editor analyse|apply|apply-all [options]
  *
  * Agent dispatch (legacy / default):
  *   --agent     (required) Agent id to look up in the registry.
@@ -27,11 +28,17 @@
  *   --audit-dir <dir>
  *   --session-dir <dir>
  *
+ * Skill-editor (Phase 41 Wave 3):
+ *   cfa-harness skill-editor analyse --window 7d --output docs/proposed-skill-updates/
+ *   cfa-harness skill-editor apply <file.yaml> [--dry-run]
+ *   cfa-harness skill-editor apply-all <dir> [--dry-run]
+ *
  *   --help      Print this message and exit 0.
  */
 
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { runSkillEditorSubcommand } from "./skill-editor.js";
 import { createAnthropicProvider } from "../core/providers/anthropic.js";
 import { createStdioMCPClient } from "../mcp-client/stdio.js";
 import {
@@ -61,24 +68,27 @@ interface ParsedArgs {
 
 function printUsage(): void {
   process.stderr.write(`\
-Usage: cfa-harness run --agent <id> --prompt <text|@file> [options]
+Usage: cfa-harness <subcommand> [options]
 
-Required:
+Subcommands:
+  run                     Dispatch a single agent (default)
+  cookbook run <slug>     Run a managed-agent cookbook
+  skill-editor            Detect outliers and apply structured remediations
+
+Run (default):
   --agent <id>            Agent id (e.g. chief-analyst)
   --prompt <value>        Inline text, or @<path> to read from a file
-
-Output:
   --output <path>         Write final text to file instead of stdout
   --max-turns <N>         Max model turns (default 25)
-
-Audit + memory (Wave 4):
   --audit-dir <dir>       Write sha256-hashed AuditRecord per dispatch
   --session-dir <dir>     Persist SessionState per dispatch (replay support)
   --events <path>         Write DispatchEvent log + result JSON to file
+  --delegates             Enable chief→specialist delegation
 
-Delegation (Wave 2):
-  --delegates             Enable chief→specialist delegation (chief sees
-                          the 8 cfa specialists as delegate_to_<id> tools)
+Skill-editor:
+  skill-editor analyse --window 7d --output docs/proposed-skill-updates/
+  skill-editor apply <file.yaml> [--dry-run]
+  skill-editor apply-all <dir> [--dry-run]
 
   --help                  Print this message and exit
 
@@ -457,7 +467,17 @@ function isCookbookSubcommand(): boolean {
   return args[0] === "cookbook" || (args[0] === "run" && args[1] === "cookbook");
 }
 
+function isSkillEditorSubcommand(): boolean {
+  const args = process.argv.slice(2);
+  return args[0] === "skill-editor";
+}
+
 export async function main(): Promise<void> {
+  if (isSkillEditorSubcommand()) {
+    await runSkillEditorSubcommand(process.argv.slice(3));
+    return;
+  }
+
   if (isCookbookSubcommand()) {
     await runCookbookSubcommand();
     return;
