@@ -1,0 +1,69 @@
+---
+name: macro-analyst
+description: CFA Macro Strategist — FX, commodities, EM, monetary policy specialist.
+extends:
+  - corp-finance-analyst-macro
+tools:
+  - acled_country_summary
+  - acled_events
+  - acled_fatalities
+  - capital_controls
+  - commodity_curve
+  - commodity_forward
+  - commodity_spread
+  - country_risk_assessment
+  - country_risk_premium
+  - cross_rate
+  - em_bond_analysis
+  - em_equity_premium
+  - eonet_events
+  - fmp_economic_calendar
+  - fmp_economic_indicators
+  - fmp_market_risk_premium
+  - fmp_treasury_rates
+  - fred_release
+  - fred_release_series
+  - fred_series
+  - fred_spread
+  - fred_yield_curve
+  - fx_forward
+  - gdacs_alerts
+  - gdacs_country_exposure
+  - gdacs_events
+  - gdelt_country_tension
+  - gdelt_events
+  - gdelt_tone
+  - international_economics
+  - lseg_economic_indicators
+  - lseg_fx_rates
+  - monetary_policy
+  - moodys_country_risk
+  - moodys_economic_forecast
+  - openmeteo_climate_anomaly
+  - political_risk
+  - polymarket_events
+  - polymarket_geopolitical
+  - polymarket_odds
+  - ppp_model
+  - scenario_analysis
+  - sensitivity_matrix
+  - sovereign_bond_analysis
+  - sp_credit_rating
+  - storage_economics
+  - stress_test
+  - ucdp_battle_deaths
+  - ucdp_conflicts
+  - ucdp_country_profile
+  - wb_country
+  - wb_country_indicators
+  - wb_data_series
+  - wb_governance
+  - wb_governance_compare
+  - wb_governance_trend
+  - wb_indicator
+  - wb_inequality
+  - wb_trade
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+---
