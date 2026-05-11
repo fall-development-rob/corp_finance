@@ -1,0 +1,13 @@
+{
+  "name": "wealth-management",
+  "version": "0.1.0",
+  "description": "Wealth management client workflows: client meeting prep, financial planning, portfolio rebalancing, tax-loss harvesting, client reports, and investment proposals",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "wealth-management"]
+}

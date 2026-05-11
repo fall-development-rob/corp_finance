@@ -1,0 +1,13 @@
+{
+  "name": "chief-analyst",
+  "version": "0.1.0",
+  "description": "CFA chief analyst — orchestrates specialist agents, coordinates multi-domain research, synthesises investment theses and final deliverables",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "chief-analyst"]
+}

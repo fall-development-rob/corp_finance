@@ -1,0 +1,13 @@
+{
+  "name": "private-equity",
+  "version": "0.1.0",
+  "description": "Private equity deal lifecycle workflows: deal sourcing, due diligence, IC memos, LBO returns analysis, unit economics, value creation plans, and portfolio monitoring",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "private-equity"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "valuation-reviewer",
+  "version": "0.1.0",
+  "description": "Valuation reviewer agent — ingests GP packages, runs valuation template, and stages LP reporting with audit-quality commentary",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "private-markets"]
+}

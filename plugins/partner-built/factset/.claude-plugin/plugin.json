@@ -1,0 +1,13 @@
+{
+  "name": "factset",
+  "version": "0.1.0",
+  "description": "FactSet — multi-asset financial data, portfolio analytics, fundamental estimates, institutional ownership, and factor exposure via FactSet MCP",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vendor", "factset"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "private-markets-analyst",
+  "version": "0.1.0",
+  "description": "CFA private markets analyst — PE/VC LBO models, fund economics, GP/LP waterfalls, real assets, infrastructure finance, and private credit",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "private-markets"]
+}

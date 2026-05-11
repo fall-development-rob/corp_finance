@@ -1,0 +1,13 @@
+{
+  "name": "fmp",
+  "version": "0.1.0",
+  "description": "Financial Modeling Prep (FMP) — real-time quotes, financial statements, key metrics, earnings, analyst estimates, and 180+ market data endpoints via FMP MCP",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vendor", "fmp"]
+}

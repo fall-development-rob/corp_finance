@@ -1,0 +1,13 @@
+{
+  "name": "sector-research",
+  "version": "0.1.0",
+  "description": "Sector research agent — produces sector overviews, industry PE screens, competitive landscape maps, and thematic idea generation",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "equity"]
+}

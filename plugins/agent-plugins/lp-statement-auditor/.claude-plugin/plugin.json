@@ -1,0 +1,13 @@
+{
+  "name": "lp-statement-auditor",
+  "version": "0.1.0",
+  "description": "LP statement auditor agent — validates NAV tie-out, period-over-period roll-forward, accrual schedules, and distribution waterfall calculations",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "fund-admin"]
+}

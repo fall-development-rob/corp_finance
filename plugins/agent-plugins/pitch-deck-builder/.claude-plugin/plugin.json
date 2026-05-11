@@ -1,0 +1,13 @@
+{
+  "name": "pitch-deck-builder",
+  "version": "0.1.0",
+  "description": "Pitch deck builder agent — assembles M&A teasers, CIMs, IB pitch books, and PE deal presentations from structured financial inputs",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "investment-banking"]
+}

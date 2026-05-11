@@ -1,0 +1,13 @@
+{
+  "name": "model-builder",
+  "version": "0.1.0",
+  "description": "Financial model builder agent — constructs three-statement models, LBOs, DCFs, and sensitivity tables from term sheets and company data",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "modelling"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "financial-analysis",
+  "version": "0.1.0",
+  "description": "Financial analysis workflows: model audit, data hygiene, XLSX and PPTX authoring, competitive analysis, deal document standards, and deck review",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "vertical", "financial-analysis"]
+}

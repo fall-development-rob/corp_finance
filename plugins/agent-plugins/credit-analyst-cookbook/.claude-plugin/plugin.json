@@ -1,0 +1,13 @@
+{
+  "name": "credit-analyst-cookbook",
+  "version": "0.1.0",
+  "description": "Credit analyst cookbook agent — end-to-end leveraged credit workflow: credit screen, debt sizing, covenant compliance, and credit memo production",
+  "author": {
+    "name": "Robert Fall",
+    "email": "hello@rob-otix.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fall-development-rob/cfa_agent",
+  "repository": "https://github.com/fall-development-rob/cfa_agent.git",
+  "keywords": ["cfa", "finance", "credit"]
+}
