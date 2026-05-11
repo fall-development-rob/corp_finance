@@ -1,0 +1,18 @@
+# Canonical policy: block recursive handoff initiation for depth-1 specialists.
+# Use for: any subagent that operates at delegation depth 1 (i.e. is called
+# directly by the chief analyst). Depth-1 specialists must return a result to
+# the chief; they must not chain further handoffs to other specialists, as this
+# creates unaudited delegation chains and can exhaust the tool-call budget
+# before the chief receives a usable result.
+#
+# Usage: merge the `block_tools` list into the target agent manifest.
+#
+# Example manifest fragment (before):
+#   block_tools: []
+#
+# Example manifest fragment (after):
+#   block_tools:
+#     - initiate_handoff
+
+block_tools:
+  - initiate_handoff

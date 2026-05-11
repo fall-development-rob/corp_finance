@@ -1,0 +1,28 @@
+# Canonical constraint: analyst recommendation fields.
+# Use for: output_schema properties that carry an equity or credit
+# analyst recommendation (recommendation, rating_action, analyst_call, stance, etc.).
+# The 6-value list maps to standard sell-side buy/sell scale plus no_recommendation
+# for cases where the analyst declines to rate.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.recommendation"
+#     add_constraint:
+#       enum:
+#         - strong_buy
+#         - buy
+#         - hold
+#         - sell
+#         - strong_sell
+#         - no_recommendation
+
+add_constraint:
+  enum:
+    - strong_buy
+    - buy
+    - hold
+    - sell
+    - strong_sell
+    - no_recommendation

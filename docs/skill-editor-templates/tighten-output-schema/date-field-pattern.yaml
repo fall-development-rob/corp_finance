@@ -1,0 +1,17 @@
+# Canonical constraint: date string fields.
+# Use for: any output_schema property that represents a calendar date
+# (*_date, as_of, period_end, period_start, effective_date, maturity_date, etc.).
+# Expected format: ISO-8601 date only (YYYY-MM-DD), no time component.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.as_of_date"
+#     add_constraint:
+#       pattern: "^[0-9-]{1,10}$"
+#       maxLength: 10
+
+add_constraint:
+  pattern: "^[0-9-]{1,10}$"
+  maxLength: 10

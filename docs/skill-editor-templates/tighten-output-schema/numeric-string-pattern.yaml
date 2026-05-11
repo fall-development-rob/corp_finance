@@ -1,0 +1,19 @@
+# Canonical constraint: numeric-as-string fields.
+# Use for: output_schema properties that carry decimal numbers as strings
+# (price, percentage, ratio, yield, spread, notional, nav, irr, moic, etc.).
+# Allows an optional leading minus sign, one or more digits, and an optional
+# decimal component. Scientific notation is intentionally excluded to prevent
+# precision ambiguity in downstream parsers.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.target_price"
+#     add_constraint:
+#       pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+#       maxLength: 32
+
+add_constraint:
+  pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+  maxLength: 32

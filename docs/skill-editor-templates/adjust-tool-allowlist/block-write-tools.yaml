@@ -1,0 +1,22 @@
+# Canonical policy: block write-side office tools for reader subagents.
+# Use for: any subagent whose system prompt or skill description contains
+# "read", "extract", "ingest", "transcript-reader", "data-reader", or similar
+# language indicating the agent is a consumer, not a producer, of documents.
+# These three tools produce binary artefacts and must not be available to
+# agents that are not explicitly designated as output-authoring agents.
+#
+# Usage: merge the `block_tools` list into the target agent manifest.
+#
+# Example manifest fragment (before):
+#   block_tools: []
+#
+# Example manifest fragment (after):
+#   block_tools:
+#     - office_xlsx_write
+#     - office_pptx_write
+#     - office_docx_write
+
+block_tools:
+  - office_xlsx_write
+  - office_pptx_write
+  - office_docx_write

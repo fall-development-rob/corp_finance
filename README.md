@@ -134,10 +134,12 @@ cfa analyze -i
 |----------|-------------|
 | [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) | What runs without paid feeds, and how to add free / paid layers |
 | **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** | Full technical reference |
-| `docs/adr/` | Architecture Decision Records (ADR-015 to ADR-043) |
+| `docs/adr/` | Architecture Decision Records (ADR-015 to ADR-044) |
 | `docs/prd/` | Product Requirements Documents |
 | `docs/ddd/` | Domain-Driven Design documents |
 | `docs/contracts/` | Executable specification contracts |
+
+Phase 41 closes the learning loop from validation failures back to skill improvements via a fully deterministic pipeline (no LLM in the proposal or apply path). See [`docs/adr/ADR-044-phase-41-deterministic-learning-loop.md`](docs/adr/ADR-044-phase-41-deterministic-learning-loop.md).
 
 ## License
 

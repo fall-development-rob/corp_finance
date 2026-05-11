@@ -1,0 +1,17 @@
+# Canonical constraint: free-text fields.
+# Use for: output_schema properties that contain narrative prose with no
+# predictable structure (executive_summary, notes, commentary, rationale,
+# description, analyst_comment, thesis, disclaimer, etc.).
+# No pattern constraint — a regex would falsely reject valid content.
+# Length cap prevents excessively verbose outputs that inflate audit payloads.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.executive_summary"
+#     add_constraint:
+#       maxLength: 2000
+
+add_constraint:
+  maxLength: 2000

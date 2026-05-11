@@ -1,0 +1,62 @@
+# Canonical constraint: credit rating fields.
+# Use for: output_schema properties that carry a long-term issuer or issue
+# credit rating (credit_rating, issuer_rating, instrument_rating, grade, etc.).
+# The 23-value list covers the full S&P/Fitch scale plus NR (Not Rated).
+# For Moody's-scale ratings, use a separate template or extend this enum.
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.credit_rating"
+#     add_constraint:
+#       enum:
+#         - AAA
+#         - AA+
+#         - AA
+#         - AA-
+#         - A+
+#         - A
+#         - A-
+#         - BBB+
+#         - BBB
+#         - BBB-
+#         - BB+
+#         - BB
+#         - BB-
+#         - B+
+#         - B
+#         - B-
+#         - CCC+
+#         - CCC
+#         - CCC-
+#         - CC
+#         - C
+#         - D
+#         - NR
+
+add_constraint:
+  enum:
+    - AAA
+    - AA+
+    - AA
+    - AA-
+    - A+
+    - A
+    - A-
+    - BBB+
+    - BBB
+    - BBB-
+    - BB+
+    - BB
+    - BB-
+    - B+
+    - B
+    - B-
+    - CCC+
+    - CCC
+    - CCC-
+    - CC
+    - C
+    - D
+    - NR
