@@ -225,3 +225,21 @@ export {
   type CookbookDispatchOptions,
   type CookbookDispatchResult,
 } from "./runtime/index.js";
+
+// Phase 41 Wave 2 — outlier detection over reasoning bank
+export {
+  detectAllOutliers,
+  detectNovelClusters,
+  detectValidationFailures,
+  detectToolThrashing,
+  detectDelegationMismatch,
+  createFileWatermarkStore,
+  computeClusterId,
+  type OutlierReport,
+  type OutlierCluster,
+  type ClusterType,
+  type RecommendedAction,
+  type OutlierDetectorOptions,
+  type RunWindow,
+  type WatermarkStore,
+} from "./reasoning/index.js";

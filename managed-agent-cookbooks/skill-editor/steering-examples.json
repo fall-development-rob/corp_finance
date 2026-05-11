@@ -1,0 +1,18 @@
+[
+  {
+    "event": "Analyse the last 7 days of dispatches for skill-prose gaps",
+    "description": "Standard weekly run — triggers all four cluster queries, generates proposals for actionable clusters"
+  },
+  {
+    "event": "Analyse the last 14 days, focus on validation-failure clusters in equity-research skills",
+    "description": "Targeted validation-failure run — outlier-detector scopes to validation_failed entries, pattern-analyst reads affected ER skill files"
+  },
+  {
+    "event": "Analyse the last 30 days of tool-thrashing dispatches and propose tool-allowlist adjustments",
+    "description": "Tool-thrashing audit — identifies agents calling tools beyond their intended allowlist, proposes adjust-tool-allowlist actions"
+  },
+  {
+    "event": "Check for novel dispatch patterns in the last 7 days that have no matching skill coverage",
+    "description": "Novel-cluster sweep — flags dispatches whose nearest neighbour has cosine distance > 0.7, proposes new skill sections"
+  }
+]
