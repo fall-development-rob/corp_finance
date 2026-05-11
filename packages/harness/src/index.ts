@@ -96,6 +96,14 @@ export {
   createRuVectorBank,
 } from "./reasoning/index.js";
 
+// Phase 41 Wave 0 — S3 reasoning bank
+export {
+  createS3ReasoningBank,
+  createS3ReasoningBankWithEmbed,
+  type S3ReasoningBankOptions,
+  type S3ReasoningBankWithEmbedOptions,
+} from "./reasoning/index.js";
+
 // Phase 34 Wave 2 — Indexer (audit -> reasoning bank bridge)
 export {
   indexAuditRecord,
