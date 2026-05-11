@@ -13,3 +13,5 @@ export * from "./recall-tool.js";
 export * from "./recall-graph-tool.js";
 // Phase 41 Wave 0 — S3 reasoning bank
 export { createS3ReasoningBank, createS3ReasoningBankWithEmbed, type S3ReasoningBankOptions, type S3ReasoningBankWithEmbedOptions } from "./s3-bank.js";
+// Phase 41 Wave 2 — outlier detection
+export * from "./outliers.js";

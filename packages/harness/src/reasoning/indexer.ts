@@ -28,6 +28,19 @@ export interface IndexAuditRecordOptions {
   prompt: string;
   finalText: string;
   metadata?: Record<string, unknown>;
+  /**
+   * Phase 41 Wave 2 — validation result from the Phase 39 output_schema
+   * validator. When provided, `validation_failed` and `validation_errors` are
+   * written into the indexed `ReasoningEntry.metadata` so the outlier-detector
+   * can query `recallByGraph({ metadata: { validation_failed: true } })`.
+   *
+   * Backward-compat: absent ⟹ treated as `validation_failed: false` by
+   * detectors (they use `=== true` which is falsy on undefined).
+   */
+  validationResult?: {
+    ok: boolean;
+    errors?: Array<{ path: string; message: string }>;
+  };
 }
 
 const DELEGATE_PREFIX = "delegate_to_";
@@ -131,8 +144,22 @@ export function extractDelegations(record: AuditRecord): string[] {
 export async function indexAuditRecord(
   opts: IndexAuditRecordOptions,
 ): Promise<void> {
-  const { bank, record, prompt, finalText, metadata } = opts;
+  const { bank, record, prompt, finalText, metadata, validationResult } = opts;
   const promptSummary = summarizePrompt(prompt);
+
+  // Phase 41 W2 — merge validation_failed / validation_errors into metadata.
+  const validationMeta: Record<string, unknown> =
+    validationResult !== undefined
+      ? {
+          validation_failed: !validationResult.ok,
+          validation_errors: validationResult.ok
+            ? undefined
+            : (validationResult.errors ?? [])
+                .map((e) => `${e.path}: ${e.message}`)
+                .slice(0, 10),
+        }
+      : {};
+
   const entry: Omit<ReasoningEntry, "embedding"> = {
     audit_id: record.audit_id,
     agent_id: record.agent_id,
@@ -141,7 +168,7 @@ export async function indexAuditRecord(
     tool_calls: aggregateToolCalls(record),
     delegations: extractDelegations(record),
     result_excerpt: summarizeResult(finalText),
-    metadata: metadata ?? {},
+    metadata: { ...(metadata ?? {}), ...validationMeta },
     timestamp: record.timestamp,
   };
   // Pass `promptSummary` explicitly as queryText so the bank embeds the same
