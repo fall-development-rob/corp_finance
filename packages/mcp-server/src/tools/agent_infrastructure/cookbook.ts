@@ -217,8 +217,8 @@ export async function cookbookValidateAll(
 ): Promise<CookbookValidateAllReport> {
   const workspaceRoot = resolveWorkspaceRoot(input.workspace_root);
   const cookbooksRoot = input.cookbooks_root ?? join(workspaceRoot, "managed-agent-cookbooks");
-  const skillsRoot = input.skills_root ?? join(workspaceRoot, ".claude", "skills");
-  const agentsRoot = input.agents_root ?? join(workspaceRoot, ".claude", "agents", "cfa");
+  const skillsRoot = input.skills_root ?? join(workspaceRoot, "plugins", "cfa-core", "skills");
+  const agentsRoot = input.agents_root ?? join(workspaceRoot, "plugins", "cfa-core", "agents", "cfa");
   const cfaBinary = input.cfa_binary ?? "cfa";
   const exec = input._exec ?? defaultExecFn;
 
@@ -268,12 +268,55 @@ export async function cookbookValidateAllMcp(inputJson: string): Promise<string>
   return JSON.stringify(report);
 }
 
-// CLI invocation: `tsx cookbook.ts [slug ...]` — same code path as the MCP tool.
-// If positional slugs are supplied, validate just those; otherwise validate all.
+// ---------------------------------------------------------------------------
+// CLI flag parser (no external deps)
+// ---------------------------------------------------------------------------
+
+export interface ParsedCliArgs {
+  flags: Record<string, string>;
+  slugs: string[];
+}
+
+export function parseCliArgs(argv: string[]): ParsedCliArgs {
+  const flags: Record<string, string> = {};
+  const slugs: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a.startsWith("--")) {
+      const key = a.slice(2);
+      const next = argv[i + 1];
+      if (next !== undefined && !next.startsWith("--")) {
+        flags[key] = next;
+        i++;
+      } else {
+        flags[key] = "true";
+      }
+    } else {
+      slugs.push(a);
+    }
+  }
+  return { flags, slugs };
+}
+
+// CLI invocation: `tsx cookbook.ts [--flag value ...] [slug ...]` — same code
+// path as the MCP tool. Positional slugs validate just those; omit to validate
+// all. Supported flags:
+//   --skills-root <path>     default: plugins/cfa-core/skills
+//   --agents-root <path>     default: plugins/cfa-core/agents/cfa
+//   --cookbooks-root <path>  default: managed-agent-cookbooks
+//   --cfa-binary <path>      default: cfa (from PATH)
 if (import.meta.url === `file://${process.argv[1]}`) {
   (async () => {
-    const slugs = process.argv.slice(2);
-    const report = await cookbookValidateAll(slugs.length > 0 ? { slugs } : {});
+    const { flags, slugs } = parseCliArgs(process.argv.slice(2));
+    const workspaceRoot = resolveWorkspaceRoot();
+    const report = await cookbookValidateAll({
+      workspace_root: workspaceRoot,
+      skills_root: flags["skills-root"] ?? join(workspaceRoot, "plugins", "cfa-core", "skills"),
+      agents_root: flags["agents-root"] ?? join(workspaceRoot, "plugins", "cfa-core", "agents", "cfa"),
+      cookbooks_root: flags["cookbooks-root"] ?? join(workspaceRoot, "managed-agent-cookbooks"),
+      cfa_binary: flags["cfa-binary"] ?? "cfa",
+      slugs: slugs.length > 0 ? slugs : undefined,
+    });
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
     process.exit(report.all_ok ? 0 : 1);
   })().catch((err) => {

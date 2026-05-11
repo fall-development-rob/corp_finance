@@ -124,38 +124,26 @@ jobs:
           set -euo pipefail
           npm run build -w @robotixai/mcp-utils
 
-      # TODO Phase 40 W6.1: cookbook.ts CLI defaults skills_root to
-      # workspaceRoot/.claude/skills and agents_root to
-      # workspaceRoot/.claude/agents/cfa — both paths were deleted in
-      # commit 8830c52 (architecture: plugins canonical). These stale
-      # defaults are forwarded to `cfa managed-agent validate/deploy` as
-      # --skills-root / --agents-root. All cookbook skills currently use
-      # from_plugin: (relative paths) not from_skill: (slug lookup), so
-      # the stale roots do not cause validation failures today. However:
+      # Phase 40 W6.1 (resolved): cookbook.ts CLI now accepts --skills-root /
+      # --agents-root / --cookbooks-root flags. The defaults in cookbookValidateAll
+      # have been updated to the canonical plugin-tier paths:
+      #   skills: plugins/cfa-core/skills
+      #   agents: plugins/cfa-core/agents/cfa
+      # We pass them explicitly here so the paths are visible in CI logs and
+      # insulated from any future default-change.
       #
-      #   Correct roots after Phase 40 3-tier migration:
-      #     skills: plugins/cfa-core/skills (core tools tier)
-      #             + plugins/vertical-plugins/<vertical>/skills (per vertical)
-      #             + plugins/partner-built/<partner>/skills (per partner)
-      #     agents: plugins/agent-plugins/<slug>/agents (harness agents)
-      #             + plugins/cfa-core/agents/cfa (canonical 9-agent yamls)
-      #
-      #   Blocked by: cookbook.ts CLI entry-point only accepts positional
-      #   slug args; skills_root/agents_root cannot be overridden from the
-      #   workflow without modifying packages/mcp-server/src/tools/
-      #   agent_infrastructure/cookbook.ts to parse --skills-root /
-      #   --agents-root CLI flags (out of scope for W6).
-      #
-      #   Unblock path: add --skills-root / --agents-root CLI flag parsing
-      #   to cookbook.ts (W6.1), then update this step to pass:
-      #     --skills-root ../../plugins/cfa-core/skills
-      #     --agents-root ../../plugins/cfa-core/agents/cfa
+      # Note: only a single --skills-root is passed (W6.1 scope). Multi-root
+      # coverage across all 3 tiers (core + vertical + partner) requires the
+      # upstream `cfa` Rust binary to support multi-value --skills-root. That
+      # is deferred to W6.2 (cross-repo update to corp-finance-core).
       - name: cookbook_validate_all MCP tool (15/15 validate + dry-run deploy)
         shell: bash
-        working-directory: packages/mcp-server
         run: |
           set -euo pipefail
-          npm run cookbooks:validate
+          npm run -w @robotixai/corp-finance-mcp cookbooks:validate -- \
+            --skills-root "$GITHUB_WORKSPACE/plugins/cfa-core/skills" \
+            --agents-root "$GITHUB_WORKSPACE/plugins/cfa-core/agents/cfa" \
+            --cookbooks-root "$GITHUB_WORKSPACE/managed-agent-cookbooks"
 
       # ---------------------------------------------------------------------
       # TypeScript MCP servers: build all four (deps already installed at root)

@@ -15,6 +15,7 @@ import {
   validateOneCookbook,
   cookbookValidateAll,
   cookbookValidateAllMcp,
+  parseCliArgs,
   type ExecFn,
 } from "./cookbook.js";
 
@@ -42,6 +43,121 @@ function makeExecSequence(responses: ExecResponse[]): ExecFn {
     return { stdout: resp.stdout, stderr: "" };
   };
 }
+
+// ---------------------------------------------------------------------------
+// parseCliArgs
+// ---------------------------------------------------------------------------
+
+describe("parseCliArgs", () => {
+  it("parses flags only", () => {
+    const { flags, slugs } = parseCliArgs([
+      "--skills-root", "/sk",
+      "--agents-root", "/ag",
+      "--cookbooks-root", "/cb",
+    ]);
+    expect(flags["skills-root"]).toBe("/sk");
+    expect(flags["agents-root"]).toBe("/ag");
+    expect(flags["cookbooks-root"]).toBe("/cb");
+    expect(slugs).toEqual([]);
+  });
+
+  it("parses slugs only (no flags)", () => {
+    const { flags, slugs } = parseCliArgs(["alpha", "bravo"]);
+    expect(flags).toEqual({});
+    expect(slugs).toEqual(["alpha", "bravo"]);
+  });
+
+  it("parses mixed flags and slugs", () => {
+    const { flags, slugs } = parseCliArgs([
+      "--skills-root", "/sk",
+      "my-cookbook",
+      "--cfa-binary", "/usr/bin/cfa",
+    ]);
+    expect(flags["skills-root"]).toBe("/sk");
+    expect(flags["cfa-binary"]).toBe("/usr/bin/cfa");
+    expect(slugs).toEqual(["my-cookbook"]);
+  });
+
+  it("returns empty flags and slugs for empty argv", () => {
+    const { flags, slugs } = parseCliArgs([]);
+    expect(flags).toEqual({});
+    expect(slugs).toEqual([]);
+  });
+
+  it("treats a flag with no following value as 'true'", () => {
+    const { flags } = parseCliArgs(["--verbose"]);
+    expect(flags["verbose"]).toBe("true");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cookbookValidateAll defaults (skills-root / agents-root)
+// ---------------------------------------------------------------------------
+
+describe("cookbookValidateAll defaults", () => {
+  let tmpRoot: string;
+
+  beforeEach(() => {
+    tmpRoot = mkdtempSync(join(tmpdir(), "cb-defaults-"));
+  });
+
+  afterEach(() => {
+    rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it("uses plugins/cfa-core/skills when skills_root is omitted", async () => {
+    const capturedArgs: string[][] = [];
+    const _exec: ExecFn = async (_bin, args) => {
+      capturedArgs.push(args);
+      return { stdout: '{"ok":true}', stderr: "" };
+    };
+    // validate succeeds; deploy also needs a stub
+    const _execFull: ExecFn = async (_bin, args) => {
+      capturedArgs.push(args);
+      return { stdout: '{"ok":true,"payload":"x"}', stderr: "" };
+    };
+
+    await cookbookValidateAll({
+      workspace_root: tmpRoot,
+      cookbooks_root: join(tmpRoot, "cb"),
+      // skills_root and agents_root intentionally omitted
+      slugs: ["my-agent"],
+      _exec: _execFull,
+    });
+
+    const allArgs = capturedArgs.flat();
+    const srIdx = allArgs.indexOf("--skills-root");
+    expect(srIdx).toBeGreaterThan(-1);
+    expect(allArgs[srIdx + 1]).toContain(join("plugins", "cfa-core", "skills"));
+
+    const arIdx = allArgs.indexOf("--agents-root");
+    expect(arIdx).toBeGreaterThan(-1);
+    expect(allArgs[arIdx + 1]).toContain(join("plugins", "cfa-core", "agents", "cfa"));
+  });
+
+  it("flag values override defaults when supplied", async () => {
+    const capturedArgs: string[][] = [];
+    const _exec: ExecFn = async (_bin, args) => {
+      capturedArgs.push(args);
+      return { stdout: '{"ok":true,"payload":"x"}', stderr: "" };
+    };
+
+    await cookbookValidateAll({
+      workspace_root: tmpRoot,
+      cookbooks_root: join(tmpRoot, "cb"),
+      skills_root: "/custom/skills",
+      agents_root: "/custom/agents",
+      slugs: ["my-agent"],
+      _exec,
+    });
+
+    const allArgs = capturedArgs.flat();
+    const srIdx = allArgs.indexOf("--skills-root");
+    expect(allArgs[srIdx + 1]).toBe("/custom/skills");
+    const arIdx = allArgs.indexOf("--agents-root");
+    expect(allArgs[arIdx + 1]).toBe("/custom/agents");
+  });
+});
 
 // ---------------------------------------------------------------------------
 // discoverCookbookSlugs
