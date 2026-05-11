@@ -243,3 +243,11 @@ export {
   type RunWindow,
   type WatermarkStore,
 } from "./reasoning/index.js";
+
+// Phase 41 Wave 4 — bank factory (env-driven backend selector)
+export {
+  createReasoningBank,
+  reasoningBankConfigFromEnv,
+  type BankBackend,
+  type BankFactoryOptions,
+} from "./reasoning/index.js";

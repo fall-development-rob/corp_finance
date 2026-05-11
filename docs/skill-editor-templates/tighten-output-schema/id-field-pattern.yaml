@@ -1,0 +1,16 @@
+# Canonical regex constraint for identifier fields.
+# Apply to any output_schema property that represents a stable string identifier
+# (ticker, CUSIP, ISIN, agent_id, cluster_id, etc.).
+#
+# Usage: copy the `add_constraint` block into a tighten-output-schema remediation.
+#
+# Example remediation fragment:
+#   change:
+#     field_path: "output_schema.properties.ticker"
+#     add_constraint:
+#       pattern: "^[A-Z0-9._\\-]{1,20}$"
+#       maxLength: 20
+
+add_constraint:
+  pattern: "^[A-Z0-9._\\-]{1,20}$"
+  maxLength: 20

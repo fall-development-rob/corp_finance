@@ -47,7 +47,6 @@ const EXPECTED_SLUGS = [
   "private-markets-analyst",
   "sector-research",
   "sp-credit-research",
-  "skill-editor",
   "valuation-reviewer",
   "wealth-meeting-prep",
 ] as const;
@@ -65,7 +64,6 @@ const EXPECTED_PARENT_NAME: Record<string, string> = {
   "pitch-deck-builder": "cfa-pitch-deck-builder",
   "private-markets-analyst": "cfa-private-markets-analyst",
   "sector-research": "cfa-sector-research",
-  "skill-editor": "skill-editor",
   "sp-credit-research": "cfa-sp-credit-research",
   "valuation-reviewer": "cfa-valuation-reviewer",
   "wealth-meeting-prep": "cfa-wealth-meeting-prep",
@@ -128,15 +126,15 @@ const loader = createCookbookLoader({
 // ---------------------------------------------------------------------------
 
 describe("CookbookLoader.list()", () => {
-  it("returns exactly the 16 expected cookbook slugs", async () => {
+  it("returns exactly the 15 expected cookbook slugs", async () => {
     const slugs = await loader.list();
     expect(new Set(slugs)).toEqual(new Set(EXPECTED_SLUGS));
-    expect(slugs).toHaveLength(16);
+    expect(slugs).toHaveLength(15);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 2. Per-cookbook load tests (16 × generated)
+// 2. Per-cookbook load tests (15 × generated)
 // ---------------------------------------------------------------------------
 
 describe("CookbookLoader.load() — per-cookbook", () => {
@@ -238,13 +236,13 @@ describe("CookbookLoader — stub dispatch", () => {
 // ---------------------------------------------------------------------------
 
 describe("CookbookLoader.loadAll()", () => {
-  it("loads all 16 cookbooks and total subagent count is 48", async () => {
+  it("loads all 15 cookbooks and total subagent count is 45", async () => {
     const all = await loader.loadAll();
 
-    expect(all).toHaveLength(16);
+    expect(all).toHaveLength(15);
 
     const totalSubagents = all.reduce((sum, c) => sum + c.subagents.length, 0);
-    expect(totalSubagents).toBe(48);
+    expect(totalSubagents).toBe(45);
 
     // Every cookbook's slug appears exactly once
     const seenSlugs = new Set(all.map((c) => c.slug));
