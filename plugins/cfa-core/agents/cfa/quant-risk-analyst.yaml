@@ -152,4 +152,4 @@ mcp_servers:
   - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
 
 skills:
-  - { from_plugin: ../../skills/cfa/corp-finance-analyst-quant-risk }
+  - { from_plugin: ../../../agent-plugins/quant-risk-analyst/skills/corp-finance-analyst-quant-risk }

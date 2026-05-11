@@ -169,4 +169,4 @@ mcp_servers:
   - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
 
 skills:
-  - { from_plugin: ../../skills/cfa/corp-finance-analyst-private-markets }
+  - { from_plugin: ../skills/corp-finance-analyst-private-markets }

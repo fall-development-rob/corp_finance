@@ -184,4 +184,4 @@ mcp_servers:
   - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
 
 skills:
-  - { from_plugin: ../../skills/cfa/corp-finance-analyst-esg-regulatory }
+  - { from_plugin: ../../../agent-plugins/esg-regulatory-analyst/skills/corp-finance-analyst-esg-regulatory }

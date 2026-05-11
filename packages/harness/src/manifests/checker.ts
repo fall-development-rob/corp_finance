@@ -608,15 +608,12 @@ const MANIFEST_PLUGIN_TIERS = [
 /**
  * Build the default list of directories to scan for YAML manifests.
  *
- * The manifest linter validates reference integrity (from_plugin, system.file,
- * callable_agents.manifest). The 3 plugin tiers under agent-plugins/,
- * vertical-plugins/, and partner-built/ contain manifests that use
- * relative paths anchored to the cfa-core layout; those paths are intentionally
- * validated only in the canonical cfa-core location. The linter therefore
- * covers the canonical cfa-core agents + managed-agent-cookbooks by default.
- *
- * Callers that want to scan additional tiers can pass explicit manifestPaths.
- * W5 will update this once agent-plugins manifests are self-contained.
+ * W5 update: agent-plugins manifests are now self-contained (relative
+ * from_plugin paths point to tier-local or vertical-plugins/partner-built
+ * skill directories). The default scan now includes:
+ *   - plugins/cfa-core/agents/cfa/   — canonical 9-agent YAML manifests
+ *   - plugins/agent-plugins/*\/agents/ — 24 agent-plugin manifests
+ *   - managed-agent-cookbooks/        — 15 cookbook manifests
  */
 export function buildDefaultManifestPaths(repoRoot: string): string[] {
   const paths: string[] = [];
@@ -624,6 +621,17 @@ export function buildDefaultManifestPaths(repoRoot: string): string[] {
   // Canonical cfa-core agents (correct relative refs)
   const cfaCoreAgents = join(repoRoot, "plugins", "cfa-core", "agents", "cfa");
   if (existsSync(cfaCoreAgents)) paths.push(cfaCoreAgents);
+
+  // Agent-plugins tier — now self-contained after W5 migration
+  const agentPluginsDir = join(repoRoot, "plugins", "agent-plugins");
+  if (existsSync(agentPluginsDir)) {
+    let entries: string[];
+    try { entries = readdirSync(agentPluginsDir); } catch { entries = []; }
+    for (const plugin of entries) {
+      const agentsDir = join(agentPluginsDir, plugin, "agents");
+      if (existsSync(agentsDir)) paths.push(agentsDir);
+    }
+  }
 
   // Managed-agent cookbooks
   const cookbooks = join(repoRoot, "managed-agent-cookbooks");
