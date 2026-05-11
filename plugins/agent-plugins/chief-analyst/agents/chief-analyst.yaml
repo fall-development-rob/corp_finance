@@ -87,14 +87,14 @@ mcp_servers:
   - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
 
 skills:
-  - { from_plugin: ../../skills/cfa/corp-finance-analyst-chief }
+  - { from_plugin: ../skills/corp-finance-analyst-chief }
 
 callable_agents:
-  - { manifest: ./equity-analyst.yaml }
-  - { manifest: ./credit-analyst.yaml }
-  - { manifest: ./fixed-income-analyst.yaml }
-  - { manifest: ./derivatives-analyst.yaml }
-  - { manifest: ./quant-risk-analyst.yaml }
-  - { manifest: ./macro-analyst.yaml }
-  - { manifest: ./private-markets-analyst.yaml }
-  - { manifest: ./esg-regulatory-analyst.yaml }
+  - { manifest: ../../equity-analyst/agents/equity-analyst.yaml }
+  - { manifest: ../../credit-analyst/agents/credit-analyst.yaml }
+  - { manifest: ../../fixed-income-analyst/agents/fixed-income-analyst.yaml }
+  - { manifest: ../../derivatives-analyst/agents/derivatives-analyst.yaml }
+  - { manifest: ../../quant-risk-analyst/agents/quant-risk-analyst.yaml }
+  - { manifest: ../../macro-analyst/agents/macro-analyst.yaml }
+  - { manifest: ../../private-markets-analyst/agents/private-markets-analyst.yaml }
+  - { manifest: ../../esg-regulatory-analyst/agents/esg-regulatory-analyst.yaml }

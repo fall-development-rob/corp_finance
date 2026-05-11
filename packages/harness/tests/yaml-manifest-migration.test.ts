@@ -22,8 +22,10 @@ import { createDirectSkillLoader } from "../src/skills/loader.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
 const AGENTS_ROOT = resolve(REPO_ROOT, "plugins", "cfa-core", "agents", "cfa");
-const SKILLS_ROOT = resolve(REPO_ROOT, "plugins", "cfa-core", "skills", "cfa");
 
+// W5: skills moved from plugins/cfa-core/skills/cfa/ to
+// plugins/agent-plugins/<slug>/skills/corp-finance-analyst-<slug>/.
+// The migration test verifies each agent independently using its own skillsRoot.
 const AGENT_IDS = [
   "chief-analyst",
   "equity-analyst",
@@ -36,15 +38,21 @@ const AGENT_IDS = [
   "esg-regulatory-analyst",
 ] as const;
 
-const skillLoader = createDirectSkillLoader({
-  skillsRoot: SKILLS_ROOT,
-  agentsRoot: AGENTS_ROOT,
-});
+function skillsRootFor(agentId: string): string {
+  return resolve(REPO_ROOT, "plugins", "agent-plugins", agentId, "skills");
+}
 
-const yamlLoader = createDirectYamlManifestLoader({
-  agentsRoot: AGENTS_ROOT,
-  skillLoader,
-});
+function makeLoaders(agentId: string) {
+  const skillLoader = createDirectSkillLoader({
+    skillsRoot: skillsRootFor(agentId),
+    agentsRoot: AGENTS_ROOT,
+  });
+  const yamlLoader = createDirectYamlManifestLoader({
+    agentsRoot: AGENTS_ROOT,
+    skillLoader,
+  });
+  return { skillLoader, yamlLoader };
+}
 
 // Helper: sort tools for comparison
 function sortedTools(tools: string[] | "*"): string[] | "*" {
@@ -62,6 +70,7 @@ describe("YAML manifest migration gate — 9 agents", () => {
         expect(existsSync(yamlPath)).toBe(true);
         expect(existsSync(mdPath)).toBe(true);
 
+        const { skillLoader, yamlLoader } = makeLoaders(agentId);
         const [fromYaml, fromMd] = await Promise.all([
           yamlLoader.loadAgent(agentId),
           skillLoader.loadAgent(agentId, "agent"),
@@ -74,6 +83,7 @@ describe("YAML manifest migration gate — 9 agents", () => {
       });
 
       it("tools from yaml match tools from regenerated md (deep-equal)", async () => {
+        const { skillLoader, yamlLoader } = makeLoaders(agentId);
         const [fromYaml, fromMd] = await Promise.all([
           yamlLoader.loadAgent(agentId),
           skillLoader.loadAgent(agentId, "agent"),
@@ -84,6 +94,7 @@ describe("YAML manifest migration gate — 9 agents", () => {
       });
 
       it("systemPrompt from yaml is non-empty and contains skill content", async () => {
+        const { yamlLoader } = makeLoaders(agentId);
         const fromYaml = await yamlLoader.loadAgent(agentId);
         expect(fromYaml.systemPrompt.length).toBeGreaterThan(100);
       });

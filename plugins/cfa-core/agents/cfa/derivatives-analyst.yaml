@@ -134,4 +134,4 @@ mcp_servers:
   - { type: url, name: vendor,   url: "${CFA_VENDOR_MCP_URL}" }
 
 skills:
-  - { from_plugin: ../../skills/cfa/corp-finance-analyst-derivatives }
+  - { from_plugin: ../../../agent-plugins/derivatives-analyst/skills/corp-finance-analyst-derivatives }

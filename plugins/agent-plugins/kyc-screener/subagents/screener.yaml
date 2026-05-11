@@ -36,7 +36,7 @@ tools:
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
-  - { from_plugin: ../../../plugins/cfa-core/skills/corp-finance-tools-regulatory }
+  - { from_plugin: ../../../cfa-core/skills/corp-finance-tools-regulatory }
 callable_agents: []
 output_schema:
   type: object

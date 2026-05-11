@@ -38,8 +38,8 @@ tools:
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
-  - { from_plugin: ../../../plugins/cfa-core/skills/corp-finance-tools-core }
-  - { from_plugin: ../../../plugins/cfa-core/skills/corp-finance-tools-risk }
+  - { from_plugin: ../../../cfa-core/skills/corp-finance-tools-core }
+  - { from_plugin: ../../../cfa-core/skills/corp-finance-tools-risk }
 callable_agents: []
 output_schema:
   type: object
