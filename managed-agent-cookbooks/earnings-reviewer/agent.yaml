@@ -23,9 +23,9 @@ mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
   - { type: url, name: fmp, url: "${FMP_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-core }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-er-earnings-update }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-er-model-update }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core }
+  - { from_plugin: ../../plugins/vertical-plugins/equity-research/skills/workflow-er-earnings-update }
+  - { from_plugin: ../../plugins/vertical-plugins/equity-research/skills/workflow-er-model-update }
 callable_agents:
   - { manifest: ./subagents/transcript-reader.yaml }
   - { manifest: ./subagents/analyst.yaml }

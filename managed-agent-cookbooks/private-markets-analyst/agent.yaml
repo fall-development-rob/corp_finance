@@ -23,11 +23,11 @@ mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
   - { type: url, name: fmp, url: "${FMP_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-core }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-pe-due-diligence }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-pe-ic-memo }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-pe-returns-analysis }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-ib-merger-model }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core }
+  - { from_plugin: ../../plugins/vertical-plugins/private-equity/skills/workflow-pe-due-diligence }
+  - { from_plugin: ../../plugins/vertical-plugins/private-equity/skills/workflow-pe-ic-memo }
+  - { from_plugin: ../../plugins/vertical-plugins/private-equity/skills/workflow-pe-returns-analysis }
+  - { from_plugin: ../../plugins/vertical-plugins/investment-banking/skills/workflow-ib-merger-model }
 callable_agents:
   - { manifest: ./subagents/deal-reader.yaml }
   - { manifest: ./subagents/modeler.yaml }

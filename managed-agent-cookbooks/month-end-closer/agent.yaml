@@ -19,10 +19,10 @@ tools:
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-core }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-fund-period-end-accruals }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-fund-period-rollforward }
-  - { from_plugin: ../../plugins/cfa-core/skills/workflow-fund-fpa-variance-commentary }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core }
+  - { from_plugin: ../../plugins/vertical-plugins/fund-admin/skills/workflow-fund-period-end-accruals }
+  - { from_plugin: ../../plugins/vertical-plugins/fund-admin/skills/workflow-fund-period-rollforward }
+  - { from_plugin: ../../plugins/vertical-plugins/fund-admin/skills/workflow-fund-fpa-variance-commentary }
 callable_agents:
   - { manifest: ./subagents/tb-reader.yaml }
   - { manifest: ./subagents/closer.yaml }

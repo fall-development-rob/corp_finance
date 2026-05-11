@@ -23,8 +23,8 @@ mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
   - { type: url, name: vendor, url: "${VENDOR_MCP_URL}" }
 skills:
-  - { from_plugin: ../../plugins/cfa-core/skills/corp-finance-analyst-markets }
-  - { from_plugin: ../../plugins/cfa-pro/skills/vendor-lseg }
+  - { from_plugin: ../../plugins/vertical-plugins/foundations/skills/corp-finance-analyst-markets }
+  - { from_plugin: ../../plugins/partner-built/lseg/skills/vendor-lseg }
 callable_agents:
   - { manifest: ./subagents/rates-reader.yaml }
   - { manifest: ./subagents/analyst.yaml }
