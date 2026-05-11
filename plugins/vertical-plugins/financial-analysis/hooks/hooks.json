@@ -1,0 +1,82 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*-model\\.md$ || \"$p\" =~ out/.*-(dcf|lbo|3-statement).*\\.md$ ]]; then if ! grep -q \"^## Sources\" \"$p\"; then echo \"[financial-analysis] model artefacts must include a ## Sources section before publication: $p\" >&2; exit 2; fi; fi; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*-(ic-memo|deal-memo).*\\.md$ ]]; then if ! grep -q \"^CONFIDENTIAL\" \"$p\"; then echo \"[private-equity] IC/deal memos must carry a CONFIDENTIAL watermark at top of file: $p\" >&2; exit 2; fi; fi; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*(pitch|deck|cim|teaser).*\\.md$ ]]; then nums=$(awk '\\''{ while (match($0, /[^[A-Za-z0-9_][0-9]+(\\.[0-9]+)?/)) { c++; $0=substr($0, RSTART+RLENGTH) } } END { print c+0 }'\\'' \"$p\"); cites=$(grep -oE \"\\[[0-9]+\\]\" \"$p\" | wc -l); if [[ \"$nums\" -gt 0 && \"$cites\" -lt $((nums/2)) ]]; then echo \"[investment-banking] deck $p has $nums numeric values but only $cites footnote citations; institutional decks need [n]-style citations on at least half of figures\" >&2; exit 2; fi; fi; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*-(research-note|coverage-init|target-price).*\\.md$ ]]; then miss=\"\"; grep -q \"Target Price:\" \"$p\" || miss=\"$miss Target Price:\"; grep -q \"Methodology:\" \"$p\" || miss=\"$miss Methodology:\"; if [[ -n \"$miss\" ]]; then echo \"[equity-research] research note $p missing required provenance fields:$miss\" >&2; exit 2; fi; fi; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action redact --hook-point pre-tool-use 2>&1 || true; exit 0'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; if [[ \"$p\" =~ out/.*\\.(md|csv|json|tsv)$ && ! \"$p\" =~ \\.audit\\.json$ ]]; then cfa audit write --for \"$p\" >&2 || echo \"[audit] manifest write failed for $p (non-blocking)\" >&2; fi; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ -z \"${CFA_TENANT_ID:-}\" && -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then export CFA_TENANT_ID=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\" || true; fi; p=\"${CLAUDE_FILE_PATH:-}\"; [[ -z \"$p\" || ! -f \"$p\" ]] && exit 0; cfa security scan --for \"$p\" --action alert-only --hook-point post-tool-use 2>&1 || true; exit 0'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ -f \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" ]]; then tid=\"$(cat \"${CLAUDE_PROJECT_ROOT:-.}/.cfa-tenant\" 2>/dev/null)\"; if [[ -n \"$tid\" ]]; then echo \"[cfa] tenant context: $tid\" >&2; fi; fi; exit 0'"
+          }
+        ]
+      }
+    ]
+  }
+}

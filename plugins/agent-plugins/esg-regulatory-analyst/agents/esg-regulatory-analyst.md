@@ -1,0 +1,81 @@
+---
+name: esg-regulatory-analyst
+description: CFA ESG and Regulatory Analyst — ESG scoring, Basel III, compliance, fund structuring specialist.
+extends:
+  - corp-finance-analyst-esg-regulatory
+tools:
+  - aifmd_reporting
+  - alm_analysis
+  - beps_compliance
+  - best_execution
+  - carbon_credit_pricing
+  - carbon_footprint
+  - cayman_fund_structure
+  - cbam_analysis
+  - channel_islands_fund_structure
+  - combined_ratio
+  - economic_substance
+  - edgar_company_facts
+  - edgar_company_search
+  - edgar_filings
+  - edgar_full_text_search
+  - entity_classification
+  - esg_score
+  - ets_compliance
+  - fatca_crs_reporting
+  - fmp_company_notes
+  - fmp_company_profile
+  - fmp_executive_compensation
+  - fmp_sec_company_search_name
+  - fmp_sec_filings_by_form
+  - fmp_sec_filings_by_symbol
+  - fund_fee_calculator
+  - fund_migration_analysis
+  - gaap_ifrs_reconcile
+  - gips_report
+  - green_bond
+  - hong_kong_fund_structure
+  - intercompany_pricing
+  - investor_net_returns
+  - jurisdiction_comparison
+  - jurisdiction_substance_test
+  - kyc_risk_assessment
+  - lcr
+  - lease_classification
+  - loss_reserving
+  - lseg_esg_scores
+  - lux_ireland_fund_structure
+  - middle_east_fund_structure
+  - moodys_climate_risk
+  - moodys_esg_score
+  - ms_esg_risk
+  - nsfr
+  - offset_valuation
+  - polymarket_events
+  - premium_pricing
+  - regulatory_capital
+  - sale_leaseback_analysis
+  - sanctions_screening
+  - scenario_analysis
+  - sec_cftc_reporting
+  - sensitivity_matrix
+  - shadow_carbon_price
+  - singapore_vcc_structure
+  - sll_covenants
+  - solvency_scr
+  - sp_credit_rating
+  - treaty_network
+  - treaty_structure_optimization
+  - ubti_screening
+  - uk_eu_fund_structure
+  - us_fund_structure
+  - wb_climate
+  - wb_climate_vulnerability
+  - wb_country_indicators
+  - wb_governance
+  - wb_governance_compare
+  - withholding_tax
+model: claude-opus-4-7
+max_tokens: 8192
+max_recursion_depth: 0
+---

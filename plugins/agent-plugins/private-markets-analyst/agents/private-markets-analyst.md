@@ -1,0 +1,74 @@
+---
+name: private-markets-analyst
+description: CFA Private Markets Analyst — LBO, PE, VC, infrastructure, CLO analytics specialist.
+extends:
+  - corp-finance-analyst-private-markets
+tools:
+  - commitment_pacing
+  - covenant_compliance
+  - credit_metrics
+  - debt_capacity
+  - debt_schedule
+  - dilution_analysis
+  - direct_loan
+  - distressed_debt_analysis
+  - edgar_company_facts
+  - edgar_filings
+  - edgar_full_text_search
+  - factset_ma_deals
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_company_profile
+  - fmp_enterprise_values
+  - fmp_executive_compensation
+  - fmp_income_statement
+  - fmp_ipo_calendar
+  - fmp_ipo_disclosure
+  - fmp_key_metrics
+  - fmp_ma_latest
+  - fmp_ma_search
+  - fmp_market_cap
+  - fmp_quote
+  - fmp_ratios_ttm
+  - fof_portfolio
+  - fund_fee_calculator
+  - funding_round
+  - gp_economics
+  - investor_net_returns
+  - j_curve_model
+  - lbo_model
+  - manager_selection
+  - merger_model
+  - monte_carlo_simulation
+  - pb_company_profile
+  - pb_company_search
+  - pb_comparable_deals
+  - pb_deal_details
+  - pb_deal_search
+  - pb_fund_performance
+  - pb_fund_search
+  - pb_fundraising
+  - pb_investor_profile
+  - pb_lp_commitments
+  - pb_market_stats
+  - pb_vc_exits
+  - recovery_analysis
+  - returns_calculator
+  - scenario_analysis
+  - secondaries_pricing
+  - sensitivity_matrix
+  - sotp_valuation
+  - sources_uses
+  - sp_capital_structure
+  - sp_funding_digest
+  - sp_ma_deals
+  - syndication_analysis
+  - unitranche_pricing
+  - venture_fund_model
+  - waterfall_calculator
+  - yf_balance_sheet
+  - yf_info
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+---

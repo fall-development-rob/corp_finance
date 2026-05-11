@@ -1,0 +1,82 @@
+---
+name: equity-analyst
+description: CFA Equity Analyst — institutional fundamental equity research and valuation specialist.
+extends:
+  - corp-finance-analyst-equity
+tools:
+  - accrual_quality
+  - altman_zscore
+  - beneish_mscore
+  - benfords_law
+  - breakeven_analysis
+  - buyback_analysis
+  - comps_analysis
+  - dcf_model
+  - dilution_analysis
+  - dupont_analysis
+  - earnings_quality_composite
+  - edgar_company_facts
+  - edgar_filings
+  - edgar_full_text_search
+  - factset_estimates
+  - factset_fundamentals
+  - fmp_analyst_estimates
+  - fmp_balance_sheet
+  - fmp_cash_flow
+  - fmp_company_profile
+  - fmp_dividends
+  - fmp_earnings
+  - fmp_earnings_calendar
+  - fmp_earnings_transcript
+  - fmp_enterprise_values
+  - fmp_financial_growth
+  - fmp_financial_ratios
+  - fmp_grades
+  - fmp_grades_consensus
+  - fmp_historical_price
+  - fmp_income_statement
+  - fmp_key_metrics
+  - fmp_market_cap
+  - fmp_owner_earnings
+  - fmp_price_target
+  - fmp_price_target_consensus
+  - fmp_quote
+  - fmp_ratios_ttm
+  - fmp_revenue_geo_segments
+  - fmp_revenue_product_segments
+  - funding_round
+  - h_model_ddm
+  - lseg_fundamentals
+  - monte_carlo_dcf
+  - ms_company_profile
+  - ms_fair_value
+  - multistage_ddm
+  - payout_sustainability
+  - peer_benchmarking
+  - piotroski_fscore
+  - red_flag_scoring
+  - revenue_quality
+  - rolling_forecast
+  - scenario_analysis
+  - sensitivity_matrix
+  - sotp_valuation
+  - sp_company_tearsheet
+  - target_price
+  - three_statement_model
+  - total_shareholder_return
+  - variance_analysis
+  - wacc_calculator
+  - working_capital
+  - yf_analyst_targets
+  - yf_balance_sheet
+  - yf_cash_flow
+  - yf_earnings
+  - yf_historical
+  - yf_income_statement
+  - yf_quote
+  - yf_upgrades_downgrades
+  - zscore_models
+model: claude-sonnet-4-6
+max_tokens: 8192
+max_recursion_depth: 0
+---
