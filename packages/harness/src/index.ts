@@ -60,9 +60,20 @@ export {
 export {
   createSkillRegistry,
   SKILL_REGISTRY_AGENT_IDS,
+  discoverPluginRoots,
   type SkillRegistry,
   type SkillRegistryOptions,
 } from "./agents/skill-registry.js";
+
+// Phase 40 Wave 4 — multi-root skill loader
+export {
+  createMultiRootSkillLoader,
+  type MultiRootSkillLoaderOptions,
+} from "./skills/index.js";
+export {
+  buildDefaultManifestPaths,
+  buildAllTierManifestPaths,
+} from "./manifests/checker.js";
 
 // Phase 32 Wave 1 — ToolCatalogValidator ACL
 export {

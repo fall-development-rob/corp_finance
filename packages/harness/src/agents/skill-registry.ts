@@ -13,7 +13,7 @@
  * divergence.
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AgentDef } from "../types.js";
@@ -40,10 +40,28 @@ export interface SkillRegistry {
 }
 
 export interface SkillRegistryOptions {
-  /** Defaults to <repo>/plugins/cfa-core/skills/cfa */
+  /**
+   * Single skills root (legacy, single-root). When neither skillsRoot nor
+   * skillsRoots is provided, the registry performs multi-root discovery
+   * across all 3 plugin tiers automatically.
+   */
   skillsRoot?: string;
-  /** Defaults to <repo>/plugins/cfa-core/agents/cfa */
+  /**
+   * Single agents root (legacy, single-root). When neither agentsRoot nor
+   * agentsRoots is provided, the registry performs multi-root discovery
+   * across all 3 plugin tiers automatically.
+   */
   agentsRoot?: string;
+  /**
+   * Explicit multi-root skills list. Overrides automatic tier discovery.
+   * Added Phase 40 Wave 4.
+   */
+  skillsRoots?: string[];
+  /**
+   * Explicit multi-root agents list. Overrides automatic tier discovery.
+   * Added Phase 40 Wave 4.
+   */
+  agentsRoots?: string[];
   /** Injectable for testing. */
   loader?: SkillLoader;
   /** Injectable YAML manifest loader for testing. */
@@ -90,6 +108,56 @@ const _thisDir = dirname(fileURLToPath(import.meta.url));
 const _repoRoot = findRepoRoot(_thisDir);
 
 // ---------------------------------------------------------------------------
+// Multi-root discovery (Phase 40 Wave 4)
+// ---------------------------------------------------------------------------
+
+const PLUGIN_TIERS = ["agent-plugins", "vertical-plugins", "partner-built"] as const;
+
+/**
+ * Walk the 3 plugin tiers under <repoRoot>/plugins/ and collect all
+ * skills/ and agents/ subdirectories that exist. Appends the legacy
+ * cfa-core paths as fallback roots at the end.
+ */
+export function discoverPluginRoots(repoRoot: string): {
+  skillsRoots: string[];
+  agentsRoots: string[];
+} {
+  const skillsRoots: string[] = [];
+  const agentsRoots: string[] = [];
+
+  for (const tier of PLUGIN_TIERS) {
+    const tierDir = resolve(repoRoot, "plugins", tier);
+    if (!existsSync(tierDir)) continue;
+    let entries: string[];
+    try {
+      entries = readdirSync(tierDir);
+    } catch {
+      continue;
+    }
+    for (const plugin of entries) {
+      const pluginDir = resolve(tierDir, plugin);
+      try {
+        if (!statSync(pluginDir).isDirectory()) continue;
+      } catch {
+        continue;
+      }
+      const skillsDir = resolve(pluginDir, "skills");
+      if (existsSync(skillsDir)) skillsRoots.push(skillsDir);
+      const agentsDir = resolve(pluginDir, "agents");
+      if (existsSync(agentsDir)) agentsRoots.push(agentsDir);
+    }
+  }
+
+  // Legacy fallback — W5 will delete these once cfa-core is verified empty
+  const legacySkills = resolve(repoRoot, "plugins", "cfa-core", "skills");
+  const legacyAgents = resolve(repoRoot, "plugins", "cfa-core", "agents", "cfa");
+  if (existsSync(legacySkills)) skillsRoots.push(legacySkills);
+  if (existsSync(legacyAgents)) agentsRoots.push(legacyAgents);
+
+  return { skillsRoots, agentsRoots };
+}
+
+// ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
 
@@ -101,28 +169,88 @@ const _repoRoot = findRepoRoot(_thisDir);
 export async function createSkillRegistry(
   options?: SkillRegistryOptions,
 ): Promise<SkillRegistry> {
-  const skillsRoot =
-    options?.skillsRoot ??
-    resolve(_repoRoot, "plugins", "cfa-core", "skills", "cfa");
-  const agentsRoot =
-    options?.agentsRoot ??
+  // -------------------------------------------------------------------------
+  // Resolve roots: explicit > single-root legacy > multi-root tier discovery
+  // -------------------------------------------------------------------------
+  let resolvedSkillsRoots: string[];
+  let resolvedAgentsRoots: string[];
+
+  if (options?.skillsRoots !== undefined || options?.agentsRoots !== undefined) {
+    // Caller supplied explicit multi-root lists
+    resolvedSkillsRoots = options.skillsRoots ?? [
+      resolve(_repoRoot, "plugins", "cfa-core", "skills", "cfa"),
+    ];
+    resolvedAgentsRoots = options.agentsRoots ?? [
+      resolve(_repoRoot, "plugins", "cfa-core", "agents", "cfa"),
+    ];
+  } else if (options?.skillsRoot !== undefined || options?.agentsRoot !== undefined) {
+    // Caller supplied single legacy roots — keep single-root back-compat
+    resolvedSkillsRoots = [
+      options.skillsRoot ?? resolve(_repoRoot, "plugins", "cfa-core", "skills", "cfa"),
+    ];
+    resolvedAgentsRoots = [
+      options.agentsRoot ?? resolve(_repoRoot, "plugins", "cfa-core", "agents", "cfa"),
+    ];
+  } else {
+    // Default: walk all 3 plugin tiers + legacy fallback
+    const discovered = discoverPluginRoots(_repoRoot);
+    resolvedSkillsRoots = discovered.skillsRoots;
+    resolvedAgentsRoots = discovered.agentsRoots;
+  }
+
+  // Keep single-root variables for YAML loader (needs one canonical root for
+  // .yaml file resolution; we pick the last = legacy fallback which always
+  // has the canonical 9 YAML manifests).
+  const primaryAgentsRoot =
+    resolvedAgentsRoots[resolvedAgentsRoots.length - 1] ??
     resolve(_repoRoot, "plugins", "cfa-core", "agents", "cfa");
 
   const loader =
-    options?.loader ?? createDirectSkillLoader({ skillsRoot, agentsRoot });
+    options?.loader ??
+    createDirectSkillLoader({
+      // Single-root fields are required by SkillLoaderOptions; we set them
+      // to the first root and also pass the arrays for multi-root mode.
+      skillsRoot: resolvedSkillsRoots[0] ?? "",
+      agentsRoot: resolvedAgentsRoots[0] ?? "",
+      skillsRoots: resolvedSkillsRoots,
+      agentsRoots: resolvedAgentsRoots,
+    });
 
   const yamlLoader =
     options?.yamlLoader ??
-    createDirectYamlManifestLoader({ agentsRoot, skillLoader: loader });
+    createDirectYamlManifestLoader({
+      agentsRoot: primaryAgentsRoot,
+      skillLoader: loader,
+    });
 
   /**
    * Load one agent: prefer <id>.yaml (Phase 36 canonical) over <id>.md.
-   * .yaml takes precedence if the file exists.
+   *
+   * For YAML loading we use the primaryAgentsRoot (cfa-core), which has
+   * correct from_plugin relative paths. The agent-plugins tier supplies .md
+   * files (extends: form) that the multi-root loader handles via loadAgent.
+   *
+   * Walk order: check primaryAgentsRoot for .yaml first (correct refs),
+   * then other agentsRoots for .yaml, then fall back to .md via multi-root loader.
    */
   async function loadOneAgent(id: string): Promise<AgentDef> {
-    if (existsSync(resolve(agentsRoot, `${id}.yaml`))) {
+    // 1. Prefer cfa-core canonical YAML (from_plugin paths are correct there)
+    if (existsSync(resolve(primaryAgentsRoot, `${id}.yaml`))) {
       return yamlLoader.loadAgent(id);
     }
+    // 2. Check remaining agentsRoots for a YAML (for future tiers with correct refs)
+    for (const root of resolvedAgentsRoots) {
+      if (root === primaryAgentsRoot) continue;
+      const p = resolve(root, `${id}.yaml`);
+      if (existsSync(p)) {
+        const otherYamlLoader = createDirectYamlManifestLoader({
+          agentsRoot: root,
+          skillLoader: loader,
+        });
+        return otherYamlLoader.loadAgent(id);
+      }
+    }
+    // 3. Fall back to .md via multi-root loader (extends: form)
     return loader.loadAgent(id, "agent");
   }
 

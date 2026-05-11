@@ -22,6 +22,7 @@ import type {
 } from "./types.js";
 import { parseFrontmatter } from "./frontmatter-parser.js";
 import { assembleSystemPrompt } from "./assembler.js";
+import { createMultiRootSkillLoader } from "./multi-root-loader.js";
 
 /**
  * Create a direct filesystem skill loader.
@@ -29,8 +30,20 @@ import { assembleSystemPrompt } from "./assembler.js";
  * The loader reads SKILL.md files from `opts.skillsRoot/<id>/SKILL.md`
  * and agent manifests from `opts.agentsRoot/<id>.md`. It caches parsed
  * skills in memory; call `clearCache()` between tests.
+ *
+ * When opts.skillsRoots or opts.agentsRoots are provided, the loader
+ * delegates to createMultiRootSkillLoader (Phase 40 Wave 4). This
+ * preserves full back-compat: callers that only supply skillsRoot/agentsRoot
+ * get identical single-root behaviour.
  */
 export function createDirectSkillLoader(opts: SkillLoaderOptions): SkillLoader {
+  // Multi-root delegation (Phase 40 Wave 4)
+  if (opts.skillsRoots !== undefined || opts.agentsRoots !== undefined) {
+    return createMultiRootSkillLoader({
+      skillsRoots: opts.skillsRoots ?? [opts.skillsRoot],
+      agentsRoots: opts.agentsRoots ?? [opts.agentsRoot],
+    });
+  }
   const cache = new Map<string, ParsedSkill>();
 
   async function loadSkillUncached(id: string): Promise<ParsedSkill> {

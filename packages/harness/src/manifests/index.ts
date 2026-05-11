@@ -18,9 +18,11 @@ export {
   type ValidatorOptions,
 } from "./validator.js";
 
-// REC-3: manifest static linter
+// REC-3: manifest static linter (Phase 40 Wave 4: + buildDefaultManifestPaths, buildAllTierManifestPaths)
 export {
   checkManifests,
+  buildDefaultManifestPaths,
+  buildAllTierManifestPaths,
   type ManifestCheckIssue,
   type ManifestCheckReport,
   type CheckOptions,
