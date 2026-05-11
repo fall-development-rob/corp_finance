@@ -90,10 +90,20 @@ export function discoverCookbookSlugs(cookbooksRoot: string): string[] {
     const dir = join(cookbooksRoot, entry);
     try {
       if (!statSync(dir).isDirectory()) continue;
-      statSync(join(dir, "agent.json")); // throws if missing
-      slugs.push(basename(dir));
     } catch {
-      // no agent.json at depth-2 — skip
+      continue;
+    }
+    // Post-Phase-36: cookbooks are .yaml. Pre-Phase-36 legacy still .json.
+    // Accept either at depth-2 ; .yaml takes precedence if both present.
+    const candidates = ["agent.yaml", "agent.yml", "agent.json"];
+    for (const candidate of candidates) {
+      try {
+        statSync(join(dir, candidate));
+        slugs.push(basename(dir));
+        break; // first match wins; don't double-count
+      } catch {
+        // try next extension
+      }
     }
   }
   return slugs.sort();
