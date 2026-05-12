@@ -90,6 +90,16 @@ export {
   type ParsedSemver,
 } from "./semver.js";
 
+// Phase 25 Tier D14: managed-agent cookbook scaffolder
+export {
+  buildScaffoldedCookbook,
+  ScaffoldError,
+  SLUG_RE as SCAFFOLD_SLUG_RE,
+  type ScaffoldInput,
+  type ScaffoldedFile,
+  type ScaffoldedCookbook,
+} from "./cookbook-scaffold.js";
+
 // Phase 25 Tier C4: managed-agent cookbook synthetic-trace evaluation
 export {
   buildSyntheticTrace,

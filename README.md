@@ -270,6 +270,28 @@ CI gate (`.github/workflows/cookbook-trace.yml`):
 
 Spot-check: `npx tsx scripts/generate-cookbook-traces.ts --slug equity-analyst`.
 
+## Cookbook scaffolder (Phase 25 Tier D14)
+
+`scripts/scaffold-cookbook.ts` generates a minimal-conformant cookbook skeleton in one command. The skeleton passes every MA-* contract out of the box; authors then wire in their domain skills, tool selections, and richer schemas.
+
+```bash
+npx tsx scripts/scaffold-cookbook.ts --slug my-new-cookbook
+npx tsx scripts/scaffold-cookbook.ts --slug equity-screen --domain "equity research"
+npx tsx scripts/scaffold-cookbook.ts --slug demo --dry-run    # preview, no files written
+```
+
+The scaffold produces 5 files:
+
+| File | Purpose |
+|------|---------|
+| `agent.yaml` | Parent orchestrator with version `1.0.0`, anti-injection append, `callable_agents` pointing to 3 subagents |
+| `steering-examples.json` | 2 placeholder events for the dispatcher |
+| `subagents/data-reader.yaml` | Haiku-tier reader with explicit-allow cfa-core gating |
+| `subagents/worker.yaml` | Sonnet-tier compute worker with explicit-allow cfa-core gating |
+| `subagents/publisher.yaml` | Haiku-tier publisher with read-only tools, no compute |
+
+After scaffolding the script prints next-step instructions: edit the YAMLs to wire your domain logic, regenerate the four catalogs (audits + replays + costs + traces), and run the contract tests. Slug validation enforces the MA-007 deploy-ID pattern; attempting to scaffold over an existing slug fails fast.
+
 ## Closed learning loop (Phase 41)
 
 Validation failures during dispatch become structured skill remediations, fully deterministically:
