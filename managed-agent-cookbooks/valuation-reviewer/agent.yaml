@@ -1,6 +1,7 @@
 # Reviewer: runs comps and DCF checks against reported values to flag divergence.
 
 name: cfa-valuation-reviewer
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/private-markets-analyst.md

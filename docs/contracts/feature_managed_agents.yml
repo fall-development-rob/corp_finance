@@ -96,6 +96,20 @@ contracts:
     enforcement: build-time
     severity: error
 
+  - id: MA-008
+    name: "Every cookbook parent declares a valid semver version"
+    description: |
+      Every parent agent.yaml must carry a `version: "<semver>"` field
+      conforming to semver-2.0 (MAJOR.MINOR.PATCH with optional
+      `-PRERELEASE` and `+BUILDMETA` suffixes). Phase 25 Tier C2 — version
+      identifies a release for deploy / rollback tooling; without it,
+      multiple deployments of the same cookbook content cannot be
+      distinguished.
+    scope:
+      - "managed-agent-cookbooks/*/agent.yaml"
+    enforcement: build-time
+    severity: error
+
 invariants:
   - id: MA-INV-001
     name: "Cookbook count"

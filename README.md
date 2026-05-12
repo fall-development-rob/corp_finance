@@ -198,12 +198,25 @@ Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-replays.ts --sl
 | MA-005 | Every subagent declares an `output_schema` |
 | MA-006 | Every parent `system.append` carries the anti-injection reminder |
 | MA-007 | Cookbook slugs match `^[a-z][a-z0-9-]{1,62}[a-z0-9]$` (deploy ID format) |
+| MA-008 | Every parent declares a valid semver `version` |
 | MA-INV-001 | Exactly 15 cookbooks |
 | MA-INV-002 | Exactly 45 subagents (3 × 15) |
 | MA-INV-003 | `data/cookbook-audits.json` has one entry per cookbook |
 | MA-INV-004 | `data/cookbook-replays.json` has one entry per cookbook |
 
 MA-004 is narrowed to `cfa-core` because data-fetcher subagents (e.g. `*-reader`) intentionally use broad-allow on `fmp` / `data` / `vendor` servers for retrieval flexibility. Compute determinism is what materially matters; the rule reflects the architectural intent rather than blanket strictness.
+
+## Cookbook versioning (Phase 25 Tier C2)
+
+Every parent `agent.yaml` carries a `version: "<semver>"` field validated against semver-2.0 (MAJOR.MINOR.PATCH, optional `-PRERELEASE` and `+BUILDMETA` suffixes). The current baseline is `1.0.0` across all 15 cookbooks.
+
+The version is:
+
+- **Surfaced in `data/cookbook-audits.json`** at the per-cookbook level — reviewers see a version diff in PRs alongside the master hash and file inventory.
+- **Folded into the audit hash implicitly** — it lives inside `agent.yaml` bytes, so bumping the version is a content change that updates the hash naturally.
+- **Validated by contract MA-008** — every parent must declare a semver-valid version; CI fails on missing or malformed values.
+
+Deploy-time tooling (in the sibling `corp-finance-core` repo) consumes the version to generate distinct deployment IDs per release and to support rollback. Bumping a version with no other content change is still a release event: the audit hash will move because `agent.yaml` bytes changed.
 
 ## Cookbook cost telemetry (Phase 25 Tier C1)
 

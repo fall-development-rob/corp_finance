@@ -143,6 +143,32 @@ describe("auditCookbook — single cookbook", () => {
     const sorted = [...paths].sort();
     expect(paths).toEqual(sorted);
   });
+
+  it("captures the parent agent.yaml version field on the audit", () => {
+    writeFile(
+      fx.root,
+      "managed-agent-cookbooks/alpha/agent.yaml",
+      `name: alpha\nversion: "1.2.3"\nsystem:\n  text: ok\n`,
+    );
+    const audit = auditCookbook({
+      repoRoot: fx.root,
+      cookbookDir: join(fx.root, "managed-agent-cookbooks/alpha"),
+    });
+    expect(audit.version).toBe("1.2.3");
+  });
+
+  it("returns version='' when parent manifest omits version", () => {
+    writeFile(
+      fx.root,
+      "managed-agent-cookbooks/alpha/agent.yaml",
+      `name: alpha\nsystem:\n  text: ok\n`,
+    );
+    const audit = auditCookbook({
+      repoRoot: fx.root,
+      cookbookDir: join(fx.root, "managed-agent-cookbooks/alpha"),
+    });
+    expect(audit.version).toBe("");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -474,6 +500,7 @@ describe("serialiseAuditCatalog", () => {
       cookbooks: [
         {
           slug: "alpha",
+          version: "1.0.0",
           hash: "h1",
           files: [
             { path: "a/agent.yaml", sha256: "x", size: 1 },
@@ -489,8 +516,8 @@ describe("serialiseAuditCatalog", () => {
     const c: CookbookAuditCatalog = {
       version: "1",
       cookbooks: [
-        { slug: "zzz", hash: "z", files: [] },
-        { slug: "aaa", hash: "a", files: [] },
+        { slug: "zzz", version: "1.0.0", hash: "z", files: [] },
+        { slug: "aaa", version: "1.0.0", hash: "a", files: [] },
       ],
     };
     const out = serialiseAuditCatalog(c);
@@ -503,6 +530,7 @@ describe("serialiseAuditCatalog", () => {
       cookbooks: [
         {
           slug: "alpha",
+          version: "1.0.0",
           hash: "h",
           files: [{ path: "p", sha256: "s", size: 7 }],
         },
@@ -536,10 +564,11 @@ describe("parseAuditCatalog — validation", () => {
 describe("diffAuditCatalogs", () => {
   function cb(slug: string, hash: string): {
     slug: string;
+    version: string;
     hash: string;
     files: never[];
   } {
-    return { slug, hash, files: [] };
+    return { slug, version: "1.0.0", hash, files: [] };
   }
 
   it("returns empty diff for identical catalogs", () => {

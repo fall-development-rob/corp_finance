@@ -16,6 +16,16 @@
 export interface AgentManifest {
   /** Human-readable logical name. Required. */
   name: string;
+  /**
+   * Semver release version (e.g. "1.0.0"). Phase 25 Tier C2 — every
+   * managed-agent cookbook parent manifest must carry one. Validated by
+   * contract MA-008. Used by deploy tooling to produce distinct
+   * deployment IDs per release and to support rollback. Subagent
+   * manifests do not carry a version of their own; their content
+   * influences the parent's audit hash, and the parent's version
+   * represents the cookbook as a whole.
+   */
+  version?: string;
   /** Optional description forwarded to AgentDef.description. */
   description?: string;
   /** Model override; maps to AgentDef.model. */

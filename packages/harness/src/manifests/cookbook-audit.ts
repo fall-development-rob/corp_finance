@@ -41,6 +41,13 @@ export interface FileEntry {
 export interface CookbookAudit {
   /** Cookbook slug (parent directory name under managed-agent-cookbooks/). */
   slug: string;
+  /**
+   * Semver release version from the parent agent.yaml's `version:` field.
+   * Phase 25 Tier C2. Empty string when the parent manifest omits version
+   * (caught by contract MA-008). Informational — not folded into the hash
+   * separately because the version is already part of agent.yaml bytes.
+   */
+  version: string;
   /** Master hash: sha256 of the canonical JSON of files[]. */
   hash: string;
   /** Sorted file inventory (alphabetical by path). */
@@ -104,17 +111,24 @@ function hashFile(absPath: string, repoRoot: string): FileEntry {
 
 /**
  * Canonical JSON for a single audit: 2-space indent, key order
- * {slug, hash, files}, files sorted alphabetically by path. Used as input
- * to the master hash so the hash is byte-stable.
+ * {slug, files}, files sorted alphabetically by path. Used as input to
+ * the master hash so the hash is byte-stable. Version is intentionally
+ * excluded — it lives inside agent.yaml bytes already, so any version
+ * bump changes the hash via the file content rather than a separate
+ * field. This keeps the hash function focused on "what bytes are
+ * shipping".
  */
-function canonicalAuditJson(audit: Omit<CookbookAudit, "hash">): string {
-  const sortedFiles = [...audit.files].sort((a, b) =>
+function canonicalAuditJson(input: {
+  slug: string;
+  files: FileEntry[];
+}): string {
+  const sortedFiles = [...input.files].sort((a, b) =>
     a.path.localeCompare(b.path),
   );
   return (
     JSON.stringify(
       {
-        slug: audit.slug,
+        slug: input.slug,
         files: sortedFiles.map((f) => ({
           path: f.path,
           sha256: f.sha256,
@@ -207,12 +221,18 @@ export function auditCookbook(input: AuditCookbookInput): CookbookAudit {
   const directFiles = collectFiles(input.cookbookDir);
 
   // 2. Walk every manifest (parent + subagents) for system.file + skill refs.
+  //    Also capture the parent manifest's version field.
   const referenced = new Set<string>();
+  let version = "";
   for (const manifestPath of directFiles.filter((p) =>
     /agent\.yaml$|agent\.yml$|\.yaml$|\.yml$/.test(p),
   )) {
     const manifest = readManifest(manifestPath);
     if (!manifest) continue;
+    // Parent manifest carries the cookbook version.
+    if (/\/agent\.(yaml|yml|json)$/.test(manifestPath) && manifest.version) {
+      version = manifest.version;
+    }
     for (const ref of collectReferencedFiles(manifest, dirname(manifestPath))) {
       referenced.add(ref);
     }
@@ -224,11 +244,13 @@ export function auditCookbook(input: AuditCookbookInput): CookbookAudit {
     .map((p) => hashFile(p, input.repoRoot))
     .sort((a, b) => a.path.localeCompare(b.path));
 
-  // 4. Master hash = sha256 of canonical JSON of files[].
+  // 4. Master hash = sha256 of canonical JSON of files[]. Version isn't
+  //    folded in separately because it lives inside agent.yaml bytes
+  //    already; surfacing it on the audit object is purely informational.
   const canonical = canonicalAuditJson({ slug, files: entries });
   const masterHash = sha256(Buffer.from(canonical, "utf8"));
 
-  return { slug, hash: masterHash, files: entries };
+  return { slug, version, hash: masterHash, files: entries };
 }
 
 export interface AuditAllInput {
@@ -287,6 +309,7 @@ export function serialiseAuditCatalog(catalog: CookbookAuditCatalog): string {
     version: catalog.version,
     cookbooks: sortedCookbooks.map((c) => ({
       slug: c.slug,
+      version: c.version ?? "",
       hash: c.hash,
       files: [...c.files]
         .sort((a, b) => a.path.localeCompare(b.path))
@@ -324,6 +347,11 @@ export function parseAuditCatalog(json: string): CookbookAuditCatalog {
         `audit catalog cookbook[${i}] missing required fields slug/hash/files`,
       );
     }
+    // version is optional in the legacy on-disk shape; default to "".
+    const version =
+      typeof (c as { version?: unknown }).version === "string"
+        ? ((c as { version: string }).version)
+        : "";
     const files = (c.files as unknown[]).map((f, j) => {
       if (
         typeof f !== "object" ||
@@ -339,7 +367,7 @@ export function parseAuditCatalog(json: string): CookbookAuditCatalog {
       const e = f as { path: string; sha256: string; size: number };
       return { path: e.path, sha256: e.sha256, size: e.size };
     });
-    return { slug: c.slug, hash: c.hash, files };
+    return { slug: c.slug, version, hash: c.hash, files };
   });
   return { version: obj.version ?? "1", cookbooks };
 }

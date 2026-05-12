@@ -1,6 +1,7 @@
 # Screener: runs sanctions, PEP, and adverse media checks via cfa-core compliance tools.
 
 name: cfa-kyc-screener
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md

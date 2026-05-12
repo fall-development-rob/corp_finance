@@ -1,6 +1,7 @@
 # Earnings reviewer: reads transcripts, computes earnings quality metrics, and publishes updates.
 
 name: cfa-earnings-reviewer
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/equity-analyst.md

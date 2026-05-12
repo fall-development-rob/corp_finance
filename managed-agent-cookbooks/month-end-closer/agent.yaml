@@ -1,6 +1,7 @@
 # Closer: validates period-end journal entries and runs accrual checks.
 
 name: cfa-month-end-closer
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md

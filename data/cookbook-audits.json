@@ -3,12 +3,13 @@
   "cookbooks": [
     {
       "slug": "credit-analyst",
-      "hash": "758e5783fe4b5527686564c11ffec9e223250b1c56424d25cc81c4b036dbbc45",
+      "version": "1.0.0",
+      "hash": "214b5b94048dc16bb5de7aaec3010dfe572c603701589bab69fc88ed1ab75e70",
       "files": [
         {
           "path": "managed-agent-cookbooks/credit-analyst/agent.yaml",
-          "sha256": "b49769db130cc162dd31563c6d35fef52bec26517c77c889b0d44d5201f56f57",
-          "size": 1619
+          "sha256": "31402a82f3310713bfc047c38fb07dfe1865f769ad87208ad38d790e09fcb850",
+          "size": 1636
         },
         {
           "path": "managed-agent-cookbooks/credit-analyst/README.md",
@@ -54,12 +55,13 @@
     },
     {
       "slug": "earnings-reviewer",
-      "hash": "4030266f1b1663417330b9ad7d728bf72bf0370cd6beb4d0dd6a2cde78f556c0",
+      "version": "1.0.0",
+      "hash": "2083695c0ae30b1157a03ff435342b047939bfa5ba168997157006f01ceeaa2f",
       "files": [
         {
           "path": "managed-agent-cookbooks/earnings-reviewer/agent.yaml",
-          "sha256": "fd8187838c1c154d46d152126ad7c19220ea719e37f3ba0a889af177da3aafba",
-          "size": 1717
+          "sha256": "30d8620ddb310a76eb324bf22ab35eed4015393e1f70923dd50bc2a53d4ca022",
+          "size": 1734
         },
         {
           "path": "managed-agent-cookbooks/earnings-reviewer/README.md",
@@ -115,12 +117,13 @@
     },
     {
       "slug": "equity-analyst",
-      "hash": "40b535b0e3423487cbe54cef508ce741245149435a2fda12862fd8d8756b10b4",
+      "version": "1.0.0",
+      "hash": "359e2f363eae05a9ad658ea3dcdc95a18ad11ac54c70685d0877086ab9c618a9",
       "files": [
         {
           "path": "managed-agent-cookbooks/equity-analyst/agent.yaml",
-          "sha256": "f98eaad04dec314dd6826c47a2d03225a61b42c7e96af9b331db375435b51263",
-          "size": 1803
+          "sha256": "78c3c0554bc822a673f9be14d4dd0eb7b6481c07dc692c9dcf4fc7af3415e517",
+          "size": 1820
         },
         {
           "path": "managed-agent-cookbooks/equity-analyst/README.md",
@@ -181,12 +184,13 @@
     },
     {
       "slug": "gl-reconciler",
-      "hash": "614f9e38905d3e0dbe15aea52bc68bc8fe6398735c8bfb57766b22c01bb4c081",
+      "version": "1.0.0",
+      "hash": "1342440a940738a7b87c77cb757a6cc890f68c33e6b3ccfbf472f4bded843f7c",
       "files": [
         {
           "path": "managed-agent-cookbooks/gl-reconciler/agent.yaml",
-          "sha256": "5b56666d42b2c43942d129de365e967d15f69676cfdd56eb076f7b9af1acdce1",
-          "size": 1729
+          "sha256": "31067ff6c8988399003d939dd38890e95722ebf17785c7a6f9955d15e4e85d29",
+          "size": 1746
         },
         {
           "path": "managed-agent-cookbooks/gl-reconciler/README.md",
@@ -242,12 +246,13 @@
     },
     {
       "slug": "kyc-screener",
-      "hash": "8d394fbd49ae981406861a6b7b9accb1f7c53157135a0493e4408eaf8c9f2adf",
+      "version": "1.0.0",
+      "hash": "3462d85c0a6a0d713c5e67ac7c2879951262bcc5a82977e86d07f2435dcc34b8",
       "files": [
         {
           "path": "managed-agent-cookbooks/kyc-screener/agent.yaml",
-          "sha256": "e2101215402beb0575df74ec56bb1b83e075cfa3f064ce28df6da1c17e74b6e1",
-          "size": 2060
+          "sha256": "21ab6decffe6c85a5826f4985ebec21ea89bec0864ec31db6bb6a9fc7fcd80dc",
+          "size": 2077
         },
         {
           "path": "managed-agent-cookbooks/kyc-screener/README.md",
@@ -323,12 +328,13 @@
     },
     {
       "slug": "lp-statement-auditor",
-      "hash": "f167b08bc6a6395213490ecf458224cc62e5d31396f4c849e220caadea75e3a8",
+      "version": "1.0.0",
+      "hash": "f5923ad82ce3df46bf2cccdb5705fc918bc602fb7442f12ec5887e3a7281697d",
       "files": [
         {
           "path": "managed-agent-cookbooks/lp-statement-auditor/agent.yaml",
-          "sha256": "b257758dd6065df86764c0496f508f3b72cf49a8fd1e05458e600edc7941c7e3",
-          "size": 1707
+          "sha256": "3645b8b90655a2061ca3ba88f4910b471011ce6e1f261613d883b294117e7d3b",
+          "size": 1724
         },
         {
           "path": "managed-agent-cookbooks/lp-statement-auditor/README.md",
@@ -384,12 +390,13 @@
     },
     {
       "slug": "lseg-rates-monitor",
-      "hash": "de1f57446c8e0e21bbae63b9e9c1687b5d9ae96211e705fcc968e2d5f6784ed8",
+      "version": "1.0.0",
+      "hash": "e6cf1e53c5e9d30d1b4a822985d275c7585d58c1ce069c284fe5930b771edf0e",
       "files": [
         {
           "path": "managed-agent-cookbooks/lseg-rates-monitor/agent.yaml",
-          "sha256": "2b3d8282ec515d5deb21894f37b104a72045aa47464a6637bcd7ba3a4bd67dc2",
-          "size": 1717
+          "sha256": "90a35283afaf1317adc6b6ccf161f93317cc64012c3852f209488a3841298de1",
+          "size": 1734
         },
         {
           "path": "managed-agent-cookbooks/lseg-rates-monitor/README.md",
@@ -440,12 +447,13 @@
     },
     {
       "slug": "model-builder",
-      "hash": "f9d5297ca32509a92c8efe86f9a6efcee984ed2e29abdee0c179ee0d44d328f0",
+      "version": "1.0.0",
+      "hash": "4f33c91df148ae0de613442be660ec0df063f970c3188d315eafa8b2d5ea44f5",
       "files": [
         {
           "path": "managed-agent-cookbooks/model-builder/agent.yaml",
-          "sha256": "8af486771a3bfaa311b7572eb02a7b3f9b8b1966cb78cf7975ad1b3066ebba82",
-          "size": 1647
+          "sha256": "9f9108852818e3992f022e80ce0cc1ad7a3979171a658bad5e1587eff551785b",
+          "size": 1664
         },
         {
           "path": "managed-agent-cookbooks/model-builder/README.md",
@@ -491,12 +499,13 @@
     },
     {
       "slug": "month-end-closer",
-      "hash": "e268fb8a9ac58a1729f15893f083b59b47b04f3ad5a00df0fd58c631b346fd8c",
+      "version": "1.0.0",
+      "hash": "ff2d7fbc412123396719e4f2500b7bb0e359b47d867fd240362626790d72e80e",
       "files": [
         {
           "path": "managed-agent-cookbooks/month-end-closer/agent.yaml",
-          "sha256": "463c11e5802a32fd5bf10cfa9e10d55a607ce39d7ef301b2b5078dcd4b2781a4",
-          "size": 1893
+          "sha256": "21fefcc64cec1ecc508cb474267484537c45b92596d6f2e64fd4ce8f0f34d947",
+          "size": 1910
         },
         {
           "path": "managed-agent-cookbooks/month-end-closer/README.md",
@@ -557,12 +566,13 @@
     },
     {
       "slug": "pitch-deck-builder",
-      "hash": "f154da61aa522c40f1e53563fe99a16a90444b2d1f8263f7c0df7cfe9134f4ea",
+      "version": "1.0.0",
+      "hash": "4d8ac0ec22a5b795576eba2c07fd58617a36310068ce2b1041af3030d5c7d550",
       "files": [
         {
           "path": "managed-agent-cookbooks/pitch-deck-builder/agent.yaml",
-          "sha256": "8f2c9f9de8ec39c5858e3b94703b395acaabd7fa81b6b3d90f014abea88121a7",
-          "size": 1813
+          "sha256": "1d0ddafb9cdeecc78db8725d0f2d7cf7e9e5c199a1c1086904a27954da6ed576",
+          "size": 1830
         },
         {
           "path": "managed-agent-cookbooks/pitch-deck-builder/README.md",
@@ -623,12 +633,13 @@
     },
     {
       "slug": "private-markets-analyst",
-      "hash": "cc18d2431edbe5be99fedf2c686978ccaf7bc4f21f2983cee4bf1a42a4922852",
+      "version": "1.0.0",
+      "hash": "23944128718f14712c8c0f7dcbd76125da7be65bdf907a035c0b9dd4f7d4d418",
       "files": [
         {
           "path": "managed-agent-cookbooks/private-markets-analyst/agent.yaml",
-          "sha256": "aa44d5af2a8efe07c7d44144c6a35f4cfa99674fa158470ded036422cca9bd9c",
-          "size": 1969
+          "sha256": "f51a4535a48ba6051df19eb645a03487d85d545d97669663cbbc1a9e5f201bb3",
+          "size": 1986
         },
         {
           "path": "managed-agent-cookbooks/private-markets-analyst/README.md",
@@ -694,12 +705,13 @@
     },
     {
       "slug": "sector-research",
-      "hash": "7e64b3ddbfcc0a2582a7c0fdb876097a25bcccbd1fd93004631d71c6fc975eed",
+      "version": "1.0.0",
+      "hash": "52617ddb158c86805faf974f3d8b7ef1217742c01d8cd14d1df880a20d32dcdc",
       "files": [
         {
           "path": "managed-agent-cookbooks/sector-research/agent.yaml",
-          "sha256": "b2001afba58957faeff38f9333c7013ba33388e6df9bd54f18d6913658fcab1a",
-          "size": 1811
+          "sha256": "f406bb146344d35667d0f6c2aaf240d7976dda2b718c185f9300917457b1da61",
+          "size": 1828
         },
         {
           "path": "managed-agent-cookbooks/sector-research/README.md",
@@ -760,12 +772,13 @@
     },
     {
       "slug": "sp-credit-research",
-      "hash": "c6c58a95bb099d3d31551cd7779c9a5edfe4953ed129c7e704f03befcc072e33",
+      "version": "1.0.0",
+      "hash": "248b69c5746375899b373a7096d22efbbe722ee23f2e1be3f7de9977cc757927",
       "files": [
         {
           "path": "managed-agent-cookbooks/sp-credit-research/agent.yaml",
-          "sha256": "c10317e604b6f1006afa151f46f39f70d549c927929b522327070d4b8c7e71db",
-          "size": 1912
+          "sha256": "51a4ab1aed3b36d2951cb47ca4fdb7c6d7b6ee5445bd1dbce6bfd207aa471b77",
+          "size": 1929
         },
         {
           "path": "managed-agent-cookbooks/sp-credit-research/README.md",
@@ -816,12 +829,13 @@
     },
     {
       "slug": "valuation-reviewer",
-      "hash": "8c904ba77fe8fbf5cf929bf5be63a3e3692d725edb5ea5b098f3e8ffbe7fc28b",
+      "version": "1.0.0",
+      "hash": "6e80a6670909567dda16d62c96a4852ead0da46bb49f12a711303928a484f824",
       "files": [
         {
           "path": "managed-agent-cookbooks/valuation-reviewer/agent.yaml",
-          "sha256": "5798f742cc7058153efeab682da113ccd78431a585dfab7e91a848c86f9b1706",
-          "size": 1805
+          "sha256": "81ae2bc0a0bc6f8923484fda858cbb3267c9464b0bbbfdb41dd97a7ed251669f",
+          "size": 1822
         },
         {
           "path": "managed-agent-cookbooks/valuation-reviewer/README.md",
@@ -877,12 +891,13 @@
     },
     {
       "slug": "wealth-meeting-prep",
-      "hash": "615ccd4b5f662bf8b4f3b9d25edb527a2836f184b8a1ec0ba4a37bf2e78bee7b",
+      "version": "1.0.0",
+      "hash": "ea06845d38e8077008570769a9cd50bac32de4266adbb29def6ccf1097eb76b0",
       "files": [
         {
           "path": "managed-agent-cookbooks/wealth-meeting-prep/agent.yaml",
-          "sha256": "aa88ebf7e391923cb05dca95153db3e9bf61009db65d7b1192b0129614d6d3f8",
-          "size": 1854
+          "sha256": "f3437f7f367d67cac0364813037aaa14da0ff40b29eb3a7ea3ada6790aec2ff8",
+          "size": 1871
         },
         {
           "path": "managed-agent-cookbooks/wealth-meeting-prep/README.md",

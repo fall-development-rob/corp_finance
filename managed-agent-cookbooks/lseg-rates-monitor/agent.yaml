@@ -1,6 +1,7 @@
 # LSEG rates monitor: fetches live rate data via LSEG MCP, analyses trends, and publishes alerts.
 
 name: cfa-lseg-rates-monitor
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/fixed-income-analyst.md

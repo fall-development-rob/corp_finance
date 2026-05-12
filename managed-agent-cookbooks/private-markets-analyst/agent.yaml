@@ -1,6 +1,7 @@
 # Private markets analyst: reads deal documents, models LBO/VC returns, and writes IC memos.
 
 name: cfa-private-markets-analyst
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/private-markets-analyst.md

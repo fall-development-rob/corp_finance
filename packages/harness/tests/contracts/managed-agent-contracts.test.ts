@@ -20,6 +20,7 @@ import { parse as parseYaml } from "yaml";
 
 import { parseAuditCatalog } from "../../src/manifests/cookbook-audit.js";
 import { parseReplayCatalog } from "../../src/manifests/cookbook-replay.js";
+import { isValidSemver } from "../../src/manifests/semver.js";
 import type {
   AgentManifest,
   ToolsetConfig,
@@ -218,6 +219,22 @@ describe("MA-007 — every cookbook slug is file-system safe and ALLOWED_SLUGS-a
   for (const cb of cookbooks) {
     it(`${cb.slug}: matches ^[a-z][a-z0-9-]{1,62}[a-z0-9]$`, () => {
       expect(cb.slug).toMatch(SLUG_RE);
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// MA-008 — every parent declares a valid semver version
+// ---------------------------------------------------------------------------
+
+describe("MA-008 — every cookbook parent declares a valid semver version", () => {
+  for (const cb of cookbooks) {
+    it(`${cb.slug}: agent.yaml has version field`, () => {
+      expect(cb.manifest.version).toBeDefined();
+      expect(typeof cb.manifest.version).toBe("string");
+    });
+    it(`${cb.slug}: version is valid semver-2.0`, () => {
+      expect(isValidSemver(cb.manifest.version)).toBe(true);
     });
   }
 });

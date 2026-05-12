@@ -1,6 +1,7 @@
 # Sector research: pulls sector data, performs peer benchmarking, and publishes sector overviews.
 
 name: cfa-sector-research
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/equity-analyst.md

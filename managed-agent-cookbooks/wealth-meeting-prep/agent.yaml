@@ -1,6 +1,7 @@
 # Wealth meeting prep: reads portfolio data, builds financial plan analysis, and briefs the advisor.
 
 name: cfa-wealth-meeting-prep
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/quant-risk-analyst.md

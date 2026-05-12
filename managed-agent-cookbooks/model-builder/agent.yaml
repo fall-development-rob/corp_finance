@@ -1,6 +1,7 @@
 # Model builder: pulls market data, builds three-statement financial models, and exports to xlsx.
 
 name: cfa-model-builder
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/equity-analyst.md

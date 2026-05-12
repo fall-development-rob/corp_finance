@@ -1,6 +1,7 @@
 # LP statement auditor: reads LP statements, validates NAV calculations, and publishes audit findings.
 
 name: cfa-lp-statement-auditor
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/private-markets-analyst.md

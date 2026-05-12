@@ -83,6 +83,13 @@ export {
   type ReplayAllInput,
 } from "./cookbook-replay.js";
 
+// Phase 25 Tier C2: semver validator
+export {
+  isValidSemver,
+  parseSemver,
+  type ParsedSemver,
+} from "./semver.js";
+
 // Phase 25 Tier C1: managed-agent cookbook cost telemetry
 export {
   estimateAgentCost,

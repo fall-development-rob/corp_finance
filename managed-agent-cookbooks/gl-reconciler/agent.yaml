@@ -1,6 +1,7 @@
 # Reconciler: classifies breaks by taxonomy, assigns owners, and computes variance analysis.
 
 name: cfa-gl-reconciler
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md

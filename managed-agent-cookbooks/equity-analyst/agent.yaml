@@ -1,6 +1,7 @@
 # Equity analyst worker: performs DCF, comps, and factor analysis to derive valuation.
 
 name: cfa-equity-analyst
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/equity-analyst.md

@@ -1,6 +1,7 @@
 # Credit analyst: orchestrates data fetch, credit ratio computation, and opinion report generation.
 
 name: cfa-credit-analyst
+version: "1.0.0"
 model: claude-opus-4-7
 system:
   file: ../../plugins/cfa-core/agents/cfa/credit-analyst.md
