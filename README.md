@@ -1,145 +1,234 @@
-# corp-finance-mcp
+# cfa_agent
 
-Institutional-grade corporate finance calculations exposed as an MCP (Model Context Protocol) server, with a multi-agent AI analyst system for CFA-level financial analysis.
+Institutional-grade CFA agent stack: a deterministic, byte-stable dispatch loop on top of 623 financial tools, with 15 deployable managed-agent cookbooks, a 3-tier plugin architecture, and a closed learning loop from validation failures back to skill prose.
 
-All financial math runs in 128-bit decimal precision via Rust, with Node.js bindings, a TypeScript MCP interface, and 9 specialist AI agents that route, coordinate, and synthesise across 200+ tools.
+All financial math runs in 128-bit decimal precision via Rust (compiled to WASM and NAPI). The dispatch runtime is TypeScript on `@anthropic-ai/sdk`. **Two runs of the same cookbook against the same inputs produce byte-identical output.**
 
-**Runs end-to-end with zero paid vendor subscriptions.** The `cfa-core` MCP server (~206 tools), the CLI, the 49 skills, and the 9 specialist agents all work offline on user-supplied JSON. Free public data feeds (FRED, EDGAR, FIGI, YF, WB) and the FMP free tier plug in additively. Paid vendors (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook) are opt-in. See [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md).
+> **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** — module reference, data source catalogue, architecture details.
 
-> **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** — Full technical documentation, module reference, data source catalogue, and architecture details.
-
-## Architecture
+## Repo layout
 
 ```
-crates/corp-finance-core    Rust library — 72 domain modules, all in Decimal
-crates/corp-finance-cli     Rust CLI — 72 subcommands
-packages/mcp-server         206 corp-finance MCP tools (Zod-validated, offline)
-packages/data-mcp-server    121 data tools — free public sources (FRED, EDGAR, FIGI, Yahoo Finance, World Bank, geopolitical)
-packages/fmp-mcp-server     ~180 FMP tools (free tier with API key)
-packages/vendor-mcp-server  87 vendor tools — paid (LSEG, S&P, FactSet, Morningstar, Moody's, PitchBook)
-packages/agents             9-analyst pipeline with HNSW routing and swarm coordination
+plugins/                       3-tier plugin architecture (Phase 40)
+  cfa-core/                    compute backbone — WASM MCP server with 227 cfa-core tools,
+                               4 corp-finance-tools-* reference skills, specflow,
+                               cfa-managed-agent, security/audit hooks, agents/cfa/ canonical
+                               YAML manifests for the 9 main analysts
+  agent-plugins/               24 plugins — one per deployable agent (9 specialists + 15 cookbooks)
+  vertical-plugins/            11 plugins — one per business domain (er, ib, pe, fa,
+                               fund-admin, ops, wm, macro, foundations, derivatives stub,
+                               fixed-income stub); hosts workflow-* skills and slash commands
+  partner-built/               10 plugins — one per data vendor (lseg, sp-global, factset,
+                               moodys, morningstar, pitchbook, fmp, free-data, aiera stub,
+                               daloopa stub); each has its own .mcp.json
+
+packages/                      TypeScript workspace
+  harness/                     dispatch runtime — agent loop, MCP client, hybrid router,
+                               reasoning bank (local RuVector + S3), skill-editor CLI
+  mcp-server/                  agent infrastructure tools (cookbook validator, surface-parity,
+                               wasm-build, zod-transform)
+  fmp-mcp-server/              180 FMP tools (free tier with API key)
+  data-mcp-server/             129 free public data tools (FRED, EDGAR, FIGI, YF, WB,
+                               ACLED, UCDP, GDELT, GDACS, USGS, WTO, Polymarket, ...)
+  vendor-mcp-server/           87 paid vendor tools (LSEG, S&P, FactSet, Morningstar,
+                               Moody's, PitchBook)
+  bindings/                    NAPI bindings to corp-finance-core (consumed by cfa-core MCP)
+  mcp-utils/                   shared MCP server utilities
+
+managed-agent-cookbooks/       15 deployable cookbooks (YAML manifests + subagents/*.yaml)
+                               consumed by harness.dispatchCookbook() at runtime
+
+data/tools-catalog.json        canonical 623-tool catalog (Phase 25 Tier A1) — used by
+                               cookbook tool-name lint, regenerated from MCP server sources
+
+docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
 
-### Plugin layout (three-tier, Phase 40)
+`corp-finance-core` (Rust library + CLI) was extracted to its own crates.io-published repo in Phase 29 (Wave 18). This repo consumes it via `packages/bindings` (NAPI) and `plugins/cfa-core/mcp/wasm` (WASM).
+
+## How it all fits together
 
 ```
-plugins/
-  agent-plugins/    24 plugins — one per deployable agent (9 specialists + 15 cookbooks)
-  vertical-plugins/ 11 plugins — one per business domain (equity-research, ib, pe, fund-admin,
-                      operations, wealth-management, financial-analysis, foundations, macro,
-                      derivatives stub, fixed-income stub)
-  partner-built/    10 plugins — one per data vendor (lseg, sp-global, factset, moodys,
-                      morningstar, pitchbook, fmp, free-data, aiera stub, daloopa stub)
-  cfa-core/         compute backbone — WASM/NAPI MCP server, 4 corp-finance-tools-* skills,
-                      specflow, cfa-managed-agent, security/audit hooks
+   user prompt (CLI / Claude Code slash command)
+        │
+        ▼
+┌────────────────────┐
+│  cfa-harness       │  packages/harness — dispatch loop on @anthropic-ai/sdk
+│  (TypeScript)      │  • routes via WorkflowRouter (deterministic static workflows)
+│                    │    or falls through to LLM dispatch
+│                    │  • validates every subagent output against its output_schema
+│                    │  • writes structured audit entries to the reasoning bank
+└────────┬───────────┘
+         │
+         ▼
+┌────────────────────┐    ┌──────────────────────────────────────────┐
+│  cookbook manifest │ ─▶ │  4 MCP servers (623 tools total)         │
+│  agent.yaml +      │    │  • cfa-core (227)  — compute backbone    │
+│  subagents/*.yaml  │    │  • fmp     (180)   — FMP free tier       │
+│                    │    │  • data    (129)   — free public sources │
+│                    │    │  • vendor   (87)   — paid (LSEG/SP/...)  │
+└────────────────────┘    └──────────────────────────────────────────┘
+         │
+         ▼
+┌────────────────────┐
+│  reasoning bank    │  packages/harness/src/reasoning — RuVector locally,
+│                    │  S3+MinIO in CI (Phase 41 W0). Indexes every dispatch
+│                    │  with validation_failed metadata for outlier detection.
+└────────┬───────────┘
+         │
+         ▼
+   skill-editor pipeline (Phase 41, deterministic):
+     outliers.ts → remediation-emitter.ts → docs/proposed-skill-updates/<file>.yaml
+                                                       │
+                                                       ▼
+                                       human PR review → skill-editor apply
+                                                       │
+                                                       ▼
+                                       byte-deterministic SKILL.md edit
 ```
 
-Each plugin carries a `.claude-plugin/plugin.json` manifest; partner-built plugins also carry
-a `.mcp.json` for MCP server endpoint registration. See `docs/adr/ADR-043-three-tier-plugin-architecture.md`
-for the full decision record.
+**Determinism invariant.** Every component that writes to a versioned file (skill, manifest, agent definition) is a pure function over its inputs. No LLM synthesises free prose into the production path. See `docs/adr/ADR-044-phase-41-deterministic-learning-loop.md`.
 
 ## Quick Start
 
-### As an MCP Server
+```bash
+npm install                                          # Turborepo — installs 7 packages
+npm run build                                        # Builds harness + 4 MCP servers
+npm test                                             # Vitest — 744 tests
+npx tsx scripts/generate-tool-catalog.ts             # Regenerate data/tools-catalog.json
+npx tsx scripts/lint-cookbook-tool-names.ts          # Lint cookbooks against catalog
+npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
+```
+
+### As an MCP server
 
 ```json
 {
   "mcpServers": {
-    "corp-finance": {
+    "cfa-core": {
       "command": "node",
-      "args": ["/path/to/packages/mcp-server/dist/index.js"]
+      "args": ["/path/to/plugins/cfa-core/mcp/dist/server.js"]
     }
   }
 }
 ```
 
-### Build & Run
-
-```bash
-npm install && npm run build     # Turborepo — builds all 6 packages
-cargo test --workspace --all-features   # ~6,100 Rust tests
-npm run test:contracts                  # 406 agent contract tests
-```
-
-### Agent CLI
+### As a dispatch CLI
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
 
-# Pipeline mode — routes to best specialist(s), coordinates, synthesises
-cfa analyze "Calculate WACC for beta 1.2, risk-free 4%, ERP 6%"
+# Dispatch a deployable cookbook end-to-end
+cfa-harness cookbook equity-analyst --input ./input.json --out ./out
 
-# Single agent
-cfa analyze --agent cfa-equity-analyst "Run a 3-stage DCF"
-
-# Interactive REPL
-cfa analyze -i
+# Apply a remediation proposal (Phase 41 closed loop)
+cfa-harness skill-editor apply docs/proposed-skill-updates/<file>.yaml
 ```
 
-## What's Inside
+## Tool catalog and cookbook lint (Phase 25 Tier A1)
 
-| Area | Coverage |
-|------|----------|
-| **Valuation & Modelling** | DCF, WACC, comps, three-statement, LBO, merger model, SOTP |
-| **Fixed Income** | Bond pricing, curves, duration, MBS, TIPS, repo, rate models |
-| **Derivatives** | Options (BS/CRR), Greeks, vol surface, SABR, forwards, swaps |
-| **Credit** | Ratings, Altman Z, CDS, CVA, CLO waterfall, CECL, migration |
-| **Risk & Quant** | Factor models, BL, VaR/CVaR, risk parity, pairs trading, momentum |
-| **Real Estate** | Rent roll, comparable sales, HBU, replacement cost, NCREIF benchmarking, acquisition model |
-| **PE & VC** | LBO, waterfall, fund returns, SAFEs, J-curve, commitment pacing |
-| **Regulatory** | Basel III, AIFMD, MiFID II, GIPS, KYC/AML, FATCA/CRS, BEPS |
-| **ESG & Climate** | ESG scoring, carbon markets, CBAM, green bonds, SLL |
-| **Geopolitical** | Conflict (ACLED/UCDP/GDELT), disasters (GDACS/USGS), trade (WTO/EIA), alt data (Polymarket) |
-| **Fund Structures** | Onshore (US/UK/EU), offshore (Cayman/BVI/Lux/Ireland), transfer pricing, tax treaty |
+`data/tools-catalog.json` is the canonical list of every MCP tool name across the 4 in-repo servers (227 + 180 + 129 + 87 = 623). It is generated deterministically from source (`scripts/generate-tool-catalog.ts`) and committed as the audit reference.
 
-> See the **[Modules](https://github.com/fall-development-rob/corp_finance/wiki/Modules)** wiki page for the full 71-module reference with feature flags and tool counts.
+The cookbook lint (`scripts/lint-cookbook-tool-names.ts`) walks every cookbook agent.yaml and subagents/*.yaml, finds every `mcp_toolset` block with explicit `configs[].name`, and verifies each name resolves to a real catalog entry. It classifies any failure as `unknown_tool`, `unknown_server`, or `prefix_mismatch`.
 
-## Multi-Agent Pipeline
+Two CI gates (`.github/workflows/tool-name-lint.yml`):
+1. **Catalog freshness (strict)** — `data/tools-catalog.json` must match a fresh regeneration. Catches developers who add a tool but forget to regenerate.
+2. **Cookbook drift (strict)** — every `configs[].name` must resolve. Catches the verb-prefixed-name bug class (`calculate_target_price`, `build_lbo`, `calculate_dupont`, ...).
 
-9 specialist analysts orchestrated by a chief analyst, with HNSW semantic routing and flash-attention swarm coordination.
+## Closed learning loop (Phase 41)
 
-| Agent | Domain |
-|-------|--------|
-| Equity Analyst | DCF, comps, earnings quality, target price |
-| Credit Analyst | Ratings, spreads, default risk, credit scoring |
-| Fixed Income Analyst | Bonds, curves, duration, MBS |
-| Derivatives Analyst | Options, Greeks, vol surface, structured products |
-| Quant Risk Analyst | VaR, factor models, portfolio optimisation |
-| Macro Analyst | Monetary policy, FX, sovereign, trade |
-| ESG Analyst | ESG scoring, carbon, climate risk |
-| Private Markets Analyst | PE, VC, real assets, restructuring |
+Validation failures during dispatch become structured skill remediations, fully deterministically:
 
-25 slash commands available in Claude Code (`/cfa:initiate-coverage`, `/cfa:ic-memo`, `/cfa:property-valuation`, `/cfa:acquisition-model`, etc.).
+| Step | Component | Output |
+|------|-----------|--------|
+| 1 | `validator.ts` rejects a subagent response | `ReasoningEntry.metadata.validation_failed = true` |
+| 2 | `indexer.ts` writes to bank (local RuVector or shared S3) | persisted audit entry |
+| 3 | `outliers.ts` (cron or manual) runs 4 detectors | typed `OutlierReport` |
+| 4 | `remediation-emitter.ts` (pure fn) → structured YAML | `docs/proposed-skill-updates/<file>.yaml` |
+| 5 | CI cron opens a PR with the YAMLs | reviewable artifact |
+| 6 | Human reviews + approves | merged |
+| 7 | `cfa-harness skill-editor apply <file>` | byte-deterministic SKILL.md edit |
+| 8 | `scripts/archive-skill-proposal.sh` | moved to `docs/proposed-skill-updates/archive/<YYYY-MM>/` |
 
-> See the **[Multi-Agent Pipeline](https://github.com/fall-development-rob/corp_finance/wiki/Multi-Agent-Pipeline)** wiki page for routing details, workflow skills, and slash command reference.
+Templates for the apply step live under `docs/skill-editor-templates/` as version-controlled static files. No LLM is invoked in the proposal or apply path. See `docs/adr/ADR-044-phase-41-deterministic-learning-loop.md`.
 
-## Data Sources
+## What's inside (by tool count)
 
-| Package | Tools | Cost | Sources |
-|---------|-------|------|---------|
-| mcp-server (cfa-core) | 206 | Free, offline | Pure Rust compute, no network calls |
-| data-mcp-server | 121 | Free (3 free signups) | FRED, EDGAR, FIGI, Yahoo Finance, World Bank, UCDP, GDELT, GDACS, USGS, WTO, Polymarket, CoinGecko, UNHCR, Open-Meteo (no key); ACLED, NASA FIRMS, EIA (free signup) |
-| fmp-mcp-server | 180+ | Freemium | Financial Modeling Prep (quotes, financials, technicals, news) |
-| vendor-mcp-server | 87 | Paid | LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook |
+| Area | cfa-core tools | Notable |
+|------|---------------:|---------|
+| Valuation & modelling | ~25 | DCF, WACC, comps, three-statement, LBO, merger, SOTP, target_price |
+| Fixed income | ~20 | Bond pricing, curves, duration/convexity, MBS, TIPS, repo, rate models |
+| Derivatives | ~15 | Options (BS/CRR), Greeks, IV surface, SABR, forwards, swaps, exotics |
+| Credit | ~25 | Altman Z, CDS, CVA, CLO waterfall/coverage/scenario, CECL, migration, scorecard |
+| Risk & quant | ~25 | Factor models, Black-Litterman, VaR/CVaR, risk parity, pairs, momentum, Brinson |
+| Real estate | ~10 | Rent roll, comparable sales, HBU, replacement cost, benchmarking, acquisition |
+| PE & VC | ~20 | LBO, waterfall, fund returns, J-curve, commitment pacing, SAFE, dilution |
+| Regulatory | ~20 | Basel III, AIFMD, MiFID II best execution, GIPS, KYC/AML, FATCA/CRS, BEPS |
+| ESG & climate | ~10 | ESG scoring, carbon markets, CBAM, green bonds, SLL covenants |
+| Fund structures | ~10 | US/UK/EU onshore, Cayman/BVI/Lux/Ireland offshore, transfer pricing, treaty |
 
-> See [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) for what runs without paid feeds, and the **[Data Sources](https://github.com/fall-development-rob/corp_finance/wiki/Data-Sources)** wiki page for the full tool breakdown and authentication requirements.
+Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor tools. Full breakdown in `data/tools-catalog.json` and the [Modules wiki page](https://github.com/fall-development-rob/corp_finance/wiki/Modules).
 
-## Deployment examples
+## Managed-agent cookbooks
 
-`managed-agent-cookbooks/` ships 15 deployment templates for the [Anthropic Managed Agents API](https://docs.anthropic.com/) (`/v1/agents`) — equity research, IC memo, GL recon, KYC, model audit, etc. Cookbooks are **examples**, not the primary product; the local plugin / CLI / skills / MCP servers above already cover every workflow. 13 of 15 cookbooks are CoreOnly or Freemium tier (no paid subscription); 2 require LSEG or S&P. List by tier with `cfa managed-agent list --tier=core-only`. See [`managed-agent-cookbooks/README.md`](managed-agent-cookbooks/README.md).
+15 cookbooks under `managed-agent-cookbooks/`, each a YAML manifest tree consumed by `dispatchCookbook()`:
+
+| Cookbook | Tier | Domain |
+|----------|------|--------|
+| equity-analyst | CoreOnly | DCF, comps, earnings quality, target price |
+| credit-analyst | CoreOnly | PD, LGD, CDS, CVA, credit scoring |
+| private-markets-analyst | CoreOnly | LBO, waterfall, J-curve, secondaries |
+| earnings-reviewer | CoreOnly | Beneish, Piotroski, accrual & revenue quality |
+| sector-research | CoreOnly | Comps, peer benchmarking, sector valuation |
+| model-builder | CoreOnly | Three-statement, sensitivity, scenarios |
+| pitch-deck-builder | CoreOnly | Comps, target price, executive summary export |
+| valuation-reviewer | CoreOnly | DCF review, WACC, sensitivity audit |
+| kyc-screener | Freemium | Sanctions, KYC risk, entity classification |
+| gl-reconciler | Freemium | Variance analysis, three-way recon |
+| month-end-closer | Freemium | Accruals, close checklist, variance |
+| lp-statement-auditor | Freemium | Investor net returns, GP economics, NAV |
+| wealth-meeting-prep | Freemium | Retirement planning, tax-loss harvesting, estate |
+| sp-credit-research | Paid (S&P) | S&P-driven credit research |
+| lseg-rates-monitor | Paid (LSEG) | LSEG-driven fixed income monitoring |
+
+13 of 15 cookbooks run with no paid subscription. List by tier: `cfa managed-agent list --tier=core-only`. See [`managed-agent-cookbooks/README.md`](managed-agent-cookbooks/README.md).
+
+## CI gates
+
+| Workflow | What it checks | Mode |
+|----------|----------------|------|
+| `ci.yml` | Lint, typecheck, build | Strict |
+| `typescript.yml` | TS compile + harness tests | Strict |
+| `rust.yml` | Rust build (bindings + WASM) | Strict |
+| `cookbooks.yml` | Cookbook discovery + smoke + builds 4 MCP servers | Strict (smoke); informational (legacy Rust validate, post-YAML) |
+| `tool-name-lint.yml` | Catalog freshness + cookbook drift | **Strict** (both gates) |
+| `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
+| `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
+| `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |
+| `skill-editor-cron.yml` | Weekly outlier scan → PR with remediation YAMLs | Mon 06:00 UTC |
+
+## Data sources
+
+| Server | Tools | Cost | Sources |
+|--------|------:|------|---------|
+| cfa-core | 227 | Free, offline | Pure Rust compute via WASM, no network calls |
+| data | 129 | Free (3 free signups) | FRED, EDGAR, FIGI, Yahoo Finance, World Bank, UCDP, GDELT, GDACS, USGS, WTO, Polymarket, CoinGecko, UNHCR, Open-Meteo (no key); ACLED, NASA FIRMS, EIA (free signup) |
+| fmp | 180 | Freemium | Financial Modeling Prep (quotes, financials, technicals, news) |
+| vendor | 87 | Paid | LSEG, S&P Global, FactSet, Morningstar, Moody's, PitchBook |
+
+See [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) for the free-only path.
 
 ## Documentation
 
 | Resource | Description |
 |----------|-------------|
-| [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) | What runs without paid feeds, and how to add free / paid layers |
 | **[Wiki](https://github.com/fall-development-rob/corp_finance/wiki)** | Full technical reference |
+| [`docs/VENDOR_FREE_PATH.md`](docs/VENDOR_FREE_PATH.md) | Free-tier path; how to add paid layers |
 | `docs/adr/` | Architecture Decision Records (ADR-015 to ADR-044) |
-| `docs/prd/` | Product Requirements Documents |
-| `docs/ddd/` | Domain-Driven Design documents |
-| `docs/contracts/` | Executable specification contracts |
-
-Phase 41 closes the learning loop from validation failures back to skill improvements via a fully deterministic pipeline (no LLM in the proposal or apply path). See [`docs/adr/ADR-044-phase-41-deterministic-learning-loop.md`](docs/adr/ADR-044-phase-41-deterministic-learning-loop.md).
+| `docs/plans/` | Active design specs; completed phases under `archive/` |
+| `docs/skill-editor-templates/` | Canonical static templates used by the apply CLI |
+| `docs/contracts/` | Specflow executable contracts |
+| `docs/ddd/` | Domain models per bounded context |
 
 ## License
 
