@@ -43,6 +43,10 @@ data/tools-catalog.json        canonical 623-tool catalog (Phase 25 Tier A1) —
 data/cookbook-audits.json      byte-stable audit (Phase 25 Tier A2) — sha256 hash per
                                cookbook + per-file inventory, used to detect drift and
                                gate deploy-time integrity
+data/cookbook-replays.json     byte-stable replay contract (Phase 25 Tier A3) — projection
+                               fingerprint per loaded cookbook (parent + subagent tool
+                               sets, system-prompt + schema sha256), catches loader
+                               regressions + structured drift
 
 docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
@@ -101,6 +105,7 @@ npm test                                             # Vitest — 773 tests
 npx tsx scripts/generate-tool-catalog.ts             # Regenerate data/tools-catalog.json
 npx tsx scripts/lint-cookbook-tool-names.ts          # Lint cookbooks against catalog
 npx tsx scripts/generate-cookbook-audits.ts          # Regenerate data/cookbook-audits.json
+npx tsx scripts/generate-cookbook-replays.ts         # Regenerate data/cookbook-replays.json
 npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
 ```
 
@@ -154,6 +159,27 @@ CI gate (`.github/workflows/cookbook-audit.yml`):
 1. **Audit freshness (strict)** — `data/cookbook-audits.json` must match a fresh regeneration. PRs that change cookbook content must include the regenerated audit; CI fails otherwise.
 
 Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-audits.ts --slug equity-analyst`.
+
+## Cookbook replay contracts (Phase 25 Tier A3)
+
+`data/cookbook-replays.json` is a byte-stable snapshot of what the harness `CookbookLoader` actually produces from each cookbook on disk: parent + subagent IDs, models, sorted tool sets, `block_tools`, sha256 of the assembled system prompt (after skill bodies + `system.file` + `system.text` + `system.append` are concatenated), and sha256 of the output/input schemas.
+
+Complements Tier A2:
+
+- **Audit hash** → catches **byte changes** in cookbook content (file diff).
+- **Replay contract** → catches **projection changes** — what the loader produces.
+
+Three bug classes the replay catches that the audit cannot:
+
+1. Loader regressions (`projectTools` / system-prompt assembly bugs) that change loader output without any file diff.
+2. Structured drift visibility: PR reviewers see "analyst subagent lost tool X" instead of "this YAML file changed".
+3. Subagent surface drift: tools + model + block_tools per subagent diff in one JSON block per cookbook.
+
+CI gate (`.github/workflows/cookbook-replay.yml`):
+
+1. **Replay freshness (strict)** — `data/cookbook-replays.json` must match a fresh regeneration via the live `CookbookLoader`. PRs that change cookbook content or skill bodies must include the regenerated replay.
+
+Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-replays.ts --slug equity-analyst`.
 
 ## Closed learning loop (Phase 41)
 
@@ -223,6 +249,7 @@ Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor t
 | `cookbooks.yml` | Cookbook discovery + smoke + builds 4 MCP servers | Strict (smoke); informational (legacy Rust validate, post-YAML) |
 | `tool-name-lint.yml` | Catalog freshness + cookbook drift | **Strict** (both gates) |
 | `cookbook-audit.yml` | Cookbook audit hash freshness | **Strict** |
+| `cookbook-replay.yml` | Cookbook replay contract freshness (loader projection) | **Strict** |
 | `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
 | `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
 | `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |

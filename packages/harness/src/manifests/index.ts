@@ -66,3 +66,19 @@ export {
   type AuditAllInput,
   type AuditDiff,
 } from "./cookbook-audit.js";
+
+// Phase 25 Tier A3: managed-agent cookbook replay contracts
+export {
+  replayCookbook,
+  replayAllCookbooks,
+  serialiseReplayCatalog,
+  parseReplayCatalog,
+  diffReplayCatalogs,
+  type AgentFingerprint,
+  type CookbookReplay,
+  type CookbookReplayCatalog,
+  type ReplayDiff,
+  type ReplayDiffCookbook,
+  type ReplayDiffAgent,
+  type ReplayAllInput,
+} from "./cookbook-replay.js";

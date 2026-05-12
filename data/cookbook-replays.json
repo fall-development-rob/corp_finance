@@ -1,0 +1,1237 @@
+{
+  "cookbooks": [
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-credit-analyst",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-credit-scorer",
+          "cfa-credit-data-reader",
+          "cfa-credit-reporter"
+        ],
+        "system_prompt_bytes": 22578,
+        "system_prompt_sha256": "155782a5425db126f47eae82d2f3df3bb5bdcb0d2e2c6ca87c370ed613184318",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "credit-analyst",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-credit-scorer",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "e2650be00b2e6df2de50639090ded717499426464eeafe4f1c31f62162f73899",
+          "system_prompt_bytes": 20018,
+          "system_prompt_sha256": "d3fc8d29c18f6f03df3ce423685ebbcd60e232207e791412b8bf8e5fe93b81cf",
+          "tool_count": 16,
+          "tools": [
+            "altman_zscore",
+            "cds_pricing",
+            "covenant_compliance",
+            "credit_metrics",
+            "credit_migration",
+            "credit_scorecard",
+            "credit_spreads",
+            "cva_calculation",
+            "debt_capacity",
+            "intensity_model",
+            "merton_pd",
+            "pd_calibration",
+            "portfolio_credit_risk",
+            "read",
+            "scoring_validation",
+            "sensitivity_matrix"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-credit-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "cddcf0f88b0daa3da1d4c6dda98eb3a45868fb66fd0bc68e38fdc02116b9a414",
+          "system_prompt_bytes": 473,
+          "system_prompt_sha256": "c57e1c8cecf29589d0f45b96caa676e3dc47dab253eb68eea1f98e9a10d5463c",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-credit-reporter",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "a81642b93679a58e83be907a48f0c0e5c926c3d77dc2246829753e4e55757bc7",
+          "system_prompt_bytes": 726,
+          "system_prompt_sha256": "f58773b1019dc95c580bef4548a35d4ef44ae1b583f2a1a6077e6dcc9ff5bec5",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-earnings-reviewer",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-earnings-analyst-worker",
+          "cfa-earnings-publisher",
+          "cfa-earnings-transcript-reader"
+        ],
+        "system_prompt_bytes": 32697,
+        "system_prompt_sha256": "dd554648ad6b1a5f0c9f514e28a65ffab7c4559c8f1bcb030b317e91d7936b72",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "earnings-reviewer",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-earnings-analyst-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "5e205704e8ff111e4e61620790b326c527b04ac9271795d1cfd196da9ecc14fa",
+          "system_prompt_bytes": 19942,
+          "system_prompt_sha256": "83c9bef46aecfebb520d79e41cee66c21a7edbf3b6b11c6770f81645377c71c9",
+          "tool_count": 16,
+          "tools": [
+            "accrual_quality",
+            "beneish_mscore",
+            "comps_analysis",
+            "credit_metrics",
+            "dcf_model",
+            "dupont_analysis",
+            "earnings_quality_composite",
+            "piotroski_fscore",
+            "read",
+            "red_flag_scoring",
+            "revenue_quality",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "target_price",
+            "three_statement_model",
+            "wacc_calculator"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-earnings-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "4e80fb822d23dcd60259bedf2048e8080216a176e4a0ac1024ae7d2ada6555e5",
+          "system_prompt_bytes": 742,
+          "system_prompt_sha256": "f672506751a0ba075bb75976ba4f1c796ae90e0a48940d4bda4b379b554a4878",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-earnings-transcript-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "238108f2cada58fd317726b921f20dec56d15882880497c4e1bdc24c352b592f",
+          "system_prompt_bytes": 641,
+          "system_prompt_sha256": "cc7218f3b2a0ef7dc9f6e137bfc03049737fd329e16fa7c2bc374bc046b4a450",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-equity-analyst",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-equity-analyst-worker",
+          "cfa-equity-data-reader",
+          "cfa-equity-publisher"
+        ],
+        "system_prompt_bytes": 37238,
+        "system_prompt_sha256": "a377b46fd29d7687bb80498e298319638ff8e996bf10557b6699c6a1b16c8e93",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "equity-analyst",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-equity-analyst-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "6221985b581cbfa87a48345725539a741ddb8619843726a684f901f84d5775dc",
+          "system_prompt_bytes": 19891,
+          "system_prompt_sha256": "4813634a7ce700de38d56151f6baf9d213ebece5523b07e68bd20576cd304f35",
+          "tool_count": 22,
+          "tools": [
+            "accrual_quality",
+            "beneish_mscore",
+            "benfords_law",
+            "buyback_analysis",
+            "comps_analysis",
+            "dcf_model",
+            "dupont_analysis",
+            "earnings_quality_composite",
+            "h_model_ddm",
+            "monte_carlo_dcf",
+            "multistage_ddm",
+            "payout_sustainability",
+            "piotroski_fscore",
+            "read",
+            "red_flag_scoring",
+            "revenue_quality",
+            "sensitivity_matrix",
+            "sotp_valuation",
+            "target_price",
+            "three_statement_model",
+            "total_shareholder_return",
+            "wacc_calculator"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-equity-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "10f602dd8e1af1939598df0f46d0090cc51353ea269f734c144dfdd619e1da9d",
+          "system_prompt_bytes": 559,
+          "system_prompt_sha256": "2494ba67cb9e9a0a7a714b99925a33c571f391975afe619fbb3899e99aead785",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-equity-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "1447afc3b0a43402a6466b8c64a4c88cc379bbc8deddf7fc192b9aeb88f7c62c",
+          "system_prompt_bytes": 623,
+          "system_prompt_sha256": "fff158e1259578e08a4b33e0e0ceecc50d71f8476f37d1330dfb0463f716a353",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-gl-reconciler",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-gl-ledger-reader",
+          "cfa-gl-publisher",
+          "cfa-gl-reconciler-worker"
+        ],
+        "system_prompt_bytes": 91265,
+        "system_prompt_sha256": "fea800b630ef5ed52f93691ea4d76309ca8baf9c6ef5ca48119d86447730beb2",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "gl-reconciler",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-gl-ledger-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "a6ec08297fb1343efb776aa2af58abcb989feca7c6b4a2a7cb2695c33c055faa",
+          "system_prompt_bytes": 803,
+          "system_prompt_sha256": "7503409063335872a731599f6f08e44ce385ae9bb9e0cec8b91de09a2037cf05",
+          "tool_count": 3,
+          "tools": [
+            "glob",
+            "read",
+            "working_capital"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-gl-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "968ea0455dfb7496e121d096b5b4019b20b2f7d8b1bf87abf8f1f0a721d93150",
+          "system_prompt_bytes": 812,
+          "system_prompt_sha256": "64a3fe512f943637b62126ec836ae8f3b611f5bfedc798927bdf272dbb00c2df",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-gl-reconciler-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "857b77b42190e9095040228a8dd3cd4756ba21f3d7b955358df1747c4456eec2",
+          "system_prompt_bytes": 63908,
+          "system_prompt_sha256": "df45ff36413b272c8a90bcc1f1304df1f353a75ecbab7c03521aad8f5aab431e",
+          "tool_count": 10,
+          "tools": [
+            "breakeven_analysis",
+            "fund_fee_calculator",
+            "gp_economics",
+            "investor_net_returns",
+            "nav_calculator",
+            "read",
+            "rolling_forecast",
+            "variance_analysis",
+            "withholding_tax",
+            "working_capital"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-kyc-screener",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-kyc-identity-reader",
+          "cfa-kyc-reporter",
+          "cfa-kyc-screener-worker"
+        ],
+        "system_prompt_bytes": 124900,
+        "system_prompt_sha256": "fcb8f7a334ea1bab3cbb6807061ad0840743753acd7894ed3249bd7ac980475c",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "kyc-screener",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-kyc-identity-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "90f0142c14964876c87d13ba8cda8d32aff394296762a12746923b0a20b50089",
+          "system_prompt_bytes": 722,
+          "system_prompt_sha256": "3a26fd65d40544923d580ac8763554b3ef8d8dce18f1a10e33687672e1630a0d",
+          "tool_count": 2,
+          "tools": [
+            "glob",
+            "read"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-kyc-reporter",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "aee74e3326db591a2e5cff36008dc9547ebfb41b2a9c8228eb11460fedf43114",
+          "system_prompt_bytes": 806,
+          "system_prompt_sha256": "4d17f2d9e94cd32e92b31dd8b2db0a69793bd04eee7c63469a832afd75c96098",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-kyc-screener-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "330abe9fbbff33d1d49bc2d8e6a6c2d1064750e5ccf676e01b39bedcb313eff3",
+          "system_prompt_bytes": 64085,
+          "system_prompt_sha256": "8016a3683c8c2f1fb300888ee4a0ba8d33565987495048c3bfdd6c331eed5e72",
+          "tool_count": 9,
+          "tools": [
+            "country_risk_assessment",
+            "economic_substance",
+            "entity_classification",
+            "fatca_crs_reporting",
+            "jurisdiction_substance_test",
+            "kyc_risk_assessment",
+            "political_risk",
+            "read",
+            "sanctions_screening"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-lp-statement-auditor",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-lp-auditor",
+          "cfa-lp-reporter",
+          "cfa-lp-statement-reader"
+        ],
+        "system_prompt_bytes": 92007,
+        "system_prompt_sha256": "172312942e71f89f9f6f8ec7c283f0c390be88081206a8d04d8005737070b865",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "lp-statement-auditor",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-lp-auditor",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "f22dd10bfcacf7b2deddfb4609bdf9e606d6c4f0cb8d2e054fea8481333a236c",
+          "system_prompt_bytes": 64029,
+          "system_prompt_sha256": "3ca8c78ba0dfa9de722d1b9370bda197cd00523532d36cc43e1c8a7e2db5eeee",
+          "tool_count": 17,
+          "tools": [
+            "cayman_fund_structure",
+            "commitment_pacing",
+            "fof_portfolio",
+            "fund_fee_calculator",
+            "gaap_ifrs_reconcile",
+            "gp_economics",
+            "investor_net_returns",
+            "j_curve_model",
+            "lux_ireland_fund_structure",
+            "nav_calculator",
+            "read",
+            "returns_calculator",
+            "ubti_screening",
+            "uk_eu_fund_structure",
+            "us_fund_structure",
+            "waterfall_calculator",
+            "withholding_tax"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-lp-reporter",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "8b4aad595b30a03d97e10c86350f741a3ba77675e9c93d6193162f03f7ec3651",
+          "system_prompt_bytes": 733,
+          "system_prompt_sha256": "59f362cfec14be4e5daccfb270d94875299b091f338c0536e5a68991a0c12f62",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-lp-statement-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "f2dce4c951b726c0a154cf4188a4399995b84e55bf9d0d19d617904b4e8e8d24",
+          "system_prompt_bytes": 741,
+          "system_prompt_sha256": "8fa162617bb2fc7db79db8cc138c10011ae88deb78cad090ac65e8eea06f08a7",
+          "tool_count": 2,
+          "tools": [
+            "glob",
+            "read"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-lseg-rates-monitor",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-rates-analyst-worker",
+          "cfa-rates-publisher",
+          "cfa-rates-reader"
+        ],
+        "system_prompt_bytes": 31503,
+        "system_prompt_sha256": "d68599c12bbba25779494b48361d698a1efba6e2c4b73b1578ba699c7040251d",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "lseg-rates-monitor",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-rates-analyst-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "38001a957ccf05f5b4cc77b93a9d161b3ba5aa83c646be707ac2538f70f00287",
+          "system_prompt_bytes": 27460,
+          "system_prompt_sha256": "37c8c5cf0659b4e1c2d7c14d7cdbb5c5ae7f036a960938b5093f4562c222684f",
+          "tool_count": 17,
+          "tools": [
+            "bond_duration",
+            "bond_pricer",
+            "bond_yield",
+            "bootstrap_spot_curve",
+            "collateral_analytics",
+            "credit_spreads",
+            "cross_rate",
+            "currency_swap",
+            "fx_forward",
+            "interest_rate_swap",
+            "nelson_siegel_fit",
+            "read",
+            "repo_analytics",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "short_rate_model",
+            "term_structure_fit"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-rates-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "f3c5d5a3e3ad6dfda5bc8a3a70e18b51773c3789bfa3699957551a29d6756c36",
+          "system_prompt_bytes": 764,
+          "system_prompt_sha256": "5af6311bff7aa0eac09607c16c56acb2d43c393266fb96aa9c3886f143add5fe",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-rates-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "eb84a4b0c1af05b0738311ce1dd6a94b91d0e8af101149bbdca314249e44e57f",
+          "system_prompt_bytes": 677,
+          "system_prompt_sha256": "9285a6833d3c4d5d46ea01ceb31cf9f974c22905a97f14fa5ede2740ffb15b7d",
+          "tool_count": 7,
+          "tools": [
+            "lseg_bond_pricing",
+            "lseg_credit_spreads",
+            "lseg_economic_indicators",
+            "lseg_fx_rates",
+            "lseg_historical_prices",
+            "lseg_reference_data",
+            "lseg_yield_curve"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-model-builder",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-model-data-reader",
+          "cfa-model-exporter",
+          "cfa-model-builder-worker"
+        ],
+        "system_prompt_bytes": 42406,
+        "system_prompt_sha256": "17b4630bd346d8cceffbca33de40376aebe2f880535f1bd7cb8bb81e83c0c8ab",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "model-builder",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-model-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "f2d0884dd78e55e195d7bba2e46f17caa9c460e57a748ea61e81114c8e3750ea",
+          "system_prompt_bytes": 589,
+          "system_prompt_sha256": "23ffda25f40401dfa6b2e7f672965fc78230f5ed7d5174389e416dea7c42b990",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-model-exporter",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "a1a5528a311885f5b17bd99e54e5942e079665a868e3f8636ad0acd1b07c8c83",
+          "system_prompt_bytes": 824,
+          "system_prompt_sha256": "2015c2997de10b3a7d3a15a26468f7fb04c6cc82c35a0ab432083dfec518bf43",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-model-builder-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "161180aeba3ab1e2372ebd250c8cc85a955c5c4edfe4f29baf26905fd0118cf3",
+          "system_prompt_bytes": 20052,
+          "system_prompt_sha256": "543127526829d13c675fdfa6b656f022190410587380d64387eda33cd360ee95",
+          "tool_count": 18,
+          "tools": [
+            "altman_zscore",
+            "comps_analysis",
+            "credit_metrics",
+            "dcf_model",
+            "debt_capacity",
+            "debt_schedule",
+            "dupont_analysis",
+            "lbo_model",
+            "monte_carlo_dcf",
+            "read",
+            "returns_calculator",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "sources_uses",
+            "target_price",
+            "three_statement_model",
+            "wacc_calculator",
+            "waterfall_calculator"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-month-end-closer",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-close-worker",
+          "cfa-close-reporter",
+          "cfa-close-tb-reader"
+        ],
+        "system_prompt_bytes": 36337,
+        "system_prompt_sha256": "aa5d47848bd55deba6e78a8124886cd9a4849cdff04a470e8ab1b5e20480401f",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "month-end-closer",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-close-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "61c490f84afa6b7df1cc5399ee208216f92ac705316fbf1110f411c03a1bcb0b",
+          "system_prompt_bytes": 20098,
+          "system_prompt_sha256": "5b0d5288578e98b767f324538e7083e2a9ac4050c343fcb6c4170d23bc7d0d91",
+          "tool_count": 10,
+          "tools": [
+            "breakeven_analysis",
+            "dupont_analysis",
+            "peer_benchmarking",
+            "read",
+            "rolling_forecast",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "three_statement_model",
+            "variance_analysis",
+            "working_capital"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-close-reporter",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "d6ea6c5803cba133096fec0f108e05e809ddd61ae9c474e2d1bf8052e9d4d6c1",
+          "system_prompt_bytes": 971,
+          "system_prompt_sha256": "8d12a9cb8bd484011834b727254f36fc89a89a7e5a854fdb1d3122b3fc9b6ad8",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-close-tb-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "4cced06dacc00bf14944db881d4c13455a220d8709fb9a9660cfeb39b6213dcb",
+          "system_prompt_bytes": 618,
+          "system_prompt_sha256": "a2cd407e7cd363a2269d032c4cb8b049f880918e1de9f5a18b64d3b1d1de3781",
+          "tool_count": 2,
+          "tools": [
+            "glob",
+            "read"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-pitch-deck-builder",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-pitch-data-reader",
+          "cfa-pitch-deck-author",
+          "cfa-pitch-modeler"
+        ],
+        "system_prompt_bytes": 36699,
+        "system_prompt_sha256": "505a17a1769b6ca8bb05e280c76041d07893d3a06c92308a9a6208017044740c",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "pitch-deck-builder",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-pitch-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "3cc82b2cb1b06fcff396411d462dd71cb75494fed3265f1fc7d82032a04757bc",
+          "system_prompt_bytes": 594,
+          "system_prompt_sha256": "c315b8aadc82821aa1d03370d8011281cec0e7608577a6154e0547ee83222df9",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-pitch-deck-author",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "22ae791ab92e709b1f366eb9e1a9969c4fae49cdc4b1825b287020ecff7bf3f1",
+          "system_prompt_bytes": 685,
+          "system_prompt_sha256": "1189607b45106472411f0356850d584e04162fdcaafd84ab44fbb35855217391",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-pitch-modeler",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "ede9c3f7028d12b377918feac206d023ba73ed3c1ea9a9079b89ea252a673f78",
+          "system_prompt_bytes": 19885,
+          "system_prompt_sha256": "2a78d67d20f823dc52ead1478e42704dc15ba45001c16bf3cb23885503b51180",
+          "tool_count": 16,
+          "tools": [
+            "altman_zscore",
+            "comps_analysis",
+            "credit_metrics",
+            "dcf_model",
+            "debt_capacity",
+            "dilution_analysis",
+            "dupont_analysis",
+            "lbo_model",
+            "merger_model",
+            "read",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "sotp_valuation",
+            "sources_uses",
+            "target_price",
+            "wacc_calculator"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-private-markets-analyst",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-pm-deal-reader",
+          "cfa-pm-memo-writer",
+          "cfa-pm-modeler"
+        ],
+        "system_prompt_bytes": 41438,
+        "system_prompt_sha256": "d22331ac686c6e901a62caa19d20ce4281d7300a6504541f143459091583a0ac",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "private-markets-analyst",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-pm-deal-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "2bf5165bea17f0f4af6c3f482528affc55cef07be1e2975179f6eceea6cd409c",
+          "system_prompt_bytes": 488,
+          "system_prompt_sha256": "84ace87aa4910085be3dccc7ae17abae4e080ed54a467d766074cc408238df13",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-pm-memo-writer",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "83e13e123231cdeb63551b61a1d8f17beebf8368a25b78aec37463c4f4223b26",
+          "system_prompt_bytes": 661,
+          "system_prompt_sha256": "b525ccea54cad812aead522c8a0912db5174973cd28d968dcd88b39df7f337a6",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-pm-modeler",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "88f8a20c40546fcf3b6e97d9dc11f5f98ca84220c6a08c9989605aaeaedc9bdc",
+          "system_prompt_bytes": 19976,
+          "system_prompt_sha256": "f71d7a745d46170224d67045f7ab071ad8071c390824dbca93caed6fc57f8b3b",
+          "tool_count": 32,
+          "tools": [
+            "abs_cashflow_model",
+            "altman_zscore",
+            "clo_coverage_tests",
+            "clo_reinvestment",
+            "clo_scenario",
+            "clo_tranche_analytics",
+            "clo_waterfall",
+            "commitment_pacing",
+            "concession_valuation",
+            "convertible_note",
+            "credit_metrics",
+            "debt_capacity",
+            "debt_schedule",
+            "dilution_analysis",
+            "fund_fee_calculator",
+            "gp_economics",
+            "j_curve_model",
+            "lbo_model",
+            "manager_selection",
+            "merger_model",
+            "ppp_model",
+            "project_finance_model",
+            "property_valuation",
+            "read",
+            "returns_calculator",
+            "safe_conversion",
+            "secondaries_pricing",
+            "sensitivity_matrix",
+            "sources_uses",
+            "tranching_analysis",
+            "venture_fund_model",
+            "waterfall_calculator"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-sector-research",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-sector-analyst-worker",
+          "cfa-sector-data-reader",
+          "cfa-sector-publisher"
+        ],
+        "system_prompt_bytes": 35688,
+        "system_prompt_sha256": "79b033049a7fa4957592a721bfc8bc0856244592c1abb1b3c5eb96505d0f25db",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "sector-research",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-sector-analyst-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "a10788efc997c45525d38a35722b86a8c31a141176940f01f4773361680027f3",
+          "system_prompt_bytes": 19890,
+          "system_prompt_sha256": "0e1d1e20793fe07706c70ea732ec43a44777ffa3c44ea316033b8823bf9badb6",
+          "tool_count": 13,
+          "tools": [
+            "beneish_mscore",
+            "comps_analysis",
+            "credit_metrics",
+            "dcf_model",
+            "dupont_analysis",
+            "earnings_quality_composite",
+            "piotroski_fscore",
+            "read",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "sotp_valuation",
+            "target_price",
+            "wacc_calculator"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-sector-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "b26a30f2fe99d16960f7fba98e7eb1a02561b2fb84c9f33cd9d7f31feb348b39",
+          "system_prompt_bytes": 614,
+          "system_prompt_sha256": "22ea860f1b78e04a7bb0edb17bfdda302b0823733dfbf43d4b230e83eda791fa",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-sector-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "82f4e86a0c893059b84c2fc943b5b7800c13bb6f057f25b0b0e8a4933778040c",
+          "system_prompt_bytes": 668,
+          "system_prompt_sha256": "7ebc01e2789e3618ea1207b9203f1d3e780b5f5233941ff50862ce549add64c7",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-sp-credit-research",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-sp-credit-scorer",
+          "cfa-sp-credit-data-reader",
+          "cfa-sp-credit-publisher"
+        ],
+        "system_prompt_bytes": 25842,
+        "system_prompt_sha256": "530b1cff5d4793085888b4985b0879bcdc71d37b7d34d5db82af6ebf8711d578",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "sp-credit-research",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-sp-credit-scorer",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "8b1eea43ec477ff309f8642bee3b4e0eed3cf099ed98bf7c75b14e64b6141fb0",
+          "system_prompt_bytes": 20334,
+          "system_prompt_sha256": "0487a2d6da718e0ebb5d1d357c5e3b3c96619eb889096c57238f9d0d14a7b1b9",
+          "tool_count": 16,
+          "tools": [
+            "altman_zscore",
+            "cds_pricing",
+            "covenant_compliance",
+            "credit_metrics",
+            "credit_scorecard",
+            "credit_spreads",
+            "cva_calculation",
+            "debt_capacity",
+            "intensity_model",
+            "merton_pd",
+            "pd_calibration",
+            "peer_benchmarking",
+            "read",
+            "red_flag_scoring",
+            "scoring_validation",
+            "zscore_models"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-sp-credit-data-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "e7ca184b7989902a36e2e77b0ccb229b581e245821fa16abe9188a70f55c2718",
+          "system_prompt_bytes": 817,
+          "system_prompt_sha256": "eef26ae94acd2ba520f5dbd7c59c26653203767c7205c83bd233fceebf995304",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-sp-credit-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "959190106f0ffb494d324ec30af2e7dc5d59d2889867b5ca6e362faaebd64e35",
+          "system_prompt_bytes": 996,
+          "system_prompt_sha256": "b840c5b845a125d364974c8e67a32b43bec655de3b0f08b96aa96c75c4fe5ee8",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-valuation-reviewer",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-val-package-reader",
+          "cfa-val-publisher",
+          "cfa-val-reviewer"
+        ],
+        "system_prompt_bytes": 31640,
+        "system_prompt_sha256": "4846e7cbf37257cf3f3d97a809e8221cb52f6faae3774f01d53811a178476632",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "valuation-reviewer",
+      "subagents": [
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-val-package-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "74d59145d4156e1b307a9dfce369a444d33cd07f911894743cbe71d64a968f1d",
+          "system_prompt_bytes": 671,
+          "system_prompt_sha256": "fb82d30b8aaab02a1554d397066875f6e810dbc59b0b841fe8da9d0f5f821959",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-val-publisher",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "4631c05c89f6575a54e0d0ea6bbf10519bd14a8284d8af524eecfa837e27caab",
+          "system_prompt_bytes": 686,
+          "system_prompt_sha256": "da2fc91cd865c63bd4a8798a48eb795d40af3ce349754775f47e47349468fedf",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-val-reviewer",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "fbb3328b83be8cc6c768e92315c88ca5c97c4b764af903e9bbc4ced75ae9e215",
+          "system_prompt_bytes": 20057,
+          "system_prompt_sha256": "e9a4060dac3d8c03cd29ea6a4aabbd061398a938e397a065eaf1fcba01e1e9d4",
+          "tool_count": 19,
+          "tools": [
+            "altman_zscore",
+            "comps_analysis",
+            "credit_metrics",
+            "dcf_model",
+            "debt_schedule",
+            "h_model_ddm",
+            "lbo_model",
+            "monte_carlo_dcf",
+            "multistage_ddm",
+            "read",
+            "returns_calculator",
+            "scenario_analysis",
+            "sensitivity_matrix",
+            "sotp_valuation",
+            "sources_uses",
+            "target_price",
+            "three_statement_model",
+            "wacc_calculator",
+            "waterfall_calculator"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": {
+        "block_tools": [],
+        "id": "cfa-wealth-meeting-prep",
+        "input_schema_sha256": "",
+        "model": "claude-opus-4-7",
+        "output_schema_sha256": "",
+        "subagent_ids": [
+          "cfa-wealth-analyst-worker",
+          "cfa-wealth-brief-writer",
+          "cfa-wealth-portfolio-reader"
+        ],
+        "system_prompt_bytes": 37161,
+        "system_prompt_sha256": "b9cbc2500c67d2d5463a7594fae69f285c5ce8c10eb18bc19dd86a0e1c0bb992",
+        "tool_count": -1,
+        "tools": [
+          "*"
+        ]
+      },
+      "slug": "wealth-meeting-prep",
+      "subagents": [
+        {
+          "block_tools": [],
+          "id": "cfa-wealth-analyst-worker",
+          "input_schema_sha256": "",
+          "model": "claude-sonnet-4-6",
+          "output_schema_sha256": "9503fa902989f8b89ebf58806fbc7afa6233dbe4b0c9b7602b2c5a4463f7f64a",
+          "system_prompt_bytes": 49642,
+          "system_prompt_sha256": "5f661676e96d0e4c27cfbb532dbaf5bd92a78f1f7b82bdb8423707978d9030a5",
+          "tool_count": 15,
+          "tools": [
+            "black_litterman_portfolio",
+            "concentrated_stock",
+            "direct_indexing",
+            "estate_planning",
+            "factor_risk_budget",
+            "kelly_sizing",
+            "mean_variance_optimization",
+            "read",
+            "retirement_planning",
+            "risk_adjusted_returns",
+            "risk_metrics",
+            "risk_parity",
+            "tail_risk_analysis",
+            "tax_loss_harvesting",
+            "wealth_transfer"
+          ]
+        },
+        {
+          "block_tools": [],
+          "id": "cfa-wealth-brief-writer",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "ae1560df5e413a2fe1bb90792b43053a32500f2ce463a3e7a7b652764e0dae52",
+          "system_prompt_bytes": 648,
+          "system_prompt_sha256": "080f067778a29d82e489ba8677d5d56aadf43a64c9ae9d96e122dd792c6fcee0",
+          "tool_count": 1,
+          "tools": [
+            "write"
+          ]
+        },
+        {
+          "block_tools": [
+            "office_docx_write",
+            "office_pptx_write",
+            "office_xlsx_write"
+          ],
+          "id": "cfa-wealth-portfolio-reader",
+          "input_schema_sha256": "",
+          "model": "claude-haiku-4-5",
+          "output_schema_sha256": "8ae8d3ece78c91d9ab7d30160cdb72710ef27b6eca2ca6fefd2c84332fd337c1",
+          "system_prompt_bytes": 623,
+          "system_prompt_sha256": "ac4f1b5adeaa4fb4c4dc0a5e8cf3c43f75d2ad851ff495f26f9124312e82ccc3",
+          "tool_count": -1,
+          "tools": [
+            "*"
+          ]
+        }
+      ]
+    }
+  ],
+  "version": "1"
+}

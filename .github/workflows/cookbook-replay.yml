@@ -1,0 +1,111 @@
+name: cookbook-replay
+
+# Phase 25 Tier A3 — managed-agent cookbook replay contracts.
+#
+# Single gate (STRICT): data/cookbook-replays.json must match a fresh
+# regeneration by the harness CookbookLoader. Catches three bug classes
+# the cookbook-audit hash cannot:
+#   1. Loader regressions (projectTools / system-prompt assembly bugs)
+#      that change loader output without any file diff.
+#   2. Structured drift visibility: PR reviewers see "analyst subagent
+#      lost tool X" instead of "this YAML file changed".
+#   3. Subagent surface drift: tools + model + block_tools per subagent
+#      diff in one JSON block per cookbook.
+#
+# The replay catalog stores deterministic projections of every loaded
+# AgentDef: id, model, sorted tool set, block_tools, sha256 of the
+# assembled system prompt, sha256 of the output/input schemas.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  cookbook-replay:
+    name: cookbook-replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # ---------------------------------------------------------------------
+      # Gate (STRICT): committed replay must match a fresh regeneration.
+      # ---------------------------------------------------------------------
+      - name: Verify cookbook-replays.json is up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-cookbook-replays.ts --check 2>&1 | tee /tmp/replay-check.log
+
+      # On PRs, surface a human-readable diff vs the merge base.
+      # Informational — does not affect gate outcome.
+      - name: Diff cookbook replays vs main (informational)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git show "origin/${{ github.base_ref }}:data/cookbook-replays.json" > /tmp/base-replays.json 2>/dev/null; then
+            npx tsx scripts/generate-cookbook-replays.ts --diff /tmp/base-replays.json > /tmp/replay-diff.json 2>&1 || true
+            cat /tmp/replay-diff.json
+            ADDED=$(grep -oE '"added":\s*\[[^]]*\]' /tmp/replay-diff.json | head -1 || echo "")
+            REMOVED=$(grep -oE '"removed":\s*\[[^]]*\]' /tmp/replay-diff.json | head -1 || echo "")
+            CHANGED=$(grep -oE '"changed":\s*\[[^]]*\]' /tmp/replay-diff.json | head -1 || echo "")
+            echo "::notice::cookbook replay diff vs main — ${ADDED:-no add} ${REMOVED:-no remove} ${CHANGED:-no change}"
+          else
+            echo "::notice::no baseline cookbook-replays.json on ${{ github.base_ref }} — skipping diff"
+          fi
+
+      - name: Upload replay artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookbook-replay-logs
+          path: |
+            /tmp/replay-check.log
+            /tmp/replay-diff.json
+          if-no-files-found: ignore
+          retention-days: 7
