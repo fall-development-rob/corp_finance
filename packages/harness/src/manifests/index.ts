@@ -82,3 +82,20 @@ export {
   type ReplayDiffAgent,
   type ReplayAllInput,
 } from "./cookbook-replay.js";
+
+// Phase 25 Tier C1: managed-agent cookbook cost telemetry
+export {
+  estimateAgentCost,
+  estimateCookbookCost,
+  buildCostCatalog,
+  serialiseCostCatalog,
+  parseCostCatalog,
+  MODEL_PRICING,
+  DEFAULT_MODEL_ID,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  CHARS_PER_TOKEN_HEURISTIC,
+  type ModelPricing,
+  type AgentCostBreakdown,
+  type CookbookCostEstimate,
+  type CookbookCostCatalog,
+} from "./cookbook-cost.js";

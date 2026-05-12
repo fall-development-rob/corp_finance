@@ -1,0 +1,87 @@
+name: cookbook-cost
+
+# Phase 25 Tier C1 — managed-agent cookbook cost telemetry.
+#
+# Single gate (STRICT): data/cookbook-costs.json must match a fresh
+# regeneration by the harness CookbookLoader. Catches developers who
+# change a cookbook's model, max_tokens, or system prompt but forget
+# to update the committed cost estimate — making cost drift visible
+# in PR review.
+#
+# Cost is a deterministic worst-case ceiling (every agent uses its
+# full max_tokens budget at its model's rate). Real invocations cost
+# less. Tool-call round-trip cost is not yet modeled.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  cookbook-cost:
+    name: cookbook-cost
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # ---------------------------------------------------------------------
+      # Gate (STRICT): committed cost estimate must match a fresh regen.
+      # ---------------------------------------------------------------------
+      - name: Verify cookbook-costs.json is up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-cookbook-costs.ts --check 2>&1 | tee /tmp/cost-check.log
+
+      - name: Upload cost artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookbook-cost-logs
+          path: |
+            /tmp/cost-check.log
+            data/cookbook-costs.json
+          if-no-files-found: ignore
+          retention-days: 7

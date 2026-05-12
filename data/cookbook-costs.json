@@ -1,0 +1,696 @@
+{
+  "cookbooks": [
+    {
+      "agents": [
+        {
+          "id": "cfa-credit-analyst",
+          "input_cost_usd": 0.0846,
+          "input_tokens_est": 5640,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.3918
+        },
+        {
+          "id": "cfa-credit-scorer",
+          "input_cost_usd": 0.014934,
+          "input_tokens_est": 4978,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076374
+        },
+        {
+          "id": "cfa-credit-data-reader",
+          "input_cost_usd": 0.000119,
+          "input_tokens_est": 119,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020599
+        },
+        {
+          "id": "cfa-credit-reporter",
+          "input_cost_usd": 0.000181,
+          "input_tokens_est": 181,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020661
+        }
+      ],
+      "slug": "credit-analyst",
+      "total_cost_usd": 0.509434
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-earnings-reviewer",
+          "input_cost_usd": 0.12228,
+          "input_tokens_est": 8152,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.42948
+        },
+        {
+          "id": "cfa-earnings-analyst-worker",
+          "input_cost_usd": 0.014877,
+          "input_tokens_est": 4959,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076317
+        },
+        {
+          "id": "cfa-earnings-publisher",
+          "input_cost_usd": 0.000185,
+          "input_tokens_est": 185,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020665
+        },
+        {
+          "id": "cfa-earnings-transcript-reader",
+          "input_cost_usd": 0.000161,
+          "input_tokens_est": 161,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020641
+        }
+      ],
+      "slug": "earnings-reviewer",
+      "total_cost_usd": 0.547103
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-equity-analyst",
+          "input_cost_usd": 0.13908,
+          "input_tokens_est": 9272,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.44628
+        },
+        {
+          "id": "cfa-equity-analyst-worker",
+          "input_cost_usd": 0.014838,
+          "input_tokens_est": 4946,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076278
+        },
+        {
+          "id": "cfa-equity-data-reader",
+          "input_cost_usd": 0.00014,
+          "input_tokens_est": 140,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.02062
+        },
+        {
+          "id": "cfa-equity-publisher",
+          "input_cost_usd": 0.000156,
+          "input_tokens_est": 156,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020636
+        }
+      ],
+      "slug": "equity-analyst",
+      "total_cost_usd": 0.563814
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-gl-reconciler",
+          "input_cost_usd": 0.34206,
+          "input_tokens_est": 22804,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.64926
+        },
+        {
+          "id": "cfa-gl-ledger-reader",
+          "input_cost_usd": 0.000201,
+          "input_tokens_est": 201,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020681
+        },
+        {
+          "id": "cfa-gl-publisher",
+          "input_cost_usd": 0.000203,
+          "input_tokens_est": 203,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020683
+        },
+        {
+          "id": "cfa-gl-reconciler-worker",
+          "input_cost_usd": 0.047811,
+          "input_tokens_est": 15937,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.109251
+        }
+      ],
+      "slug": "gl-reconciler",
+      "total_cost_usd": 0.799875
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-kyc-screener",
+          "input_cost_usd": 0.46689,
+          "input_tokens_est": 31126,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.77409
+        },
+        {
+          "id": "cfa-kyc-identity-reader",
+          "input_cost_usd": 0.00018,
+          "input_tokens_est": 180,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.02066
+        },
+        {
+          "id": "cfa-kyc-reporter",
+          "input_cost_usd": 0.000201,
+          "input_tokens_est": 201,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020681
+        },
+        {
+          "id": "cfa-kyc-screener-worker",
+          "input_cost_usd": 0.047943,
+          "input_tokens_est": 15981,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.109383
+        }
+      ],
+      "slug": "kyc-screener",
+      "total_cost_usd": 0.924814
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-lp-statement-auditor",
+          "input_cost_usd": 0.34482,
+          "input_tokens_est": 22988,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.65202
+        },
+        {
+          "id": "cfa-lp-auditor",
+          "input_cost_usd": 0.047901,
+          "input_tokens_est": 15967,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.109341
+        },
+        {
+          "id": "cfa-lp-reporter",
+          "input_cost_usd": 0.000183,
+          "input_tokens_est": 183,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020663
+        },
+        {
+          "id": "cfa-lp-statement-reader",
+          "input_cost_usd": 0.000185,
+          "input_tokens_est": 185,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020665
+        }
+      ],
+      "slug": "lp-statement-auditor",
+      "total_cost_usd": 0.802689
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-lseg-rates-monitor",
+          "input_cost_usd": 0.117945,
+          "input_tokens_est": 7863,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.425145
+        },
+        {
+          "id": "cfa-rates-analyst-worker",
+          "input_cost_usd": 0.02052,
+          "input_tokens_est": 6840,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.08196
+        },
+        {
+          "id": "cfa-rates-publisher",
+          "input_cost_usd": 0.000191,
+          "input_tokens_est": 191,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020671
+        },
+        {
+          "id": "cfa-rates-reader",
+          "input_cost_usd": 0.00017,
+          "input_tokens_est": 170,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.02065
+        }
+      ],
+      "slug": "lseg-rates-monitor",
+      "total_cost_usd": 0.548426
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-model-builder",
+          "input_cost_usd": 0.158565,
+          "input_tokens_est": 10571,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.465765
+        },
+        {
+          "id": "cfa-model-data-reader",
+          "input_cost_usd": 0.000148,
+          "input_tokens_est": 148,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020628
+        },
+        {
+          "id": "cfa-model-exporter",
+          "input_cost_usd": 0.000205,
+          "input_tokens_est": 205,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020685
+        },
+        {
+          "id": "cfa-model-builder-worker",
+          "input_cost_usd": 0.014961,
+          "input_tokens_est": 4987,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076401
+        }
+      ],
+      "slug": "model-builder",
+      "total_cost_usd": 0.583479
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-month-end-closer",
+          "input_cost_usd": 0.13584,
+          "input_tokens_est": 9056,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.44304
+        },
+        {
+          "id": "cfa-close-worker",
+          "input_cost_usd": 0.014994,
+          "input_tokens_est": 4998,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076434
+        },
+        {
+          "id": "cfa-close-reporter",
+          "input_cost_usd": 0.000242,
+          "input_tokens_est": 242,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020722
+        },
+        {
+          "id": "cfa-close-tb-reader",
+          "input_cost_usd": 0.000155,
+          "input_tokens_est": 155,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020635
+        }
+      ],
+      "slug": "month-end-closer",
+      "total_cost_usd": 0.560831
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-pitch-deck-builder",
+          "input_cost_usd": 0.137355,
+          "input_tokens_est": 9157,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.444555
+        },
+        {
+          "id": "cfa-pitch-data-reader",
+          "input_cost_usd": 0.000149,
+          "input_tokens_est": 149,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020629
+        },
+        {
+          "id": "cfa-pitch-deck-author",
+          "input_cost_usd": 0.000171,
+          "input_tokens_est": 171,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020651
+        },
+        {
+          "id": "cfa-pitch-modeler",
+          "input_cost_usd": 0.014835,
+          "input_tokens_est": 4945,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076275
+        }
+      ],
+      "slug": "pitch-deck-builder",
+      "total_cost_usd": 0.56211
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-private-markets-analyst",
+          "input_cost_usd": 0.154845,
+          "input_tokens_est": 10323,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.462045
+        },
+        {
+          "id": "cfa-pm-deal-reader",
+          "input_cost_usd": 0.000122,
+          "input_tokens_est": 122,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020602
+        },
+        {
+          "id": "cfa-pm-memo-writer",
+          "input_cost_usd": 0.000166,
+          "input_tokens_est": 166,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020646
+        },
+        {
+          "id": "cfa-pm-modeler",
+          "input_cost_usd": 0.014904,
+          "input_tokens_est": 4968,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076344
+        }
+      ],
+      "slug": "private-markets-analyst",
+      "total_cost_usd": 0.579637
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-sector-research",
+          "input_cost_usd": 0.13332,
+          "input_tokens_est": 8888,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.44052
+        },
+        {
+          "id": "cfa-sector-analyst-worker",
+          "input_cost_usd": 0.014838,
+          "input_tokens_est": 4946,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076278
+        },
+        {
+          "id": "cfa-sector-data-reader",
+          "input_cost_usd": 0.000154,
+          "input_tokens_est": 154,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020634
+        },
+        {
+          "id": "cfa-sector-publisher",
+          "input_cost_usd": 0.000167,
+          "input_tokens_est": 167,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020647
+        }
+      ],
+      "slug": "sector-research",
+      "total_cost_usd": 0.558079
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-sp-credit-research",
+          "input_cost_usd": 0.09684,
+          "input_tokens_est": 6456,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.40404
+        },
+        {
+          "id": "cfa-sp-credit-scorer",
+          "input_cost_usd": 0.015171,
+          "input_tokens_est": 5057,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076611
+        },
+        {
+          "id": "cfa-sp-credit-data-reader",
+          "input_cost_usd": 0.000205,
+          "input_tokens_est": 205,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020685
+        },
+        {
+          "id": "cfa-sp-credit-publisher",
+          "input_cost_usd": 0.000249,
+          "input_tokens_est": 249,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020729
+        }
+      ],
+      "slug": "sp-credit-research",
+      "total_cost_usd": 0.522065
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-valuation-reviewer",
+          "input_cost_usd": 0.118305,
+          "input_tokens_est": 7887,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.425505
+        },
+        {
+          "id": "cfa-val-package-reader",
+          "input_cost_usd": 0.000168,
+          "input_tokens_est": 168,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020648
+        },
+        {
+          "id": "cfa-val-publisher",
+          "input_cost_usd": 0.000171,
+          "input_tokens_est": 171,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020651
+        },
+        {
+          "id": "cfa-val-reviewer",
+          "input_cost_usd": 0.014964,
+          "input_tokens_est": 4988,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.076404
+        }
+      ],
+      "slug": "valuation-reviewer",
+      "total_cost_usd": 0.543208
+    },
+    {
+      "agents": [
+        {
+          "id": "cfa-wealth-meeting-prep",
+          "input_cost_usd": 0.13881,
+          "input_tokens_est": 9254,
+          "model": "claude-opus-4-7",
+          "model_priced": true,
+          "output_cost_usd": 0.3072,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.44601
+        },
+        {
+          "id": "cfa-wealth-analyst-worker",
+          "input_cost_usd": 0.037095,
+          "input_tokens_est": 12365,
+          "model": "claude-sonnet-4-6",
+          "model_priced": true,
+          "output_cost_usd": 0.06144,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.098535
+        },
+        {
+          "id": "cfa-wealth-brief-writer",
+          "input_cost_usd": 0.000162,
+          "input_tokens_est": 162,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020642
+        },
+        {
+          "id": "cfa-wealth-portfolio-reader",
+          "input_cost_usd": 0.000156,
+          "input_tokens_est": 156,
+          "model": "claude-haiku-4-5",
+          "model_priced": true,
+          "output_cost_usd": 0.02048,
+          "output_tokens_max": 4096,
+          "total_cost_usd": 0.020636
+        }
+      ],
+      "slug": "wealth-meeting-prep",
+      "total_cost_usd": 0.585823
+    }
+  ],
+  "grand_total_usd": 9.191387,
+  "version": "1"
+}

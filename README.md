@@ -47,6 +47,9 @@ data/cookbook-replays.json     byte-stable replay contract (Phase 25 Tier A3) �
                                fingerprint per loaded cookbook (parent + subagent tool
                                sets, system-prompt + schema sha256), catches loader
                                regressions + structured drift
+data/cookbook-costs.json       worst-case cost estimate (Phase 25 Tier C1) — per-agent
+                               token + USD breakdown, deterministic; current grand total
+                               $9.19 per full-cycle invocation across all 15 cookbooks
 
 docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
@@ -106,6 +109,7 @@ npx tsx scripts/generate-tool-catalog.ts             # Regenerate data/tools-cat
 npx tsx scripts/lint-cookbook-tool-names.ts          # Lint cookbooks against catalog
 npx tsx scripts/generate-cookbook-audits.ts          # Regenerate data/cookbook-audits.json
 npx tsx scripts/generate-cookbook-replays.ts         # Regenerate data/cookbook-replays.json
+npx tsx scripts/generate-cookbook-costs.ts           # Regenerate data/cookbook-costs.json
 npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
 ```
 
@@ -201,6 +205,32 @@ Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-replays.ts --sl
 
 MA-004 is narrowed to `cfa-core` because data-fetcher subagents (e.g. `*-reader`) intentionally use broad-allow on `fmp` / `data` / `vendor` servers for retrieval flexibility. Compute determinism is what materially matters; the rule reflects the architectural intent rather than blanket strictness.
 
+## Cookbook cost telemetry (Phase 25 Tier C1)
+
+`data/cookbook-costs.json` is a deterministic worst-case USD cost estimate per cookbook. Each agent in a cookbook (parent + 3 subagents) is priced as `(system_prompt_tokens × input_rate) + (max_tokens × output_rate)` using the canonical Anthropic API rates committed in `MODEL_PRICING`:
+
+| Model | Input $/Mtok | Output $/Mtok |
+|-------|-------------:|--------------:|
+| `claude-opus-4-7` | 15 | 75 |
+| `claude-sonnet-4-6` | 3 | 15 |
+| `claude-haiku-4-5` | 1 | 5 |
+
+Token counts come from a 4-char-per-token heuristic over the assembled system prompt (skill bodies + `system.file` + `system.text` + `system.append`). Output budgets use the agent's `max_tokens` field (default 4096). The estimate is a worst-case ceiling — every agent assumed to use its full budget — so real invocations cost less. Tool-call round-trips are not yet modeled.
+
+Current baseline ($9.19 total per cycle across all 15 cookbooks):
+
+| Tier | Range | Examples |
+|------|-------|----------|
+| ~$0.50 | DCF / valuation / credit scoring | credit-analyst, valuation-reviewer, sp-credit-research, equity-analyst |
+| ~$0.55-0.60 | Multi-tool synthesis | earnings-reviewer, model-builder, pitch-deck-builder, sector-research, wealth-meeting-prep |
+| ~$0.80-0.90 | Heavy data fetch + ops | gl-reconciler, lp-statement-auditor, kyc-screener |
+
+CI gate (`.github/workflows/cookbook-cost.yml`):
+
+1. **Cost freshness (strict)** — `data/cookbook-costs.json` must match a fresh regeneration. Catches cookbooks that change model, max_tokens, or system prompt without updating the cost estimate. Cost drift becomes a reviewable PR-level signal.
+
+Spot-check: `npx tsx scripts/generate-cookbook-costs.ts --slug equity-analyst`.
+
 ## Closed learning loop (Phase 41)
 
 Validation failures during dispatch become structured skill remediations, fully deterministically:
@@ -270,6 +300,7 @@ Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor t
 | `tool-name-lint.yml` | Catalog freshness + cookbook drift | **Strict** (both gates) |
 | `cookbook-audit.yml` | Cookbook audit hash freshness | **Strict** |
 | `cookbook-replay.yml` | Cookbook replay contract freshness (loader projection) | **Strict** |
+| `cookbook-cost.yml` | Cookbook cost-estimate freshness | **Strict** |
 | `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
 | `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
 | `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |
