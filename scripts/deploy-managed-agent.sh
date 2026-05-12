@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#
+# DEPRECATED — DO NOT USE.
+#
+# This script reads `managed-agent-cookbooks/<slug>/agent.json`, but the
+# cookbooks migrated to YAML in Phase 36. Run against any current cookbook
+# this script fails with "Manifest not found: …agent.json".
+#
+# Replacement (Phase 28 D1):
+#
+#   npx tsx scripts/deploy-cookbook.ts <slug>           # dry-run JSON to stdout
+#   npx tsx scripts/deploy-cookbook.ts <slug> --apply   # actual deploy
+#
+# The replacement reads agent.yaml, substitutes ${VAR} env placeholders,
+# inlines skills + subagents, and POSTs in the correct order. Snapshot
+# baselines for every cookbook live at data/cookbook-deploy-payloads/.
+
+cat <<'NOTE' >&2
+[deploy-managed-agent.sh] DEPRECATED — use scripts/deploy-cookbook.ts.
+
+  npx tsx scripts/deploy-cookbook.ts <slug>           # dry-run
+  npx tsx scripts/deploy-cookbook.ts <slug> --apply   # actual deploy
+
+NOTE
+exit 1
+
+# --- Original implementation preserved below for reference ---
 # Adapted from: anthropics/financial-services scripts/deploy-managed-agent.sh
 #
 # Deploy a CFA managed agent to the Anthropic Managed Agents API (/v1/agents).

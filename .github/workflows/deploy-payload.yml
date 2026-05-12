@@ -1,0 +1,84 @@
+name: deploy-payload
+
+# Phase 28 D1 — managed-agent deploy payload snapshot gate.
+#
+# Single gate (STRICT): data/cookbook-deploy-payloads/*.payload.json must
+# match a fresh dry-run regeneration. Each snapshot is the exact JSON the
+# deploy CLI would POST to api.anthropic.com/v1/agents — env-var-substituted
+# with placeholder URLs (deterministic across machines), inlined system
+# prompts, collected skill bodies, ordered subagent payloads, and
+# {subagent_<i>_id} placeholders for the apply CLI to patch.
+#
+# PR review value: any change that would alter what gets deployed (system
+# prompt, tool config, mcp_servers, skills, subagent shape, version) lands
+# as a byte-diffable JSON change reviewers can read top-to-bottom.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  deploy-payload:
+    name: deploy-payload
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      - name: Verify cookbook deploy payloads are up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-deploy-payloads.ts --check 2>&1 | tee /tmp/deploy-payload-check.log
+
+      - name: Upload deploy payload artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-payload-logs
+          path: |
+            /tmp/deploy-payload-check.log
+          if-no-files-found: ignore
+          retention-days: 7

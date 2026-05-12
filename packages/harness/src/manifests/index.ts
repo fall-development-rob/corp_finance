@@ -90,6 +90,18 @@ export {
   type ParsedSemver,
 } from "./semver.js";
 
+// Phase 28 D1: managed-agent deploy payload assembler
+export {
+  buildDeployPayload,
+  serialiseDeployPayload,
+  parseDeployPayload,
+  type DeployPayload,
+  type SkillUpload,
+  type SubagentPayload,
+  type OrchestratorPayload,
+  type BuildPayloadInput,
+} from "../deploy/build-payload.js";
+
 // Phase 25 Tier D14: managed-agent cookbook scaffolder
 export {
   buildScaffoldedCookbook,

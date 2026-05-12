@@ -54,6 +54,9 @@ data/cookbook-traces/          synthetic-trace evaluation (Phase 25 Tier C4) —
                                file per cookbook with the full assembled deploy payload
                                (system prompt text, tools, schemas) for byte-diffable
                                release review
+data/cookbook-deploy-payloads/ ready-to-POST payloads (Phase 28 D1) — one per cookbook,
+                               env-substituted with placeholder URLs, exactly what the
+                               deploy CLI sends to Anthropic Managed Agents API
 
 docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
@@ -115,6 +118,7 @@ npx tsx scripts/generate-cookbook-audits.ts          # Regenerate data/cookbook-
 npx tsx scripts/generate-cookbook-replays.ts         # Regenerate data/cookbook-replays.json
 npx tsx scripts/generate-cookbook-costs.ts           # Regenerate data/cookbook-costs.json
 npx tsx scripts/generate-cookbook-traces.ts          # Regenerate data/cookbook-traces/*.trace.json
+npx tsx scripts/generate-deploy-payloads.ts          # Regenerate data/cookbook-deploy-payloads/*.payload.json
 npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
 ```
 
@@ -270,6 +274,38 @@ CI gate (`.github/workflows/cookbook-trace.yml`):
 
 Spot-check: `npx tsx scripts/generate-cookbook-traces.ts --slug equity-analyst`.
 
+## Deploying cookbooks to Anthropic Managed Agents (Phase 28 D1)
+
+`scripts/deploy-cookbook.ts` turns any YAML cookbook into a deployed agent on the Anthropic Managed Agents API, pointed at our MCP servers.
+
+```bash
+# 1. Dry-run — assemble and inspect the deploy payload, no network.
+npx tsx scripts/deploy-cookbook.ts equity-analyst
+
+# 2. Apply — POST skills, then subagents, then orchestrator in correct order.
+export ANTHROPIC_API_KEY=sk-ant-...
+export CFA_CORE_MCP_URL=https://your-host/cfa-core
+export FMP_MCP_URL=https://your-host/fmp
+export DATA_MCP_URL=https://your-host/data
+export VENDOR_MCP_URL=https://your-host/vendor
+npx tsx scripts/deploy-cookbook.ts equity-analyst --apply
+# → prints {slug, version, orchestrator_id, subagent_ids[], skill_ids{}}
+```
+
+What `--apply` does:
+
+1. POSTs every collected skill body (deduped across orchestrator + subagents) to `/v1/skills`, captures the returned `skill_id` for each.
+2. POSTs each subagent body to `/v1/agents` with patched `skill_id`s, captures the returned agent IDs.
+3. POSTs the orchestrator body to `/v1/agents` with both patched `skill_id`s and patched `callable_agents[].agent_id`s.
+
+`data/cookbook-deploy-payloads/<slug>.payload.json` snapshots the exact JSON the dry-run produces for each cookbook (with placeholder env URLs so it's deterministic across machines). The `deploy-payload.yml` CI gate fails on any drift — so a PR that changes anything about a deployable surface lands as a reviewable JSON diff.
+
+The legacy `scripts/deploy-managed-agent.sh` reads `agent.json` and is broken against post-Phase-36 YAML cookbooks; it now refuses to run and points users at the new CLI.
+
+### Outstanding gap (Phase 28 D2)
+
+A successful `--apply` registers an agent that, at runtime, fetches our MCP servers at the `${*_MCP_URL}` endpoints. Today **our MCP servers don't have an HTTP transport** — the four packages (`packages/{cfa-core,fmp,data,vendor}-mcp-server`) ship stdio-only binaries. Until D2 lands HTTP transport + Dockerfiles + a hosting runbook, deployed agents have nowhere to call. Tracked separately.
+
 ## Cookbook scaffolder (Phase 25 Tier D14)
 
 `scripts/scaffold-cookbook.ts` generates a minimal-conformant cookbook skeleton in one command. The skeleton passes every MA-* contract out of the box; authors then wire in their domain skills, tool selections, and richer schemas.
@@ -363,6 +399,7 @@ Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor t
 | `cookbook-replay.yml` | Cookbook replay contract freshness (loader projection) | **Strict** |
 | `cookbook-cost.yml` | Cookbook cost-estimate freshness | **Strict** |
 | `cookbook-trace.yml` | Synthetic-trace evaluation (full-prompt diff) | **Strict** |
+| `deploy-payload.yml` | Deploy-payload snapshot (exact JSON POSTed to Anthropic) | **Strict** |
 | `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
 | `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
 | `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |
