@@ -35,3 +35,19 @@ export {
   type LoadedCookbook,
   type CookbookLoaderOptions,
 } from "./cookbook-loader.js";
+
+// Phase 25 Tier A1: managed-agent tool-name catalog + cookbook lint
+export {
+  generateToolCatalog,
+  serialiseCatalog,
+  parseCatalog,
+  lintCookbookToolNames,
+  defaultServerSources,
+  resolveRepoRoot,
+  type ToolCatalog,
+  type ServerSource,
+  type GenerateInput,
+  type LintInput,
+  type CookbookLintIssue,
+  type CookbookLintReport,
+} from "./tool-catalog.js";

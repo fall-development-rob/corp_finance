@@ -1,0 +1,104 @@
+name: tool-name-lint
+
+# Phase 25 Tier A1 — managed-agent cookbook tool-name drift check.
+#
+# Two gates:
+#   1. Catalog freshness (STRICT): data/tools-catalog.json must match a fresh
+#      regeneration from the 4 in-repo MCP servers. Catches the case where a
+#      developer adds/removes a tool but forgets to regenerate the catalog.
+#   2. Cookbook lint (INFORMATIONAL): reports configs[].name entries that
+#      reference tools not in the catalog. Currently informational because of
+#      pre-existing drift documented in the best-in-class roadmap; the strict
+#      flip happens in a follow-up cleanup PR.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  lint-tool-names:
+    name: lint-tool-names
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      # The lint scripts import from packages/harness/src/manifests/tool-catalog.js.
+      # Build the harness so the dist output exists for tsx to resolve.
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # ---------------------------------------------------------------------
+      # Gate 1 (STRICT): the committed catalog must match a fresh regeneration.
+      # ---------------------------------------------------------------------
+      - name: Verify tools-catalog.json is up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-tool-catalog.ts --check 2>&1 | tee /tmp/catalog-check.log
+
+      # ---------------------------------------------------------------------
+      # Gate 2 (INFORMATIONAL): report cookbook tool-name drift.
+      # Promotion to STRICT happens after the drift-cleanup follow-up PR.
+      # ---------------------------------------------------------------------
+      - name: Lint cookbook tool names (informational)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/lint-cookbook-tool-names.ts 2>&1 | tee /tmp/cookbook-lint.log || true
+          ISSUES=$(grep -Eo 'issues[[:space:]]+:[[:space:]]+[0-9]+' /tmp/cookbook-lint.log | grep -Eo '[0-9]+' | head -1 || echo 0)
+          if [ "${ISSUES:-0}" = "0" ]; then
+            echo "::notice::cookbook tool-name lint passed — no drift"
+          else
+            echo "::warning::cookbook tool-name lint reported ${ISSUES} drift issues (informational; track via follow-up cleanup PR)"
+          fi
+
+      - name: Upload lint artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-name-lint-logs
+          path: |
+            /tmp/catalog-check.log
+            /tmp/cookbook-lint.log
+          if-no-files-found: ignore
+          retention-days: 7
