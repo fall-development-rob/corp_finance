@@ -1,0 +1,950 @@
+{
+  "version": "1",
+  "cookbooks": [
+    {
+      "slug": "credit-analyst",
+      "hash": "758e5783fe4b5527686564c11ffec9e223250b1c56424d25cc81c4b036dbbc45",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/agent.yaml",
+          "sha256": "b49769db130cc162dd31563c6d35fef52bec26517c77c889b0d44d5201f56f57",
+          "size": 1619
+        },
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/README.md",
+          "sha256": "5603b865320b2647c3147f9f5e5a0495c0d987a2cf08c06a3bf0309b262d5fde",
+          "size": 1875
+        },
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/steering-examples.json",
+          "sha256": "406d89f0fbfd376b430ff86efe063a8f40772fa29f7ad18697289ba842962f4f",
+          "size": 994
+        },
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/subagents/credit-scorer.yaml",
+          "sha256": "0d95b66ebaaf037611edb4e3e43eb07e24914f50274fae534582a8e08da7220a",
+          "size": 4665
+        },
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/subagents/data-reader.yaml",
+          "sha256": "de738799681f46bf448f17a6bb699ce348a2ec56d0837fe76f3840d61b585b92",
+          "size": 2605
+        },
+        {
+          "path": "managed-agent-cookbooks/credit-analyst/subagents/reporter.yaml",
+          "sha256": "f024d2dffcdebfc9b6fd5b7add82ebf0c53dedcaead444893782e08137d51bc1",
+          "size": 2345
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/credit-analyst.md",
+          "sha256": "a0969d50e59d312f6a406037a8ac8612e4862eef8738b96dd58a8c59ccf5c238",
+          "size": 1216
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "earnings-reviewer",
+      "hash": "4030266f1b1663417330b9ad7d728bf72bf0370cd6beb4d0dd6a2cde78f556c0",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/agent.yaml",
+          "sha256": "fd8187838c1c154d46d152126ad7c19220ea719e37f3ba0a889af177da3aafba",
+          "size": 1717
+        },
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/README.md",
+          "sha256": "eee1a1c0d975a68db06ce1e6f518f11e6791d2f61d6d59418c9b19437240cb64",
+          "size": 2090
+        },
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/steering-examples.json",
+          "sha256": "f65f556e64c3e7edf48ce95b4103511a637df1d2c1c5fdfe3b69dc7949d70d4c",
+          "size": 1254
+        },
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/subagents/analyst.yaml",
+          "sha256": "85f8cf7df22c541e6a83ef6833736d2b1a5411bb568b649e3989ff2270ed884d",
+          "size": 3748
+        },
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/subagents/publisher.yaml",
+          "sha256": "bff2f7b5f1451bfe880e0e324d978bdc500c421474ad3ea2e2dafb938ac3c821",
+          "size": 1754
+        },
+        {
+          "path": "managed-agent-cookbooks/earnings-reviewer/subagents/transcript-reader.yaml",
+          "sha256": "2b2c1e068090bc4f31312f8b83f6555658ac4ad4e2d7c0a9216394d23d261845",
+          "size": 2403
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/equity-analyst.md",
+          "sha256": "6356d0cc6d249cb19b0a0bd7497b4f44d91225fc107921ef3637df16d68529e9",
+          "size": 1807
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-earnings-update/SKILL.md",
+          "sha256": "eb91497003b0373a9825f93795d11838dcf69546aaab39e8f3fd1edb47a8ea16",
+          "size": 6013
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-model-update/SKILL.md",
+          "sha256": "80c5e1322a9ed5d37c3adce6684774d32c56d2dfdff17d8083ca6cd2a3b28e0b",
+          "size": 4971
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "equity-analyst",
+      "hash": "40b535b0e3423487cbe54cef508ce741245149435a2fda12862fd8d8756b10b4",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/agent.yaml",
+          "sha256": "f98eaad04dec314dd6826c47a2d03225a61b42c7e96af9b331db375435b51263",
+          "size": 1803
+        },
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/README.md",
+          "sha256": "93729b0c00a9681495747dd2aaa121a75d1960ba53f4ca76d602433a573b2619",
+          "size": 1833
+        },
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/steering-examples.json",
+          "sha256": "11a349b3376859b918e8827a3e30a0e2a6aa1eb3f78c3ae9db8616f6b8d9b08c",
+          "size": 883
+        },
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/subagents/analyst.yaml",
+          "sha256": "0f47148dd90fff710b7848a03bd3fdbbd3645ee6ace69bb7174e7ee4a4230fd9",
+          "size": 4557
+        },
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/subagents/data-reader.yaml",
+          "sha256": "e422978cdb9805f0d0d7491078f4385d897a9d8919aecbf0aa13dacca649708e",
+          "size": 2540
+        },
+        {
+          "path": "managed-agent-cookbooks/equity-analyst/subagents/publisher.yaml",
+          "sha256": "f128233137890f3ab398e5462d8a041cff4c5d76ad474eec4a8c96ef49702adb",
+          "size": 2052
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/equity-analyst.md",
+          "sha256": "6356d0cc6d249cb19b0a0bd7497b4f44d91225fc107921ef3637df16d68529e9",
+          "size": 1807
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-initiating-coverage/SKILL.md",
+          "sha256": "74993a017750db6d762da6aeb32f1e05fc6101908b585d44cf0e25083895a976",
+          "size": 5969
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-model-update/SKILL.md",
+          "sha256": "80c5e1322a9ed5d37c3adce6684774d32c56d2dfdff17d8083ca6cd2a3b28e0b",
+          "size": 4971
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-thesis-tracker/SKILL.md",
+          "sha256": "2ffd056eac74f5f3a30942dc57587672174b92cf12d372a999186bc7511a7105",
+          "size": 5150
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "gl-reconciler",
+      "hash": "614f9e38905d3e0dbe15aea52bc68bc8fe6398735c8bfb57766b22c01bb4c081",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/agent.yaml",
+          "sha256": "5b56666d42b2c43942d129de365e967d15f69676cfdd56eb076f7b9af1acdce1",
+          "size": 1729
+        },
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/README.md",
+          "sha256": "359dd9f28689f91a46dd38eb442596b8c255314b991be57475fec3c7a27fb8a3",
+          "size": 1997
+        },
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/steering-examples.json",
+          "sha256": "de845651d7d5bfc1648c50cccfe9478cad3cd35139b018bc9298df35e68e4acd",
+          "size": 1142
+        },
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/subagents/ledger-reader.yaml",
+          "sha256": "17e1d4f6e4da0456b114e1693a986a4894f4ac6a2def35ca008a724283942dbc",
+          "size": 2124
+        },
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/subagents/publisher.yaml",
+          "sha256": "fac238d2a5fc729b9c7ca7159c5d8986887241ebde41d6764efb73e9949c8f77",
+          "size": 1748
+        },
+        {
+          "path": "managed-agent-cookbooks/gl-reconciler/subagents/reconciler.yaml",
+          "sha256": "49d310a216db62c9edfc55c6192421731a13e86b43e43c3cde1519e0aa42d6ff",
+          "size": 3706
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md",
+          "sha256": "26aac06c1f0cafa6e8f0f089be44fae0975cf5bcd0aa3d0f84ae88764f972f56",
+          "size": 1898
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-regulatory/SKILL.md",
+          "sha256": "6d85728e0ee7d5ab8611c5655ece874a6c327cb13b9009a63dd3a79c241e190b",
+          "size": 65465
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-regulatory/SKILL.md",
+          "sha256": "e2f5d3dcd80adabca7ebb2eca448d111708c2e253f7b757e9a91564b620172cf",
+          "size": 82877
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-break-trace/SKILL.md",
+          "sha256": "0ed4dabdfe1c78f149e28f5a737b6d95d434f7727ca41dc0af35594dc66535e9",
+          "size": 4131
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-gl-reconciliation/SKILL.md",
+          "sha256": "d349881bbdfe8890fb0132630372b397b9aa32aeda98b6e5843af182c544d5c3",
+          "size": 4184
+        }
+      ]
+    },
+    {
+      "slug": "kyc-screener",
+      "hash": "8d394fbd49ae981406861a6b7b9accb1f7c53157135a0493e4408eaf8c9f2adf",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/agent.yaml",
+          "sha256": "e2101215402beb0575df74ec56bb1b83e075cfa3f064ce28df6da1c17e74b6e1",
+          "size": 2060
+        },
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/README.md",
+          "sha256": "d5144ae441fe387d9c121f2c1e64a2c935461ce9ffbf12f2c2e5a4feb16071ac",
+          "size": 2146
+        },
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/steering-examples.json",
+          "sha256": "05496ea9cdfb0e88180acd6aed160ee42a3cba040a9bd20a7ddb96f97f791604",
+          "size": 1210
+        },
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/subagents/identity-reader.yaml",
+          "sha256": "0060537a8f30395a5717fc286b6da55f0c32d76fab65b8a7e7ac52acf86b4638",
+          "size": 1549
+        },
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/subagents/reporter.yaml",
+          "sha256": "28949bfd657280a97a46bd2ca6a823e1ce93661ebee344f08a0b356b8acd3d87",
+          "size": 1912
+        },
+        {
+          "path": "managed-agent-cookbooks/kyc-screener/subagents/screener.yaml",
+          "sha256": "ceda3e9ab9a3240c4c708d4b457437021315899e3c5e6acdcf730190b9999264",
+          "size": 3824
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md",
+          "sha256": "26aac06c1f0cafa6e8f0f089be44fae0975cf5bcd0aa3d0f84ae88764f972f56",
+          "size": 1898
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-regulatory/SKILL.md",
+          "sha256": "6d85728e0ee7d5ab8611c5655ece874a6c327cb13b9009a63dd3a79c241e190b",
+          "size": 65465
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-regulatory/SKILL.md",
+          "sha256": "e2f5d3dcd80adabca7ebb2eca448d111708c2e253f7b757e9a91564b620172cf",
+          "size": 82877
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-beneficial-ownership/SKILL.md",
+          "sha256": "525e3313b1c0f077d6ec70cecb95cf8973da705b1ce89fd94a8ab3f2e3ea9afc",
+          "size": 6922
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-customer-intake/SKILL.md",
+          "sha256": "99ad7c25c33acc09ecb063756c867465b0dd5b9463543e3cc1df3c0c7d795fbf",
+          "size": 7502
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-monitoring-triggers/SKILL.md",
+          "sha256": "a681feff3809493751788bf73999f2d2132d878b1fc5421be4eab33da378bbdb",
+          "size": 8413
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-pep-screening/SKILL.md",
+          "sha256": "5dc3057a8253bba3bb59e94d96ffb9c7bf2bd19ad4f144b41a6e7928bfcc4767",
+          "size": 6999
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-sanctions-screening/SKILL.md",
+          "sha256": "073bbe20ea3889a7dfb88db8b18fe395541eca9a88f2121a96cc201d13825e54",
+          "size": 6611
+        },
+        {
+          "path": "plugins/vertical-plugins/operations/skills/workflow-kyc-source-of-funds/SKILL.md",
+          "sha256": "389594295ff67067d38c02644e87d92717ea36e89208fd32b7dd6bcc62e6e553",
+          "size": 8184
+        }
+      ]
+    },
+    {
+      "slug": "lp-statement-auditor",
+      "hash": "f167b08bc6a6395213490ecf458224cc62e5d31396f4c849e220caadea75e3a8",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/agent.yaml",
+          "sha256": "b257758dd6065df86764c0496f508f3b72cf49a8fd1e05458e600edc7941c7e3",
+          "size": 1707
+        },
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/README.md",
+          "sha256": "68210cd004d8a1bd0e0701600369bd618abc42194d17b1fe05452576a6aef7f2",
+          "size": 1997
+        },
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/steering-examples.json",
+          "sha256": "759c4a61b6c1f2ac10cfcd70b8167490a18d041ecafde88d7f6dd909e1b67db4",
+          "size": 1221
+        },
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/subagents/auditor.yaml",
+          "sha256": "93b85c82d28ab557991e642c3bbd19ac2ca2ea5bec69f6aaef89b98262ba3c38",
+          "size": 4279
+        },
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/subagents/reporter.yaml",
+          "sha256": "618f0925552acba5d32ab723a18d3ecface71cd4a01ea1f39b1e1b9e9468ccf4",
+          "size": 1752
+        },
+        {
+          "path": "managed-agent-cookbooks/lp-statement-auditor/subagents/statement-reader.yaml",
+          "sha256": "445de9525f3e17f466cbd2bf0db80b6fd02f229954f910ef2417e26cd29e8993",
+          "size": 1641
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/private-markets-analyst.md",
+          "sha256": "4023786023b04b390ffdd0d418c65097e3ec417b0eef075983eaafd081ca8653",
+          "size": 1610
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-regulatory/SKILL.md",
+          "sha256": "6d85728e0ee7d5ab8611c5655ece874a6c327cb13b9009a63dd3a79c241e190b",
+          "size": 65465
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-regulatory/SKILL.md",
+          "sha256": "e2f5d3dcd80adabca7ebb2eca448d111708c2e253f7b757e9a91564b620172cf",
+          "size": 82877
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-nav-tieout/SKILL.md",
+          "sha256": "7749068d37e7b70e4a90d3e60479751fa0b02276b1594dc67d26267c1e303910",
+          "size": 4639
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-period-rollforward/SKILL.md",
+          "sha256": "d1263901859260a57183920ea0ce37394d7097feac6e5627b0a833617e76a0f1",
+          "size": 4832
+        }
+      ]
+    },
+    {
+      "slug": "lseg-rates-monitor",
+      "hash": "de1f57446c8e0e21bbae63b9e9c1687b5d9ae96211e705fcc968e2d5f6784ed8",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/agent.yaml",
+          "sha256": "2b3d8282ec515d5deb21894f37b104a72045aa47464a6637bcd7ba3a4bd67dc2",
+          "size": 1717
+        },
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/README.md",
+          "sha256": "a9dfa9364da0485a4aea1ce4c46fbd2a9d06ea6d8d483c610d44ac72ebff346b",
+          "size": 2106
+        },
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/steering-examples.json",
+          "sha256": "fc427152e5a8ce95462a444a9597f2c18f09f93f01233bc29ff27f044b304323",
+          "size": 1211
+        },
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/subagents/analyst.yaml",
+          "sha256": "c3d991c9fb0e2db00874fc1cc765e49ac1e11be23011b2947e39a26850406abf",
+          "size": 4895
+        },
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/subagents/publisher.yaml",
+          "sha256": "396d3db3bd25f49bfab8b7d12e6feb795b2869a17fb1d22bbb654673914ebf68",
+          "size": 1845
+        },
+        {
+          "path": "managed-agent-cookbooks/lseg-rates-monitor/subagents/rates-reader.yaml",
+          "sha256": "d1bdcf6e4af2ce043c1abf2bb4bcd73c1d81e036ff342f55a07cd136466fb865",
+          "size": 3381
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/fixed-income-analyst.md",
+          "sha256": "d5ea8ae48e77f596a1c13758c5d64933dfe63104a600ed12739153920fbb807c",
+          "size": 1210
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-markets/SKILL.md",
+          "sha256": "de03622b98ea502518fdcdb32a60027001f0bec289af94587e353335fb95e46e",
+          "size": 27804
+        },
+        {
+          "path": "plugins/partner-built/lseg/skills/vendor-lseg/SKILL.md",
+          "sha256": "722baf02b8188797ea3c36ca1a1cbb6523fe0aeb13401d3e136429e51c1da4aa",
+          "size": 3465
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-markets/SKILL.md",
+          "sha256": "3c842d5387ef289fa122d8d89790ba232f0ce3f8a27ca29740483614687092bb",
+          "size": 27482
+        }
+      ]
+    },
+    {
+      "slug": "model-builder",
+      "hash": "f9d5297ca32509a92c8efe86f9a6efcee984ed2e29abdee0c179ee0d44d328f0",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/model-builder/agent.yaml",
+          "sha256": "8af486771a3bfaa311b7572eb02a7b3f9b8b1966cb78cf7975ad1b3066ebba82",
+          "size": 1647
+        },
+        {
+          "path": "managed-agent-cookbooks/model-builder/README.md",
+          "sha256": "89d243eb20997a0b23f173a7c126df115831aa325c07fc5caa19130a4a244c10",
+          "size": 2009
+        },
+        {
+          "path": "managed-agent-cookbooks/model-builder/steering-examples.json",
+          "sha256": "6cb9ab877e5e55c2e25a49349947e6a55ac22e7f932c79c8969ccc5ff6dc1bf3",
+          "size": 1233
+        },
+        {
+          "path": "managed-agent-cookbooks/model-builder/subagents/data-reader.yaml",
+          "sha256": "d241c726dc47b8ea9d21b54e95eb005c8b3c0574cb1debc31d141a467723460d",
+          "size": 1842
+        },
+        {
+          "path": "managed-agent-cookbooks/model-builder/subagents/exporter.yaml",
+          "sha256": "ef7a2e9e73c3c1bea87ff3fdbb82b60f0871a138638b12d60cc49f518c800d86",
+          "size": 1536
+        },
+        {
+          "path": "managed-agent-cookbooks/model-builder/subagents/modeler.yaml",
+          "sha256": "c5fd189c8a526f2312297c925ac1e883687d75fe38f8e5667ed95ed78042a8b1",
+          "size": 3722
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/equity-analyst.md",
+          "sha256": "6356d0cc6d249cb19b0a0bd7497b4f44d91225fc107921ef3637df16d68529e9",
+          "size": 1807
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "month-end-closer",
+      "hash": "e268fb8a9ac58a1729f15893f083b59b47b04f3ad5a00df0fd58c631b346fd8c",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/agent.yaml",
+          "sha256": "463c11e5802a32fd5bf10cfa9e10d55a607ce39d7ef301b2b5078dcd4b2781a4",
+          "size": 1893
+        },
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/README.md",
+          "sha256": "d4afec18dff384ee26119c76bd45ba17a6313e6173d24468151f2797dfdf12d8",
+          "size": 2014
+        },
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/steering-examples.json",
+          "sha256": "ddb92a7f07dcc1b236e6201069273be7a860e23d44b2aaf8d55261d580b5cc0a",
+          "size": 1212
+        },
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/subagents/closer.yaml",
+          "sha256": "b97d6164559a75fc7d1990ddfb651c8c5ba5a271082cfd4d3d15189f5be953d8",
+          "size": 3248
+        },
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/subagents/reporter.yaml",
+          "sha256": "2089bc0fd18a7facb09d332b04d597868f136af9afa3579300e9e952731b0dc3",
+          "size": 1992
+        },
+        {
+          "path": "managed-agent-cookbooks/month-end-closer/subagents/tb-reader.yaml",
+          "sha256": "9d40ef33f3387d1ca8cf32406111ffda586bfea0a789e9d1448ca6d2e5135fc5",
+          "size": 1612
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/esg-regulatory-analyst.md",
+          "sha256": "26aac06c1f0cafa6e8f0f089be44fae0975cf5bcd0aa3d0f84ae88764f972f56",
+          "size": 1898
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-fpa-variance-commentary/SKILL.md",
+          "sha256": "3b2b5c7d315f594cb6bf64fe2db2189b3247c4160e9b0c741251a6c5d29a24b3",
+          "size": 5141
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-period-end-accruals/SKILL.md",
+          "sha256": "49af1cb32a3446420b5e70077b828f43fc0bacc167f8f1e823c5c3e4e7564e71",
+          "size": 4724
+        },
+        {
+          "path": "plugins/vertical-plugins/fund-admin/skills/workflow-fund-period-rollforward/SKILL.md",
+          "sha256": "d1263901859260a57183920ea0ce37394d7097feac6e5627b0a833617e76a0f1",
+          "size": 4832
+        }
+      ]
+    },
+    {
+      "slug": "pitch-deck-builder",
+      "hash": "f154da61aa522c40f1e53563fe99a16a90444b2d1f8263f7c0df7cfe9134f4ea",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/agent.yaml",
+          "sha256": "8f2c9f9de8ec39c5858e3b94703b395acaabd7fa81b6b3d90f014abea88121a7",
+          "size": 1813
+        },
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/README.md",
+          "sha256": "1488f4b661b05609362760ab53e5979f91298e4428c3ae78c8a5f9e2d307635a",
+          "size": 1824
+        },
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/steering-examples.json",
+          "sha256": "254b4fc1bbb579f19433adc1f0a397f81861e3b5d50e8ffc76c7239cda9888de",
+          "size": 975
+        },
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/subagents/data-reader.yaml",
+          "sha256": "e424a16d3fcb2337f0ebdcffc1e78bbae3c83f17fa8b165c0c1fc4effd9cfd64",
+          "size": 1837
+        },
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/subagents/deck-author.yaml",
+          "sha256": "98a52526c1bdd9e7a245410f5418667d9f4585114ff69a7e5721d535a0cedc7a",
+          "size": 2014
+        },
+        {
+          "path": "managed-agent-cookbooks/pitch-deck-builder/subagents/modeler.yaml",
+          "sha256": "5737d357f82d531011b3d582594402d7fb2f25cd855e5c59ff62abf607825fd3",
+          "size": 3651
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/private-markets-analyst.md",
+          "sha256": "4023786023b04b390ffdd0d418c65097e3ec417b0eef075983eaafd081ca8653",
+          "size": 1610
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        },
+        {
+          "path": "plugins/vertical-plugins/investment-banking/skills/workflow-ib-cim/SKILL.md",
+          "sha256": "0d0110330785207ce28815fb344addfc8c9fd87417a5d914c2ee8dd690f89462",
+          "size": 5969
+        },
+        {
+          "path": "plugins/vertical-plugins/investment-banking/skills/workflow-ib-pitch-deck/SKILL.md",
+          "sha256": "224cc9a7a2ef0f6ca5eb0adc81266194bbaf166db303f7ef6d7ff50f33bec343",
+          "size": 6034
+        },
+        {
+          "path": "plugins/vertical-plugins/investment-banking/skills/workflow-ib-teaser/SKILL.md",
+          "sha256": "2034bc6752eaeb01838f989ffe4682eb0cb831d234503c56b0f41288fc62507e",
+          "size": 3479
+        }
+      ]
+    },
+    {
+      "slug": "private-markets-analyst",
+      "hash": "cc18d2431edbe5be99fedf2c686978ccaf7bc4f21f2983cee4bf1a42a4922852",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/agent.yaml",
+          "sha256": "aa44d5af2a8efe07c7d44144c6a35f4cfa99674fa158470ded036422cca9bd9c",
+          "size": 1969
+        },
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/README.md",
+          "sha256": "7f52b2615430e3a0f7c4428260f72b1e2d29ca6e010baabac961b8bdcb2f2a42",
+          "size": 1929
+        },
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/steering-examples.json",
+          "sha256": "a2342d18bd4b0697bf007d041cfdc348c54d8b9102aac77dc4c8a6e8b2118b8f",
+          "size": 951
+        },
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/subagents/deal-reader.yaml",
+          "sha256": "73be4e8fb965164ecaad862dcffeac279cfba7ce06ea90aaef522c14f39e4786",
+          "size": 2070
+        },
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/subagents/memo-writer.yaml",
+          "sha256": "f9cc9c68b58310725a1c6379f22866322bcdad2049c1ab43137b63f885f19967",
+          "size": 1548
+        },
+        {
+          "path": "managed-agent-cookbooks/private-markets-analyst/subagents/modeler.yaml",
+          "sha256": "b3e4fb6ca8b1d9f88684c542bcf4118a243b5d0839fd584bba3410a4990e0775",
+          "size": 4965
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/private-markets-analyst.md",
+          "sha256": "4023786023b04b390ffdd0d418c65097e3ec417b0eef075983eaafd081ca8653",
+          "size": 1610
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        },
+        {
+          "path": "plugins/vertical-plugins/investment-banking/skills/workflow-ib-merger-model/SKILL.md",
+          "sha256": "d8cbc22d5b247c9c6dd2264a0aadfe0a890f5223ba4bb0fd46f0b9c3695eabd3",
+          "size": 4699
+        },
+        {
+          "path": "plugins/vertical-plugins/private-equity/skills/workflow-pe-due-diligence/SKILL.md",
+          "sha256": "9edec936d136ebf4f3784c97a378350b09b25b6a8706b265f700e335618f8cf6",
+          "size": 5642
+        },
+        {
+          "path": "plugins/vertical-plugins/private-equity/skills/workflow-pe-ic-memo/SKILL.md",
+          "sha256": "ad2597a089b83e6395f30ee38fb73204b4ab7f14f4d23e7eebe997e8185af279",
+          "size": 5774
+        },
+        {
+          "path": "plugins/vertical-plugins/private-equity/skills/workflow-pe-returns-analysis/SKILL.md",
+          "sha256": "9fc0a57f788ffbca5fbca96283e1fe63deca5e3e88fd4791d26bc5bc3529b387",
+          "size": 4442
+        }
+      ]
+    },
+    {
+      "slug": "sector-research",
+      "hash": "7e64b3ddbfcc0a2582a7c0fdb876097a25bcccbd1fd93004631d71c6fc975eed",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/sector-research/agent.yaml",
+          "sha256": "b2001afba58957faeff38f9333c7013ba33388e6df9bd54f18d6913658fcab1a",
+          "size": 1811
+        },
+        {
+          "path": "managed-agent-cookbooks/sector-research/README.md",
+          "sha256": "22f2d1bd0956bf9f244e3f5a722ef78ca57f0611982a37a3401ce92ece1f836e",
+          "size": 1934
+        },
+        {
+          "path": "managed-agent-cookbooks/sector-research/steering-examples.json",
+          "sha256": "2698b4c1ec49f0daa4896c7af0b67606e348bc8072cbf858888922f09a7115a3",
+          "size": 1325
+        },
+        {
+          "path": "managed-agent-cookbooks/sector-research/subagents/analyst.yaml",
+          "sha256": "6e0c09143f5052621d3aae97f8705e74783fd135b61c495496f1cdf29cac7ccd",
+          "size": 3970
+        },
+        {
+          "path": "managed-agent-cookbooks/sector-research/subagents/data-reader.yaml",
+          "sha256": "8cdb03e2e42ef9b50484f9cbfcce62bc4c86358414bf8d735cb06e9be2f825b1",
+          "size": 2953
+        },
+        {
+          "path": "managed-agent-cookbooks/sector-research/subagents/publisher.yaml",
+          "sha256": "0e50c6296df26d7fbf58ab79df7004f7d0c1d7d6d2b377a076c69eedd01700cd",
+          "size": 2215
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/equity-analyst.md",
+          "sha256": "6356d0cc6d249cb19b0a0bd7497b4f44d91225fc107921ef3637df16d68529e9",
+          "size": 1807
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-idea-screening/SKILL.md",
+          "sha256": "926bb53f52fef13c57ca857d7759464006d73cfa5e5729c3de76644869e14a86",
+          "size": 4929
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-morning-note/SKILL.md",
+          "sha256": "8b053ce5e677bef8123a7159d19f211d7a0f0eff4a92265c5b07b7520d7ec2d1",
+          "size": 4199
+        },
+        {
+          "path": "plugins/vertical-plugins/equity-research/skills/workflow-er-sector-overview/SKILL.md",
+          "sha256": "bdd42c5e2b9a86ed39392da12209fa688a463bd7760c0fd21e2218bf71070afa",
+          "size": 5301
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "sp-credit-research",
+      "hash": "c6c58a95bb099d3d31551cd7779c9a5edfe4953ed129c7e704f03befcc072e33",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/agent.yaml",
+          "sha256": "c10317e604b6f1006afa151f46f39f70d549c927929b522327070d4b8c7e71db",
+          "size": 1912
+        },
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/README.md",
+          "sha256": "b87bed8dcd4d003142b4a40430ef50918817ff4eb69cf0f08fc91ae21ef0a640",
+          "size": 2470
+        },
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/steering-examples.json",
+          "sha256": "d19cd47ad165e4b25662eaa442b4aeeeb7abd75177984fadf9de182b8cd489fd",
+          "size": 1303
+        },
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/subagents/credit-scorer.yaml",
+          "sha256": "8d8f7b3c842d39c1e2d3ceecd2fd0fc4ec6d5b70d9645143a7133c63fb5caa83",
+          "size": 5589
+        },
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/subagents/data-reader.yaml",
+          "sha256": "a28b65baeb3b876f4d007f471306b80aef118c733ce933a2ee4f22065ad42f88",
+          "size": 3318
+        },
+        {
+          "path": "managed-agent-cookbooks/sp-credit-research/subagents/publisher.yaml",
+          "sha256": "af35a4182c81b8bf788f3f75ad28a65816d68c37fd5b69734107ba7fa71e895c",
+          "size": 3104
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/credit-analyst.md",
+          "sha256": "a0969d50e59d312f6a406037a8ac8612e4862eef8738b96dd58a8c59ccf5c238",
+          "size": 1216
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/partner-built/sp-global/skills/vendor-sp-global/SKILL.md",
+          "sha256": "608ef1105188668cef66bd50b6979f6e98f6056f96dcaac2a43474034fb9704a",
+          "size": 3419
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        }
+      ]
+    },
+    {
+      "slug": "valuation-reviewer",
+      "hash": "8c904ba77fe8fbf5cf929bf5be63a3e3692d725edb5ea5b098f3e8ffbe7fc28b",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/agent.yaml",
+          "sha256": "5798f742cc7058153efeab682da113ccd78431a585dfab7e91a848c86f9b1706",
+          "size": 1805
+        },
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/README.md",
+          "sha256": "e69ce72f7d128d4ec67b8c8ce1997809e676e444d6c5564f6b6eac3bb173294a",
+          "size": 2025
+        },
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/steering-examples.json",
+          "sha256": "2aaa6619194339ce8753c1e6e1dc3a368e1b3a699ee0b037c6134a168e76adca",
+          "size": 909
+        },
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/subagents/package-reader.yaml",
+          "sha256": "d9e5825886f32cfb8f691ed357d07a98f794c1dc8aaa307dbecdeef7e93a58ec",
+          "size": 2725
+        },
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/subagents/publisher.yaml",
+          "sha256": "214815f0dc010b7661227b0f458c2cb2f7e202b7163ed8f6cca092874a2722ca",
+          "size": 1589
+        },
+        {
+          "path": "managed-agent-cookbooks/valuation-reviewer/subagents/reviewer.yaml",
+          "sha256": "bf95c58ff0411c6f3ba02b6e040a9dc02f0aba4fb68cafbf97d678edef9a3554",
+          "size": 3773
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/private-markets-analyst.md",
+          "sha256": "4023786023b04b390ffdd0d418c65097e3ec417b0eef075983eaafd081ca8653",
+          "size": 1610
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        },
+        {
+          "path": "plugins/vertical-plugins/private-equity/skills/workflow-pe-portfolio-monitoring/SKILL.md",
+          "sha256": "4b9b5b30701a64301def2bd54f63b097e50d6eab2ea7b8bd9ef149538ce003c0",
+          "size": 5189
+        },
+        {
+          "path": "plugins/vertical-plugins/private-equity/skills/workflow-pe-returns-analysis/SKILL.md",
+          "sha256": "9fc0a57f788ffbca5fbca96283e1fe63deca5e3e88fd4791d26bc5bc3529b387",
+          "size": 4442
+        }
+      ]
+    },
+    {
+      "slug": "wealth-meeting-prep",
+      "hash": "615ccd4b5f662bf8b4f3b9d25edb527a2836f184b8a1ec0ba4a37bf2e78bee7b",
+      "files": [
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/agent.yaml",
+          "sha256": "aa88ebf7e391923cb05dca95153db3e9bf61009db65d7b1192b0129614d6d3f8",
+          "size": 1854
+        },
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/README.md",
+          "sha256": "c967233e50df9bd385e5a5f39866195228548bd896b50ac16c3ad659f55a4803",
+          "size": 1912
+        },
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/steering-examples.json",
+          "sha256": "b0f93ba2f2ca8a31217f6ee2873ac1cc0e3394c36c6f266697fceca64b7a8904",
+          "size": 1182
+        },
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/subagents/analyst.yaml",
+          "sha256": "74a4edbec9ec02867337701023b935713697f93c217bd925868278a3cde37c0c",
+          "size": 3820
+        },
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/subagents/brief-writer.yaml",
+          "sha256": "51fb3c5ad7dc36af6b943f2574b069699790b5645cd7c2cdb8a7573d2121e739",
+          "size": 1547
+        },
+        {
+          "path": "managed-agent-cookbooks/wealth-meeting-prep/subagents/portfolio-reader.yaml",
+          "sha256": "6b2a8cefb0a8b8b4ad832f515ec9a9b7f00787cc97762e3384985f6fbe3b8f87",
+          "size": 1999
+        },
+        {
+          "path": "plugins/cfa-core/agents/cfa/quant-risk-analyst.md",
+          "sha256": "92b7b4bb286bf8d9b6f1a5684bc92c76b7f18c9d900b5db5eeb2238fdf0a932e",
+          "size": 1296
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-core/SKILL.md",
+          "sha256": "073e0fa4af9bfb8380c7469d28d4f4e14dde141127bb6e415d21095207d2e4ad",
+          "size": 20345
+        },
+        {
+          "path": "plugins/cfa-core/skills/corp-finance-tools-risk/SKILL.md",
+          "sha256": "15b5a601f01e40b890215d31fb36a292ce1c2b3e097166cf8c1d25a161ae6fae",
+          "size": 30892
+        },
+        {
+          "path": "plugins/vertical-plugins/foundations/skills/corp-finance-analyst-core/SKILL.md",
+          "sha256": "2b02b9022bc8e15d65990b400f56a8f98c82f954ca1fe989c6fbba4c29df192d",
+          "size": 21649
+        },
+        {
+          "path": "plugins/vertical-plugins/wealth-management/skills/workflow-wm-client-meeting-prep/SKILL.md",
+          "sha256": "090f249d1c4a9aef7bcba617505c22c996c0c567ef3fd621219c8d2efb6b5300",
+          "size": 4593
+        },
+        {
+          "path": "plugins/vertical-plugins/wealth-management/skills/workflow-wm-portfolio-rebalancing/SKILL.md",
+          "sha256": "da4c5720599026476408b3f4b05e36f71a2292b583a8e6e8662f05da5e5e1d65",
+          "size": 5072
+        },
+        {
+          "path": "plugins/vertical-plugins/wealth-management/skills/workflow-wm-tax-loss-harvesting/SKILL.md",
+          "sha256": "35106b4f0c1e1697887f1e066bfc2a366144c9a6fdab0d0eed2be5859fcc8b9d",
+          "size": 6526
+        }
+      ]
+    }
+  ]
+}

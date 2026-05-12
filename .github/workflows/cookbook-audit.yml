@@ -1,0 +1,112 @@
+name: cookbook-audit
+
+# Phase 25 Tier A2 — managed-agent cookbook audit hashing.
+#
+# Single gate (STRICT): data/cookbook-audits.json must match a fresh
+# regeneration. Catches developers who edit cookbook content (manifests,
+# subagents, referenced skills, system prompts) but forget to update the
+# committed audit catalog. PRs that change cookbook content will fail
+# this gate until the audit is regenerated and committed.
+#
+# The audit JSON contains the master sha256 per cookbook plus a per-file
+# inventory, so reviewers see exactly which files in which cookbook
+# changed. Deploy tooling can compare a deployment's recorded hash to
+# the live tree before issuing an API call.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  cookbook-audit:
+    name: cookbook-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # need main baseline for the diff summary
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      # The audit scripts import from packages/harness/src/manifests/cookbook-audit.js.
+      # Build the harness so the dist output exists for tsx to resolve.
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # ---------------------------------------------------------------------
+      # Gate (STRICT): committed audit must match a fresh regeneration.
+      # ---------------------------------------------------------------------
+      - name: Verify cookbook-audits.json is up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-cookbook-audits.ts --check 2>&1 | tee /tmp/audit-check.log
+
+      # ---------------------------------------------------------------------
+      # On PRs, also surface a human-readable diff vs the merge base.
+      # Informational — does not affect gate outcome.
+      # ---------------------------------------------------------------------
+      - name: Diff cookbook audits vs main (informational)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git show "origin/${{ github.base_ref }}:data/cookbook-audits.json" > /tmp/base-audits.json 2>/dev/null; then
+            DIFF=$(npx tsx scripts/generate-cookbook-audits.ts --diff /tmp/base-audits.json 2>&1 || true)
+            echo "$DIFF" > /tmp/audit-diff.json
+            ADDED=$(echo "$DIFF" | grep -oE '"added":\s*\[[^]]*\]' | head -1 || echo "")
+            REMOVED=$(echo "$DIFF" | grep -oE '"removed":\s*\[[^]]*\]' | head -1 || echo "")
+            CHANGED=$(echo "$DIFF" | grep -oE '"changed":\s*\[[^]]*\]' | head -1 || echo "")
+            echo "::notice::cookbook audit diff vs main — ${ADDED:-no add} ${REMOVED:-no remove} ${CHANGED:-no change}"
+          else
+            echo "::notice::no baseline cookbook-audits.json on ${{ github.base_ref }} — skipping diff"
+          fi
+
+      - name: Upload audit artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookbook-audit-logs
+          path: |
+            /tmp/audit-check.log
+            /tmp/audit-diff.json
+          if-no-files-found: ignore
+          retention-days: 7

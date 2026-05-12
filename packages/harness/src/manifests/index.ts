@@ -51,3 +51,18 @@ export {
   type CookbookLintIssue,
   type CookbookLintReport,
 } from "./tool-catalog.js";
+
+// Phase 25 Tier A2: managed-agent cookbook audit hashing
+export {
+  auditCookbook,
+  auditAllCookbooks,
+  serialiseAuditCatalog,
+  parseAuditCatalog,
+  diffAuditCatalogs,
+  type CookbookAudit,
+  type CookbookAuditCatalog,
+  type FileEntry,
+  type AuditCookbookInput,
+  type AuditAllInput,
+  type AuditDiff,
+} from "./cookbook-audit.js";

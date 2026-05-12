@@ -40,6 +40,9 @@ managed-agent-cookbooks/       15 deployable cookbooks (YAML manifests + subagen
 
 data/tools-catalog.json        canonical 623-tool catalog (Phase 25 Tier A1) — used by
                                cookbook tool-name lint, regenerated from MCP server sources
+data/cookbook-audits.json      byte-stable audit (Phase 25 Tier A2) — sha256 hash per
+                               cookbook + per-file inventory, used to detect drift and
+                               gate deploy-time integrity
 
 docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
@@ -94,9 +97,10 @@ docs/                          adr/, ddd/, contracts/, plans/, skill-editor-temp
 ```bash
 npm install                                          # Turborepo — installs 7 packages
 npm run build                                        # Builds harness + 4 MCP servers
-npm test                                             # Vitest — 744 tests
+npm test                                             # Vitest — 773 tests
 npx tsx scripts/generate-tool-catalog.ts             # Regenerate data/tools-catalog.json
 npx tsx scripts/lint-cookbook-tool-names.ts          # Lint cookbooks against catalog
+npx tsx scripts/generate-cookbook-audits.ts          # Regenerate data/cookbook-audits.json
 npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
 ```
 
@@ -134,6 +138,22 @@ The cookbook lint (`scripts/lint-cookbook-tool-names.ts`) walks every cookbook a
 Two CI gates (`.github/workflows/tool-name-lint.yml`):
 1. **Catalog freshness (strict)** — `data/tools-catalog.json` must match a fresh regeneration. Catches developers who add a tool but forget to regenerate.
 2. **Cookbook drift (strict)** — every `configs[].name` must resolve. Catches the verb-prefixed-name bug class (`calculate_target_price`, `build_lbo`, `calculate_dupont`, ...).
+
+## Cookbook audit hashing (Phase 25 Tier A2)
+
+`data/cookbook-audits.json` is a byte-stable audit catalog: one sha256 master hash per cookbook plus a per-file inventory of every file that influences its behavior — the cookbook directory (`agent.yaml`, `subagents/*.yaml`, `steering-examples.json`), the resolved `system.file` for each agent/subagent, and every text file under each `skills[].from_plugin` directory.
+
+Two runs against the same disk state produce byte-identical output. Use cases:
+
+- **Deploy-time integrity**: deployment tooling records the master hash. Before issuing the API call, recompute against the live tree; mismatch blocks the deploy.
+- **PR review**: hash diff in `data/cookbook-audits.json` shows which cookbooks changed and which file(s) inside them. CI surfaces a one-line summary of added / removed / changed cookbooks vs the merge base.
+- **Audit trail**: prove which exact version of a cookbook was deployed at a specific time.
+
+CI gate (`.github/workflows/cookbook-audit.yml`):
+
+1. **Audit freshness (strict)** — `data/cookbook-audits.json` must match a fresh regeneration. PRs that change cookbook content must include the regenerated audit; CI fails otherwise.
+
+Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-audits.ts --slug equity-analyst`.
 
 ## Closed learning loop (Phase 41)
 
@@ -202,6 +222,7 @@ Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor t
 | `rust.yml` | Rust build (bindings + WASM) | Strict |
 | `cookbooks.yml` | Cookbook discovery + smoke + builds 4 MCP servers | Strict (smoke); informational (legacy Rust validate, post-YAML) |
 | `tool-name-lint.yml` | Catalog freshness + cookbook drift | **Strict** (both gates) |
+| `cookbook-audit.yml` | Cookbook audit hash freshness | **Strict** |
 | `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
 | `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
 | `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |
