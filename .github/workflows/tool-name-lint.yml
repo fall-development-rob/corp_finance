@@ -2,14 +2,14 @@ name: tool-name-lint
 
 # Phase 25 Tier A1 — managed-agent cookbook tool-name drift check.
 #
-# Two gates:
-#   1. Catalog freshness (STRICT): data/tools-catalog.json must match a fresh
+# Two gates, both STRICT:
+#   1. Catalog freshness: data/tools-catalog.json must match a fresh
 #      regeneration from the 4 in-repo MCP servers. Catches the case where a
 #      developer adds/removes a tool but forgets to regenerate the catalog.
-#   2. Cookbook lint (INFORMATIONAL): reports configs[].name entries that
-#      reference tools not in the catalog. Currently informational because of
-#      pre-existing drift documented in the best-in-class roadmap; the strict
-#      flip happens in a follow-up cleanup PR.
+#   2. Cookbook lint: every mcp_toolset configs[].name across every cookbook
+#      agent.yaml + subagents/*.yaml must resolve to a real catalog entry.
+#      Wave 1 shipped this gate as informational because of 107 pre-existing
+#      drift instances; Wave 1b cleaned all of them up and flipped to strict.
 
 on:
   push:
@@ -77,20 +77,14 @@ jobs:
           npx tsx scripts/generate-tool-catalog.ts --check 2>&1 | tee /tmp/catalog-check.log
 
       # ---------------------------------------------------------------------
-      # Gate 2 (INFORMATIONAL): report cookbook tool-name drift.
-      # Promotion to STRICT happens after the drift-cleanup follow-up PR.
+      # Gate 2 (STRICT): every configs[].name across every cookbook must
+      # resolve to a real catalog entry. Exits 1 on any drift.
       # ---------------------------------------------------------------------
-      - name: Lint cookbook tool names (informational)
+      - name: Lint cookbook tool names (strict)
         shell: bash
         run: |
           set -euo pipefail
-          npx tsx scripts/lint-cookbook-tool-names.ts 2>&1 | tee /tmp/cookbook-lint.log || true
-          ISSUES=$(grep -Eo 'issues[[:space:]]+:[[:space:]]+[0-9]+' /tmp/cookbook-lint.log | grep -Eo '[0-9]+' | head -1 || echo 0)
-          if [ "${ISSUES:-0}" = "0" ]; then
-            echo "::notice::cookbook tool-name lint passed — no drift"
-          else
-            echo "::warning::cookbook tool-name lint reported ${ISSUES} drift issues (informational; track via follow-up cleanup PR)"
-          fi
+          npx tsx scripts/lint-cookbook-tool-names.ts 2>&1 | tee /tmp/cookbook-lint.log
 
       - name: Upload lint artefacts
         if: always()

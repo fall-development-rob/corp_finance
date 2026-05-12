@@ -23,24 +23,24 @@ tools:
       - { name: mcp__cfa-core__wacc_calculator, enabled: true }
       - { name: mcp__cfa-core__dcf_model, enabled: true }
       - { name: mcp__cfa-core__comps_analysis, enabled: true }
-      - { name: mcp__cfa-core__build_three_statement, enabled: true }
-      - { name: mcp__cfa-core__run_mc_dcf, enabled: true }
-      - { name: mcp__cfa-core__calculate_beneish_mscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_piotroski_fscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_earnings_quality_composite, enabled: true }
-      - { name: mcp__cfa-core__calculate_accrual_quality, enabled: true }
-      - { name: mcp__cfa-core__calculate_revenue_quality, enabled: true }
-      - { name: mcp__cfa-core__calculate_h_model_ddm, enabled: true }
-      - { name: mcp__cfa-core__calculate_multistage_ddm, enabled: true }
-      - { name: mcp__cfa-core__calculate_buyback, enabled: true }
-      - { name: mcp__cfa-core__calculate_payout_sustainability, enabled: true }
-      - { name: mcp__cfa-core__calculate_total_shareholder_return, enabled: true }
-      - { name: mcp__cfa-core__calculate_sotp, enabled: true }
-      - { name: mcp__cfa-core__calculate_target_price, enabled: true }
-      - { name: mcp__cfa-core__build_sensitivity_grid, enabled: true }
-      - { name: mcp__cfa-core__analyze_benfords_law, enabled: true }
-      - { name: mcp__cfa-core__calculate_dupont, enabled: true }
-      - { name: mcp__cfa-core__calculate_red_flag_scoring, enabled: true }
+      - { name: mcp__cfa-core__three_statement_model, enabled: true }
+      - { name: mcp__cfa-core__monte_carlo_dcf, enabled: true }
+      - { name: mcp__cfa-core__beneish_mscore, enabled: true }
+      - { name: mcp__cfa-core__piotroski_fscore, enabled: true }
+      - { name: mcp__cfa-core__earnings_quality_composite, enabled: true }
+      - { name: mcp__cfa-core__accrual_quality, enabled: true }
+      - { name: mcp__cfa-core__revenue_quality, enabled: true }
+      - { name: mcp__cfa-core__h_model_ddm, enabled: true }
+      - { name: mcp__cfa-core__multistage_ddm, enabled: true }
+      - { name: mcp__cfa-core__buyback_analysis, enabled: true }
+      - { name: mcp__cfa-core__payout_sustainability, enabled: true }
+      - { name: mcp__cfa-core__total_shareholder_return, enabled: true }
+      - { name: mcp__cfa-core__sotp_valuation, enabled: true }
+      - { name: mcp__cfa-core__target_price, enabled: true }
+      - { name: mcp__cfa-core__sensitivity_matrix, enabled: true }
+      - { name: mcp__cfa-core__benfords_law, enabled: true }
+      - { name: mcp__cfa-core__dupont_analysis, enabled: true }
+      - { name: mcp__cfa-core__red_flag_scoring, enabled: true }
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:

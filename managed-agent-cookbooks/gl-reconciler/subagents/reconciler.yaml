@@ -24,12 +24,12 @@ tools:
     configs:
       - { name: mcp__cfa-core__fund_fee_calculator, enabled: true }
       - { name: mcp__cfa-core__nav_calculator, enabled: true }
-      - { name: mcp__cfa-core__gp_economics_model, enabled: true }
+      - { name: mcp__cfa-core__gp_economics, enabled: true }
       - { name: mcp__cfa-core__investor_net_returns, enabled: true }
       - { name: mcp__cfa-core__variance_analysis, enabled: true }
       - { name: mcp__cfa-core__working_capital, enabled: true }
-      - { name: mcp__cfa-core__withholding_tax_calculator, enabled: true }
-      - { name: mcp__cfa-core__portfolio_wht_calculator, enabled: true }
+      - { name: mcp__cfa-core__withholding_tax, enabled: true }
+      - { name: mcp__cfa-core__withholding_tax, enabled: true }
       - { name: mcp__cfa-core__rolling_forecast, enabled: true }
       - { name: mcp__cfa-core__breakeven_analysis, enabled: true }
 mcp_servers:

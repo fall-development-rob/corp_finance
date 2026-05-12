@@ -21,17 +21,17 @@ tools:
     default_config: { enabled: false }
     configs:
       - { name: mcp__cfa-core__comps_analysis, enabled: true }
-      - { name: mcp__cfa-core__calculate_target_price, enabled: true }
-      - { name: mcp__cfa-core__build_sensitivity_grid, enabled: true }
-      - { name: mcp__cfa-core__run_scenario_analysis, enabled: true }
+      - { name: mcp__cfa-core__target_price, enabled: true }
+      - { name: mcp__cfa-core__sensitivity_matrix, enabled: true }
+      - { name: mcp__cfa-core__scenario_analysis, enabled: true }
       - { name: mcp__cfa-core__wacc_calculator, enabled: true }
       - { name: mcp__cfa-core__dcf_model, enabled: true }
-      - { name: mcp__cfa-core__calculate_sotp, enabled: true }
+      - { name: mcp__cfa-core__sotp_valuation, enabled: true }
       - { name: mcp__cfa-core__credit_metrics, enabled: true }
-      - { name: mcp__cfa-core__calculate_dupont, enabled: true }
-      - { name: mcp__cfa-core__calculate_piotroski_fscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_beneish_mscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_earnings_quality_composite, enabled: true }
+      - { name: mcp__cfa-core__dupont_analysis, enabled: true }
+      - { name: mcp__cfa-core__piotroski_fscore, enabled: true }
+      - { name: mcp__cfa-core__beneish_mscore, enabled: true }
+      - { name: mcp__cfa-core__earnings_quality_composite, enabled: true }
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:

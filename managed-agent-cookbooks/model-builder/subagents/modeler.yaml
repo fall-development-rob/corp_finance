@@ -23,23 +23,23 @@ tools:
     mcp_server_name: cfa-core
     default_config: { enabled: false }
     configs:
-      - { name: mcp__cfa-core__build_three_statement, enabled: true }
+      - { name: mcp__cfa-core__three_statement_model, enabled: true }
       - { name: mcp__cfa-core__wacc_calculator, enabled: true }
       - { name: mcp__cfa-core__dcf_model, enabled: true }
-      - { name: mcp__cfa-core__run_mc_dcf, enabled: true }
-      - { name: mcp__cfa-core__build_lbo, enabled: true }
-      - { name: mcp__cfa-core__build_debt_schedule, enabled: true }
-      - { name: mcp__cfa-core__sources_and_uses, enabled: true }
-      - { name: mcp__cfa-core__calculate_returns, enabled: true }
-      - { name: mcp__cfa-core__calculate_waterfall, enabled: true }
-      - { name: mcp__cfa-core__build_sensitivity_grid, enabled: true }
-      - { name: mcp__cfa-core__run_scenario_analysis, enabled: true }
+      - { name: mcp__cfa-core__monte_carlo_dcf, enabled: true }
+      - { name: mcp__cfa-core__lbo_model, enabled: true }
+      - { name: mcp__cfa-core__debt_schedule, enabled: true }
+      - { name: mcp__cfa-core__sources_uses, enabled: true }
+      - { name: mcp__cfa-core__returns_calculator, enabled: true }
+      - { name: mcp__cfa-core__waterfall_calculator, enabled: true }
+      - { name: mcp__cfa-core__sensitivity_matrix, enabled: true }
+      - { name: mcp__cfa-core__scenario_analysis, enabled: true }
       - { name: mcp__cfa-core__comps_analysis, enabled: true }
-      - { name: mcp__cfa-core__calculate_target_price, enabled: true }
+      - { name: mcp__cfa-core__target_price, enabled: true }
       - { name: mcp__cfa-core__credit_metrics, enabled: true }
       - { name: mcp__cfa-core__debt_capacity, enabled: true }
       - { name: mcp__cfa-core__altman_zscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_dupont, enabled: true }
+      - { name: mcp__cfa-core__dupont_analysis, enabled: true }
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:

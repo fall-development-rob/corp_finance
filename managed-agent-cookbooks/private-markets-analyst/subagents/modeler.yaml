@@ -21,34 +21,34 @@ tools:
     mcp_server_name: cfa-core
     default_config: { enabled: false }
     configs:
-      - { name: mcp__cfa-core__build_lbo, enabled: true }
-      - { name: mcp__cfa-core__calculate_returns, enabled: true }
-      - { name: mcp__cfa-core__sources_and_uses, enabled: true }
-      - { name: mcp__cfa-core__build_debt_schedule, enabled: true }
-      - { name: mcp__cfa-core__calculate_waterfall, enabled: true }
-      - { name: mcp__cfa-core__calculate_fund_fees, enabled: true }
-      - { name: mcp__cfa-core__calculate_gp_economics, enabled: true }
-      - { name: mcp__cfa-core__analyze_merger, enabled: true }
-      - { name: mcp__cfa-core__analyze_dilution, enabled: true }
-      - { name: mcp__cfa-core__convert_safe, enabled: true }
-      - { name: mcp__cfa-core__convert_note, enabled: true }
-      - { name: mcp__cfa-core__model_venture_fund, enabled: true }
-      - { name: mcp__cfa-core__value_property, enabled: true }
-      - { name: mcp__cfa-core__model_project_finance, enabled: true }
-      - { name: mcp__cfa-core__model_ppp, enabled: true }
-      - { name: mcp__cfa-core__value_concession, enabled: true }
-      - { name: mcp__cfa-core__model_abs_cashflows, enabled: true }
-      - { name: mcp__cfa-core__analyze_tranching, enabled: true }
-      - { name: mcp__cfa-core__calculate_clo_waterfall, enabled: true }
-      - { name: mcp__cfa-core__calculate_coverage_tests, enabled: true }
-      - { name: mcp__cfa-core__calculate_reinvestment, enabled: true }
-      - { name: mcp__cfa-core__calculate_tranche_analytics, enabled: true }
-      - { name: mcp__cfa-core__calculate_clo_scenario, enabled: true }
-      - { name: mcp__cfa-core__calculate_j_curve, enabled: true }
-      - { name: mcp__cfa-core__calculate_commitment_pacing, enabled: true }
-      - { name: mcp__cfa-core__analyze_manager_selection, enabled: true }
-      - { name: mcp__cfa-core__calculate_secondaries_pricing, enabled: true }
-      - { name: mcp__cfa-core__build_sensitivity_grid, enabled: true }
+      - { name: mcp__cfa-core__lbo_model, enabled: true }
+      - { name: mcp__cfa-core__returns_calculator, enabled: true }
+      - { name: mcp__cfa-core__sources_uses, enabled: true }
+      - { name: mcp__cfa-core__debt_schedule, enabled: true }
+      - { name: mcp__cfa-core__waterfall_calculator, enabled: true }
+      - { name: mcp__cfa-core__fund_fee_calculator, enabled: true }
+      - { name: mcp__cfa-core__gp_economics, enabled: true }
+      - { name: mcp__cfa-core__merger_model, enabled: true }
+      - { name: mcp__cfa-core__dilution_analysis, enabled: true }
+      - { name: mcp__cfa-core__safe_conversion, enabled: true }
+      - { name: mcp__cfa-core__convertible_note, enabled: true }
+      - { name: mcp__cfa-core__venture_fund_model, enabled: true }
+      - { name: mcp__cfa-core__property_valuation, enabled: true }
+      - { name: mcp__cfa-core__project_finance_model, enabled: true }
+      - { name: mcp__cfa-core__ppp_model, enabled: true }
+      - { name: mcp__cfa-core__concession_valuation, enabled: true }
+      - { name: mcp__cfa-core__abs_cashflow_model, enabled: true }
+      - { name: mcp__cfa-core__tranching_analysis, enabled: true }
+      - { name: mcp__cfa-core__clo_waterfall, enabled: true }
+      - { name: mcp__cfa-core__clo_coverage_tests, enabled: true }
+      - { name: mcp__cfa-core__clo_reinvestment, enabled: true }
+      - { name: mcp__cfa-core__clo_tranche_analytics, enabled: true }
+      - { name: mcp__cfa-core__clo_scenario, enabled: true }
+      - { name: mcp__cfa-core__j_curve_model, enabled: true }
+      - { name: mcp__cfa-core__commitment_pacing, enabled: true }
+      - { name: mcp__cfa-core__manager_selection, enabled: true }
+      - { name: mcp__cfa-core__secondaries_pricing, enabled: true }
+      - { name: mcp__cfa-core__sensitivity_matrix, enabled: true }
       - { name: mcp__cfa-core__debt_capacity, enabled: true }
       - { name: mcp__cfa-core__credit_metrics, enabled: true }
       - { name: mcp__cfa-core__altman_zscore, enabled: true }

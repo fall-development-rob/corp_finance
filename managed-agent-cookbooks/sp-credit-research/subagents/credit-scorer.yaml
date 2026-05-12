@@ -33,11 +33,11 @@ tools:
       - { name: mcp__cfa-core__altman_zscore, enabled: true }
       - { name: mcp__cfa-core__zscore_models, enabled: true }
       - { name: mcp__cfa-core__credit_spreads, enabled: true }
-      - { name: mcp__cfa-core__calculate_scorecard, enabled: true }
-      - { name: mcp__cfa-core__calculate_merton, enabled: true }
-      - { name: mcp__cfa-core__calculate_intensity_model, enabled: true }
-      - { name: mcp__cfa-core__calculate_calibration, enabled: true }
-      - { name: mcp__cfa-core__calculate_scoring_validation, enabled: true }
+      - { name: mcp__cfa-core__credit_scorecard, enabled: true }
+      - { name: mcp__cfa-core__merton_pd, enabled: true }
+      - { name: mcp__cfa-core__intensity_model, enabled: true }
+      - { name: mcp__cfa-core__pd_calibration, enabled: true }
+      - { name: mcp__cfa-core__scoring_validation, enabled: true }
       - { name: mcp__cfa-core__cds_pricing, enabled: true }
       - { name: mcp__cfa-core__cva_calculation, enabled: true }
       - { name: mcp__cfa-core__peer_benchmarking, enabled: true }

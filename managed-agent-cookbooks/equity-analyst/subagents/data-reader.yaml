@@ -26,7 +26,7 @@ tools:
     configs:
       - { name: mcp__cfa-core__comps_analysis, enabled: true }
       - { name: mcp__cfa-core__credit_metrics, enabled: true }
-      - { name: mcp__cfa-core__calculate_dupont, enabled: true }
+      - { name: mcp__cfa-core__dupont_analysis, enabled: true }
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
   - { type: url, name: fmp, url: "${FMP_MCP_URL}" }

@@ -26,17 +26,17 @@ tools:
       - { name: mcp__cfa-core__debt_capacity, enabled: true }
       - { name: mcp__cfa-core__covenant_compliance, enabled: true }
       - { name: mcp__cfa-core__altman_zscore, enabled: true }
-      - { name: mcp__cfa-core__calculate_credit_spreads, enabled: true }
-      - { name: mcp__cfa-core__calculate_scorecard, enabled: true }
-      - { name: mcp__cfa-core__calculate_merton, enabled: true }
-      - { name: mcp__cfa-core__calculate_intensity_model, enabled: true }
-      - { name: mcp__cfa-core__calculate_calibration, enabled: true }
-      - { name: mcp__cfa-core__calculate_scoring_validation, enabled: true }
-      - { name: mcp__cfa-core__price_cds, enabled: true }
-      - { name: mcp__cfa-core__calculate_cva, enabled: true }
-      - { name: mcp__cfa-core__calculate_portfolio_credit_risk, enabled: true }
-      - { name: mcp__cfa-core__calculate_migration, enabled: true }
-      - { name: mcp__cfa-core__build_sensitivity_grid, enabled: true }
+      - { name: mcp__cfa-core__credit_spreads, enabled: true }
+      - { name: mcp__cfa-core__credit_scorecard, enabled: true }
+      - { name: mcp__cfa-core__merton_pd, enabled: true }
+      - { name: mcp__cfa-core__intensity_model, enabled: true }
+      - { name: mcp__cfa-core__pd_calibration, enabled: true }
+      - { name: mcp__cfa-core__scoring_validation, enabled: true }
+      - { name: mcp__cfa-core__cds_pricing, enabled: true }
+      - { name: mcp__cfa-core__cva_calculation, enabled: true }
+      - { name: mcp__cfa-core__portfolio_credit_risk, enabled: true }
+      - { name: mcp__cfa-core__credit_migration, enabled: true }
+      - { name: mcp__cfa-core__sensitivity_matrix, enabled: true }
 mcp_servers:
   - { type: url, name: cfa-core, url: "${CFA_CORE_MCP_URL}" }
 skills:
