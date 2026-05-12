@@ -1,0 +1,89 @@
+name: cookbook-trace
+
+# Phase 25 Tier C4 — managed-agent cookbook synthetic-trace evaluation.
+#
+# Single gate (STRICT): data/cookbook-traces/*.trace.json must match a
+# fresh regeneration. Each trace captures the FULL assembled deploy
+# payload per cookbook — system prompt text, tool allowlists, schemas,
+# audit hash, version, and steering events.
+#
+# Complements Tier A2 (audit) and Tier A3 (replay):
+#   - audit   → file inventory (does the source match what was reviewed?)
+#   - replay  → projection fingerprint (does the loader output match?)
+#   - trace   → final assembled payload (what would deploy actually send?)
+#
+# The trace is what PR reviewers read when they need to know
+# "did the actual prompt change, and what does it now say?".
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  cookbook-trace:
+    name: cookbook-trace
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm modules (workspace root)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-root-
+
+      - name: Install workspace dependencies (root)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+
+      - name: Build harness (@robotixai/cfa-harness)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -w @robotixai/cfa-harness
+
+      # ---------------------------------------------------------------------
+      # Gate (STRICT): every per-cookbook trace must match a fresh regen.
+      # ---------------------------------------------------------------------
+      - name: Verify cookbook traces are up to date
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/generate-cookbook-traces.ts --check 2>&1 | tee /tmp/trace-check.log
+
+      - name: Upload trace artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookbook-trace-logs
+          path: |
+            /tmp/trace-check.log
+          if-no-files-found: ignore
+          retention-days: 7

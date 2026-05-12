@@ -50,6 +50,10 @@ data/cookbook-replays.json     byte-stable replay contract (Phase 25 Tier A3) �
 data/cookbook-costs.json       worst-case cost estimate (Phase 25 Tier C1) — per-agent
                                token + USD breakdown, deterministic; current grand total
                                $9.19 per full-cycle invocation across all 15 cookbooks
+data/cookbook-traces/          synthetic-trace evaluation (Phase 25 Tier C4) — one JSON
+                               file per cookbook with the full assembled deploy payload
+                               (system prompt text, tools, schemas) for byte-diffable
+                               release review
 
 docs/                          adr/, ddd/, contracts/, plans/, skill-editor-templates/
 ```
@@ -110,6 +114,7 @@ npx tsx scripts/lint-cookbook-tool-names.ts          # Lint cookbooks against ca
 npx tsx scripts/generate-cookbook-audits.ts          # Regenerate data/cookbook-audits.json
 npx tsx scripts/generate-cookbook-replays.ts         # Regenerate data/cookbook-replays.json
 npx tsx scripts/generate-cookbook-costs.ts           # Regenerate data/cookbook-costs.json
+npx tsx scripts/generate-cookbook-traces.ts          # Regenerate data/cookbook-traces/*.trace.json
 npx tsx scripts/check-manifests.ts --strict          # Static manifest linter
 ```
 
@@ -244,6 +249,27 @@ CI gate (`.github/workflows/cookbook-cost.yml`):
 
 Spot-check: `npx tsx scripts/generate-cookbook-costs.ts --slug equity-analyst`.
 
+## Synthetic-trace evaluation (Phase 25 Tier C4)
+
+`data/cookbook-traces/<slug>.trace.json` — one file per cookbook containing the FULL assembled deploy payload: parent + subagent definitions with the actual system-prompt text (not just a hash), tool allowlists, output/input schemas (canonicalised), audit hash, version, and the steering events that drive the cookbook.
+
+The trace is the artifact PR reviewers read when they need to know "did the actual prompt that gets sent to Claude change, and how?". File sizes range from ~55KB (compact cookbooks) to ~200KB (heavy ones like `kyc-screener` and `gl-reconciler` whose skills are large), totaling ~1.4MB across all 15 cookbooks.
+
+Complements the earlier tiers — each catches a different bug class:
+
+| Catalog | Granularity | Catches |
+|---------|-------------|---------|
+| `data/tools-catalog.json` | tool names | misspelled tool references |
+| `data/cookbook-audits.json` | file bytes | any cookbook content change |
+| `data/cookbook-replays.json` | projection hashes | loader output drift |
+| `data/cookbook-traces/*.trace.json` | full assembled payload | prompt drift across versions (reviewable as text diff) |
+
+CI gate (`.github/workflows/cookbook-trace.yml`):
+
+1. **Trace freshness (strict)** — every per-cookbook trace must match a fresh regeneration. PRs that change cookbook content, skills, system prompts, or version must include regenerated traces. Stale trace files (slug removed) are also flagged.
+
+Spot-check: `npx tsx scripts/generate-cookbook-traces.ts --slug equity-analyst`.
+
 ## Closed learning loop (Phase 41)
 
 Validation failures during dispatch become structured skill remediations, fully deterministically:
@@ -314,6 +340,7 @@ Plus **180** FMP tools, **129** free public data tools, and **87** paid vendor t
 | `cookbook-audit.yml` | Cookbook audit hash freshness | **Strict** |
 | `cookbook-replay.yml` | Cookbook replay contract freshness (loader projection) | **Strict** |
 | `cookbook-cost.yml` | Cookbook cost-estimate freshness | **Strict** |
+| `cookbook-trace.yml` | Synthetic-trace evaluation (full-prompt diff) | **Strict** |
 | `manifest-check.yml` | Static manifest linter (cross-refs, schema shape) | Strict |
 | `surface-parity.yml` | Drift between packages/mcp-server NAPI and plugins/cfa-core/mcp WASM | Strict |
 | `lockfile-guard.yml` | No nested package-lock.json in workspaces | Strict |

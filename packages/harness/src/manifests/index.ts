@@ -90,6 +90,17 @@ export {
   type ParsedSemver,
 } from "./semver.js";
 
+// Phase 25 Tier C4: managed-agent cookbook synthetic-trace evaluation
+export {
+  buildSyntheticTrace,
+  serialiseTrace,
+  parseTrace,
+  extractSteeringEvents,
+  type CookbookTrace,
+  type AgentTrace,
+  type BuildTraceInput,
+} from "./cookbook-trace.js";
+
 // Phase 25 Tier C1: managed-agent cookbook cost telemetry
 export {
   estimateAgentCost,
