@@ -1,0 +1,118 @@
+# Feature Contract: Managed-Agent Cookbooks
+# Enforces architectural invariants across managed-agent-cookbooks/.
+# Tier A4 (Phase 25): every cookbook ships with a uniform shape so that
+# automation, audit, and review can rely on the same projection at every
+# cookbook surface.
+
+contracts:
+  - id: MA-001
+    name: "Every cookbook has the required manifest files"
+    description: |
+      Every cookbook directory under managed-agent-cookbooks/ must contain an
+      agent.yaml and a steering-examples.json. agent.yaml defines the parent
+      agent; steering-examples.json provides the prompt examples the dispatcher
+      uses to route inputs.
+    scope:
+      - "managed-agent-cookbooks/*/agent.yaml"
+      - "managed-agent-cookbooks/*/steering-examples.json"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-002
+    name: "Every cookbook delegates to subagents"
+    description: |
+      Every parent agent.yaml must declare callable_agents[]. Parents are
+      orchestrators that delegate work; they do not perform computation
+      themselves. Subagents do the work.
+    scope:
+      - "managed-agent-cookbooks/*/agent.yaml"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-003
+    name: "Every cookbook has exactly 3 subagents"
+    description: |
+      Every cookbook implements the canonical read/work/publish pattern with
+      exactly three subagent YAML manifests under subagents/. Cookbooks that
+      need more roles should be split; cookbooks with fewer indicate an
+      incomplete orchestration shape.
+    scope:
+      - "managed-agent-cookbooks/*/subagents/*.yaml"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-004
+    name: "Subagents using cfa-core (compute) gate tools explicit-allow"
+    description: |
+      Every subagent that declares an mcp_toolset block for the cfa-core
+      compute server must use default_config: { enabled: false } and list
+      specifically-enabled tools in configs[]. cfa-core implicit-allow
+      grants the entire ~227-tool compute surface and defeats the
+      tool-allowlist audit trail that Tier A1 (tools-catalog lint), the
+      output_schema validator, and the closed learning loop rely on.
+
+      Note: data-fetcher subagents (e.g. *-reader) intentionally use
+      implicit-allow (default enabled: true) on fmp / data / vendor servers
+      so they have flexibility to fetch broad data context. The contract
+      is enforced only against cfa-core because compute determinism is
+      what materially matters; data retrieval surface can be broader.
+    scope:
+      - "managed-agent-cookbooks/*/subagents/*.yaml"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-005
+    name: "Every subagent declares an output_schema"
+    description: |
+      Every subagent must carry an output_schema that is validated by the
+      harness validator at dispatch time. Untyped subagent outputs cannot be
+      reliably composed by the parent orchestrator and break the closed
+      learning loop (Phase 41) which keys remediation on validator failures.
+    scope:
+      - "managed-agent-cookbooks/*/subagents/*.yaml"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-006
+    name: "Every parent system.append carries the anti-injection reminder"
+    description: |
+      Every parent agent.yaml's system.append must include a clause that
+      treats embedded instructions inside tool results as DATA, not
+      directives. This is the standing defence against prompt-injection via
+      content fetched from MCP tools or untrusted user inputs.
+    scope:
+      - "managed-agent-cookbooks/*/agent.yaml"
+    enforcement: build-time
+    severity: error
+
+  - id: MA-007
+    name: "Cookbook slugs are file-system safe and ALLOWED_SLUGS-aligned"
+    description: |
+      Every cookbook directory name (slug) must match ^[a-z][a-z0-9-]{1,62}[a-z0-9]$.
+      The slug doubles as the deployment ID and as the key in the corp-finance-core
+      ALLOWED_SLUGS list; non-conforming slugs break deploy tooling.
+    scope:
+      - "managed-agent-cookbooks/*/"
+    enforcement: build-time
+    severity: error
+
+invariants:
+  - id: MA-INV-001
+    name: "Cookbook count"
+    description: "There must be exactly 15 managed-agent cookbooks"
+    check: "count(managed-agent-cookbooks/*/agent.yaml) == 15"
+
+  - id: MA-INV-002
+    name: "Subagent count"
+    description: "There must be exactly 45 subagents (3 per cookbook × 15)"
+    check: "count(managed-agent-cookbooks/*/subagents/*.yaml) == 45"
+
+  - id: MA-INV-003
+    name: "Audit catalog parity"
+    description: "data/cookbook-audits.json must contain one entry per cookbook"
+    check: "count(cookbook-audits.json.cookbooks) == count(managed-agent-cookbooks/*/agent.yaml)"
+
+  - id: MA-INV-004
+    name: "Replay catalog parity"
+    description: "data/cookbook-replays.json must contain one entry per cookbook"
+    check: "count(cookbook-replays.json.cookbooks) == count(managed-agent-cookbooks/*/agent.yaml)"

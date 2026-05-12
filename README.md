@@ -181,6 +181,26 @@ CI gate (`.github/workflows/cookbook-replay.yml`):
 
 Spot-check a single cookbook: `npx tsx scripts/generate-cookbook-replays.ts --slug equity-analyst`.
 
+## Cookbook contracts (Phase 25 Tier A4)
+
+`docs/contracts/feature_managed_agents.yml` declares the architectural invariants every managed-agent cookbook must hold. Each rule (MA-001 through MA-007) and invariant (MA-INV-001 through MA-INV-004) is enforced by `packages/harness/tests/contracts/managed-agent-contracts.test.ts`, which runs as part of the standard harness vitest suite. Violations fail CI on the regular TypeScript workflow.
+
+| Rule | Invariant |
+|------|-----------|
+| MA-001 | Every cookbook has `agent.yaml` + `steering-examples.json` |
+| MA-002 | Every parent declares `callable_agents[]` (delegation pattern) |
+| MA-003 | Every cookbook has exactly 3 subagents (read/work/publish) |
+| MA-004 | Subagents using `cfa-core` (compute) gate tools explicit-allow |
+| MA-005 | Every subagent declares an `output_schema` |
+| MA-006 | Every parent `system.append` carries the anti-injection reminder |
+| MA-007 | Cookbook slugs match `^[a-z][a-z0-9-]{1,62}[a-z0-9]$` (deploy ID format) |
+| MA-INV-001 | Exactly 15 cookbooks |
+| MA-INV-002 | Exactly 45 subagents (3 × 15) |
+| MA-INV-003 | `data/cookbook-audits.json` has one entry per cookbook |
+| MA-INV-004 | `data/cookbook-replays.json` has one entry per cookbook |
+
+MA-004 is narrowed to `cfa-core` because data-fetcher subagents (e.g. `*-reader`) intentionally use broad-allow on `fmp` / `data` / `vendor` servers for retrieval flexibility. Compute determinism is what materially matters; the rule reflects the architectural intent rather than blanket strictness.
+
 ## Closed learning loop (Phase 41)
 
 Validation failures during dispatch become structured skill remediations, fully deterministically:
