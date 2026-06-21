@@ -106,7 +106,7 @@ jobs:
 
       # Upload the compiled .node file so the publish job can collect them all
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bindings-${{ matrix.target }}
           path: packages/bindings/corp-finance.*.node
